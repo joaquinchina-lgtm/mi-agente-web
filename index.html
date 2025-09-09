@@ -111,7 +111,7 @@
 <section id="home" class="hero">
 <video autoplay muted loop playsinline>
     <!-- Versión vertical para móviles -->
-    <source src="assets/video/heroVERTICAL.mp4" type="video/mp4" media="(max-width: 767px)">
+    <source src="assets/video/hero9VERTICAL.mp4" type="video/mp4" media="(max-width: 767px)">
     <!-- Versión apaisada para escritorio/tablet -->
     <source src="assets/video/hero.mp4" type="video/mp4" media="(min-width: 768px)">
     Tu navegador no soporta video HTML5.
@@ -139,6 +139,85 @@
   <section id="innovacion">
     <div class="container">
       <h2 class="section-title">Servicios de Innovación</h2>
+
+      <!-- === JR · Caja de consulta al agente (discreta) === -->
+      <div id="jr-agent-box" class="jr-agent" aria-live="polite">
+        <style>
+          /* Caja discreta para el agente en Innovación */
+          #jr-agent-box.jr-agent{
+            --line:#e5e7eb; --muted:#6b7280; --ink:#0b1324; --bg:#ffffff; --brand:#0ea5e9;
+            border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
+            box-shadow:0 10px 18px rgba(2,6,23,.04); margin:10px 0 6px 0;
+          }
+          #jr-agent-box .jr-row{display:flex; gap:10px; align-items:stretch}
+          #jr-agent-box input[type="text"]{
+            flex:1; border:1px solid var(--line); border-radius:999px; padding:11px 14px; font-size:14px; outline:none;
+          }
+          #jr-agent-box input[type="text"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+          #jr-agent-box button{border:none; background:var(--brand); color:#fff; border-radius:999px; padding:11px 14px; font-weight:600; cursor:pointer}
+          #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
+          #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
+          #jr-agent-box .jr-answer{display:none; margin-top:10px; font-size:14px; color:#111827; border-top:1px dashed var(--line); padding-top:10px}
+          #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
+          #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
+        </style>
+        <div class="jr-row">
+          <input id="jr-agent-input" type="text" maxlength="500" placeholder="Pregunta algo sobre Innovación o Transferencia… (enter para enviar)" aria-label="Pregunta al agente" />
+          <button id="jr-agent-send" type="button">Preguntar</button>
+        </div>
+        <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
+        <div class="jr-loader" id="jr-agent-loader">Pensando…</div>
+        <div class="jr-error" id="jr-agent-error">No he podido responder ahora. Inténtalo de nuevo.</div>
+        <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
+        <script>
+          // === Configura aquí tu endpoint del agente ===
+          const AGENT_ENDPOINT = "https://chatgpt.com/g/g-68b866c548788191bd3e81f81cf39ebb-mapeo-de-recursos-de-i-d"; // Cambia por tu URL real, por ejemplo: "https://tu-dominio.com/api/gtp"
+          
+          (function(){
+            const box = document.getElementById("jr-agent-box");
+            const input = box.querySelector("#jr-agent-input");
+            const send = box.querySelector("#jr-agent-send");
+            const ans  = box.querySelector("#jr-agent-answer");
+            const load = box.querySelector("#jr-agent-loader");
+            const err  = box.querySelector("#jr-agent-error");
+
+            async function ask(){
+              const q = (input.value || "").trim();
+              if(!q) return;
+              send.disabled = true; err.style.display="none"; ans.style.display="none";
+              load.style.display="block";
+
+              try{
+                const res = await fetch(AGENT_ENDPOINT, {
+                  method:"POST",
+                  headers:{ "Content-Type":"application/json" },
+                  body: JSON.stringify({ question: q })
+                });
+                if(!res.ok) throw new Error("HTTP "+res.status);
+                // Se admite texto plano o JSON {answer:"..."}
+                let text = await res.text();
+                try{ const j = JSON.parse(text); text = j.answer || text; }catch(_){ /* texto plano */ }
+                ans.textContent = text?.trim() || "Sin respuesta.";
+                ans.style.display = "block";
+                // Analítica opcional
+                if(window?.gtag){ gtag("event","jr_agent_query",{section:"innovacion"}); }
+              }catch(e){
+                err.style.display = "block";
+              }finally{
+                load.style.display="none";
+                send.disabled = false;
+              }
+            }
+
+            send.addEventListener("click", ask);
+            input.addEventListener("keydown", (ev)=>{
+              if(ev.key === "Enter"){ ask(); }
+            });
+          })();
+        </script>
+      </div>
+      <!-- === /JR · Caja de consulta al agente === -->
+
       <p class="section-sub">Los servicios utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades y centros de I+D en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
 
 Todos los programas son ágiles, adaptados a la cultura de cada organización, y fomentan una transferencia de conocimiento más productiva.
@@ -308,7 +387,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
     <h2 class="section-title">Red de colaboradores</h2>
        <div class="feature" style="margin-top:18px;">
          <div class="image-wrap">
-           <img src="data:image/jpeg;base64,9k=" alt="Raúl Oliván">
+           <img src="assets/img/019.webp" alt="Raúl Oliván">
         </div>
         <div class="text">
         <h2>Raúl Oliván</h2>
@@ -318,7 +397,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 
         <div class="feature" style="margin-top:18px;">
          <div class="image-wrap">
-           <img src="data:image/jpeg;base64,9k=" alt="Xavier Marcet">
+           <img src="assets/img/020.webp" alt="Xavier Marcet">
         </div>
         <div class="text">
         <h2>Xavier Marcet</h2>
@@ -328,7 +407,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 
        <div class="feature" style="margin-top:18px;">
          <div class="image-wrap">
-           <img src="data:image/jpeg;base64,9k=" alt="Javier Vázquez Matilla">
+           <img src="assets/img/021.webp" alt="Javier Vázquez Matilla">
         </div>
         <div class="text">
         <h2>Javier Vázquez Matilla</h2>
@@ -338,7 +417,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 
        <div class="feature" style="margin-top:18px;">
          <div class="image-wrap">
-           <img src="data:image/jpeg;base64,9k=" alt="Elena Méndez">
+           <img src="assets/img/022.webp" alt="Elena Méndez">
         </div>
         <div class="text">
         <h2>Elena Méndez</h2>
@@ -355,50 +434,50 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
       <div class="gallery" style="margin-top:16px;">
         
       <figure class="gallery-card">
-        <img src="assets/img/img_019.webp" alt="" loading="lazy" />
+        <img src="assets/img/023.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">UPNA 2016-2025. Desde 2017 es la universidad líder del sistema universitario español (SUE) en empleabilidad de grado y master</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="assets/img/img_020.webp" alt="" loading="lazy" />
+        <img src="assets/img/024.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">UPNA 2016-2025. Desde 2019 es la universidad líder del sistema universitario español (SUE) en impacto en el desarrollo regional</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="assets/img/img_021.webp" alt="" loading="lazy" />
+        <img src="assets/img/025.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">SIGMA AIE 2016-2025</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="assets/img/img_022.webp" alt="" loading="lazy" />
+        <img src="assets/img/026.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">NAVARRABIOMED 2016-2025</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="assets/img/img_023.jpg" alt="" loading="lazy" />
+        <img src="assets/img/027.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">ORFEÓN PAMPLONÉS 2008-2016. Carnegie Hall</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAACC" alt="" loading="lazy" />
+        <img src="assets/img/028.webp" alt="" loading="lazy" />
          <figcaption style="text-align: center; font-size: 12px;">ORFEÓN PAMPLONÉS 2008-2016. La Fura dels Baus</figcaption>
 
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANCC" alt="" loading="lazy" />
+        <img src="assets/img/029.webp" alt="" loading="lazy" />
         <figcaption style="text-align: center; font-size: 12px;">ORFEÓN PAMPLONÉS 2008-2016. New York Times: crítica del concierto del Orfeón con la New York Philharmonic en el Lincoln Center</figcaption>
       </figure>
     
 
       <figure class="gallery-card">
-        <img src="assets/img/img_024.png" alt="" loading="lazy" />
+        <img src="assets/img/030.webp" alt="" loading="lazy" />
         <figcaption style="text-align: center; font-size: 12px;">TRAYECTORIA INTERNACIONAL 1999-2008. International Trade y creación de empresa en Hong Kong</figcaption>
       </figure>
         
