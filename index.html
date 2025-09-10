@@ -184,33 +184,76 @@
         <div class="jr-loader" id="jr-agent-loader">Pensando…</div>
         <div class="jr-error" id="jr-agent-error">No he podido responder ahora. Inténtalo de nuevo.</div>
         <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
-        <script>
-          // === Configura aquí tu endpoint del agente ===
-          const AGENT_ENDPOINT = "https://jr-gpt-backend.onrender.com/chat"
-          const JR_KEY = "cambia-esta-clave"; // deja vacío si desactivaste auth
+<script>
+  // === Configura aquí tu endpoint del agente ===
+  const AGENT_ENDPOINT = "https://jr-gpt-backend.onrender.com/chat";
+  const JR_KEY = ""; // pon tu clave si tu backend exige Authorization
 
-          (function(){
-            const box = document.getElementById("jr-agent-box");
-            const input = box.querySelector("#jr-agent-input");
-            const send = box.querySelector("#jr-agent-send");
-            const ans  = box.querySelector("#jr-agent-answer");
-            const load = box.querySelector("#jr-agent-loader");
-            const err  = box.querySelector("#jr-agent-error");
+  (function () {
+    const box  = document.getElementById("jr-agent-box");
+    const input= box.querySelector("#jr-agent-input");
+    const send = box.querySelector("#jr-agent-send");
+    const ans  = box.querySelector("#jr-agent-answer");
+    const load = box.querySelector("#jr-agent-loader");
+    const err  = box.querySelector("#jr-agent-error");
 
-            async function askBackend(message) {
-    		const res = await fetch(AGENT_ENDPOINT, {
-      		   method: "POST",
-      		   headers: {
-        	     "Content-Type": "application/json",
-        	     ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
-      		   },
-      	   	   body: JSON.stringify({ message, session_id: "web-1" })
-   	 	});
-    		if (!res.ok) throw new Error("HTTP " + res.status);
-   		const j = await res.json();
-    		return j.reply || "";
+    function setLoading(on) {
+      load.style.display = on ? "block" : "none";
+      send.disabled = on;
+    }
+    function showError(msg) {
+      err.textContent = msg || "No he podido responder ahora. Inténtalo de nuevo.";
+      err.style.display = "block";
+    }
+    function hideError() { err.style.display = "none"; }
+    function showAnswer(text) {
+      ans.textContent = text || "(sin respuesta)";
+      ans.style.display = "block";
+    }
+
+    async function askBackend(message) {
+      const res = await fetch(AGENT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
+        },
+        body: JSON.stringify({ message, session_id: "web-1" }),
+      });
+      if (!res.ok) {
+        const hint = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status} ${hint}`);
+      }
+      const j = await res.json();
+      return j.reply ?? j.message ?? "";
+    }
+
+    async function handleSend() {
+      hideError();
+      ans.style.display = "none";
+      const q = (input.value || "").trim();
+      if (!q) return;
+      setLoading(true);
+      try {
+	        const reply = await askBackend(q);
+	        showAnswer(reply);
+	      } catch (e) {
+	        console.error(e);
+	        showError(String(e.message || e));
+	      } finally {
+	        setLoading(false);
 	      }
-            </script>
+	    }
+
+	    send.addEventListener("click", handleSend);
+	    input.addEventListener("keydown", (ev) => {
+  	    if (ev.key === "Enter") {
+	        ev.preventDefault();
+	        handleSend();
+	      }
+	    });
+	  })();
+	</script>
       </div>
       <!-- === /JR · Caja de consulta al agente === -->
 
