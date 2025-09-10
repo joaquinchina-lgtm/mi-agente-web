@@ -186,8 +186,9 @@
         <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
         <script>
           // === Configura aquí tu endpoint del agente ===
-          const AGENT_ENDPOINT = "https://chatgpt.com/g/g-68b866c548788191bd3e81f81cf39ebb-mapeo-de-recursos-de-i-d"; // Cambia por tu URL real, por ejemplo: "https://tu-dominio.com/api/gtp"
-          
+          const AGENT_ENDPOINT = "https://jr-gpt-backend.onrender.com/chat"
+          const JR_KEY = "cambia-esta-clave"; // deja vacío si desactivaste auth
+
           (function(){
             const box = document.getElementById("jr-agent-box");
             const input = box.querySelector("#jr-agent-input");
@@ -196,40 +197,20 @@
             const load = box.querySelector("#jr-agent-loader");
             const err  = box.querySelector("#jr-agent-error");
 
-            async function ask(){
-              const q = (input.value || "").trim();
-              if(!q) return;
-              send.disabled = true; err.style.display="none"; ans.style.display="none";
-              load.style.display="block";
-
-              try{
-                const res = await fetch(AGENT_ENDPOINT, {
-                  method:"POST",
-                  headers:{ "Content-Type":"application/json" },
-                  body: JSON.stringify({ question: q })
-                });
-                if(!res.ok) throw new Error("HTTP "+res.status);
-                // Se admite texto plano o JSON {answer:"..."}
-                let text = await res.text();
-                try{ const j = JSON.parse(text); text = j.answer || text; }catch(_){ /* texto plano */ }
-                ans.textContent = text?.trim() || "Sin respuesta.";
-                ans.style.display = "block";
-                // Analítica opcional
-                if(window?.gtag){ gtag("event","jr_agent_query",{section:"innovacion"}); }
-              }catch(e){
-                err.style.display = "block";
-              }finally{
-                load.style.display="none";
-                send.disabled = false;
-              }
-            }
-
-            send.addEventListener("click", ask);
-            input.addEventListener("keydown", (ev)=>{
-              if(ev.key === "Enter"){ ask(); }
-            });
-          })();
-        </script>
+            async function askBackend(message) {
+    		const res = await fetch(AGENT_ENDPOINT, {
+      		   method: "POST",
+      		   headers: {
+        	     "Content-Type": "application/json",
+        	     ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
+      		   },
+      	   	   body: JSON.stringify({ message, session_id: "web-1" })
+   	 	});
+    		if (!res.ok) throw new Error("HTTP " + res.status);
+   		const j = await res.json();
+    		return j.reply || "";
+	      }
+            </script>
       </div>
       <!-- === /JR · Caja de consulta al agente === -->
 
