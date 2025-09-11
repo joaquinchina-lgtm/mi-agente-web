@@ -1,0 +1,33 @@
+# 1. Ver cambios
+git status
+
+# 2. Añadir archivo modificado
+git add index.html
+
+# 3. Crear commit
+git commit -m "Actualizo index.html con nuevos cambios"
+
+# 4. Subir a GitHub
+git push
+
+
+# Borra el fichero
+git rm ruta/del/fichero_grande.ext
+
+# Confirma el cambio
+git commit -m "Elimino fichero grande"
+
+# Sube el cambio a GitHub
+git push origin main
+
+
+OTROS:
+
+git add assets/video/hero-vertical.mp4
+git commit -m "Subo carpeta assets con archivos necesarios"
+git push
+
+ojo que hay orden de no subir mp4, hay que deshacer con -f y -m:
+git add -f assets/video/hero.mp4
+git commit -m "Subo el nuevo hero.mp4 (forzado)"
+git push
