@@ -177,7 +177,14 @@
           #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
         </style>
         <div class="jr-row">
-          <input id="jr-agent-input" type="text" maxlength="500" placeholder="Pregunta algo sobre Innovación o Transferencia… (enter para enviar)" aria-label="Pregunta al agente" />
+          <input id="jr-agent-input" type="text" maxlength="500" placeholder="Indica el área de investigación sobre la que te gustaría obtener información especializada… (enter para enviar)" aria-label="Pregunta al agente" />
+
+
+	  <select id="jr-agent-mode" style="border-radius:999px; padding:10px; font-size:14px;">
+	    <option value="estricto">Estricto</option>
+	    <option value="contextual">Contextual</option>
+	  </select>
+
           <button id="jr-agent-send" type="button">Preguntar</button>
         </div>
         <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
@@ -224,34 +231,50 @@
         const hint = await res.text().catch(() => "");
         throw new Error(`HTTP ${res.status} ${hint}`);
       }
-      const j = await res.json();
-      return j.reply ?? j.message ?? "";
-    }
+	async function askBackend(message, mode = "estricto") {
+	  const res = await fetch(AGENT_ENDPOINT, {
+ 	   method: "POST",
+	    headers: { "Content-Type": "application/json" },
+	    body: JSON.stringify({ message, mode, session_id: "web-1" })
+	  });
+	  if (!res.ok) {
+	    const hint = await res.text().catch(() => "");
+	    throw new Error(`HTTP ${res.status} ${hint}`);
+	  }
+	  const j = await res.json();
+	  return j.reply ?? j.message ?? "";
+	}
 
-    async function handleSend() {
-      hideError();
-      ans.style.display = "none";
-      const q = (input.value || "").trim();
-      if (!q) return;
-      setLoading(true);
-      try {
-	        const reply = await askBackend(q);
-	        showAnswer(reply);
-	      } catch (e) {
-	        console.error(e);
-	        showError(String(e.message || e));
-	      } finally {
-	        setLoading(false);
-	      }
-	    }
+	  async function handleSend() {
+	    hideError();
+	    ans.style.display = "none";
+	    const q = (input.value || "").trim();
+	    if (!q) return;
 
-	    send.addEventListener("click", handleSend);
-	    input.addEventListener("keydown", (ev) => {
-  	    if (ev.key === "Enter") {
-	        ev.preventDefault();
-	        handleSend();
-	      }
-	    });
+	  // 👇 leer el selector de modo
+	  const modeSel = document.getElementById("jr-agent-mode");
+	  const mode = modeSel ? modeSel.value : "estricto";
+
+	  setLoading(true);
+	  try {
+	    const reply = await askBackend(q, mode); // 👈 pasar el modo
+	    showAnswer(reply);
+	  } catch (e) {
+	    console.error(e);
+	    showError(String(e.message || e));
+	  } finally {
+	    setLoading(false);
+	  }
+	}
+
+	send.addEventListener("click", handleSend);
+
+	input.addEventListener("keydown", (ev) => {
+	  if (ev.key === "Enter") {
+	    ev.preventDefault();
+	    handleSend(); // 👈 handleSend ya recoge el modo
+	  }
+	  });
 	  })();
 	</script>
       </div>
