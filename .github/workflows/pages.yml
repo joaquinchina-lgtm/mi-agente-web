@@ -1,0 +1,50 @@
+name: Deploy static site to GitHub Pages (with LFS)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true        # descarga ficheros de Git LFS
+          fetch-depth: 0
+
+      - name: Ensure LFS files are present
+        run: |
+          git lfs install --local
+          git lfs fetch --all
+          git lfs checkout
+
+      - name: Add .nojekyll
+        run: touch .nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .   # publica la raíz (donde está index.html)
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
