@@ -86,14 +86,20 @@
 /* === Ajustes para responsive vertical en móviles === */
    @media (max-width: 767px) {
     .hero {
-      min-height: 50vh;
+      min-height: 42vh;
     }
     .hero h1 {
-      margin: 0 0 50px 0;
+      margin: 0 0 20px 0 !important;  /* clave en móvil */
+    font-size: clamp(22px, 5.5vw, 28px);
+    line-height: 1.2;
     }
     .hero .inner {
-      padding-top: 40px;
-      padding-bottom: 20px;
+      padding-top: 16px;
+      padding-bottom: 12px;
+    }
+    /* opcional: enfoca otra zona del vídeo si quieres “recortar” por arriba/abajo */
+    .hero video {
+    object-position: center 40%;    /* sube el encuadre; prueba 35–50% */
     }
   }
   </style>
