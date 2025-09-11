@@ -96,8 +96,8 @@
       padding-bottom: 20px;
     }
   }
-
   </style>
+
 <head>
   <style>
     .hero h1{
@@ -105,6 +105,7 @@
       line-height: 1.2;
     }
   </style>
+
 </head>
 <body>
 <header>
@@ -155,6 +156,7 @@
     <div class="container">
       <h2 class="section-title">Servicios de Innovación</h2>
 
+
       <!-- === JR · Caja de consulta al agente (discreta) === -->
       <div id="jr-agent-box" class="jr-agent" aria-live="polite">
         <style>
@@ -194,7 +196,7 @@
 <script>
   // === Configura aquí tu endpoint del agente ===
   const AGENT_ENDPOINT = "https://jr-gpt-backend.onrender.com/chat";
-  const JR_KEY = ""; // pon tu clave si tu backend exige Authorization
+  const JR_KEY = ""; // deja vacío salvo que tu backend pida Authorization
 
   (function () {
     const box  = document.getElementById("jr-agent-box");
@@ -218,65 +220,56 @@
       ans.style.display = "block";
     }
 
-    async function askBackend(message) {
+    // --- ÚNICA función: manda message + mode al backend
+    async function askBackend(message, mode = "estricto") {
       const res = await fetch(AGENT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
         },
-        body: JSON.stringify({ message, session_id: "web-1" }),
+        body: JSON.stringify({ message, mode, session_id: "web-1" })
       });
-      if (!res.ok) {
-        const hint = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status} ${hint}`);
+      const raw = await res.text().catch(()=> "");
+      if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+      try {
+        const j = JSON.parse(raw);
+        return j.reply ?? j.message ?? "(sin reply)";
+      } catch {
+        return raw || "(respuesta vacía)";
       }
-	async function askBackend(message, mode = "estricto") {
-	  const res = await fetch(AGENT_ENDPOINT, {
- 	   method: "POST",
-	    headers: { "Content-Type": "application/json" },
-	    body: JSON.stringify({ message, mode, session_id: "web-1" })
-	  });
-	  if (!res.ok) {
-	    const hint = await res.text().catch(() => "");
-	    throw new Error(`HTTP ${res.status} ${hint}`);
-	  }
-	  const j = await res.json();
-	  return j.reply ?? j.message ?? "";
-	}
+    }
 
-	  async function handleSend() {
-	    hideError();
-	    ans.style.display = "none";
-	    const q = (input.value || "").trim();
-	    if (!q) return;
+    async function handleSend() {
+      hideError();
+      ans.style.display = "none";
+      const q = (input.value || "").trim();
+      if (!q) return;
 
-	  // 👇 leer el selector de modo
-	  const modeSel = document.getElementById("jr-agent-mode");
-	  const mode = modeSel ? modeSel.value : "estricto";
+      const modeSel = document.getElementById("jr-agent-mode");
+      const mode = modeSel ? modeSel.value : "estricto";
 
-	  setLoading(true);
-	  try {
-	    const reply = await askBackend(q, mode); // 👈 pasar el modo
-	    showAnswer(reply);
-	  } catch (e) {
-	    console.error(e);
-	    showError(String(e.message || e));
-	  } finally {
-	    setLoading(false);
-	  }
-	}
+      setLoading(true);
+      try {
+        const reply = await askBackend(q, mode);
+        showAnswer(reply);
+      } catch (e) {
+        console.error(e);
+        showError(String(e.message || e));
+      } finally {
+        setLoading(false);
+      }
+    }
 
-	send.addEventListener("click", handleSend);
+    send.addEventListener("click", handleSend);
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
+    });
 
-	input.addEventListener("keydown", (ev) => {
-	  if (ev.key === "Enter") {
-	    ev.preventDefault();
-	    handleSend(); // 👈 handleSend ya recoge el modo
-	  }
-	  });
-	  })();
-	</script>
+    // warm-up para Render
+    fetch("https://jr-gpt-backend.onrender.com/health").catch(()=>{});
+  })();
+</script>
       </div>
       <!-- === /JR · Caja de consulta al agente === -->
 
