@@ -214,121 +214,95 @@
       <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
 
       <script>
-        // === Configuración única del backend ===
-        const BACKEND_BASE       = "https://jr-gpt-backend-1.onrender.com";
-        const AGENT_ENDPOINT     = BACKEND_BASE + "/chat";
-        const REPORT_PDF_ENDPOINT= BACKEND_BASE + "/report/pdf";
-        const JR_KEY             = ""; // si no usas auth propia, déjalo vacío
+  (function(){
+    // === CONFIG ===
+    const BACKEND_BASE        = "https://jr-gpt-backend-1.onrender.com";
+    const AGENT_ENDPOINT      = BACKEND_BASE + "/chat";
+    const REPORT_PDF_ENDPOINT = BACKEND_BASE + "/report/pdf";
+    const JR_KEY = ""; // si no usas auth, déjalo vacío
 
-	// warm-up
-	  fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
-    
+    // === ELEMENTOS ===
+    const box   = document.getElementById("jr-agent-box");
+    const input = box.querySelector("#jr-agent-input");
+    const send  = box.querySelector("#jr-agent-send");
+    const pdf   = box.querySelector("#jr-agent-pdf");
+    const ans   = box.querySelector("#jr-agent-answer");
+    const load  = box.querySelector("#jr-agent-loader");
+    const err   = box.querySelector("#jr-agent-error");
+    const modeSel = document.getElementById("jr-agent-mode");
 
-        document.addEventListener("DOMContentLoaded", () => {
-          // Elementos por ID (sin asumir jerarquía)
-          const box   = document.getElementById("jr-agent-box");
-          const input = document.getElementById("jr-agent-input");
-          const mode  = document.getElementById("jr-agent-mode");
-          const send  = document.getElementById("jr-agent-send");
-          const pdf   = document.getElementById("jr-agent-pdf");
-          const ans   = document.getElementById("jr-agent-answer");
-          const load  = document.getElementById("jr-agent-loader");
-          const err   = document.getElementById("jr-agent-error");
+    // === UI helpers ===
+    function setLoading(on){ load.style.display = on ? "block":"none"; send.disabled = on; if (pdf) pdf.disabled = on; }
+    function showError(m){ err.textContent = m || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block"; }
+    function hideError(){ err.style.display = "none"; }
+    function showAnswer(text){ ans.textContent = text || "(sin respuesta)"; ans.style.display="block"; }
 
-          if (!box) { console.error("[JR] Falta #jr-agent-box en el DOM."); return; }
+    // === Llamadas al backend ===
+    async function askBackend(message, mode){
+      const res = await fetch(AGENT_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", ...(JR_KEY ? { "Authorization": "Bearer "+JR_KEY } : {}) },
+        body: JSON.stringify({ message, mode })
+      });
+      const raw = await res.text().catch(()=> "");
+      if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+      try { const j = JSON.parse(raw); return j.reply ?? j.message ?? raw; }
+      catch { return raw || "(respuesta vacía)"; }
+    }
 
-          // Evita submits si estuviera dentro de un <form>
-          const form = box.closest("form") || box.querySelector("form");
-          if (form) form.addEventListener("submit", (e) => { e.preventDefault(); });
+    async function downloadPDF(message, mode){
+      const res = await fetch(REPORT_PDF_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", ...(JR_KEY ? { "Authorization": "Bearer "+JR_KEY } : {}) },
+        body: JSON.stringify({ message, mode, top_k: 80 })
+      });
+      if (!res.ok) {
+        const raw = await res.text().catch(()=> "");
+        throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      // nombre bonito
+      const q = (message || "informe").toLowerCase().replace(/[^a-z0-9\-_\s]/g,"").replace(/\s+/g,"-").slice(0,60);
+      const ts = new Date().toISOString().replace(/[:.]/g,"-");
+      const name = `${q || "informe"}-${ts}.pdf`;
+      const a = document.createElement("a");
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
 
-          if (send && send.type !== "button") send.type = "button";
-          if (pdf  && pdf.type  !== "button") pdf.type  = "button";
+    // === Handlers ===
+    async function handleSend(){
+      hideError(); ans.style.display = "none";
+      const q = (input.value || "").trim();
+      if (!q) return;
+      const modeVal = modeSel ? modeSel.value : "estricto";
+      setLoading(true);
+      try { const reply = await askBackend(q, modeVal); showAnswer(reply); }
+      catch(e){ console.error(e); showError(String(e.message || e)); }
+      finally { setLoading(false); }
+    }
 
-          function setLoading(on) {
-            if (load) load.style.display = on ? "block" : "none";
-            if (send) send.disabled = on;
-            if (pdf)  pdf.disabled  = on;
-          }
-          function showError(msg) {
-            if (err) { err.textContent = msg || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block"; }
-            console.error("[JR]", msg);
-          }
-          function hideError(){ if (err) err.style.display = "none"; }
-          function showAnswer(text){
-            if (ans) { ans.textContent = text || "(sin respuesta)"; ans.style.display = "block"; }
-          }
+    async function handlePDF(){
+      hideError();
+      const q = (input.value || "").trim();
+      if (!q) { showError("Escribe primero tu consulta para generar el PDF."); return; }
+      const modeVal = modeSel ? modeSel.value : "contextual";
+      setLoading(true);
+      try { await downloadPDF(q, modeVal); }
+      catch(e){ console.error(e); showError(String(e.message || e)); }
+      finally { setLoading(false); }
+    }
 
-          async function ask(message, modeVal) {
-            const res = await fetch(AGENT_ENDPOINT, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {}) },
-              body: JSON.stringify({ message, mode: modeVal, session_id: "web-1" })
-            });
-            const raw = await res.text().catch(()=> "");
-            if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
-            try {
-              const j = JSON.parse(raw);
-              return j.reply ?? j.message ?? "(sin reply)";
-            } catch {
-              return raw || "(respuesta vacía)";
-            }
-          }
+    // === Bind (una sola vez) ===
+    send.addEventListener("click", handleSend);
+    if (pdf) pdf.addEventListener("click", handlePDF);
+    input.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); handleSend(); } });
 
-          async function downloadPDF(message, mode = "contextual", topK = 80) {
-	  const res = await fetch(REPORT_PDF_ENDPOINT, {
-	    method: "POST",
-	    headers: {
-	      "Content-Type": "application/json",
-	      ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
-	    },
- 	   body: JSON.stringify({ message, mode, top_k: topK })
-	  });
-
-	  const raw = await res.text().catch(()=> "");
-	  if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
-
-	  // Relee el body como Blob para descargar
-	  const blob = new Blob([raw ? new TextEncoder().encode(raw) : await res.blob()], { type: "application/pdf" });
-	  const url  = URL.createObjectURL(blob);
-
-	  // nombre de archivo: consulta_saneada + timestamp
-	  const q = (message || "informe_id").toLowerCase().replace(/[^a-z0-9\-_\s]/g,"").replace(/\s+/g,"-").slice(0,60);
-	  const ts = new Date().toISOString().replace(/[:.]/g,"-");
-	  const name = `${q || "informe"}-${ts}.pdf`;
-
-	  const a = document.createElement("a");
-	  a.href = url;
-	  a.download = name;
-	  document.body.appendChild(a);
-	  a.click();
-	  a.remove();
-	  URL.revokeObjectURL(url);
-	}
-
-	  const box  = document.getElementById("jr-agent-box");
-	  const input= box.querySelector("#jr-agent-input");
-	  const pdf  = box.querySelector("#jr-agent-pdf");
-	  const load = box.querySelector("#jr-agent-loader");
-	  const err  = box.querySelector("#jr-agent-error");
-
-	  function setLoading(on){ load.style.display = on ? "block":"none"; if(pdf) pdf.disabled = on; }
-	  function showError(m){ err.textContent = m || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block"; }
-	  function hideError(){ err.style.display = "none"; }
-
-          async function handlePDF(){
-	  hideError();
-	  const q = (input.value || "").trim();
-	  if(!q){ showError("Escribe primero tu consulta para generar el PDF."); return; }
-	  const modeSel = document.getElementById("jr-agent-mode");
-	  const modeVal = modeSel ? modeSel.value : "contextual";
-	  setLoading(true);
-	  try { await downloadPDF(q, modeVal, 80); }
-	  catch(e){ console.error(e); showError(String(e.message || e)); }
-	  finally{ setLoading(false); }
-	}
-	  if (pdf) pdf.addEventListener("click", handlePDF);
-
-      </script>
+    // Warm-up para Render
+    fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
+  })();
+</script>
     </div>
     <!-- === /JR · Caja de consulta al agente === -->
 
