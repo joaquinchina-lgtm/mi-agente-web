@@ -220,6 +220,10 @@
         const REPORT_PDF_ENDPOINT= BACKEND_BASE + "/report/pdf";
         const JR_KEY             = ""; // si no usas auth propia, déjalo vacío
 
+	// warm-up
+	  fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
+    
+
         document.addEventListener("DOMContentLoaded", () => {
           // Elementos por ID (sin asumir jerarquía)
           const box   = document.getElementById("jr-agent-box");
@@ -270,66 +274,60 @@
             }
           }
 
-          async function downloadPDF(message, modeVal) {
-            const res = await fetch(REPORT_PDF_ENDPOINT, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {}) },
-              body: JSON.stringify({ message, mode: modeVal, top_k: 80 })
-            });
-            if (!res.ok) {
-              const raw = await res.text().catch(()=> "");
-              throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
-            }
-            const blob = await res.blob();
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement("a");
-            a.href = url; a.download = "informe_id.pdf";
-            document.body.appendChild(a); a.click(); a.remove();
-            URL.revokeObjectURL(url);
-          }
+          async function downloadPDF(message, mode = "contextual", topK = 80) {
+	  const res = await fetch(REPORT_PDF_ENDPOINT, {
+	    method: "POST",
+	    headers: {
+	      "Content-Type": "application/json",
+	      ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
+	    },
+ 	   body: JSON.stringify({ message, mode, top_k: topK })
+	  });
 
-          async function handleSend() {
-            hideError();
-            if (!input) return showError("No encuentro el campo de texto.");
-            const q = (input.value || "").trim();
-            if (!q) return showError("Escribe tu consulta primero.");
-            const modeVal = (mode?.value || "contextual");
-            setLoading(true);
-            try {
-              const reply = await ask(q, modeVal);
-              showAnswer(reply);
-            } catch (e) {
-              showError(String(e.message || e));
-            } finally {
-              setLoading(false);
-            }
-          }
+	  const raw = await res.text().catch(()=> "");
+	  if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
 
-          async function handlePDF() {
-            hideError();
-            if (!input) return showError("No encuentro el campo de texto.");
-            const q = (input.value || "").trim();
-            if (!q) return showError("Escribe tu consulta para generar el PDF.");
-            const modeVal = (mode?.value || "contextual");
-            setLoading(true);
-            try {
-              await downloadPDF(q, modeVal);
-            } catch (e) {
-              showError(String(e.message || e));
-            } finally {
-              setLoading(false);
-            }
-          }
+	  // Relee el body como Blob para descargar
+	  const blob = new Blob([raw ? new TextEncoder().encode(raw) : await res.blob()], { type: "application/pdf" });
+	  const url  = URL.createObjectURL(blob);
 
-          if (send) send.addEventListener("click", handleSend);
-          if (pdf)  pdf.addEventListener("click", handlePDF);
-          if (input) input.addEventListener("keydown", ev => {
-            if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
-          });
+	  // nombre de archivo: consulta_saneada + timestamp
+	  const q = (message || "informe_id").toLowerCase().replace(/[^a-z0-9\-_\s]/g,"").replace(/\s+/g,"-").slice(0,60);
+	  const ts = new Date().toISOString().replace(/[:.]/g,"-");
+	  const name = `${q || "informe"}-${ts}.pdf`;
 
-          // Warm-up para Render
-          fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
-        });
+	  const a = document.createElement("a");
+	  a.href = url;
+	  a.download = name;
+	  document.body.appendChild(a);
+	  a.click();
+	  a.remove();
+	  URL.revokeObjectURL(url);
+	}
+
+	  const box  = document.getElementById("jr-agent-box");
+	  const input= box.querySelector("#jr-agent-input");
+	  const pdf  = box.querySelector("#jr-agent-pdf");
+	  const load = box.querySelector("#jr-agent-loader");
+	  const err  = box.querySelector("#jr-agent-error");
+
+	  function setLoading(on){ load.style.display = on ? "block":"none"; if(pdf) pdf.disabled = on; }
+	  function showError(m){ err.textContent = m || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block"; }
+	  function hideError(){ err.style.display = "none"; }
+
+          async function handlePDF(){
+	  hideError();
+	  const q = (input.value || "").trim();
+	  if(!q){ showError("Escribe primero tu consulta para generar el PDF."); return; }
+	  const modeSel = document.getElementById("jr-agent-mode");
+	  const modeVal = modeSel ? modeSel.value : "contextual";
+	  setLoading(true);
+	  try { await downloadPDF(q, modeVal, 80); }
+	  catch(e){ console.error(e); showError(String(e.message || e)); }
+	  finally{ setLoading(false); }
+	}
+	  if (pdf) pdf.addEventListener("click", handlePDF);
+
       </script>
     </div>
     <!-- === /JR · Caja de consulta al agente === -->
