@@ -194,37 +194,46 @@
           #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
         </style>
         <div class="jr-row">
-          <input id="jr-agent-input" type="text" maxlength="500" placeholder="Indica el área de investigación sobre la que te gustaría obtener información especializada… (enter para enviar)" aria-label="Pregunta al agente" />
-
+ 	 <input id="jr-agent-input" ... />
 
 	  <select id="jr-agent-mode" style="border-radius:999px; padding:10px; font-size:14px;">
 	    <option value="contextual">Contextual</option>
 	    <option value="estricto">Estricto</option>
 	  </select>
 
-          <button id="jr-agent-send" type="button">Preguntar</button>
-        </div>
+	  <button id="jr-agent-send" type="button">Preguntar</button>
+	  <button id="jr-agent-pdf" type="button" style="background:transparent; color:var(--brand); border:1px solid var(--brand);">
+	    Descargar PDF
+	  </button>
+	</div>
+
         <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
         <div class="jr-loader" id="jr-agent-loader">Pensando…</div>
         <div class="jr-error" id="jr-agent-error">No he podido responder ahora. Inténtalo de nuevo.</div>
         <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
 <script>
   // === Configura aquí tu endpoint del agente ===
-  const AGENT_ENDPOINT = "https://jr-gpt-backend.onrender.com/chat";
+  const AGENT_ENDPOINT = "https://jr-gpt-backend-1.onrender.com/chat";
+  const REPORT_PDF_ENDPOINT = "https://jr-gpt-backend-1.onrender.com/report/pdf";  // <--- NUEVO
   const JR_KEY = ""; // deja vacío salvo que tu backend pida Authorization
+  const BACKEND_BASE = "https://jr-gpt-backend-1.onrender.com";
+  const AGENT_ENDPOINT      = BACKEND_BASE + "/chat";
+  const REPORT_PDF_ENDPOINT = BACKEND_BASE + "/report/pdf";
 
   (function () {
-    const box  = document.getElementById("jr-agent-box");
-    const input= box.querySelector("#jr-agent-input");
-    const send = box.querySelector("#jr-agent-send");
-    const ans  = box.querySelector("#jr-agent-answer");
-    const load = box.querySelector("#jr-agent-loader");
-    const err  = box.querySelector("#jr-agent-error");
+  const box  = document.getElementById("jr-agent-box");
+  const input= box.querySelector("#jr-agent-input");
+  const send = box.querySelector("#jr-agent-send");
+  const pdf  = box.querySelector("#jr-agent-pdf");   // <--- NUEVO
+  const ans  = box.querySelector("#jr-agent-answer");
+  const load = box.querySelector("#jr-agent-loader");
+  const err  = box.querySelector("#jr-agent-error");
 
     function setLoading(on) {
-      load.style.display = on ? "block" : "none";
-      send.disabled = on;
-    }
+  load.style.display = on ? "block" : "none";
+  send.disabled = on;
+  if (pdf) pdf.disabled = on;   // <--- NUEVO
+}
     function showError(msg) {
       err.textContent = msg || "No he podido responder ahora. Inténtalo de nuevo.";
       err.style.display = "block";
@@ -255,6 +264,48 @@
       }
     }
 
+// --- Descargar PDF del backend
+async function downloadPDF(message, mode = "contextual") {
+  const res = await fetch(REPORT_PDF_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
+    },
+    body: JSON.stringify({ message, mode, top_k: 80 })
+  });
+  if (!res.ok) {
+    const raw = await res.text().catch(()=> "");
+    throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+  }
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = "informe_id.pdf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function handlePDF() {
+  hideError();
+  const q = (input.value || "").trim();
+  if (!q) { showError("Escribe primero tu consulta para generar el PDF."); return; }
+  const modeSel = document.getElementById("jr-agent-mode");
+  const modeVal = modeSel ? modeSel.value : "contextual";
+  setLoading(true);
+  try {
+    await downloadPDF(q, modeVal);
+  } catch (e) {
+    console.error(e);
+    showError(String(e.message || e));
+  } finally {
+    setLoading(false);
+  }
+}
+
     async function handleSend() {
       hideError();
       ans.style.display = "none";
@@ -277,13 +328,13 @@
     }
 
     send.addEventListener("click", handleSend);
-    input.addEventListener("keydown", (ev) => {
-      if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
-    });
+if (pdf) pdf.addEventListener("click", handlePDF);   // <--- NUEVO
+input.addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
+});
 
     // warm-up para Render
-    fetch("https://jr-gpt-backend.onrender.com/health").catch(()=>{});
-  })();
+    fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
 </script>
       </div>
       <!-- === /JR · Caja de consulta al agente === -->
