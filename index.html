@@ -86,10 +86,10 @@
 /* === Ajustes para responsive vertical en móviles === */
    @media (max-width: 767px) {
     .hero {
-      min-height: 45vh;
+      min-height: 50vh;
     }
     .hero h1 {
-      margin: 0 0 60px 0 !important;  /* clave en móvil */
+      margin: 0 0 300px 0 !important;  /* clave en móvil */
     font-size: clamp(22px, 5.5vw, 28px);
     line-height: 1.2;
     }
@@ -99,7 +99,7 @@
     }
     /* opcional: enfoca otra zona del vídeo si quieres “recortar” por arriba/abajo */
     .hero video {
-    object-position: center 50%;    /* sube el encuadre; prueba 40–60% */
+    object-position: center 70%;    /* sube el encuadre; prueba 40–60% */
     }
   }
   </style>
@@ -167,223 +167,223 @@
   </div>
 </section>
 
-  <section id="innovacion">
-    <div class="container">
-      <h2 class="section-title">Servicios de Innovación</h2>
+<section id="innovacion">
+  <div class="container">
+    <h2 class="section-title">Servicios de Innovación</h2>
 
+    <!-- === JR · Caja de consulta al agente (discreta) === -->
+    <div id="jr-agent-box" class="jr-agent" aria-live="polite">
+      <style>
+        /* Caja discreta para el agente en Innovación */
+        #jr-agent-box.jr-agent{
+          --line:#e5e7eb; --muted:#6b7280; --ink:#0b1324; --bg:#ffffff; --brand:#0ea5e9;
+          border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
+          box-shadow:0 10px 18px rgba(2,6,23,.04); margin:10px 0 6px 0;
+        }
+        #jr-agent-box .jr-row{display:flex; gap:10px; align-items:stretch}
+        #jr-agent-box input[type="text"]{
+          flex:1; border:1px solid var(--line); border-radius:999px; padding:11px 14px; font-size:14px; outline:none;
+        }
+        #jr-agent-box input[type="text"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+        #jr-agent-box select{
+          border:1px solid var(--line); border-radius:999px; padding:10px; font-size:14px; background:#fff;
+        }
+        #jr-agent-box button{border:none; background:var(--brand); color:#fff; border-radius:999px; padding:11px 14px; font-weight:600; cursor:pointer}
+        #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
+        #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
+        #jr-agent-box .jr-answer{display:none; margin-top:10px; font-size:14px; color:#111827; border-top:1px dashed var(--line); padding-top:10px; white-space:pre-wrap}
+        #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
+        #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
+      </style>
 
-      <!-- === JR · Caja de consulta al agente (discreta) === -->
-      <div id="jr-agent-box" class="jr-agent" aria-live="polite">
-        <style>
-          /* Caja discreta para el agente en Innovación */
-          #jr-agent-box.jr-agent{
-            --line:#e5e7eb; --muted:#6b7280; --ink:#0b1324; --bg:#ffffff; --brand:#0ea5e9;
-            border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
-            box-shadow:0 10px 18px rgba(2,6,23,.04); margin:10px 0 6px 0;
-          }
-          #jr-agent-box .jr-row{display:flex; gap:10px; align-items:stretch}
-          #jr-agent-box input[type="text"]{
-            flex:1; border:1px solid var(--line); border-radius:999px; padding:11px 14px; font-size:14px; outline:none;
-          }
-          #jr-agent-box input[type="text"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(14,165,233,.15)}
-          #jr-agent-box button{border:none; background:var(--brand); color:#fff; border-radius:999px; padding:11px 14px; font-weight:600; cursor:pointer}
-          #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
-          #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
-          #jr-agent-box .jr-answer{display:none; margin-top:10px; font-size:14px; color:#111827; border-top:1px dashed var(--line); padding-top:10px}
-          #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
-          #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
-        </style>
-        <div class="jr-row">
- 	 <input id="jr-agent-input" ... />
-
-	  <select id="jr-agent-mode" style="border-radius:999px; padding:10px; font-size:14px;">
-	    <option value="contextual">Contextual</option>
-	    <option value="estricto">Estricto</option>
-	  </select>
-
-	  <button id="jr-agent-send" type="button">Preguntar</button>
-	  <button id="jr-agent-pdf" type="button" style="background:transparent; color:var(--brand); border:1px solid var(--brand);">
-	    Descargar PDF
-	  </button>
-	</div>
-
-        <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
-        <div class="jr-loader" id="jr-agent-loader">Pensando…</div>
-        <div class="jr-error" id="jr-agent-error">No he podido responder ahora. Inténtalo de nuevo.</div>
-        <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
-<script>
-  // === Configura aquí tu endpoint del agente ===
-  const BACKEND_BASE = "https://jr-gpt-backend-1.onrender.com";
-  const AGENT_ENDPOINT = BACKEND_BASE + "/chat";
-  const REPORT_PDF_ENDPOINT = BACKEND_BASE + "/report/pdf";  // <--- NUEVO
-  const JR_KEY = ""; // deja vacío salvo que tu backend pida Authorization
-
-  (function () {
-  const box  = document.getElementById("jr-agent-box");
-  const input= box.querySelector("#jr-agent-input");
-  const send = box.querySelector("#jr-agent-send");
-  const pdf  = box.querySelector("#jr-agent-pdf");   // <--- NUEVO
-  const ans  = box.querySelector("#jr-agent-answer");
-  const load = box.querySelector("#jr-agent-loader");
-  const err  = box.querySelector("#jr-agent-error");
-
-    function setLoading(on) {
-  load.style.display = on ? "block" : "none";
-  send.disabled = on;
-  if (pdf) pdf.disabled = on;   // <--- NUEVO
-}
-    function showError(msg) {
-      err.textContent = msg || "No he podido responder ahora. Inténtalo de nuevo.";
-      err.style.display = "block";
-    }
-    function hideError() { err.style.display = "none"; }
-    function showAnswer(text) {
-      ans.textContent = text || "(sin respuesta)";
-      ans.style.display = "block";
-    }
-
-    // --- ÚNICA función: manda message + mode al backend
-    async function askBackend(message, mode = "estricto") {
-      const res = await fetch(AGENT_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
-        },
-        body: JSON.stringify({ message, mode, session_id: "web-1" })
-      });
-      const raw = await res.text().catch(()=> "");
-      if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
-      try {
-        const j = JSON.parse(raw);
-        return j.reply ?? j.message ?? "(sin reply)";
-      } catch {
-        return raw || "(respuesta vacía)";
-      }
-    }
-
-// --- Descargar PDF del backend
-async function downloadPDF(message, mode = "contextual") {
-  const res = await fetch(REPORT_PDF_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {})
-    },
-    body: JSON.stringify({ message, mode, top_k: 80 })
-  });
-  if (!res.ok) {
-    const raw = await res.text().catch(()=> "");
-    throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
-  }
-  const blob = await res.blob();
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href = url;
-  a.download = "informe_id.pdf";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-async function handlePDF() {
-  hideError();
-  const q = (input.value || "").trim();
-  if (!q) { showError("Escribe primero tu consulta para generar el PDF."); return; }
-  const modeSel = document.getElementById("jr-agent-mode");
-  const modeVal = modeSel ? modeSel.value : "contextual";
-  setLoading(true);
-  try {
-    await downloadPDF(q, modeVal);
-  } catch (e) {
-    console.error(e);
-    showError(String(e.message || e));
-  } finally {
-    setLoading(false);
-  }
-}
-
-    async function handleSend() {
-      hideError();
-      ans.style.display = "none";
-      const q = (input.value || "").trim();
-      if (!q) return;
-
-      const modeSel = document.getElementById("jr-agent-mode");
-      const mode = modeSel ? modeSel.value : "estricto";
-
-      setLoading(true);
-      try {
-        const reply = await askBackend(q, mode);
-        showAnswer(reply);
-      } catch (e) {
-        console.error(e);
-        showError(String(e.message || e));
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    send.addEventListener("click", handleSend);
-if (pdf) pdf.addEventListener("click", handlePDF);   // <--- NUEVO
-input.addEventListener("keydown", (ev) => {
-  if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
-});
-
-    // warm-up para Render
-    fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
-</script>
+      <div class="jr-row">
+        <input id="jr-agent-input" type="text" placeholder="Ej.: energía fotovoltaica en Navarra" autocomplete="off" />
+        <select id="jr-agent-mode">
+          <option value="contextual" selected>Contextual</option>
+          <option value="estricto">Estricto</option>
+        </select>
+        <button id="jr-agent-send" type="button">Preguntar</button>
+        <button id="jr-agent-pdf" type="button" style="background:transparent; color:var(--brand); border:1px solid var(--brand);">
+          Descargar PDF
+        </button>
       </div>
-      <!-- === /JR · Caja de consulta al agente === -->
 
-      <p class="section-sub">Los servicios utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades y centros de I+D en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
+      <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
+      <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Pensando…</div>
+      <div class="jr-error" id="jr-agent-error" role="alert"></div>
+      <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
 
-Todos los programas son ágiles, adaptados a la cultura de cada organización, y fomentan una transferencia de conocimiento más productiva.
-.</p>
-      <div class="grid cols-3" style="margin-top:18px;">
-        <div class="card">
-          <div class="media">
-		<video autoplay muted loop playsinline>
-    		<source src="assets/video/02.mp4" type="video/mp4">
-    		Tu navegador no soporta video HTML5.
-  	</video>
-	</div>
-          <div class="body">
-            <span class="pill">Universidades y centros de I+D</span>
-            <h3>Reactor de Transferencia</h3>
-            <p>Programa que conecta problemas reales complejos con investigadores/as, empresas e IPs sénior, impulsando una transferencia de investigación más efectiva hacia soluciones escalables de alto impacto y con acceso a financiación.</p>
-          </div>
+      <script>
+        // === Configuración única del backend ===
+        const BACKEND_BASE       = "https://jr-gpt-backend-1.onrender.com";
+        const AGENT_ENDPOINT     = BACKEND_BASE + "/chat";
+        const REPORT_PDF_ENDPOINT= BACKEND_BASE + "/report/pdf";
+        const JR_KEY             = ""; // si no usas auth propia, déjalo vacío
+
+        document.addEventListener("DOMContentLoaded", () => {
+          // Elementos por ID (sin asumir jerarquía)
+          const box   = document.getElementById("jr-agent-box");
+          const input = document.getElementById("jr-agent-input");
+          const mode  = document.getElementById("jr-agent-mode");
+          const send  = document.getElementById("jr-agent-send");
+          const pdf   = document.getElementById("jr-agent-pdf");
+          const ans   = document.getElementById("jr-agent-answer");
+          const load  = document.getElementById("jr-agent-loader");
+          const err   = document.getElementById("jr-agent-error");
+
+          if (!box) { console.error("[JR] Falta #jr-agent-box en el DOM."); return; }
+
+          // Evita submits si estuviera dentro de un <form>
+          const form = box.closest("form") || box.querySelector("form");
+          if (form) form.addEventListener("submit", (e) => { e.preventDefault(); });
+
+          if (send && send.type !== "button") send.type = "button";
+          if (pdf  && pdf.type  !== "button") pdf.type  = "button";
+
+          function setLoading(on) {
+            if (load) load.style.display = on ? "block" : "none";
+            if (send) send.disabled = on;
+            if (pdf)  pdf.disabled  = on;
+          }
+          function showError(msg) {
+            if (err) { err.textContent = msg || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block"; }
+            console.error("[JR]", msg);
+          }
+          function hideError(){ if (err) err.style.display = "none"; }
+          function showAnswer(text){
+            if (ans) { ans.textContent = text || "(sin respuesta)"; ans.style.display = "block"; }
+          }
+
+          async function ask(message, modeVal) {
+            const res = await fetch(AGENT_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {}) },
+              body: JSON.stringify({ message, mode: modeVal, session_id: "web-1" })
+            });
+            const raw = await res.text().catch(()=> "");
+            if (!res.ok) throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+            try {
+              const j = JSON.parse(raw);
+              return j.reply ?? j.message ?? "(sin reply)";
+            } catch {
+              return raw || "(respuesta vacía)";
+            }
+          }
+
+          async function downloadPDF(message, modeVal) {
+            const res = await fetch(REPORT_PDF_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...(JR_KEY ? { "Authorization": "Bearer " + JR_KEY } : {}) },
+              body: JSON.stringify({ message, mode: modeVal, top_k: 80 })
+            });
+            if (!res.ok) {
+              const raw = await res.text().catch(()=> "");
+              throw new Error(`HTTP ${res.status} · ${raw || "(sin body)"}`);
+            }
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement("a");
+            a.href = url; a.download = "informe_id.pdf";
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+          }
+
+          async function handleSend() {
+            hideError();
+            if (!input) return showError("No encuentro el campo de texto.");
+            const q = (input.value || "").trim();
+            if (!q) return showError("Escribe tu consulta primero.");
+            const modeVal = (mode?.value || "contextual");
+            setLoading(true);
+            try {
+              const reply = await ask(q, modeVal);
+              showAnswer(reply);
+            } catch (e) {
+              showError(String(e.message || e));
+            } finally {
+              setLoading(false);
+            }
+          }
+
+          async function handlePDF() {
+            hideError();
+            if (!input) return showError("No encuentro el campo de texto.");
+            const q = (input.value || "").trim();
+            if (!q) return showError("Escribe tu consulta para generar el PDF.");
+            const modeVal = (mode?.value || "contextual");
+            setLoading(true);
+            try {
+              await downloadPDF(q, modeVal);
+            } catch (e) {
+              showError(String(e.message || e));
+            } finally {
+              setLoading(false);
+            }
+          }
+
+          if (send) send.addEventListener("click", handleSend);
+          if (pdf)  pdf.addEventListener("click", handlePDF);
+          if (input) input.addEventListener("keydown", ev => {
+            if (ev.key === "Enter") { ev.preventDefault(); handleSend(); }
+          });
+
+          // Warm-up para Render
+          fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
+        });
+      </script>
+    </div>
+    <!-- === /JR · Caja de consulta al agente === -->
+
+    <p class="section-sub">
+      Los servicios utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades y centros de I+D en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
+      <br>Todos los programas son ágiles, adaptados a la cultura de cada organización, y fomentan una transferencia de conocimiento más productiva.
+    </p>
+
+    <div class="grid cols-3" style="margin-top:18px;">
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline>
+            <source src="assets/video/02.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
         </div>
-        <div class="card">
-          <div class="media">
-		<video autoplay muted loop playsinline>
-    		<source src="assets/video/03.mp4" type="video/mp4">
-    		Tu navegador no soporta video HTML5.
-  	</video>
-	</div>
-          <div class="body">
-            <span class="pill">Industria (multi-sector)</span>
-            <h3>Reactor de Innovación</h3>
-            <p>Servicio para empresas que hace más productiva su inversión en I+D, mediante la conexión con el conocimiento multi-disciplinar disponible, generando valor y cultura organizacional innovadora.</p>
-          </div>
+        <div class="body">
+          <span class="pill">Universidades y centros de I+D</span>
+          <h3>Reactor de Transferencia</h3>
+          <p>Programa que conecta problemas reales complejos con investigadores/as, empresas e IPs sénior, impulsando una transferencia de investigación más efectiva hacia soluciones escalables de alto impacto y con acceso a financiación.</p>
         </div>
-        <div class="card">
-          <div class="media">
-		<video autoplay muted loop playsinline>
-    		<source src="assets/video/04.mp4" type="video/mp4">
-    		Tu navegador no soporta video HTML5.
-  	</video>
-	</div>
-          <div class="body">
-            <span class="pill">Administraciones públicas y tercer sector</span>
-            <h3>Rediseño de servicios</h3>
-            <p>Rediseño de servicios públicos y sociales desde la experiencia de usuario, emdiante procesos de inteligencia colectiva que convierten necesidades reales en soluciones operativas y escalables.</p>
-          </div>
+      </div>
+
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline>
+            <source src="assets/video/03.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector)</span>
+          <h3>Reactor de Innovación</h3>
+          <p>Servicio para empresas que hace más productiva su inversión en I+D, mediante la conexión con el conocimiento multi-disciplinar disponible, generando valor y cultura organizacional innovadora.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline>
+            <source src="assets/video/04.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Administraciones públicas y tercer sector</span>
+          <h3>Rediseño de servicios</h3>
+          <p>Rediseño de servicios públicos y sociales desde la experiencia de usuario, mediante procesos de inteligencia colectiva que convierten necesidades reales en soluciones operativas y escalables.</p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <section id="estrategia">
     <div class="container">
