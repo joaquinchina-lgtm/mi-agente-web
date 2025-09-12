@@ -86,20 +86,20 @@
 /* === Ajustes para responsive vertical en móviles === */
    @media (max-width: 767px) {
     .hero {
-      min-height: 42vh;
+      min-height: 45vh;
     }
     .hero h1 {
-      margin: 0 0 40px 0 !important;  /* clave en móvil */
+      margin: 0 0 60px 0 !important;  /* clave en móvil */
     font-size: clamp(22px, 5.5vw, 28px);
     line-height: 1.2;
     }
     .hero .inner {
-      padding-top: 25px;
-      padding-bottom: 16px;
+      padding-top: 30px;
+      padding-bottom: 20px;
     }
     /* opcional: enfoca otra zona del vídeo si quieres “recortar” por arriba/abajo */
     .hero video {
-    object-position: center 40%;    /* sube el encuadre; prueba 35–50% */
+    object-position: center 50%;    /* sube el encuadre; prueba 40–60% */
     }
   }
   </style>
@@ -213,12 +213,10 @@
         <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
 <script>
   // === Configura aquí tu endpoint del agente ===
-  const AGENT_ENDPOINT = "https://jr-gpt-backend-1.onrender.com/chat";
-  const REPORT_PDF_ENDPOINT = "https://jr-gpt-backend-1.onrender.com/report/pdf";  // <--- NUEVO
-  const JR_KEY = ""; // deja vacío salvo que tu backend pida Authorization
   const BACKEND_BASE = "https://jr-gpt-backend-1.onrender.com";
-  const AGENT_ENDPOINT      = BACKEND_BASE + "/chat";
-  const REPORT_PDF_ENDPOINT = BACKEND_BASE + "/report/pdf";
+  const AGENT_ENDPOINT = BACKEND_BASE + "/chat";
+  const REPORT_PDF_ENDPOINT = BACKEND_BASE + "/report/pdf";  // <--- NUEVO
+  const JR_KEY = ""; // deja vacío salvo que tu backend pida Authorization
 
   (function () {
   const box  = document.getElementById("jr-agent-box");
@@ -354,7 +352,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
           <div class="body">
             <span class="pill">Universidades y centros de I+D</span>
             <h3>Reactor de Transferencia</h3>
-            <p>Prototipos ligeros que reducen riesgo y coste, atrayendo inversión y creando valor en el tejido económico.</p>
+            <p>Programa que conecta problemas reales complejos con investigadores/as, empresas e IPs sénior, impulsando una transferencia de investigación más efectiva hacia soluciones escalables de alto impacto y con acceso a financiación.</p>
           </div>
         </div>
         <div class="card">
@@ -367,7 +365,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
           <div class="body">
             <span class="pill">Industria (multi-sector)</span>
             <h3>Reactor de Innovación</h3>
-            <p>Casos de uso industriales, escalables, orientados a resultados y a la cultura de cada organización.</p>
+            <p>Servicio para empresas que hace más productiva su inversión en I+D, mediante la conexión con el conocimiento multi-disciplinar disponible, generando valor y cultura organizacional innovadora.</p>
           </div>
         </div>
         <div class="card">
@@ -380,7 +378,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
           <div class="body">
             <span class="pill">Administraciones públicas y tercer sector</span>
             <h3>Rediseño de servicios</h3>
-            <p>Co‑diseño con usuarios y empleados públicos, desde la inteligencia colectiva.</p>
+            <p>Rediseño de servicios públicos y sociales desde la experiencia de usuario, emdiante procesos de inteligencia colectiva que convierten necesidades reales en soluciones operativas y escalables.</p>
           </div>
         </div>
       </div>
@@ -400,7 +398,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Industria (multi-sector)</span>
-            <h3>Estrategia dinámica con equipos directivos</h3><p>Diseño de estrategias de impacto con equipos directivos.</p></div>
+            <h3>Estrategia dinámica con equipos directivos</h3><p>De plan fijo a estrategia viva con el equipo directivo: ciclos cortos, foco y decisiones basadas en evidencias para ganar músculo estratégico y fortalecer la capacidad de adaptación de toda la organización.</p></div>
         </div>
         <div class="card">
           <div class="media">
@@ -411,7 +409,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Industria (multi-sector)</span>
-            <h3>Agenda y despliegue traccionado de la estrategia</h3><p>Programa de agenda estratégica.</p></div>
+            <h3>Agenda y despliegue traccionado de la estrategia</h3><p>Alineamiento de agendas de equipos que abren tiempo a explorar y decidir, aterrizando la estrategia en rutinas semanales hasta volverla un hábito cotidiano.</p></div>
         </div>
         <div class="card">
           <div class="media">
@@ -422,7 +420,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Administraciones públicas y tercer sector</span>
-            <h3>Estrategia desde la inteligencia colectiva</h3><p>Programa de 6 meses.</p></div>
+            <h3>Estrategia desde la inteligencia colectiva</h3><p>Programa ligero con equipos de usuarios y gestores públicos que, desde la previsión de futuros, co-diseña la estrategia, las políticas y los servicios de la organización.</p></div>
 	</div>
       </div>
     </div>
@@ -442,7 +440,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Industria (multi-sector) y Universidades</span>
-            <h3>Modelo de liderazgo</h3><p>Enfoque común que refuerza competencias directivas, tracciona equipos y alinea la gestión con la estrategia.</p></div>
+            <h3>Modelo de liderazgo</h3><p>Definición de líneas de enfoque común que refuerzan las competencias directivas, traccionan equipos y alinean la gestión con la estrategia.</p></div>
         </div>
         <div class="card">
           <div class="media">
@@ -453,7 +451,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Industria (multi-sector) y Universidades</span>
-            <h3>Programas de capacitación ejecutiva</h3><p>Evaluación del modelo, y diseño del programa personalizado de capacitación.</p></div>
+            <h3>Programas de capacitación ejecutiva</h3><p>Programa personalizado de capacitación de los equipos de líderes para la transformación efectiva de la cultura de la organización.</p></div>
         </div>
         <div class="card">
           <div class="media">
@@ -464,7 +462,7 @@ Todos los programas son ágiles, adaptados a la cultura de cada organización, y
 	</div>
           <div class="body">
             <span class="pill">Industria (multi-sector) y Universidades</span>
-            <h3>Plan de acción transformacional</h3><p>Implantación de píldoras de formación, y diseño de sistemas de comunicación interna, programas de reorganización, agilidad, etc..</p></div>
+            <h3>Plan de acción transformacional</h3><p>Implantación de píldoras de formación y diseño de sistemas de comunicación interna, programas de reorganización, agilidad, etc.</p></div>
         </div>
       </div>
     </div>
