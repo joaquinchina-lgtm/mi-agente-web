@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="es">
 <head>
+<script>
+  window.BACKEND = "https://jr-gpt-backend-1.onrender.com";  <!-- pon tu URL real -->
+</script>
 <link rel="icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <meta charset="utf-8" />
@@ -125,12 +128,9 @@
 
 <style>
   /* Oculta el botón que dispara /api/ask */
-  #jr-agent-send { display: none !important; }
+  #jr-agent-send { display: none!important; }
 </style>
 
-<script>
-  window.BACKEND = "https://jr-gpt-backend-1.onrender.com";  /* cambia si tu URL es otra */
-</script>
 
 </head>
 <body>
@@ -230,7 +230,7 @@
   (function(){
     const BACKEND_BASE        = window.BACKEND || "https://jr-gpt-backend-1.onrender.com";
     const ASK_ENDPOINT        = BACKEND_BASE + "/api/rag";
-    const RETRIEVE_ENDPOINT   = BACKEND_BASE + "/api/retrieve";
+    const RETRIEVE_ENDPOINT   = BACKEND_BASE + "/api/rag";
     const JR_KEY = "";
 
     const box   = document.getElementById("jr-agent-box");
@@ -271,7 +271,7 @@
       const res = await fetch(ASK_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type":"application/json", ...(JR_KEY ? { "Authorization": "Bearer "+JR_KEY } : {}) },
-        body: JSON.stringify({ message: textoDelInput, temperature: 0.2 })
+        body: JSON.stringify({ query: textoDelInput, temperature: 0.2 })
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const j = await res.json();
@@ -282,8 +282,7 @@
       const res = await fetch(RETRIEVE_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type":"application/json", ...(JR_KEY ? { "Authorization": "Bearer "+JR_KEY } : {}) },
-        body: JSON.stringify({
-          query, k: 6, time_range: "y", search_depth: "advanced", language: "es",
+        body: JSON.stringify({ query, k: 6, time_range: "y", search_depth: "advanced", language: "es",
           temperature: 0.2, top_p: 1.0, system: "Eres un analista que sintetiza evidencias y cita fuentes."
         })
       });
