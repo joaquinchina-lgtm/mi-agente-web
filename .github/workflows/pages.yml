@@ -17,11 +17,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (with Git LFS)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
           fetch-depth: 0
+
+      - name: Pull Git LFS
+        run: |
+          git lfs install
+          git lfs pull
 
       - name: Ensure Git LFS objects are pulled
         run: |
