@@ -183,9 +183,9 @@
     <h2 class="section-title">Servicios de Innovación</h2>
 
     <!-- === JR · Caja de consulta al agente (discreta) === -->
+
 <div id="jr-agent-box" class="jr-agent" aria-live="polite">
   <style>
-    /* Caja discreta para el agente */
     #jr-agent-box.jr-agent{
       --line:#e5e7eb; --muted:#6b7280; --ink:#0b1324; --bg:#ffffff; --brand:#0ea5e9;
       border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
@@ -201,175 +201,150 @@
     }
     #jr-agent-box .jr-actions{display:flex; gap:10px; width:100%}
     #jr-agent-box .jr-actions button{
-      flex:1; border:1px solid transparent; background:var(--brand); color:#fff; border-radius:999px; padding:12px 14px; font-weight:600; cursor:pointer; min-height:44px;
-    }
-    #jr-agent-box .jr-actions button.secondary{
-      background:transparent; color:var(--brand); border-color:var(--brand);
-    }
+      flex:1; border:1px solid transparent; background:var(--brand); color:#fff; border-radius:999px; padding:12px 14px; font-weight:600; cursor:pointer; min-height:44px; }
+    #jr-agent-box .jr-actions button.secondary{ background:transparent; color:var(--brand); border-color:var(--brand); }
     #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
     #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
-    #jr-agent-box .jr-answer{display:none; margin-top:10px; font-size:14px; color:#111827; border-top:1px dashed var(--line); padding-top:10px; white-space:pre-wrap}
     #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
     #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
-
-    /* — Responsive vertical (móvil): input y select arriba, botones debajo — */
-    @media (max-width:767px){
-      #jr-agent-box .jr-row{flex-direction:column}
-      #jr-agent-box input[type="text"], #jr-agent-box select{width:100%}
-      #jr-agent-box .jr-actions{flex-direction:column}
-    }
+    #jr-agent-results{ margin-top: 14px; }
+    .result-card{ background:#fff; border:1px solid #e5e7eb; border-radius: 14px; padding: 12px 14px; margin: 10px 0; }
+    .result-card h4{ margin: 0 0 6px 0; }
+    .kv{ margin: 2px 0; color:#374151; }
+    .kv span{ color:#111827; font-weight:600; }
+    .smallmuted{ color:#6b7280; font-size:13px; }
+    .summary{ background:#f9fafb; border:1px dashed #e5e7eb; padding:10px 12px; border-radius:12px; }
+    @media (max-width:767px){ #jr-agent-box .jr-row{flex-direction:column} #jr-agent-box .jr-actions{flex-direction:column} }
   </style>
 
   <div class="jr-row">
     <input id="jr-agent-input" type="text"
-      placeholder='Introduce el área de I+D en la que tienes interés (ej. "renovables")'
+      placeholder='Introduce el área de I+D (ej.: "renovables", "machine learning", "ensayos clínicos")'
       autocomplete="off" />
-    <select id="jr-agent-mode" aria-label="Modo de respuesta">
+    <select id="jr-agent-mode" aria-label="Modo de búsqueda">
       <option value="contextual" selected>Contextual</option>
-      <option value="estricto">Estricto</option>
+      <option value="estricto">Literal</option>
     </select>
-
+    <select id="jr-agent-scope" aria-label="Ámbito">
+      <option value="ambas" selected>Columnas 2 y 3</option>
+      <option value="col2">Sólo columna 2 (Grupo)</option>
+      <option value="col3">Sólo columna 3 (Líneas)</option>
+    </select>
     <div class="jr-actions">
-      <button id="jr-agent-retrieve" type="button">Preguntar</button>
-      <button id="jr-agent-pdf" type="button" class="secondary">Descargar PDF</button>
+      <button id="jr-agent-retrieve" type="button">Buscar</button>
+      <button id="jr-agent-pdf" type="button" class="secondary">Imprimir PDF</button>
     </div>
   </div>
 
-  <div class="jr-hint">Responde en segundos. Privado y sin guardar datos personales.</div>
-  <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Pensando…</div>
+  <div class="jr-hint">Busca exclusivamente en CSV del backend (carpeta <code>knowledge/</code>). Muestra todas las coincidencias.</div>
+  <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Buscando…</div>
   <div class="jr-error" id="jr-agent-error" role="alert"></div>
-  <div class="jr-answer" id="jr-agent-answer" role="region" aria-label="Respuesta del agente"></div>
+  <div id="jr-agent-results" role="region" aria-label="Resultados del buscador"></div>
 
-  <!-- Script se pega tal cual del paso 2 -->
-  <script id="jr-agent-script"></script>
+  <script>
+  (function(){
+    const BACKEND_BASE = window.BACKEND || window.location.origin;
+    const norm = (s) => (s||"").toString().trim();
+
+    function formatURL(u){
+      const s = (u||'').trim();
+      if (!s) return '';
+      if (/^https?:\/\//i.test(s)) return s;
+      return 'https://' + s.replace(/^\/+/, '');
+    }
+
+    function renderResults(q, data){
+      const wrap = document.getElementById('jr-agent-results');
+      if (!wrap) return;
+      wrap.innerHTML = '';
+      const summary = document.createElement('div');
+      summary.className = 'summary';
+      summary.innerHTML = `<strong>Resumen:</strong> Se han encontrado <strong>${data.total}</strong> fichas relacionadas con "<em>${q}</em>" en <strong>${data.files.length}</strong> fichero(s): ${data.files.join(', ')}.`;
+      wrap.appendChild(summary);
+
+      for (const item of data.items){
+        const card = document.createElement('div');
+        card.className = 'result-card';
+        card.innerHTML = `
+          <h4>1. Grupos de investigación</h4>
+          <div class="kv">• <span>${item.col2 || ''}</span></div>
+          ${item.col4 ? `<div class="kv">• Responsable: <span>${item.col4}</span></div>` : ''}
+          ${item.col5 ? `<div class="kv">• Personal de investigación: <span>${item.col5}</span></div>` : ''}
+          ${item.col6 ? `<div class="kv">• Correo: <span><a href="mailto:${item.col6}">${item.col6}</a></span></div>` : ''}
+          ${item.col7 ? `<div class="kv">• Teléfono: <span>${item.col7}</span></div>` : ''}
+          ${item.col1 ? `<div class="kv">• ${item.col1}</div>` : ''}
+          ${item.col8 ? `<div class="kv">• WEB: <a href="${formatURL(item.col8)}" target="_blank" rel="noopener">${item.col8}</a></div>` : ''}
+          <h4 style="margin-top:10px;">2. Líneas de investigación</h4>
+          ${item.col3 ? `<div class="kv">• ${item.col3}</div>` : '<div class="kv smallmuted">• (Sin líneas registradas)</div>'}
+          <div class="smallmuted" style="margin-top:6px;">Fuente: ${item.file}</div>
+        `;
+        wrap.appendChild(card);
+      }
+    }
+
+    (function(){
+      const box = document.getElementById('jr-agent-box');
+      const input = box?.querySelector('#jr-agent-input');
+      const btn = box?.querySelector('#jr-agent-retrieve');
+      const btnPDF = box?.querySelector('#jr-agent-pdf');
+      const loader = box?.querySelector('#jr-agent-loader');
+      const err = box?.querySelector('#jr-agent-error');
+      const modeSel = box?.querySelector('#jr-agent-mode');
+      const scopeSel = box?.querySelector('#jr-agent-scope');
+
+      function setLoading(on){
+        if (loader) loader.style.display = on ? 'block' : 'none';
+        if (btn) btn.disabled = on;
+        if (btnPDF) btnPDF.disabled = on;
+      }
+      function showError(msg){
+        if (!err) return;
+        err.textContent = msg || 'Ha ocurrido un error.';
+        err.style.display = 'block';
+      }
+      function hideError(){ if (err) err.style.display = 'none'; }
+
+      async function doSearch(){
+        hideError();
+        const qRaw = norm(input?.value);
+        if (!qRaw) return;
+        setLoading(true);
+        try {
+          const url = new URL('/api/csv_search', BACKEND_BASE);
+          url.searchParams.set('query', qRaw);
+          url.searchParams.set('mode', modeSel?.value || 'contextual');
+          url.searchParams.set('scope', scopeSel?.value || 'ambas');
+          const res = await fetch(url.toString(), { method: 'GET', headers: { 'Accept': 'application/json' } });
+          if (!res.ok) throw new Error('Error ' + res.status + ' al consultar el backend');
+          const data = await res.json();
+          renderResults(qRaw, data);
+        } catch(e){
+          console.error(e);
+          showError(String(e.message || e));
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      function doPDF(){
+        const qRaw = norm(input?.value);
+        if (!qRaw){ showError('Primero escribe una consulta.'); return; }
+        const url = new URL('/api/csv_report', BACKEND_BASE);
+        url.searchParams.set('query', qRaw);
+        url.searchParams.set('mode', modeSel?.value || 'contextual');
+        url.searchParams.set('scope', scopeSel?.value || 'ambas');
+        window.open(url.toString(), '_blank', 'noopener');
+      }
+
+      btn?.addEventListener('click', doSearch);
+      btnPDF?.addEventListener('click', doPDF);
+      input?.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); doSearch(); } });
+    })();
+  })();
+  </script>
 </div>
+<!-- === /JR · Caja de consulta al agente === -->
 
-      
-<script>
-(function(){
-  const BACKEND_BASE      = window.BACKEND || "https://jr-gpt-backend-1.onrender.com";
-  const RETRIEVE_ENDPOINT = BACKEND_BASE + "/api/rag";
-  const JR_KEY = "";
-
-  const box   = document.getElementById("jr-agent-box");
-  const input = box?.querySelector("#jr-agent-input");
-  const pdf   = box?.querySelector("#jr-agent-pdf");
-  const ans   = box?.querySelector("#jr-agent-answer");
-  const load  = box?.querySelector("#jr-agent-loader");
-  const err   = box?.querySelector("#jr-agent-error");
-  const btnRetrieve = box?.querySelector("#jr-agent-retrieve");
-  const mode  = box?.querySelector("#jr-agent-mode");
-
-  let citesEl = document.getElementById("jr-agent-citations");
-  if (!citesEl) {
-    citesEl = document.createElement("div");
-    citesEl.id = "jr-agent-citations";
-    citesEl.style.display = "none";
-    citesEl.style.marginTop = "8px";
-    citesEl.style.fontSize = "0.95rem";
-    box?.appendChild(citesEl);
-  }
-
-  let LAST_DOC = { title: "", reply: "", citations: [] };
-
-  function setLoading(on){
-    if(load) load.style.display = on ? "block":"none";
-    if (pdf) pdf.disabled = on;
-    if (btnRetrieve) btnRetrieve.disabled = on;
-  }
-  function showError(m){
-    if(!err) return; err.textContent = m || "No he podido responder ahora. Inténtalo de nuevo."; err.style.display = "block";
-  }
-  function hideError(){ if(err) err.style.display = "none"; }
-  function showAnswer(text){ if(!ans) return; ans.textContent = text || "(sin respuesta)"; ans.style.display="block"; }
-  function showCitations(citations){
-    if (!citesEl) return;
-    if (!citations || !citations.length) { citesEl.style.display="none"; citesEl.innerHTML=""; return; }
-    const items = citations.map((c, i) => `<li>[${i+1}] <a href="${c.url}" target="_blank" rel="noopener">${(c.title||c.url)}</a></li>`).join("");
-    citesEl.innerHTML = `<div><strong>Fuentes:</strong><ul>${items}</ul></div>`;
-    citesEl.style.display = "block";
-  }
-
-  async function retrieveEndpoint(query){
-    const res = await fetch(RETRIEVE_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type":"application/json", ...(JR_KEY ? { "Authorization": "Bearer "+JR_KEY } : {}) },
-      body: JSON.stringify({
-        query,
-        k: 6,
-        time_range: "y",
-        search_depth: "advanced",
-        language: "es",
-        temperature: 0.2,
-        top_p: 1.0,
-        system: (mode?.value === "estricto")
-          ? "Eres un analista que cita sólo evidencias estrictamente relevantes con fuentes."
-          : "Eres un analista que sintetiza evidencias y cita fuentes."
-      })
-    });
-    if (!res.ok) {
-      let msg = "";
-      try { const e = await res.json(); msg = e?.error?.message || ""; } catch {}
-      throw new Error(`HTTP ${res.status}${msg? " · "+msg:""}`);
-    }
-    const j = await res.json();
-    return { reply: j.reply || "", citations: j.citations || [] };
-  }
-
-  function printPDF(title, content, citations) {
-    const escapeHTML = s => s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-    const cites = (citations||[]).map((c,i)=>`[${i+1}] ${c.title||c.url} → ${c.url}`).join("\n");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHTML(title||"Respuesta")}</title>
-    <style>
-      body { font-family: system-ui, Arial; margin: 2cm; line-height: 1.45; }
-      h1 { font-size: 18pt; margin-bottom: .5cm; }
-      pre { white-space: pre-wrap; word-wrap: break-word; font: 11pt/1.5 monospace; }
-      section { margin-top: 16px; }
-      @media print { @page { size: A4; margin: 2cm; } }
-    </style>
-    </head><body>
-      <h1>${escapeHTML(title||"Respuesta")}</h1>
-      <section><pre>${escapeHTML(content||"(sin contenido)")}</pre></section>
-      ${cites? `<section><h2 style="font-size:14pt;">Fuentes</h2><pre>${escapeHTML(cites)}</pre></section>` : ""}
-      <script>window.onload = () => { window.print(); setTimeout(()=>window.close(), 300); }<\/script>
-    </body></html>`;
-    const w = window.open("", "_blank");
-    w.document.open(); w.document.write(html); w.document.close();
-  }
-
-  async function handleRetrieve(){
-    hideError(); if(ans) ans.style.display = "none"; if(citesEl) citesEl.style.display = "none";
-    const q = (input?.value || "").trim();
-    if (!q) return;
-    setLoading(true);
-    try {
-      const { reply, citations } = await retrieveEndpoint(q);
-      showAnswer(reply);
-      showCitations(citations);
-      LAST_DOC = { title: q, reply, citations };
-    } catch(e){
-      console.error(e);
-      showError(String(e.message || e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handlePDF(){
-    if (!LAST_DOC.reply) { showError("Primero genera una respuesta (Preguntar)."); return; }
-    printPDF(LAST_DOC.title || "Respuesta", LAST_DOC.reply, LAST_DOC.citations);
-  }
-
-  btnRetrieve && btnRetrieve.addEventListener("click", handleRetrieve);
-  pdf && pdf.addEventListener("click", handlePDF);
-  input && input.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); handleRetrieve(); } });
-
-  fetch(BACKEND_BASE + "/health?ts=" + Date.now()).catch(()=>{});
-})();
-</script>
-
-    </div>
-    <!-- === /JR · Caja de consulta al agente === -->
 
     <p class="section-sub">
       Los servicios utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades y centros de I+D en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
