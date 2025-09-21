@@ -254,33 +254,26 @@
     }
 
     function renderResults(q, data){
-      const wrap = document.getElementById('jr-agent-results');
-      if (!wrap) return;
-      wrap.innerHTML = '';
-      const summary = document.createElement('div');
-      summary.className = 'summary';
-      summary.innerHTML = `<strong>Resumen:</strong> Se han encontrado <strong>${data.total}</strong> fichas relacionadas con "<em>${q}</em>" en <strong>${data.files.length}</strong> fichero(s): ${data.files.join(', ')}.`;
-      wrap.appendChild(summary);
+    const wrap = document.getElementById('jr-agent-results');
+    if (!wrap) return;
+    wrap.innerHTML = '';
 
-      for (const item of data.items){
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.innerHTML = `
-          <h4>1. Grupos de investigación</h4>
-          <div class="kv">• <span>${item.col2 || ''}</span></div>
-          ${item.col4 ? `<div class="kv">• Responsable: <span>${item.col4}</span></div>` : ''}
-          ${item.col5 ? `<div class="kv">• Personal de investigación: <span>${item.col5}</span></div>` : ''}
-          ${item.col6 ? `<div class="kv">• Correo: <span><a href="mailto:${item.col6}">${item.col6}</a></span></div>` : ''}
-          ${item.col7 ? `<div class="kv">• Teléfono: <span>${item.col7}</span></div>` : ''}
-          ${item.col1 ? `<div class="kv">• ${item.col1}</div>` : ''}
-          ${item.col8 ? `<div class="kv">• WEB: <a href="${formatURL(item.col8)}" target="_blank" rel="noopener">${item.col8}</a></div>` : ''}
-          <h4 style="margin-top:10px;">2. Líneas de investigación</h4>
-          ${item.col3 ? `<div class="kv">• ${item.col3}</div>` : '<div class="kv smallmuted">• (Sin líneas registradas)</div>'}
-          <div class="smallmuted" style="margin-top:6px;">Fuente: ${item.file}</div>
-        `;
-        wrap.appendChild(card);
-      }
+    const summary = document.createElement('div');
+    summary.className = 'summary';
+
+    // Mensaje base: solo el número de fichas (sin fuentes)
+    let html = `<strong>Resumen:</strong> Se han encontrado <strong>${data.total}</strong> fichas relacionadas con "<em>${q}</em>".`;
+
+    // Si hay resultados, añadir la instrucción de imprimir PDF
+    if (data.total > 0) {
+      html += ` <br>Selecciona la opción <strong>Imprimir PDF</strong> para obtener todos los datos.`;
     }
+
+    summary.innerHTML = html;
+    wrap.appendChild(summary);
+
+    // No listar ni items ni fuentes
+  }
 
     (function(){
       const box = document.getElementById('jr-agent-box');
