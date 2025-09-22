@@ -137,6 +137,32 @@
   }
 </style>
 
+<style>
+  .sr-only {
+    position: absolute;
+    left: -9999px;  /* oculto para la vista */
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>
+
+<style>
+.big-quote {
+  font-size: clamp(30px, 5vw, 40px); /* mucho más grande */
+  line-height: 1.3;
+  font-weight: 300;
+  margin: 0px 0 300px; /* espacio arriba y abajo */
+  color: #ffffff;      /* blanco como en tu hero */
+  max-width: 900px;    /* opcional: limita el ancho para legibilidad */
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+</style>
+
+
   <!-- ====== JSON-LD (Person) ====== -->
   <script type="application/ld+json">
   {
@@ -177,6 +203,7 @@
   </video>
 
   <div class="inner container">
+    <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
     <h1 style="margin:0 0 400px 0;line-height:1.25;">
       “En tiempos de inteligencia artificial, la mayor ventaja competitiva para <strong><u>crear valor</u></strong> es la <strong><u>inteligencia colectiva</u></strong>”
     </h1>
