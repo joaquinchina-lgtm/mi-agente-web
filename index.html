@@ -59,6 +59,7 @@
     }
     .btn.secondary { background: transparent; color:#e0f2fe; border-color: rgba(255,255,255,.35); }
     .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
+    .btn.brand { background: var(--brand); color:#fff; border-color: transparent; }
 
     section { padding: 56px 0; }
     .section-title { font-size: 28px; margin-bottom: 18px; }
@@ -73,7 +74,8 @@
     .card .body { padding: 16px; }
     .card h3 { margin: 6px 0 6px; font-size: 18px; }
     .card p { color:#4b5563; font-size: 15px; }
-    .pill { display:inline-block; padding:6px 10px; font-size:12px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; margin-right:8px; margin-bottom:8px; }
+    .pill { display:inline-block; padding:6px 10px; font-size:12px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; margin-right:8px; margin-bottom:8px; cursor: pointer; }
+    .pill:hover { text-decoration: none; filter: brightness(0.96); }
 
     .feature { display:grid; gap: 18px; align-items:center; }
     @media (min-width: 900px) { .feature { grid-template-columns: 1.1fr .9fr; } }
@@ -260,7 +262,7 @@
     </div>
   </div>
 
-  <div class="jr-hint">Busca exclusivamente en CSV del backend (carpeta <code>knowledge/</code>). Muestra todas las coincidencias.</div>
+  <div class="jr-hint">Agente de IA específico diseñado por JRR (en pruebas). Muestra todas las coincidencias.</div>
   <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Buscando…</div>
   <div class="jr-error" id="jr-agent-error" role="alert"></div>
   <div id="jr-agent-results" role="region" aria-label="Resultados del buscador"></div>
@@ -510,6 +512,14 @@
           <p class="section-sub">Estrategia y creación de valor, aportando criterio independiente en las decisiones estratégicas</p>
          <p class="section-sub">Supervisión y control de riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada</p>
          <p class="section-sub">Participación en comisiones clave (Innovación, Sostenibilidad). Gobernanza corporativa y buen funcionamiento</p>
+         <div class="cta" style="margin-top:12px;">
+             <a
+               class="btn brand"
+               href="mailto:joaquinchina@gmail.com?subject=Consulta%3A%20Consejos%20de%20Administraci%C3%B3n&body=Hola%20Joaqu%C3%ADn%2C%0A%0AEstoy%20interesado%2Fa%20en%20tus%20servicios%20de%20Consejos%20de%20Administraci%C3%B3n.%20%0A%0A%C2%BFPodemos%20agendar%20una%20llamada%3F%0A%0AGracias."
+             >
+               Contactar
+             </a>
+         </div>
         </div>
       </div>
     </div>
@@ -689,8 +699,40 @@
 
   <footer id="contacto">
     <div class="container">
-      <p>© Joaquín Romero Roldán - WEB creada íntegramente con OpenAI</p>
+      <p>© Joaquín Romero Roldán - WEB creada íntegramente con herramientas OpenAI</p>
     </div>
   </footer>
+<script>
+  (function () {
+    const TO = "joaquinchina@gmail.com";
+
+    document.querySelectorAll(".card").forEach(card => {
+      const pill = card.querySelector(".pill");
+      if (!pill) return;
+
+      const area = (pill.textContent || "").trim();                // p.ej. "Universidades y centros de I+D"
+      const h3   = (card.querySelector("h3")?.textContent || "").trim(); // p.ej. "Reactor de Transferencia"
+
+      const subject = `Consulta: ${area} — ${h3}`;
+      const body =
+`Hola Joaquín,
+
+Me interesa "${h3}" (${area}). ¿Podemos agendar una llamada?
+Gracias.`;
+
+      const href = `mailto:${TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      // Accesible y clicable
+      pill.style.cursor = "pointer";
+      pill.setAttribute("role", "button");
+      pill.setAttribute("tabindex", "0");
+
+      pill.addEventListener("click", () => { window.location.href = href; });
+      pill.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" || e.key === " ") window.location.href = href;
+      });
+    });
+  })();
+</script>
 </body>
 </html>
