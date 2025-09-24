@@ -732,9 +732,191 @@
 </section>
 
 <footer id="contacto">
-  <div class="container">
-    <p>© Joaquín Romero Roldán - WEB creada íntegramente con herramientas OpenAI</p>
+  <style>
+    .legal-footer { padding: 36px 0; border-top:1px solid #e5e7eb; color:#374151; }
+    .legal-footer .brandline { font-size:14px; color:#6b7280; margin-bottom:14px; }
+    .accordion { border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden; }
+    .accordion details+details { border-top:1px solid #e5e7eb; }
+    .accordion summary {
+      list-style:none; cursor:pointer; padding:14px 16px; font-weight:600; outline:none;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .accordion summary::-webkit-details-marker { display:none; }
+    .accordion summary:focus { box-shadow:0 0 0 3px rgba(14,165,233,.15); border-radius:8px; }
+    .accordion .chev { transition: transform .2s ease; }
+    details[open] .chev { transform: rotate(180deg); }
+    .accordion .panel { padding:0 16px 16px; font-size:14px; color:#4b5563; }
+    .accordion .panel h4 { margin:12px 0 6px; font-size:15px; color:#111827; }
+    .accordion .muted { color:#6b7280; }
+    .accordion a { color: var(--brand, #32717E); text-decoration: none; }
+    .accordion a:hover { text-decoration: underline; }
+    .cookie-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .cookie-btn {
+      border:1px solid #32717E; color:#32717E; background:#fff; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .cookie-btn.primary { background:#32717E; color:#fff; border-color:transparent; }
+  </style>
+
+  <div class="container legal-footer">
+    <p class="brandline">© Joaquín Romero Roldán — Web creada íntegramente con herramientas OpenAI</p>
+
+    <!-- Acordeón legal -->
+    <div class="accordion" role="region" aria-label="Información legal del sitio">
+      <!-- AVISO LEGAL -->
+      <details id="aviso-legal">
+        <summary aria-controls="panel-aviso" aria-expanded="false">
+          AVISO LEGAL
+          <span class="chev" aria-hidden="true">▾</span>
+        </summary>
+        <div id="panel-aviso" class="panel">
+          <p class="muted">Última actualización: <time datetime="2025-09-24">24/09/2025</time></p>
+          <h4>1. Titularidad del sitio</h4>
+          <p>
+            Titular: <strong>[JOAQUÍN ROMERO ROLDÁN]</strong><br>
+            NIF: <strong>[44615650C]</strong><br>
+            Domicilio: <strong>[Calle Zúñiga, 1, bajo. 31015 Pamplona]</strong><br>
+            Email: <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a><br>
+            URL: <strong>https://joaquinchina-lgtm.github.io/mi-agente-web/</strong>
+          </p>
+
+          <h4>2. Objeto y condiciones de uso</h4>
+          <p>
+            El acceso y uso del sitio implican la aceptación de este Aviso Legal. El usuario se compromete a
+            hacer un uso diligente, lícito y conforme a la buena fe, absteniéndose de cualquier actividad que
+            pueda dañar a terceros o vulnerar la normativa vigente.
+          </p>
+
+          <h4>3. Propiedad intelectual e industrial</h4>
+          <p>
+            Salvo indicación expresa, los contenidos (textos, imágenes, vídeos y código) son titularidad del
+            responsable del sitio o cuentan con licencia de uso. Queda prohibida su reproducción o
+            distribución sin autorización. Para solicitar permisos, escribe a
+            <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.
+          </p>
+
+          <h4>4. Responsabilidad</h4>
+          <p>
+            Este sitio puede mostrar enlaces o contenidos de terceros. El titular no responde de su
+            actualización, exactitud o legalidad. El uso de la información se realiza bajo responsabilidad del usuario.
+          </p>
+
+          <h4>5. Protección de datos</h4>
+          <p>
+            Si se recaban datos personales (por ejemplo, a través de correo electrónico), se tratarán conforme al
+            Reglamento (UE) 2016/679 (RGPD) y a la LOPDGDD. Puedes ejercer tus derechos de acceso, rectificación,
+            supresión, oposición, limitación y portabilidad escribiendo a
+            <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.
+          </p>
+
+          <h4>6. Legislación aplicable</h4>
+          <p>
+            Este Aviso Legal se rige por la legislación española. Para cualquier controversia, las partes se
+            someten a los juzgados y tribunales de <strong>[CIUDAD/PROVINCIA]</strong>, salvo norma imperativa en contrario.
+          </p>
+        </div>
+      </details>
+
+      <!-- POLÍTICA DE COOKIES -->
+      <details id="politica-cookies">
+        <summary aria-controls="panel-cookies" aria-expanded="false">
+          POLÍTICA DE COOKIES
+          <span class="chev" aria-hidden="true">▾</span>
+        </summary>
+        <div id="panel-cookies" class="panel">
+          <p class="muted">Última actualización: <time datetime="2025-09-24">24/09/2025</time></p>
+
+          <h4>1. ¿Qué son las cookies?</h4>
+          <p>
+            Son pequeños archivos que se almacenan en tu dispositivo para recordar información de tu visita.
+            Pueden ser propias o de terceros, técnicas (necesarias), de preferencias, analíticas o de marketing.
+          </p>
+
+          <h4>2. Cookies que utiliza este sitio</h4>
+          <ul>
+            <li><strong>Técnicas/necesarias</strong> (siempre activas): imprescindibles para el funcionamiento básico del sitio.</li>
+            <li><strong>Analíticas</strong> (Google Analytics 4): ayudan a medir el uso del sitio. <em>Solo se activan con tu consentimiento.</em></li>
+          </ul>
+
+          <h4>3. Gestión del consentimiento</h4>
+          <p>
+            Puedes <button class="cookie-btn" type="button" onclick="window.toggleCookieBanner && window.toggleCookieBanner(true)">cambiar tu consentimiento</button> en cualquier momento.
+            Las cookies analíticas se establecerán únicamente si las aceptas.
+          </p>
+
+          <h4>4. Cómo borrar o bloquear cookies</h4>
+          <p>
+            Puedes configurar tu navegador para rechazar o eliminar cookies. Consulta las guías de:
+            <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a>,
+            <a href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitios-web-rastrear-preferencias" target="_blank" rel="noopener">Firefox</a>,
+            <a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a> o
+            <a href="https://support.microsoft.com/es-es/microsoft-edge/eliminar-cookies-en-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">Edge</a>.
+          </p>
+
+          <h4>5. Contacto</h4>
+          <p>Para cualquier cuestión sobre esta política, escribe a <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.</p>
+
+          <div class="cookie-actions">
+            <button class="cookie-btn" type="button" onclick="window.setCookieConsent && window.setCookieConsent(false)">Rechazar analíticas</button>
+            <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent && window.setCookieConsent(true)">Aceptar analíticas</button>
+          </div>
+        </div>
+      </details>
+    </div>
   </div>
+
+  <!-- Banner mínimo de consentimiento (opcional, pero recomendado en la UE) -->
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true"
+       style="position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 10px 18px rgba(2,6,23,.08); padding:14px; display:none;">
+    <p style="margin:0 0 10px 0; font-size:14px; color:#374151;">
+      Usamos cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (Google Analytics 4) para mejorar la experiencia.
+      Puedes aceptar, rechazar o configurar tu elección.
+      <a href="#politica-cookies">Más información</a>.
+    </p>
+    <div class="cookie-actions">
+      <button class="cookie-btn" type="button" onclick="window.setCookieConsent(false)">Rechazar</button>
+      <button class="cookie-btn" type="button" onclick="window.open('#politica-cookies', '_self')">Configurar</button>
+      <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent(true)">Aceptar</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const KEY = 'cookieConsentGA'; // 'true' | 'false' | null
+      const banner = document.getElementById('cookie-banner');
+
+      function save(v){ try { localStorage.setItem(KEY, v); } catch(e){} }
+      function load(){ try { return localStorage.getItem(KEY); } catch(e){ return null; } }
+
+      // Exponer helpers para los botones del panel y el banner
+      window.setCookieConsent = function(accepted){
+        save(String(accepted));
+        if (banner) banner.style.display = 'none';
+        // Habilitar/deshabilitar GA4 según preferencia:
+        if (typeof gtag === 'function') {
+          // Consent Mode básico
+          gtag('consent', 'update', {
+            'analytics_storage': accepted ? 'granted' : 'denied'
+          });
+        }
+      };
+      window.toggleCookieBanner = function(show){
+        if (!banner) return;
+        banner.style.display = show ? 'block' : 'none';
+      };
+
+      // Mostrar banner si no hay preferencia guardada
+      const pref = load();
+      if (pref === null && banner) banner.style.display = 'block';
+
+      // Inicializar Consent Mode por defecto (denied hasta aceptar)
+      if (typeof gtag === 'function') {
+        gtag('consent', 'default', { 'analytics_storage': 'denied' });
+        if (pref === 'true') {
+          gtag('consent', 'update', { 'analytics_storage': 'granted' });
+        }
+      }
+    })();
+  </script>
 </footer>
 
 <!-- ====== Mailto tracking + accesibilidad en tarjetas ====== -->
