@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://joaquinchina-lgtm.github.io/mi-agente-web/sitemap.xml
