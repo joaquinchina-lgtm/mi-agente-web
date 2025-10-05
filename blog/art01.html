@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¿Por qué nos cuesta tanto innovar? | Blog JR</title>
+  <meta name="description" content="I+D+i: un error en la fórmula que deforma de manera crítica nuestra visión de la innovación.">
+  <link rel="canonical" href="https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art01.html">
+
+  <meta property="og:title" content="¿Por qué nos cuesta tanto innovar?">
+  <meta property="og:description" content="I+D+i: un error en la fórmula que deforma de manera crítica nuestra visión de la innovación.">
+  <meta property="og:image" content="../assets/img/art01.png">
+
+  <style>
+    :root{
+      --brand:#32717E;
+      --ink:#0e1326;
+      --muted:#6b7280;
+      --bg:#f6f7fb;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:#111827;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header.site{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(255,255,255,.8);border-bottom:1px solid #e5e7eb;z-index:40}
+    .nav{max-width:1160px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px}
+    .nav .brand{font-weight:600;color:#0b1324}
+    .nav .links a{margin-left:16px;font-size:14px;color:#374151}
+    .nav .links a:hover{color:#111827}
+
+    /* ======= LECTURA ======= */
+    .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+    .article{
+      max-width:72ch; /* columna cómoda de lectura */
+      margin:40px auto 64px;
+    }
+    .article .kicker{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+    .article h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 6px}
+    .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+    .hero{
+      margin:14px 0 18px;
+      border-radius:16px; overflow:hidden;
+      /* hero compacta: no fija, altura razonable en desktop */
+      aspect-ratio: 21/9;       /* ratio panorámico */
+      max-height: 360px;        /* techo de altura */
+      background:#fff;
+    }
+    .hero img{width:100%;height:100%;object-fit:cover;display:block}
+    .hero figcaption{display:none} /* si quieres pie, cámbialo a block y añade texto */
+
+    .prose{font-size:18px;line-height:1.75}
+    .prose > p{margin:1em 0}
+    .prose h2{font-size:clamp(22px,2.6vw,28px);line-height:1.3;margin:1.6em 0 .5em}
+    .prose h3{font-size:clamp(18px,2.2vw,22px);line-height:1.4;margin:1.4em 0 .4em}
+    .prose ul, .prose ol{padding-left:1.25rem;margin:1em 0}
+    .prose blockquote{
+      margin:1.2em 0;padding:12px 14px;border-left:4px solid var(--brand);
+      background:#fff;border-radius:12px;color:#374151
+    }
+    .share{display:flex;gap:10px;align-items:center;margin-top:22px}
+    .back{margin-top:28px;font-size:14px}
+
+    /* progreso de lectura (opcional) */
+    .progress{
+      position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),#06b6d4);
+      width:0%;z-index:60
+    }
+
+    @media (max-width:720px){
+      .article{margin:24px auto 48px}
+      .hero{aspect-ratio:16/9;max-height:260px}
+      .prose{font-size:17px}
+    }
+  </style>
+</head>
+<body>
+  <!-- barra de progreso -->
+  <div class="progress" id="progress"></div>
+
+  <!-- Header del sitio (igual que la home) -->
+  <header class="site">
+    <div class="nav">
+      <a class="brand" href="../index.html#home">JR</a>
+      <nav class="links" aria-label="Secciones del sitio">
+        <a href="../index.html#innovacion">Innovación</a>
+        <a href="../index.html#estrategia">Estrategia</a>
+        <a href="../index.html#liderazgo">Liderazgo</a>
+        <a href="../index.html#consejos">Consejero</a>
+        <a href="../index.html#trayectoria">Trayectoria</a>
+        <a href="../index.html#socios">Socios</a>
+        <a href="../index.html#red">Red</a>
+        <a href="../index.html#galeria">Hitos</a>
+        <a href="../index.html#blog" class="active">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article class="article" itemscope itemtype="https://schema.org/BlogPosting">
+      <p class="kicker">Blog</p>
+      <h1 itemprop="headline">¿Por qué nos cuesta tanto innovar?</h1>
+      <p class="meta">
+        <time itemprop="datePublished" datetime="2025-10-06">6 de octubre de 2025</time> ·
+        <span itemprop="author">Joaquín Romero Roldán</span>
+      </p>
+
+      <figure class="hero">
+        <img src="../assets/img/art01.png" alt="Resistencias a innovar" itemprop="image">
+        <figcaption>Pie de foto (opcional)</figcaption>
+      </figure>
+
+      <section class="prose" itemprop="articleBody">
+
+        <p class="meta">
+        <span itemprop="pie">Fregona, Chupa Chups, futbolín... no todas nuestras innovaciones pasaron por "poner palos a las cosas".</span>
+
+
+        <p>“Innovar” es una palabra gastada. Aparece en innumerables discursos, en reclamos de marketing o en planes estratégicos que acaban en un cajón. Pero cuando llega la hora de llevarla a la práctica, aparece una resistencia que merece ser analizada. La cuestión no es si innovamos lo suficiente, sino: ¿por qué nos cuesta tanto innovar?
+No hay una única respuesta. Existen hábitos, inercias y miedos que, si no se nombran, difícilmente se podrán superar.</p>
+<p></p>
+<p><strong>1. Porque innovar implica ser cuestionado</strong></p>
+<p>El primer obstáculo es personal, casi psicológico. Innovar supone aceptar que alguien pueda decirnos: “tu idea no va a funcionar”. Y eso puede doler, si no es tomado en positivo, y activarnos el blindaje mental del "A mí no me van a enseñar cómo llevar mi actividad", letal para cualquier opción de cambio.
+Una empresa o institución crece más cuando se abre a la posibilidad de estar equivocada. Pero esa apertura exige humildad, una cualidad poco abundante en estructuras donde “tener razón” se confunde con “tener poder”.</p>
+<p>Los humanos confundimos solución con corazonada, lo que explica por qué tropezamos dos veces en la misma piedra. Excepto para los genios, un presentimiento casi nunca es la solución a la primera, salvo pura casualidad. Aprender de la crítica, iterar y mejorar es la clave. Séneca lo anticipaba en su <em>Cuando pedimos opinión nos arriesgamos a que nos la den.</em></p>
+<p></p>
+<p><strong>2. Porque innovar requiere colaborar</strong></p>
+<p>La segunda traba es cultural. Innovar no es una aventura individual, sino colaboración real: dentro de la empresa, entre departamentos, sectores y hasta entre competidores. Cuantas más interacciones, mejor funciona.</p>
+<p>La colaboración es nuestra asignatura pendiente. En ámbitos empresariales, culturales o regionales, es frecuente ver un “Frente Popular de Judea” por cada “Frente Judaico Popular”… proyectos dispersos que tienen miedo a compartir su conocimiento.</p>
+<p>Los clústeres podrían ser una prometedora solución, pero todavía requieren de más impulso y, sobre todo, de avances en contenidos concretos (básicamente, enfocados a problemas) y dinámicas adecuadas que eliminen la sensación de "quedar para hablar". Porque las innovaciones se multiplican cuando ponemos en común recursos, talento y experiencia. Y las mejores soluciones surgen en las fronteras donde se cruzan disciplinas.</p>
+<p></p>
+<p><strong>3. Porque la confundimos con el I+D</strong></p>
+<p>Tercer error: reducir innovación a I+D. La investigación y el desarrollo son cruciales, pero no bastan. El I+D ocurre en universidades, laboratorios y departamentos especializados; y es lineal: cuantos más recursos u¡invirtamos en ella, más conocimiento generarán… ahora bien, ¿es directamente aplicable en soluciones?</p>
+<p>Innovar, en cambio, es un proceso no lineal de interacciones, iteraciones y cultura compartida. Puede incluso no requerir recursos adicionales si se aprovecha bien el conocimiento ya generado (gran parte del cual duerme en cajones, se estima que más del 50% del conocimiento investigador en España está disponible).</p>
+<p>Delegarla en un departamento es cómodo: “ellos se encargan”. Pero mata su raíz: la convierte en un asunto meramente técnico, en vez de un ADN colectivo. Innovar de verdad supone que toda la organización (desde la dirección hasta la persona en primera línea) respire una actitud distinta frente al cambio.</p>
+<p></p>
+<p><strong>4. Porque la confundimos con tecnología digital</strong></p>
+<p>Últimamente, la fiebre de la inteligencia artificial y el big data ha creado la ilusión de que digitalizar es innovar. No lo es. La tecnología es una herramienta, poderosa y necesaria, pero nada más: un martillo no garantiza una buena casa.</p>
+<p>De igual modo, comprar el último software no transforma una organización: lo que lo logra es su capacidad de imaginar para qué usarlo. Por eso, las empresas que sustituyen reflexión estratégica por compra de software están condenadas a fracasar.</p>
+<p></p>
+<p><strong>5. Porque no exploramos, solo explotamos</strong></p>
+<p>El obstáculo más profundo: vivimos obsesionados con explotar mejor nuestra actividad. Durante décadas, las escuelas de negocio nos enseñaron a controlar resultados, reducir costes, ganar eficiencia, hacer proyecciones… pero rara vez a explorar de verdad.</p>
+<p>La explotación es necesaria, pero hoy ya no es suficiente. La exploración abre caminos inciertos, sin garantía de retorno inmediato, pero asegura el futuro. Porque lo crea. Sin embargo, explorar todavía se percibe como un lujo.</p>
+<p>La paradoja es evidente: pedimos a los jóvenes que sean innovadores, pero les ofrecemos un ecosistema en el que todo gira en torno al más de lo mismo. ¿Cómo atraer vocaciones si el mensaje real es que explorar “no compensa”?</p>
+<p></p>
+<p><strong>El precio de no innovar</strong></p>
+<p>Escuchamos quejas diarias: proyectos europeos que no llegan, pymes con frenos para escalar, productividad estancada, burocracia asfixiante… muy legítimas. Pero tampoco nos deben impedir mirar también hacia dentro. Innovar no es una ayuda de Bruselas ni un software recién instalado. Es un cambio de mentalidad. Y ahí seguimos fallando.</p>
+<p>Innovar es incómodo. Pero la comodidad es el mayor enemigo del futuro. Nuestro país y nuestra región tienen talento, conocimiento y empresas con potencial. Pero falta más valentía: estar dispuestos a ser cuestionados, colaborar, ir más allá del laboratorio, usar la tecnología con propósito y dedicar tiempo a explorar.</p>
+<p>Las mejores oportunidades hoy están en la competitividad por valor. Si no aprendemos a practicarla, lo pagaremos todos. Por eso la pregunta ya no es “¿por qué nos cuesta tanto innovar?”, sino: <strong>¿cuánto más estamos dispuestos a perder por no hacerlo?</strong></p>
+
+        <h3>Las claves de innovar</h3>
+        <ul>
+          <li>Implica ser cuestionado</li>
+          <li>Requiere colaborar</li>
+          <li>No es sinónimo de I+D</li>
+          <li>No es sinónimo de tecnologías digitales</li>
+          <li>Necesita explorar <em>además</em> de explotar</li>
+        </ul>
+
+        <blockquote>“Cuando pedimos opinión nos arriesgamos a que nos la den” (Séneca)</blockquote>
+
+        <p>Joaquín Romero Roldán es consejero-asesor independiente, miembro del IC-A.</p>
+      </section>
+
+      <div class="share" aria-label="Compartir">
+        <span style="color:#6b7280">Compartir:</span>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art01.html" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://twitter.com/intent/tweet?url=https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art01.html&text=Cómo%20convertir%20la%20estrategia%20en%20hábito%20semanal" target="_blank" rel="noopener">X</a>
+      </div>
+
+      <p class="back"><a href="../index.html#blog">← Volver al Blog</a></p>
+    </article>
+  </main>
+
+  <footer id="contacto">
+    <div class="wrap">
+      <p style="color:#6b7280">&copy; 2025 Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</p>
+    </div>
+  </footer>
+
+  <script>
+    // Barra de progreso de lectura (suave y ligera)
+    (function(){
+      const bar = document.getElementById('progress');
+      const onScroll = () => {
+        const h = document.documentElement;
+        const sc = h.scrollTop || document.body.scrollTop;
+        const max = (h.scrollHeight - h.clientHeight);
+        const p = max > 0 ? (sc / max) * 100 : 0;
+        bar.style.width = p + '%';
+      };
+      document.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
