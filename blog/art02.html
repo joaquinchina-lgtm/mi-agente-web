@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <link rel="canonical" href="https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art02.html">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 
 <!-- Open Graph -->
 <meta property="og:locale" content="es_ES">
@@ -12,6 +14,7 @@
 <meta property="og:title" content="Consejos asesores en PYMEs: una palanca para crecer en valor">
 <meta property="og:description" content="Cómo un consejo asesor diverso ayuda a crecer en valor más allá del día a día operativo.">
 <meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art02-1200x630.jpg">
+<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art02-1000x1000.jpg">
 <meta property="og:image:secure_url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art02-1200x630.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
@@ -51,14 +54,38 @@
     .article .kicker{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
     .article h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 6px}
     .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* HERO responsive */
     .hero{
-      margin:14px 0 18px;
-      border-radius:16px; overflow:hidden;
-      aspect-ratio: 21/9;       /* panorámico */
-      max-height: 360px;        /* techo en desktop */
-      background:#fff;
+      position: relative;
+      margin: 14px 0 18px;
+      border-radius: 16px;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 21/9;   /* panorámico en desktop */
+      background: #fff;
     }
-    .hero img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* En móvil, dale más altura (mejor lectura) */
+    @media (max-width: 768px){
+      .hero{ aspect-ratio: 16/9; }  /* puedes usar 4/3 si lo prefieres */
+    }
+
+/* Imagen dentro del hero: ocupa todo, recorta bien */
+    .hero > img{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;    /* recorte elegante sin deformar */
+      display: block;
+    }
+
+/* Imágenes fluidas por si algún <img> trae width/height en el HTML */
+img{ max-width:100%; height:auto; display:block; }
+img[width], img[height]{ width:100% !important; height:auto !important; }
+
+
     .hero figcaption{display:none}
 
     .prose{font-size:18px;line-height:1.75}
@@ -84,6 +111,39 @@
       .hero{aspect-ratio:16/9;max-height:260px}
       .prose{font-size:17px}
     }
+
+/* Contenedor fluido */
+/* Contenedor más ancho en desktop */
+:root{
+  --space: clamp(12px, 2.5vw, 24px);
+  --content: min(96vw, 1200px);   /* antes 720px */
+}
+
+.container{
+  width: 100%;
+  max-width: var(--content);       /* ¡importante! puede sobreescribir un max-width viejo */
+  margin: 0 auto;
+  padding: var(--space);
+}
+
+/* Tipografía e imágenes responsive */
+img, video, iframe{ max-width:100%; height:auto; display:block; }
+figure{ margin:0; }
+h1{ font-size: clamp(1.8rem, 1.2rem + 2vw, 2.4rem); line-height:1.2; }
+p, li{ line-height:1.65; }
+
+/* Si tienes dos columnas, colapsa a una en móvil */
+.article-grid{ display:grid; grid-template-columns: 1fr; gap: var(--space); }
+@media (min-width: 1000px){
+  .article-grid{
+    grid-template-columns: minmax(0, 1fr) 340px; /* contenido + aside */
+    column-gap: clamp(20px, 4vw, 48px);
+  }
+}
+
+/* Por si usaste tamaños fijos en <img width/height> */
+img[width], img[height]{ width:100% !important; height:auto !important; }
+
   </style>
 </head>
 <body>
@@ -108,7 +168,7 @@
     </div>
   </header>
 
-  <main class="wrap">
+<main class="article-grid container">
     <article class="article" itemscope itemtype="https://schema.org/BlogPosting">
       <p class="kicker">Blog</p>
       <h1 itemprop="headline">Consejos asesores en PYMEs: una palanca para crecer en valor</h1>
