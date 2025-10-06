@@ -164,6 +164,111 @@
 }
 </style>
 
+<style>
+/* Sección full width estable (sin 100vw hacks) */
+.seminar{
+  width: 100%;
+  background: #000;
+  color: #fff;
+  margin: 0;              /* sin desplazamientos laterales */
+}
+
+/* Contenido centrado con ancho máximo cómodo */
+.seminar .sem-inner{
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: clamp(20px, 4vw, 56px) clamp(16px, 4vw, 40px);
+  display: grid;
+  gap: clamp(16px, 3vw, 40px);
+  grid-template-columns: 1fr;     /* móvil: una columna */
+  align-items: center;
+}
+
+/* Desktop: dos columnas */
+@media (min-width: 1024px){
+  .seminar .sem-inner{ grid-template-columns: 1.2fr 1fr; }
+}
+
+/* Medios */
+.seminar .sem-media{
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 260px;
+  background: #050a16;
+}
+.seminar .sem-media img{
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: saturate(1.05);
+}
+
+/* Texto */
+.seminar .sem-kicker{
+  display:inline-block; font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  background:#ef4444; color:#fff; padding:6px 10px; border-radius:999px; margin-bottom:10px;
+}
+.seminar h2{ margin:6px 0 10px; font-size:clamp(22px, 2.6vw, 34px); line-height:1.2; }
+.seminar .sem-bullets{ margin:8px 0 0; padding-left:1em; display:grid; gap:.45rem; color:#e5e7eb; }
+.seminar .sem-bullets strong{ color:#fff; }
+
+/* CTAs */
+.seminar .sem-cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:clamp(12px, 2.5vw, 18px); }
+.seminar .btn-primary, .seminar .btn-ghost{
+  display:inline-block; text-decoration:none; border-radius:12px;
+  padding:10px 16px; font-weight:600; line-height:1;
+}
+.seminar .btn-primary{ background:#32717E; color:#fff; border:1px solid transparent; }
+.seminar .btn-ghost{ background:transparent; color:#e5e7eb; border:1px solid rgba(255,255,255,.6); }
+.seminar .btn-primary:hover{ filter:brightness(1.06); transform:translateY(-1px); }
+.seminar .btn-ghost:hover{ background:rgba(255,255,255,.06); }
+
+/* Radios más suaves en móvil */
+@media (max-width: 640px){ .seminar .sem-media{ border-radius:12px; } }
+</style>
+
+<style>
+  /* === Blog === */
+  #blog .blog-wrap { margin-top: 16px; }
+  #blog .featured { position: relative; border:1px solid #e5e7eb; border-radius: var(--radius);
+                    overflow:hidden; background:#fff; box-shadow: 0 10px 18px rgba(2,6,23,.04); }
+  /* Carrusel */
+  .slider { position:relative; }
+  .slides { display:flex; transition: transform .45s ease; will-change: transform; }
+  .slide  { min-width:100%; position:relative; height: 360px; background:#000; }
+  .slide img { width:100%; height:100%; object-fit: cover; display:block; }
+  .slide .caption {
+    position:absolute; left:0; right:0; bottom:0;
+    background: linear-gradient(transparent, rgba(0,0,0,.65));
+    color:#fff; padding:16px 18px;
+  }
+  .slider .ctrl {
+    position:absolute; top:50%; transform:translateY(-50%);
+    border:1px solid rgba(255,255,255,.6); background:rgba(0,0,0,.35); color:#fff;
+    border-radius:999px; width:40px; height:40px; display:grid; place-items:center; cursor:pointer;
+  }
+  .slider .prev { left:10px; } .slider .next { right:10px; }
+  .dots { position:absolute; left:0; right:0; bottom:10px; display:flex; gap:6px; justify-content:center; }
+  .dots button { width:8px; height:8px; border-radius:999px; border:none; background:#d1d5db; opacity:.85; cursor:pointer; }
+  .dots button[aria-current="true"]{ background: var(--brand); opacity:1; }
+
+  /* Grid de posts */
+  .posts.grid { display:grid; gap:18px; margin-top:18px; }
+  @media (min-width: 860px) { .posts.grid { grid-template-columns: repeat(3, 1fr); } }
+  .post-card { background:#fff; border:1px solid #e5e7eb; border-radius: var(--radius); overflow:hidden;
+               box-shadow: 0 10px 18px rgba(2,6,23,.04); display:flex; flex-direction:column; }
+  .post-card .media { height: 200px; background:#f3f4f6; overflow:hidden; }
+  .post-card img { width:100%; height:100%; object-fit:cover; display:block; }
+  .post-card .body { padding:16px 18px 18px; }
+  .post-card h3 { margin:8px 0 6px; font-size:18px; }
+  .post-card p  { margin:0; color:#4b5563; font-size:15px; }
+  .post-meta { font-size:12px; color:#6b7280; margin-bottom:6px; }
+  .post-tags { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .post-tag { font-size:12px; padding:4px 8px; border:1px solid #e5e7eb; border-radius:999px; background:#f9fafb; color:#374151; }
+  .post-card a.read-more { margin-top:12px; display:inline-block; font-weight:600; color: var(--brand); }
+  /* Responsive móvil del carrusel */
+  @media (max-width: 767px){
+    .slide { height: 240px; }
+  }
+</style>
 
   <!-- ====== JSON-LD (Person) ====== -->
   <script type="application/ld+json">
@@ -191,6 +296,7 @@
       <a href="#socios">Socios</a>
       <a href="#red">Red</a>
       <a href="#galeria">Hitos</a>
+      <a href="#blog">Blog</a>
     </nav>
   </div>
 </header>
@@ -222,6 +328,37 @@
     </div>
   </div>
 </section>
+
+<!-- ====================== SEMINARIO (SECCIÓN PROPIA FULL WIDTH) ====================== -->
+<section id="seminario" class="seminar">
+  <div class="sem-inner">
+    <div class="sem-media">
+      <img src="assets/img/seminario-boston-hero.jpg"
+           alt="Boston & Cambridge: vistas urbanas y campus universitarios" loading="lazy">
+    </div>
+
+    <div class="sem-text">
+      <span class="sem-kicker">Seminario 2026</span>
+      <h2>MIT &amp; Harvard: 01-05 FEB</h2>
+      <p>Estrategia, Innovación y personas</p> 
+      <ul class="sem-bullets">
+        <li><strong>INSPIRAR.</strong> Ecosistema que impulsa decisiones de futuro.</li>
+        <li><strong>UNIVERSIDADES MÍTICAS.</strong> Presencia en campus y profesorado top.</li>
+        <li><strong>BOSTON &amp; CAMBRIDGE.</strong> Historia y funcionamiento del ecosistema.</li>
+        <li><strong>TECNOLOGÍAS.</strong> Ver tecnología en acción y su relación con las personas.</li>
+        <li><strong>APRENDER &amp; COMPARTIR.</strong> Grupo reducido de alta dirección.</li>
+      </ul>
+      <div class="sem-cta">
+        <a class="btn-primary" href="mailto:joaquinchina@gmail.com?subject=Inter%C3%A9s%20Seminario%202026&body=Quiero%20informaci%C3%B3n.">
+          Quiero información
+        </a>
+        <!-- <a class="btn-ghost" href="assets/docs/seminario-2026.pdf">Descargar programa</a> -->
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ================================================================================ -->
+
 
 <section id="innovacion">
   <div class="container">
@@ -445,6 +582,7 @@
   </div>
 </section>
 
+
 <section id="estrategia">
   <div class="container">
     <h2 class="section-title">Servicios de Estrategia</h2>
@@ -627,16 +765,6 @@
     <h2 class="section-title">Red de colaboradores</h2>
     <div class="feature" style="margin-top:18px;">
       <div class="image-wrap">
-        <img src="assets/img/018.jpg" alt="Logotipo Camino Innovation Partners">
-      </div>
-      <div class="text">
-        <h2>Camino Innovation Partners</h2>
-        <p>Es una red de profesionales senior con visión global, alta experiencia y enfoque a resultados, que realizan su trabajo con los equipos de las organizaciones, que son quienes descubren soluciones a sus problemas y las implantan y despliegan en su actividad.</p>
-      </div>
-    </div>
-
-    <div class="feature" style="margin-top:18px;">
-      <div class="image-wrap">
         <img src="assets/img/019.webp" alt="Retrato de Raúl Oliván">
       </div>
       <div class="text">
@@ -672,6 +800,16 @@
       <div class="text">
         <h2>Elena Méndez</h2>
         <p>Directora de la red de expertos en Gestión de RRHH y desarrollo profesional enEvolución. Ha desarrollado su carrera profesional en las áreas de tecnología, Recursos Humanos y estrategia. Es profesora del IE en los programas Senior Managemet Programa (SMP), MBA executive y en otros programas superiores.</p>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/018.jpg" alt="Logotipo Camino Innovation Partners">
+      </div>
+      <div class="text">
+        <h2>Camino Innovation Partners</h2>
+        <p>Es una red de profesionales senior con visión global, alta experiencia y enfoque a resultados, que realizan su trabajo con los equipos de las organizaciones, que son quienes descubren soluciones a sus problemas y las implantan y despliegan en su actividad.</p>
       </div>
     </div>
   </div>
@@ -730,6 +868,155 @@
     </div>
   </div>
 </section>
+
+<section id="blog">
+  <div class="container">
+    <h2 class="section-title">Blog</h2>
+    <p class="section-sub">Ideas, proyectos y casos prácticos sobre innovación, estrategia y liderazgo.</p>
+
+    <!-- Carrusel -->
+    <div class="blog-wrap featured" aria-label="Artículos destacados">
+      <div class="slider" role="region" aria-roledescription="carrusel" aria-label="Destacados">
+        <div class="slides" id="blog-slides"><!-- lo rellena JS --></div>
+        <button class="ctrl prev" aria-label="Anterior" type="button">‹</button>
+        <button class="ctrl next" aria-label="Siguiente" type="button">›</button>
+        <div class="dots" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="posts grid" id="blog-grid"><!-- lo rellena JS --></div>
+  </div>
+
+  <script>
+  (function () {
+    // --- 0) Manifest (fallback para file:// o si falla la lectura) ---
+    const MANIFEST = [
+  {
+    href: 'blog/art01.html',
+    // TÍTULO y DESCRIPCIÓN que quieres ver también en local (file://)
+    title: '¿Por qué nos cuesta tanto innovar?',
+    desc:  'Algunas claves que explican un déficit histórico y que nos pueden ayudar a superarlo.',
+    dateISO: '2025-10-06', dateText: '06 oct 2025',
+    tags: ['Innovación','Crecimiento en valor'],
+    // FALLBACK que exista de verdad en /assets/img/
+    fallbackImg: 'assets/img/art01.png'
+  },
+  {
+    href: 'blog/art02.html',
+    title: 'Consejos asesores en PYMEs: una palanca para crecer en valor',
+    desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
+    dateISO: '2025-09-10', dateText: '10 sep 2025',
+    tags: ['PYMEs','Consejos'],
+    fallbackImg: 'assets/img/art02.png'
+  },
+  {
+    href: 'blog/art03.html',
+    title: 'Gobernanza de la innovación en Consejos',
+    desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
+    dateISO: '2025-09-02', dateText: '2 sep 2025',
+    tags: ['Consejos','Innovación'],
+    fallbackImg: 'assets/img/art03.png'
+  }
+];
+
+    const USE_FETCH = location.protocol !== 'file:'; // En local file:// no podemos leer otros ficheros
+
+    // --- 1) Funciones para leer portada/título/desc desde cada HTML ---
+    const META_IMG = ['meta[property="og:image"]','meta[name="twitter:image"]','meta[name="thumbnail"]'];
+    const META_DESC = ['meta[property="og:description"]','meta[name="description"]'];
+    function abs(u, base){ try { return new URL(u, base).href; } catch { return null; } }
+
+    async function readArticleInfo(url){
+      if (!USE_FETCH) return null; // en file:// saltamos
+      const r = await fetch(url, {credentials:'same-origin'});
+      if (!r.ok) throw new Error('Fetch fail '+url);
+      const html = await r.text();
+      const doc  = new DOMParser().parseFromString(html,'text/html');
+
+      // título
+      let title = doc.querySelector('meta[property="og:title"]')?.content?.trim()
+                || doc.querySelector('title')?.textContent?.trim()
+                || doc.querySelector('h1')?.textContent?.trim() || null;
+
+      // desc
+      let desc; for (const s of META_DESC){ const m=doc.querySelector(s); if(m?.content){ desc=m.content.trim(); break; } }
+
+      // imagen
+      let img; for (const s of META_IMG){ const m=doc.querySelector(s); if(m?.content){ img = abs(m.content, url); if(img) break; } }
+      if (!img) {
+        const firstImg = doc.querySelector('article img, main article img, main img, img');
+        const src = firstImg?.getAttribute('src') || firstImg?.src;
+        if (src) img = abs(src, url);
+      }
+      return {title, desc, img};
+    }
+
+    // --- 2) Pinta carrusel + grid con manifest, y luego “hidrata” desde HTMLs (si se puede) ---
+    const slidesEl = document.getElementById('blog-slides');
+    const gridEl   = document.getElementById('blog-grid');
+
+    function renderAll(posts){
+      // Carrusel
+      slidesEl.innerHTML = posts.map(p => `
+        <article class="slide" itemscope itemtype="https://schema.org/BlogPosting">
+          <img class="hero" src="${p.img || p.fallbackImg}" alt="Imagen destacada: ${p.title}" loading="lazy" decoding="async" itemprop="image">
+          <a href="${p.href}" class="stretched" aria-label="Abrir: ${p.title}" style="position:absolute;inset:0;display:block;text-indent:-9999px;overflow:hidden;">${p.title}</a>
+          <div class="caption">
+            <a href="${p.href}" style="color:#fff;text-decoration:none;">
+              <h3 itemprop="headline">${p.title}</h3>
+            </a>
+            <meta itemprop="datePublished" content="${p.dateISO}">
+            <meta itemprop="author" content="Joaquín Romero Roldán">
+          </div>
+        </article>
+      `).join('');
+
+      // Grid
+      gridEl.innerHTML = posts.map((p,i)=> `
+        <article id="blog-post-${i+1}" class="post-card" itemscope itemtype="https://schema.org/BlogPosting">
+          <div class="media">
+            <img class="thumb" src="${p.img || p.fallbackImg}" alt="Miniatura: ${p.title}" loading="lazy" decoding="async" itemprop="image">
+          </div>
+          <div class="body">
+            <div class="post-meta">
+              <time itemprop="datePublished" datetime="${p.dateISO}">${p.dateText}</time> •
+              <span itemprop="author" itemscope itemtype="https://schema.org/Person"><span itemprop="name">Joaquín Romero Roldán</span></span>
+            </div>
+            <h3 itemprop="headline"><a href="${p.href}" itemprop="url">${p.title}</a></h3>
+            <p itemprop="description">${p.desc || ''}</p>
+            <a class="read-more" href="${p.href}">Leer artículo</a>
+            <div class="post-tags">${(p.tags||[]).map(t=>`<span class="post-tag">${t}</span>`).join('')}</div>
+          </div>
+        </article>
+      `).join('');
+
+      // Activa tu JS de carrusel si lo tienes (tu archivo ya trae el script que mueve .slides). :contentReference[oaicite:1]{index=1}
+    }
+
+    // Primero pintamos con manifest (instantáneo)
+    renderAll(MANIFEST);
+
+    // Después intentamos “beber” de las HTMLs para título/desc/portada
+    (async () => {
+      if (!USE_FETCH) return; // en file:// nos quedamos con manifest
+      const hydrated = await Promise.all(MANIFEST.map(async m => {
+        try {
+          const info = await readArticleInfo(m.href);
+          return {
+            ...m,
+            title: info?.title || m.title,
+            desc:  info?.desc  || m.desc,
+            img:   info?.img   || m.fallbackImg
+          };
+        } catch { return m; }
+      }));
+      renderAll(hydrated);
+    })();
+  })();
+  </script>
+</section>
+
 
 <footer id="contacto">
   <style>
@@ -975,6 +1262,70 @@ Gracias.`;
       });
     }
   })();
+</script>
+<script>
+(function(){
+  const root   = document.querySelector('#blog .slider');
+  if (!root) return;
+
+  const track  = root.querySelector('.slides');
+  const slides = Array.from(root.querySelectorAll('.slide'));
+  const prev   = root.querySelector('.prev');
+  const next   = root.querySelector('.next');
+  const dots   = root.querySelector('.dots');
+
+  let idx = 0, lock = false;
+
+  // Dots
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Ir al destacado ' + (i+1));
+    b.addEventListener('click', () => go(i));
+    dots.appendChild(b);
+  });
+
+  function update(){
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    dots.querySelectorAll('button').forEach((b,i) => b.setAttribute('aria-current', i===idx ? 'true' : 'false'));
+  }
+  function go(n){
+    if (lock) return;
+    lock = true;
+    idx = (n + slides.length) % slides.length;
+    update();
+    setTimeout(()=> lock=false, 450);
+  }
+  prev.addEventListener('click', () => go(idx - 1));
+  next.addEventListener('click', () => go(idx + 1));
+  update();
+
+  // Teclado
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  go(idx - 1);
+    if (e.key === 'ArrowRight') go(idx + 1);
+  });
+  root.tabIndex = 0; // foco para teclado
+
+  // Swipe táctil
+  let sx=0, dx=0;
+  track.addEventListener('touchstart', (e)=>{ sx = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchmove',  (e)=>{ dx = e.touches[0].clientX - sx; }, {passive:true});
+  track.addEventListener('touchend',   ()=>{ if (Math.abs(dx)>40) (dx<0? go(idx+1):go(idx-1)); sx=dx=0; });
+
+  // Auto-rotación opcional (10s). Descomenta si quieres:
+  // setInterval(()=> go(idx+1), 10000);
+
+  // GA4 (opcional): clic en controles
+  function gaEvent(action,label){
+    if (typeof gtag === 'function'){
+      gtag('event', action, { event_category:'Blog Carousel', event_label: label });
+    }
+  }
+  prev.addEventListener('click', ()=>gaEvent('carousel_prev','Prev'));
+  next.addEventListener('click', ()=>gaEvent('carousel_next','Next'));
+  dots.querySelectorAll('button').forEach((b,i)=> b.addEventListener('click', ()=>gaEvent('carousel_dot','Dot '+(i+1))));
+})();
 </script>
 </body>
 </html>
