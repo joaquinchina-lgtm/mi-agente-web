@@ -341,36 +341,6 @@
   </div>
 </section>
 
-<!-- ====================== SEMINARIO (SECCIÓN PROPIA FULL WIDTH) ====================== -->
-<section id="seminario" class="seminar">
-  <div class="sem-inner">
-    <div class="sem-media">
-      <img src="assets/img/seminario-boston-hero.jpg"
-           alt="Boston & Cambridge: vistas urbanas y campus universitarios" loading="lazy">
-    </div>
-
-    <div class="sem-text">
-      <span class="sem-kicker">Seminario 2026</span>
-      <h2>MIT &amp; Harvard: 01-05 FEB</h2>
-      <p>Estrategia, Innovación y personas</p> 
-      <ul class="sem-bullets">
-        <li><strong>INSPIRAR.</strong> Ecosistema que impulsa decisiones de futuro.</li>
-        <li><strong>UNIVERSIDADES MÍTICAS.</strong> Presencia en campus y profesorado top.</li>
-        <li><strong>BOSTON &amp; CAMBRIDGE.</strong> Historia y funcionamiento del ecosistema.</li>
-        <li><strong>TECNOLOGÍAS.</strong> Ver tecnología en acción y su relación con las personas.</li>
-        <li><strong>APRENDER &amp; COMPARTIR.</strong> Grupo reducido de alta dirección.</li>
-      </ul>
-      <div class="sem-cta">
-        <a class="btn-primary" href="mailto:joaquinchina@gmail.com?subject=Inter%C3%A9s%20Seminario%202026&body=Quiero%20informaci%C3%B3n.">
-          Quiero información
-        </a>
-        <!-- <a class="btn-ghost" href="assets/docs/seminario-2026.pdf">Descargar programa</a> -->
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ================================================================================ -->
-
 
 <section id="innovacion">
   <div class="container">
@@ -886,14 +856,35 @@
       </div>
     </div>
 
-    <!-- Grid -->
-    <div class="posts grid" id="blog-grid"><!-- lo rellena JS --></div>
-  </div>
 
   <script>
   (function () {
     // --- 0) Manifest (fallback para file:// o si falla la lectura) ---
     const MANIFEST = [
+  {
+    href: 'blog/art04.html',
+    title: '¿Qué puedes hacer tú por Europa',
+    desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
+    dateISO: '2026-01-09', dateText: '09 jan 2026',
+    tags: ['Europa','Innovación'],
+    fallbackImg: 'assets/img/art04.png'
+  },
+  {
+    href: 'blog/art03.html',
+    title: '¿El milagro de la normalidad?',
+    desc:  '15 años del Orfeón Pamplonés en el Carnegie Hall de Nueva York.',
+    dateISO: '2025-10-20', dateText: '20 oct 2025',
+    tags: ['Cultura','Orfeón','Música','Innovación'],
+    fallbackImg: 'assets/img/art03.png'
+  },
+  {
+    href: 'blog/art02.html',
+    title: 'Consejos asesores en PYMEs: una palanca para crecer en valor',
+    desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
+    dateISO: '2025-10-14', dateText: '14 oct 2025',
+    tags: ['PYMEs','Consejos'],
+    fallbackImg: 'assets/img/art02.png'
+  },  
   {
     href: 'blog/art01.html',
     // TÍTULO y DESCRIPCIÓN que quieres ver también en local (file://)
@@ -903,22 +894,6 @@
     tags: ['Innovación','Crecimiento en valor'],
     // FALLBACK que exista de verdad en /assets/img/
     fallbackImg: 'assets/img/art01.png'
-  },
-  {
-    href: 'blog/art02.html',
-    title: 'Consejos asesores en PYMEs: una palanca para crecer en valor',
-    desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
-    dateISO: '2025-09-10', dateText: '14 oct 2025',
-    tags: ['PYMEs','Consejos'],
-    fallbackImg: 'assets/img/art02.png'
-  },
-  {
-    href: 'blog/art03.html',
-    title: 'Gobernanza de la innovación en Consejos',
-    desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
-    dateISO: '2025-09-02', dateText: '20 oct 2025',
-    tags: ['Consejos','Innovación'],
-    fallbackImg: 'assets/img/art03.png'
   }
 ];
 
@@ -970,25 +945,6 @@
             </a>
             <meta itemprop="datePublished" content="${p.dateISO}">
             <meta itemprop="author" content="Joaquín Romero Roldán">
-          </div>
-        </article>
-      `).join('');
-
-      // Grid
-      gridEl.innerHTML = posts.map((p,i)=> `
-        <article id="blog-post-${i+1}" class="post-card" itemscope itemtype="https://schema.org/BlogPosting">
-          <div class="media">
-            <img class="thumb" src="${p.img || p.fallbackImg}" alt="Miniatura: ${p.title}" loading="lazy" decoding="async" itemprop="image">
-          </div>
-          <div class="body">
-            <div class="post-meta">
-              <time itemprop="datePublished" datetime="${p.dateISO}">${p.dateText}</time> •
-              <span itemprop="author" itemscope itemtype="https://schema.org/Person"><span itemprop="name">Joaquín Romero Roldán</span></span>
-            </div>
-            <h3 itemprop="headline"><a href="${p.href}" itemprop="url">${p.title}</a></h3>
-            <p itemprop="description">${p.desc || ''}</p>
-            <a class="read-more" href="${p.href}">Leer artículo</a>
-            <div class="post-tags">${(p.tags||[]).map(t=>`<span class="post-tag">${t}</span>`).join('')}</div>
           </div>
         </article>
       `).join('');
