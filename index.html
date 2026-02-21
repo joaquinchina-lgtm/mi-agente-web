@@ -293,6 +293,62 @@
     "worksFor": { "@type": "Organization", "name": "JR · Innovación y Estrategia" }
   }
   </script>
+
+
+<style>
+/* ===== Carrusel de logos (escalable, sin saltos) ===== */
+.logo-carousel{
+  background:#ffffff;
+  padding: 34px 0 36px;
+  border-bottom:1px solid #e5e7eb;
+}
+.logo-carousel-viewport{
+  overflow:hidden;
+}
+.logo-track{
+  display:flex;
+  width:max-content;
+  /* Ajusta aquí la velocidad: 60s (elegante), 90s (premium), 120s (muy lento) */
+  animation: logoScroll 90s linear infinite;
+  will-change: transform;
+}
+.logo-slide{
+  display:flex;
+  align-items:center;
+  gap: 80px;
+  padding: 0 40px;
+}
+.logo-slide img{
+  height: 55px;
+  width: auto;
+  opacity: .78;
+  filter: grayscale(100%);
+  transition: transform .25s ease, opacity .25s ease, filter .25s ease;
+}
+.logo-slide img:hover{
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Animación basada en el ancho real del primer bloque */
+@keyframes logoScroll{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(calc(-1 * var(--scroll-width, 0px))); }
+}
+
+/* Pausa al pasar el ratón (opcional, útil en desktop) */
+.logo-carousel:hover .logo-track{
+  animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 768px){
+  .logo-slide{ gap: 50px; padding: 0 24px; }
+  .logo-slide img{ height: 40px; }
+}
+</style>
+
 </head>
 
 <body>
@@ -341,6 +397,39 @@
   </div>
 </section>
 
+<!-- ===== Banner carrusel de logotipos (clientes) ===== -->
+<section class="logo-carousel" aria-label="Logotipos de clientes">
+  <div class="container logo-carousel-title" style="text-align:center; margin-bottom:20px;">
+    <p style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:#6b7280; margin:0;">
+      Proyectos recientes
+    </p>
+  </div>
+
+  <div class="logo-carousel-viewport">
+    <div class="logo-track">
+      <div class="logo-slide">
+        <!-- ⚙️ Sustituye estos nombres por tus PNG reales en /assets/logos/ -->
+        <img src="assets/logos/IDOM.png" alt="IDOM" loading="lazy" decoding="async">
+        <img src="assets/logos/VERIDAS.png" alt="VERIDAS" loading="lazy" decoding="async">
+        <img src="assets/logos/MC3.png" alt="MC3" loading="lazy" decoding="async">
+        <img src="assets/logos/CMN.png" alt="CMN" loading="lazy" decoding="async">
+        <img src="assets/logos/ESIC.png" alt="ESIC" loading="lazy" decoding="async">
+        <img src="assets/logos/UPNA.png" alt="UPNA" loading="lazy" decoding="async">
+        <img src="assets/logos/UNIOVI.png" alt="UNIOVI" loading="lazy" decoding="async">
+        <img src="assets/logos/UIB.png" alt="UIB" loading="lazy" decoding="async">
+        <img src="assets/logos/UNITA.png" alt="UNITA" loading="lazy" decoding="async">
+        <img src="assets/logos/FUS.png" alt="FUS" loading="lazy" decoding="async">
+        <img src="assets/logos/OP.png" alt="OP" loading="lazy" decoding="async">
+        <img src="assets/logos/FOP.png" alt="FOP" loading="lazy" decoding="async">
+        <img src="assets/logos/FSF.png" alt="FSF" loading="lazy" decoding="async">
+        <!-- añade aquí tantos logos como necesites -->
+      </div>
+
+      <!-- Duplicado automático para efecto infinito (se rellena por JS) -->
+      <div class="logo-slide clone" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
 
 <section id="innovacion">
   <div class="container">
@@ -1285,5 +1374,46 @@ Gracias.`;
   dots.querySelectorAll('button').forEach((b,i)=> b.addEventListener('click', ()=>gaEvent('carousel_dot','Dot '+(i+1))));
 })();
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const slide = document.querySelector(".logo-carousel .logo-slide:not(.clone)");
+  const clone = document.querySelector(".logo-carousel .logo-slide.clone");
+  const track = document.querySelector(".logo-carousel .logo-track");
+  if (!slide || !clone || !track) return;
+
+  // Duplicar logos automáticamente
+  clone.innerHTML = slide.innerHTML;
+
+  // Medir el ancho real del primer bloque (incluye imágenes)
+  const setWidth = () => {
+    const width = slide.getBoundingClientRect().width;
+    track.style.setProperty("--scroll-width", width + "px");
+  };
+
+  // Esperar a que carguen imágenes para medir bien
+  const imgs = Array.from(slide.querySelectorAll("img"));
+  let pending = imgs.length;
+  if (pending === 0) {
+    setWidth();
+    return;
+  }
+  const done = () => { pending -= 1; if (pending <= 0) setWidth(); };
+
+  imgs.forEach(img => {
+    if (img.complete) return done();
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+  });
+
+  // Recalcular al cambiar tamaño de ventana
+  window.addEventListener("resize", () => {
+    // pequeño debounce
+    clearTimeout(window.__jrLogoResizeT);
+    window.__jrLogoResizeT = setTimeout(setWidth, 120);
+  });
+});
+</script>
+
 </body>
 </html>
