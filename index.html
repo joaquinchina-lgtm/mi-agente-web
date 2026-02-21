@@ -95,6 +95,16 @@
     .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
     .btn.brand { background: var(--brand); color:#fff; border-color: transparent; }
 
+	.reactor-cta{
+  	background: #F46A52;
+  	color: #ffffff;
+  	border-color: transparent;
+	}
+
+	.reactor-cta:hover{
+  	background: #E9543F;
+	}
+
     section { padding: 56px 0; }
     .section-title { font-size: 28px; margin-bottom: 18px; }
     .section-sub { color:#4b5563; max-width: 860px; }
@@ -281,6 +291,14 @@
     .slide { height: 240px; }
   }
 </style>
+
+<style>
+.mini-cta { margin-top: 12px; }
+.mini-cta .btn { width: 100%; justify-content: center; border-radius: 12px; }
+.mini-cta-sub { margin: 8px 0 0; font-size: 10px; color: #6b7280; text-align: center; }
+</style>
+
+
 
   <!-- ====== JSON-LD (Person) ====== -->
   <script type="application/ld+json">
@@ -598,8 +616,19 @@
         })();
       })();
       </script>
+
+		<div class="mini-cta">
+  		<a class="btn reactor-cta" href="gpts.html" target="_blank" rel="noopener">
+		    ¿Tienes un problema? Prueba nuestros agentes: prototípalo y trabaja en soluciones reales.
+		  </a>
+		  <p class="mini-cta-sub">
+  		</p>
+	      <div class="jr-hint">Ecosistema de agentes de IA específicos diseñado por Joaquín Romero Roldán (en pruebas).</div>
+	   </div>
+
     </div>
     <!-- === /JR · Caja de consulta al agente === -->
+
 
     <p class="section-sub">
       Todos los servicios ofertados utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades, centros y unidades de I+D, en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
@@ -1413,6 +1442,21 @@ document.addEventListener("DOMContentLoaded", function () {
     window.__jrLogoResizeT = setTimeout(setWidth, 120);
   });
 });
+</script>
+
+<script>
+  (function(){
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('a[href="gpts.html"]');
+      if (!a) return;
+      if (typeof gtag === 'function') {
+        gtag('event', 'click_gpts_hub', {
+          event_category: 'Reactor Innovacion',
+          event_label: 'Boton: Probar agentes'
+        });
+      }
+    });
+  })();
 </script>
 
 </body>
