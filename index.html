@@ -72,6 +72,9 @@
       --radius: 18px;
     }
     * { box-sizing: border-box; }
+    html {
+    -webkit-text-size-adjust: 100%;
+    }
     html, body { margin:0; padding:0; background:#f6f7fb; color:#111827; font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height:1.55; }
     a { color: var(--brand); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -483,6 +486,27 @@
         #jr-agent-results{ margin-top: 14px; }
         .summary{ background:#f9fafb; border:1px dashed #e5e7eb; padding:10px 12px; border-radius:12px; }
         @media (max-width:767px){ #jr-agent-box .jr-row{flex-direction:column} #jr-agent-box .jr-actions{flex-direction:column} }
+/* === FIX responsive: evita overflow y fuerza ancho correcto === */
+	#jr-agent-box .jr-row > *{
+	  min-width: 0;          /* clave para que flex no desborde */
+	  }
+
+	#jr-agent-box input[type="text"],
+	#jr-agent-box select{
+	  width: 100%;           /* en móvil, que ocupen el ancho del contenedor */
+	  }
+
+	/* En escritorio: que se comporten bien en fila */
+	@media (min-width: 768px){
+  	#jr-agent-box input[type="text"],
+  	#jr-agent-box select{
+	    flex: 1 1 0;
+  	  }
+ 	 #jr-agent-box .jr-actions{
+    	flex: 0 0 auto;
+    	width: auto;
+  	  }
+	}
       </style>
 
       <div class="jr-row">
@@ -619,7 +643,7 @@
 
 		<div class="mini-cta">
   		<a class="btn reactor-cta" href="gpts.html" target="_blank" rel="noopener">
-		    ¿Tienes un problema? Prueba nuestros agentes: prototípalo y trabaja en soluciones reales.
+		    ¿Tienes un problema identificado? Prueba nuestros agentes IA: prototípalo y trabaja en soluciones reales.
 		  </a>
 		  <p class="mini-cta-sub">
   		</p>
