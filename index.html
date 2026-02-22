@@ -314,6 +314,17 @@
   width: auto;
   display: inline-flex;
 }
+@media (max-width: 768px){
+  .mini-cta .btn.reactor-cta{
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 320px;          /* 👈 aquí controlas el “tamaño a la baja” */
+    padding: 8px 12px !important;
+    font-size: 10px !important;
+    white-space: normal;       /* permite varias líneas */
+    text-align: center;
+  }
+}
 </style>
 
 
