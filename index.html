@@ -262,6 +262,25 @@
     body.menu-open{
       overflow:hidden;
     }
+
+  /* 1) Que la caja NO se estire a todo el ancho */
+  .hero-overlay-box{
+    display: inline-block !important;
+    width: fit-content !important;
+    max-width: calc(100% - 40px) !important; /* para que no se salga en pantallas pequeñas */
+    margin: 0 auto !important;
+  }
+
+  /* 2) Asegurar que el contenedor la centra (si el padre es block) */
+  .hero .inner{
+    text-align: center;
+  }
+
+  /* 3) Por si el padre es flex y la estira */
+  .hero-overlay-box{
+    align-self: center;
+    justify-self: center;
+  }
   </style>
 
 <style>
