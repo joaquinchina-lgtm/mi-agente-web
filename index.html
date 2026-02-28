@@ -171,6 +171,47 @@
        font-size: 12px;          /* más compacto */
        border-radius: 12px;      /* menos pastilla exagerada */
        justify-content: center;
+
+     /* 1) Header flotante sobre el vídeo */
+     header{
+       position: fixed;
+       top: 0;
+       left: 0;
+       right: 0;
+       background: transparent;
+       border-bottom: none;
+       z-index: 60;
+     }
+
+     /* 2) Botón hamburguesa “3 barras” gris claro, recuadrado y transparente */
+     .nav-toggle{
+       display: flex;                 /* IMPORTANTE: para que aparezca en móvil */
+       flex-direction: column;
+       justify-content: center;
+       align-items: center;
+       gap: 8px;
+
+       width: 46px;
+       height: 46px;
+       padding: 0;
+
+       background: transparent;
+       border: 1px solid rgba(229,231,235,.70);
+       border-radius: 12px;
+       box-shadow: none;
+     }
+
+     .nav-toggle-bar{
+       width: 26px;
+       height: 5px;
+       background: rgba(229,231,235,.95);
+       border-radius: 999px;
+       display: block;
+     }
+
+     /* 3) Para que anclas/scroll no queden tapados por el header fijo */
+     section{ scroll-margin-top: 80px; }
+
      }
     }
 
@@ -180,32 +221,34 @@
 
     /* ====== Hamburguesa + menú móvil ====== */
     .nav-toggle{
-      display:none;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      border-radius:12px;
-      width:44px;
-      height:44px;
-      padding:10px;
-      cursor:pointer;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      box-shadow: 0 10px 18px rgba(2,6,23,.04);
+      display:flex;                     /* en móvil sí */
+      flex-direction: column;           /* apila las barras */
+      justify-content: center;
+      align-items: center;
+
+      width: 46px;
+      height: 46px;
+      gap: 8px;                         /* separación entre barras */
+
+      padding: 0;
+      background: transparent;          /* fondo transparente */
+      border: 1px solid rgba(229,231,235,.70);
+      border-radius: 12px;
+      box-shadow: none;                 /* flotante limpio */
     }
+
 
     .nav-toggle:focus{
       outline:none;
-      box-shadow:0 0 0 3px rgba(14,165,233,.15);
-      border-color: var(--brand);
+      box-shadow:0 0 0 3px rgba(229,231,235,.22);
+      border-color: rgba(229,231,235,.90);
     }
 
     .nav-toggle-bar{
-      display:block;
-      width:18px;
-      height:2px;
-      background:#0b1324;
-      border-radius:2px;
+      width: 26px;                      /* más largo */
+      height: 5px;                      /* más gordito (como tu imagen) */
+      background: rgba(229,231,235,.95);/* gris claro */
+      border-radius: 999px;             /* extremos muy redondeados */
     }
 
     /* Móvil: oculto links desktop y muestro hamburguesa */
