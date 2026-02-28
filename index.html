@@ -251,87 +251,6 @@
     body.menu-open{
       overflow:hidden;
     }
-
-     /* ===========================
-        MOBILE OVERLAY HEADER (hero)
-        =========================== */
-
-     :root{ --header-h: 64px; }
-
-     /* Desktop sigue como está (sticky blanco) */
-     @media (min-width: 768px){
-       header{ position: sticky; top: 0; }
-     }
-
-     /* Móvil: header flotando sobre el hero (transparente) */
-     @media (max-width: 767px){
-       header{
-         position: absolute;
-         top: 0; left: 0; right: 0;
-         height: var(--header-h);
-         background: transparent;
-         border-bottom: none;
-         backdrop-filter: none;
-         -webkit-backdrop-filter: none;
-       }
-
-       /* Cuando hay scroll -> barra fija blanca */
-       header.is-scrolled{
-         position: fixed;
-         background: rgba(255,255,255,.92);
-         border-bottom: 1px solid #e5e7eb;
-         backdrop-filter: blur(10px);
-         -webkit-backdrop-filter: blur(10px);
-       }
-
-       /* Asegura que los botones se vean sobre el vídeo */
-       .nav{ height: var(--header-h); }
-     }
-
-     /* ===========================
-        BRAND BOX (JR) = twin button
-        =========================== */
-     .nav a.brand.brand-box{
-       display:inline-flex;
-       align-items:center;
-       justify-content:center;
-       width:44px;
-       height:44px;
-       border-radius:12px;
-       border:1px solid rgba(255,255,255,.45);
-       background: transparent;
-       color:#fff;
-       text-decoration:none;
-       box-shadow: 0 10px 18px rgba(2,6,23,.04);
-     }
-
-     /* Icono hamburguesa: misma caja, transparente en overlay */
-     @media (max-width: 767px){
-       .nav-toggle{
-         background: transparent;
-         border-color: rgba(255,255,255,.45);
-         box-shadow: 0 10px 18px rgba(2,6,23,.04);
-       }
-       .nav-toggle-bar{ background:#fff; }
-     }
-
-     /* Estado scrolled (barra blanca): JR y hamburguesa pasan a negro */
-     @media (max-width: 767px){
-       header.is-scrolled .nav a.brand.brand-box{
-         border-color: #e5e7eb;
-         color:#0b1324;
-  	} 
-       header.is-scrolled .nav-toggle{
-    	 border-color: #e5e7eb;
-    	 background: transparent; /* como pedías */
-  	}
-       header.is-scrolled .nav-toggle-bar{
-    	 background:#0b1324;
-  	}
-     }
-
-	/* Menú móvil: que siempre caiga justo debajo del header */
-	.mobile-menu{ top: var(--header-h); }
   </style>
 
 <style>
@@ -587,7 +506,7 @@
 <body>
 <header>
   <div class="container nav">
-    <a class="brand brand-box" href="#home" aria-label="Ir al inicio">JR</a>
+    <a class="brand" href="#home" aria-label="Ir al inicio">JR</a>
 
     <!-- Botón hamburguesa (solo móvil) -->
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">
@@ -1727,26 +1646,7 @@ document.addEventListener("DOMContentLoaded", function () {
 (function(){
   const btn  = document.querySelector('.nav-toggle');
   const menu = document.getElementById('mobile-menu');
-
-(function(){
-  const header = document.querySelector('header');
-  const btn  = document.querySelector('.nav-toggle');
-  const menu = document.getElementById('mobile-menu');
   if(!btn || !menu) return;
-
-  // --- NUEVO: toggle de barra blanca al hacer scroll en móvil ---
-  function setHeaderState(){
-    if(!header) return;
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    if(!isMobile){
-      header.classList.remove('is-scrolled');
-      return;
-    }
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
-  }
-  window.addEventListener('scroll', setHeaderState, { passive: true });
-  window.addEventListener('resize', setHeaderState);
-  setHeaderState();
 
   function openMenu(){
     menu.hidden = false;
@@ -1765,21 +1665,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   btn.addEventListener('click', toggleMenu);
 
+  // Cierra al hacer click en un enlace
   menu.addEventListener('click', (e) => {
     const a = e.target.closest('a');
     if(a) closeMenu();
   });
 
+  // Cierra con ESC
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape') closeMenu();
   });
 
+  // Si pasas a desktop, cierra
   const mq = window.matchMedia('(min-width: 768px)');
   mq.addEventListener?.('change', () => { if(mq.matches) closeMenu(); });
-})();  if(!btn || !menu) return;
-
-  }
-
 })();
 </script>
 
