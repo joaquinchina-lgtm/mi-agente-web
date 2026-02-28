@@ -169,8 +169,12 @@
     /* Responsive móvil (video hero recortado) */
     @media (max-width: 767px) {
       :root{ --logos-h: 170px; }          /* AJUSTE FINO: altura total del carrusel en móvil */
-      .hero{ min-height: calc(100svh - var(--logos-h)) !important;}
-      .hero h2 { margin: 20px 20px 400px 20px !important; font-size: clamp(22px, 5.5vw, 28px); line-height: 1.2; }
+      .hero{
+        height: calc(100svh - var(--logos-h)) !important;
+        min-height: 0 !important;
+        overflow: hidden;
+      }
+      .hero h2 { margin: 20px 20px 0 20px !important; font-size: clamp(22px, 5.5vw, 28px); line-height: 1.2; }
       .hero .inner { padding-top: 72px; padding-bottom: 12px; }
       .hero video { object-position: center 0%; }
       .hero .cta {
@@ -184,6 +188,27 @@
        border-radius: 12px;      /* menos pastilla exagerada */
        justify-content: center;
      }
+      .logo-carousel{
+        height: var(--logos-h) !important;
+        padding: 12px 0 12px !important;   /* compacta */
+        overflow: hidden;
+     }
+      .logo-carousel-title{
+        margin-bottom: 8px !important;
+      }
+      .logo-slide img{
+        height: 34px !important;
+      }
+      .hero{ position: relative; }
+
+      .hero-overlay-box{
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 14px;
+        width: fit-content;
+        max-width: calc(100% - 32px);
+      }
     }
 
 
@@ -551,11 +576,11 @@
   .nav .links{ display:none !important; }   /* en móvil: NO links */
   .nav-toggle{ display:flex !important; }  /* en móvil: SÍ hamburguesa */
 
-  /* Header completamente transparente sobre el vídeo */
+  /* Header SEMITRANSPARENTE sobre el vídeo */
   header{
     position: fixed;
     top: 0; left: 0; right: 0;
-    background: transparent !important;
+    background:  rgba(0,0,0,0.25) !important;
     border-bottom: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
@@ -565,7 +590,7 @@
   header .nav,
   header .container,
   header .nav-inner{
-    background: transparent !important;
+    background:  rgba(0,0,0,0.25) !important;
     border-bottom: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
