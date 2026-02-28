@@ -173,17 +173,21 @@
        justify-content: center;
 
      /* 1) Header flotante sobre el vídeo */
-     header{
-       position: fixed;
-       top: 0;
-       left: 0;
-       right: 0;
-       background: transparent;
-       border-bottom: none;
-       z-index: 60;
-     }
+    header{
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
 
-     /* 2) Botón hamburguesa “3 barras” gris claro, recuadrado y transparente */
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border-bottom: none !important;
+
+      z-index: 60;
+    }
+
+       /* 2) Botón hamburguesa “3 barras” gris claro, recuadrado y transparente */
      .nav-toggle{
        display: flex;                 /* IMPORTANTE: para que aparezca en móvil */
        flex-direction: column;
