@@ -156,169 +156,93 @@
     footer { padding: 36px 0; border-top:1px solid #e5e7eb; color:#6b7280; }
 
     /* Responsive móvil (video hero recortado) */
-    @media (max-width: 767px) {
-      .hero { min-height: 70vh; }
-      .hero h2 { margin: 20px 20px 250px 20px !important; font-size: clamp(22px, 5.5vw, 28px); line-height: 1.2; }
-      .hero .inner { padding-top: 5px; padding-bottom: 20px; }
-      .hero video { object-position: center 50%; }
-      .hero .cta {
-       gap: 6px;                 /* menos separación */
-       justify-content: center;
-       flex-wrap: wrap;
-     }
-      .hero .cta .btn {
-       padding: 6px 10px;        /* menos alto */
-       font-size: 12px;          /* más compacto */
-       border-radius: 12px;      /* menos pastilla exagerada */
-       justify-content: center;
+/* Responsive móvil (video hero recortado + header totalmente transparente) */
+@media (max-width: 767px) {
 
-     /* 1) Header flotante sobre el vídeo */
-    header{
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+  /* HERO */
+  .hero { min-height: 70vh; }
+  .hero h2 { margin: 20px 20px 250px 20px !important; font-size: clamp(22px, 5.5vw, 28px); line-height: 1.2; }
+  .hero .inner { padding-top: 5px; padding-bottom: 20px; }
+  .hero video { object-position: center 50%; }
 
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border-bottom: none !important;
+  .hero .cta{
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 
-      z-index: 60;
-    }
+  .hero .cta .btn{
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 12px;
+    justify-content: center;
+  }
 
-       /* 2) Botón hamburguesa “3 barras” gris claro, recuadrado y transparente */
-     .nav-toggle{
-       display: flex;                 /* IMPORTANTE: para que aparezca en móvil */
-       flex-direction: column;
-       justify-content: center;
-       align-items: center;
-       gap: 8px;
+  /* HEADER: completamente transparente */
+  header{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: 60;
+  }
 
-       width: 46px;
-       height: 46px;
-       padding: 0;
+  /* A veces el fondo está en un contenedor interno del header */
+  header .nav,
+  header .container,
+  header .nav-inner{
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 
-       background: transparent;
-       border: 1px solid rgba(229,231,235,.70);
-       border-radius: 12px;
-       box-shadow: none;
-     }
+  /* HAMBURGUESA (3 barras redondeadas) */
+  .nav-toggle{
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    background: transparent !important;
+    border: 1px solid rgba(229,231,235,.70) !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+  }
 
-  /* JR recuadrado igual que la hamburguesa */
-      .nav a.brand{
-        width: 46px;
-        height: 46px;
+  .nav-toggle-bar{
+    width: 26px;
+    height: 5px;
+    background: rgba(229,231,235,.95) !important;  /* OJO: NO transparente */
+    border-radius: 999px;
+    display: block;
+  }
 
-        display: flex;
-        align-items: center;
-        justify-content: center;
+  /* JR recuadrado igual que hamburguesa */
+  a.brand, .brand, .nav a.brand{
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    border: 1px solid rgba(229,231,235,.70) !important;
+    border-radius: 12px;
+    color: rgba(229,231,235,.95) !important;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: none !important;
+  }
 
-        background: transparent;
-        border: 1px solid rgba(229,231,235,.70);
-        border-radius: 12px;
-
-        color: rgba(229,231,235,.95);  /* mismo gris claro que las barras */
-        font-weight: 700;
-        text-decoration: none;
-
-        box-shadow: none;
-      }
-
-
-     .nav-toggle-bar{
-       width: 26px;
-       height: 5px;
-       background: transparent;
-       border-radius: 999px;
-       display: block;
-     }
-
-     /* 3) Para que anclas/scroll no queden tapados por el header fijo */
-     section{ scroll-margin-top: 80px; }
-
-     }
-    }
-
-
-    /* Oculta el botón que dispara /api/ask si existiera */
-    #jr-agent-send { display: none!important; }
-
-    /* ====== Hamburguesa + menú móvil ====== */
-    .nav-toggle{
-      display:flex;                     /* en móvil sí */
-      flex-direction: column;           /* apila las barras */
-      justify-content: center;
-      align-items: center;
-
-      width: 46px;
-      height: 46px;
-      gap: 8px;                         /* separación entre barras */
-
-      padding: 0;
-      background: transparent;          /* fondo transparente */
-      border: 1px solid rgba(229,231,235,.70);
-      border-radius: 12px;
-      box-shadow: none;                 /* flotante limpio */
-    }
-
-
-    .nav-toggle:focus{
-      outline:none;
-      box-shadow:0 0 0 3px rgba(229,231,235,.22);
-      border-color: rgba(229,231,235,.90);
-    }
-
-    .nav-toggle-bar{
-      width: 26px;                      /* más largo */
-      height: 5px;                      /* más gordito (como tu imagen) */
-      background: rgba(229,231,235,.95);/* gris claro */
-      border-radius: 999px;             /* extremos muy redondeados */
-    }
-
-    /* Móvil: oculto links desktop y muestro hamburguesa */
-    @media (max-width: 767px){
-      .nav .links{ display:none; }
-      .nav-toggle{ display:inline-flex; }
-    }
-
-    /* Panel móvil (debajo del header sticky) */
-    .mobile-menu{
-      position: fixed;
-      top: 64px;              /* tu header mide 64px */
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,.98);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid #e5e7eb;
-      z-index: 49;            /* header está en 50 */
-    }
-
-    .mobile-menu-inner{
-      max-width: 1160px;
-      margin: 0 auto;
-      padding: 14px 20px 18px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .mobile-menu a{
-      padding: 10px 12px;
-      border-radius: 12px;
-      color:#111827;
-      font-weight:600;
-      text-decoration:none;
-    }
-
-    .mobile-menu a:hover{
-      background:#f3f4f6;
-    }
-
-    /* (Opcional) Bloqueo de scroll cuando el menú está abierto */
-    body.menu-open{
-      overflow:hidden;
-    }
+  /* Para que anclas/scroll no queden tapados por el header fijo */
+  section{ scroll-margin-top: 80px; }
+}
   </style>
 
 <style>
