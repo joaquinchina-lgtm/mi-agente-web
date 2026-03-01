@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <!-- ====== Config global ====== -->
+  <script>
+    window.BACKEND = "https://jr-gpt-backend-1.onrender.com";  /* pon tu URL real si cambia */
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ====== SEO básico ====== -->
+  <title>Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo</title>
+  <meta name="description" content="Asesoría en Innovación, Estrategia y Liderazgo. Programas de inteligencia colectiva y transferencia de conocimiento para empresas, universidades y administraciones públicas.">
+  <link rel="canonical" href="https://joaquinchina-lgtm.github.io/mi-agente-web/">
+  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+  <meta name="theme-color" content="#32717E" />
+
+<!-- ===== HEAD funcional mínimo para previews WhatsApp/X/LinkedIn ===== -->
+
+<!-- Open Graph -->
+<meta property="og:locale" content="es_ES">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo">
+<meta property="og:url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/index.html">
+<meta property="og:title" content="Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo">
+<meta property="og:description" content="Consejero-asesor independiente. Programas de inteligencia colectiva y transferencia de conocimiento.">
+<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
+<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1000x1000.jpg">
+<meta property="og:image:secure_url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Joaquín Romero Roldán. Consejero-asesor independiente".">
+
+
+<!-- (Opcional pero recomendable) Twitter Card: muchas apps lo leen también -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Consejero-asesor independiente en Innovación, Estrategia y Liderazgo.">
+<meta name="twitter:description" content="Programas de inteligencia colectiva y transferencia de conocimiento.">
+<meta name="twitter:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
+
+<!-- ===== FIN bloque funcional ===== -->
+
+  <!-- ====== Favicons ====== -->
+  <link rel="icon" href="/mi-agente-web/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+
+  <!-- ====== Google Analytics 4 ====== -->
+  <!-- Sustituye G-XXXXXXXXXX por tu ID de GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4H0ZT7ZTNX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-4H0ZT7ZTNX', {
+      /* ejemplo: page_path más limpio si usas anchors */
+      page_path: '/mi-agente-web/'
+    });
+  </script>
+
+  <!-- ====== Estilos ====== -->
+  <style>
+    :root {
+      --bg: #0b1020;
+      --ink: #0e1326;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --brand: #32717E;
+      --accent: #06b6d4;
+      --ring: rgba(14,165,233,.25);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html {
+    -webkit-text-size-adjust: 100%;
+    }
+    html, body { margin:0; padding:0; background:#f6f7fb; color:#111827; font-family: -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height:1.55; }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+
+    header { position: sticky; top:0; backdrop-filter: blur(8px); background: rgba(255,255,255,.8); border-bottom: 1px solid #e5e7eb; z-index: 50; }
+    .nav { display:flex; align-items:center; justify-content:space-between; height:64px; }
+    .nav a.brand { font-weight:600; letter-spacing:.2px; color:#0b1324; }
+    .nav .links a { margin-left: 16px; font-size: 14px; color:#374151; }
+    .nav .links a:hover { color:#111827; }
+
+    .hero { position: relative; min-height: 100vh; display: grid; place-items: center; overflow: hidden; background: #000; color: white; }
+    .hero video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    .hero .inner { position: relative; z-index:1; padding: 60px 0; text-align: center; }
+  
+
+
+/* === Recuadro semitransparente hero === */
+.hero-overlay-box{
+  background: rgba(0,0,0,0.25);   /* negro semitransparente */
+  padding: 10px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);     /* efecto elegante */
+  -webkit-backdrop-filter: blur(6px);
+  display: inline-block;
+  width: auto;
+  max-width: 600px;
+  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ajuste botones dentro del recuadro */
+.hero-overlay-box .cta{
+  margin-top: 14px;
+}
+    .eyebrow { font-size: 13px; letter-spacing:.18em; text-transform: uppercase; color: #a5f3fc; }
+    h1 { font-size: clamp(28px, 4vw, 44px); margin: 8px 0 12px; }
+    .lead { font-size: clamp(16px, 1.8vw, 20px); color: #e5e7eb; max-width: 820px; margin: 0 auto; }
+    .hero .cta { margin-top: 18px; display:flex; gap:12px; justify-content:center; flex-wrap: wrap; }
+    .btn { display:inline-flex; align-items:center; gap:10px; border:1px solid transparent; padding:12px 16px; border-radius: 999px; font-weight:600; cursor:pointer; background:white; color:#0b1324; box-shadow: 0 10px 20px rgba(0,0,0,.08); }
+    .btn.secondary { background: transparent; color:#e0f2fe; border-color: rgba(255,255,255,.35); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
+    .btn.brand { background: var(--brand); color:#fff; border-color: transparent; }
+    /* CTA elegante hacia los agentes (después de las 3 tarjetas) */
+    .hub-agents-cta{ margin-top:16px; display:flex; justify-content:center; }
+    .hub-agents-btn{
+      width:100%;
+      max-width: 980px;
+      justify-content:center;
+      text-align:center;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      color:#fff;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 32px rgba(2,6,23,.14);
+      line-height: 1.25;
+    }
+    .hub-agents-btn:hover{ text-decoration:none; filter: brightness(1.03); }
+
+    .hero-title { font-size: 16px; color: #e5e7eb; font-weight: 700; margin: 0; }
+    .hero-sub   { font-size: 14px; color: rgba(255,255,255,.80); margin: 6px 0 0; }
+    .hero-micro { font-size: 14px; color: rgba(255,255,255,.65); margin: 4px 0 0; letter-spacing: .08em; text-transform: uppercase; }
+    .hero-accent{ font-size: 14px; color: #e5e7eb; } /* ejemplo acento */
+
+	.reactor-cta{
+  	background: #F46A52;
+  	color: #ffffff;
+  	border-color: transparent;
+	}
+
+	.reactor-cta:hover{
+  	background: #E9543F;
+	}
+
+    section { padding: 56px 0; }
+    .section-title { font-size: 28px; margin-bottom: 18px; }
+    .section-sub { color:#4b5563; max-width: 860px; }
+
+    .grid { display:grid; gap: 18px; }
+    @media (min-width: 860px) { .grid.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 860px) { .grid.cols-2 { grid-template-columns: repeat(2, 1fr); } }
+    .card { background: var(--card); border:1px solid #e5e7eb; border-radius: var(--radius); overflow:hidden; box-shadow: 0 10px 18px rgba(2,6,23,.04); display:flex; flex-direction:column; }
+    .card .media { height: 180px; background:#f3f4f6; overflow:hidden; }
+    .card .media img, .card .media video { width:100%; height:100%; object-fit: cover; display:block; }
+    .card h3 { margin: 6px 0 6px; font-size: 18px; }
+    .card p { color:#4b5563; font-size: 15px; }
+    .pill { display:inline-block; padding:6px 10px; font-size:12px; border-radius:999px; border:1px solid #e5e7eb; background:#f9fafb; color:#374151; margin-right:8px; margin-bottom:8px; cursor: pointer; }
+    .pill:hover { text-decoration: none; filter: brightness(0.96); }
+
+    .feature { display:grid; gap: 18px; align-items:center; }
+    @media (min-width: 900px) { .feature { grid-template-columns: 1.1fr .9fr; } }
+    .feature .image-wrap { border-radius: var(--radius); overflow: hidden; border:1px solid #e5e7eb; }
+    .feature img { width:100%; height:100%; object-fit: cover; display:block; }
+
+    .gallery {
+           display:grid; 
+           gap: 10px;                 /* menos separación */
+           grid-template-columns: 1fr; /* móvil: una sola columna (más ancho real) */
+         }
+    @media (min-width: 768px) { .gallery { grid-template-columns: repeat(3, 1fr); } }
+    .gallery-card { border:1px solid #e5e7eb; border-radius: var(--radius); overflow:hidden; background:white; }
+    .gallery-card img { width:100%; aspect-ratio: 4 / 3; object-fit: cover; display:block; transition: transform .5s; }
+    .gallery-card:hover img { transform: scale(1.03); }
+
+    footer { padding: 36px 0; border-top:1px solid #e5e7eb; color:#6b7280; }
+
+    /* Responsive móvil (video hero recortado) */
+    @media (max-width: 767px) {
+      .hero { min-height: 44vh; }
+      .hero h2 { margin: 20px 20px 375px 20px !important; font-size: clamp(22px, 5.5vw, 28px); line-height: 1.2; }
+      .hero .inner { padding-top: 5px; padding-bottom: 15px; }
+      .hero video { object-position: center 10%; }
+      .hero .cta {
+       gap: 6px;                 /* menos separación */
+       justify-content: center;
+       flex-wrap: wrap;
+     }
+      .hero .cta .btn {
+       padding: 6px 10px;        /* menos alto */
+       font-size: 12px;          /* más compacto */
+       border-radius: 12px;      /* menos pastilla exagerada */
+       justify-content: center;
+     }
+    }
+
+
+    /* Oculta el botón que dispara /api/ask si existiera */
+    #jr-agent-send { display: none!important; }
+
+    /* ====== Hamburguesa + menú móvil ====== */
+    .nav-toggle{
+      display:none;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      border-radius:12px;
+      width:44px;
+      height:44px;
+      padding:10px;
+      cursor:pointer;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      box-shadow: 0 10px 18px rgba(2,6,23,.04);
+    }
+
+    .nav-toggle:focus{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(14,165,233,.15);
+      border-color: var(--brand);
+    }
+
+    .nav-toggle-bar{
+      display:block;
+      width:18px;
+      height:2px;
+      background:#0b1324;
+      border-radius:2px;
+    }
+
+    /* Móvil: oculto links desktop y muestro hamburguesa */
+    @media (max-width: 767px){
+      .nav .links{ display:none; }
+      .nav-toggle{ display:inline-flex; }
+    }
+
+    /* Panel móvil (debajo del header sticky) */
+    .mobile-menu{
+      position: fixed;
+      top: 64px;              /* tu header mide 64px */
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,.98);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e5e7eb;
+      z-index: 49;            /* header está en 50 */
+    }
+
+    .mobile-menu-inner{
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 14px 20px 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mobile-menu a{
+      padding: 10px 12px;
+      border-radius: 12px;
+      color:#111827;
+      font-weight:600;
+      text-decoration:none;
+    }
+
+    .mobile-menu a:hover{
+      background:#f3f4f6;
+    }
+
+    /* (Opcional) Bloqueo de scroll cuando el menú está abierto */
+    body.menu-open{
+      overflow:hidden;
+    }
+
+  /* 1) Que la caja NO se estire a todo el ancho */
+  .hero-overlay-box{
+    display: inline-block !important;
+    width: fit-content !important;
+    max-width: calc(100% - 40px) !important; /* para que no se salga en pantallas pequeñas */
+    margin: 0 auto !important;
+  }
+
+  /* 2) Asegurar que el contenedor la centra (si el padre es block) */
+  .hero .inner{
+    text-align: center;
+  }
+
+  /* 3) Por si el padre es flex y la estira */
+  .hero-overlay-box{
+    align-self: center;
+    justify-self: center;
+  }
+  </style>
+
+<style>
+  /* === Fix de márgenes/espaciado en cards === */
+  .grid.cols-3 { gap: 24px; }                /* más separación entre cards */
+  .card { border-radius: 22px; }             /* esquinas algo más redondeadas */
+  .card .media { height: 200px; }            /* alto visual cómodo del media */
+  .card .body { padding: 20px 22px 22px; }   /* aire interno (restaura margen) */
+  .card h3 { margin: 10px 0 8px; }
+  .card p { margin: 0; }                     /* evita saltos extra que “empujan” */
+  .pill { margin: 6px 0 10px; }              /* separa la pill del título */
+  /* Opcional: algo más de respiro lateral en el contenedor principal */
+  .container { padding-left: 24px; padding-right: 24px; }
+  /* En pantallas muy anchas, evita que se apelmacen: */
+  @media (min-width: 1200px){
+    .container { max-width: 1200px; }
+  }
+</style>
+
+<style>
+  .sr-only {
+    position: absolute;
+    left: -9999px;  /* oculto para la vista */
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>
+
+<style>
+.big-quote {
+  font-size: clamp(30px, 5vw, 30px); /* mucho más grande */
+  line-height: 1.25;
+  font-weight: 300;
+  margin:0 0 400px 0; /* espacio arriba y abajo */
+  color: #ffffff;      /* blanco como en tu hero */
+  max-width: 900px;    /* opcional: limita el ancho para legibilidad */
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+</style>
+
+<style>
+/* Sección full width estable (sin 100vw hacks) */
+.seminar{
+  width: 100%;
+  background: #000;
+  color: #fff;
+  margin: 0;              /* sin desplazamientos laterales */
+}
+
+/* Contenido centrado con ancho máximo cómodo */
+.seminar .sem-inner{
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: clamp(20px, 4vw, 56px) clamp(16px, 4vw, 40px);
+  display: grid;
+  gap: clamp(16px, 3vw, 40px);
+  grid-template-columns: 1fr;     /* móvil: una columna */
+  align-items: center;
+}
+
+/* Desktop: dos columnas */
+@media (min-width: 1024px){
+  .seminar .sem-inner{ grid-template-columns: 1.2fr 1fr; }
+}
+
+/* Medios */
+.seminar .sem-media{
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 260px;
+  background: #050a16;
+}
+.seminar .sem-media img{
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: saturate(1.05);
+}
+
+/* Texto */
+.seminar .sem-kicker{
+  display:inline-block; font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  background:#ef4444; color:#fff; padding:6px 10px; border-radius:999px; margin-bottom:10px;
+}
+.seminar h2{ margin:6px 0 10px; font-size:clamp(22px, 2.6vw, 34px); line-height:1.2; }
+.seminar .sem-bullets{ margin:8px 0 0; padding-left:1em; display:grid; gap:.45rem; color:#e5e7eb; }
+.seminar .sem-bullets strong{ color:#fff; }
+
+/* CTAs */
+.seminar .sem-cta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:clamp(12px, 2.5vw, 18px); }
+.seminar .btn-primary, .seminar .btn-ghost{
+  display:inline-block; text-decoration:none; border-radius:12px;
+  padding:10px 16px; font-weight:600; line-height:1;
+}
+.seminar .btn-primary{ background:#32717E; color:#fff; border:1px solid transparent; }
+.seminar .btn-ghost{ background:transparent; color:#e5e7eb; border:1px solid rgba(255,255,255,.6); }
+.seminar .btn-primary:hover{ filter:brightness(1.06); transform:translateY(-1px); }
+.seminar .btn-ghost:hover{ background:rgba(255,255,255,.06); }
+
+/* Radios más suaves en móvil */
+@media (max-width: 640px){ .seminar .sem-media{ border-radius:12px; } }
+</style>
+
+<style>
+  /* === Blog === */
+  #blog .blog-wrap { margin-top: 16px; }
+  #blog .featured { position: relative; border:1px solid #e5e7eb; border-radius: var(--radius);
+                    overflow:hidden; background:#fff; box-shadow: 0 10px 18px rgba(2,6,23,.04); }
+  /* Carrusel */
+  .slider { position:relative; }
+  .slides { display:flex; transition: transform .45s ease; will-change: transform; }
+  .slide  { min-width:100%; position:relative; height: 360px; background:#000; }
+  .slide img { width:100%; height:100%; object-fit: cover; display:block; }
+  .slide .caption {
+    position:absolute; left:0; right:0; bottom:0;
+    background: linear-gradient(transparent, rgba(0,0,0,.65));
+    color:#fff; padding:16px 18px;
+  }
+  .slider .ctrl {
+    position:absolute; top:50%; transform:translateY(-50%);
+    border:1px solid rgba(255,255,255,.6); background:rgba(0,0,0,.35); color:#fff;
+    border-radius:999px; width:40px; height:40px; display:grid; place-items:center; cursor:pointer;
+  }
+  .slider .prev { left:10px; } .slider .next { right:10px; }
+  .dots { position:absolute; left:0; right:0; bottom:10px; display:flex; gap:6px; justify-content:center; }
+  .dots button { width:8px; height:8px; border-radius:999px; border:none; background:#d1d5db; opacity:.85; cursor:pointer; }
+  .dots button[aria-current="true"]{ background: var(--brand); opacity:1; }
+
+  /* Grid de posts */
+  .posts.grid { display:grid; gap:18px; margin-top:18px; }
+  @media (min-width: 860px) { .posts.grid { grid-template-columns: repeat(3, 1fr); } }
+  .post-card { background:#fff; border:1px solid #e5e7eb; border-radius: var(--radius); overflow:hidden;
+               box-shadow: 0 10px 18px rgba(2,6,23,.04); display:flex; flex-direction:column; }
+  .post-card .media { height: 200px; background:#f3f4f6; overflow:hidden; }
+  .post-card img { width:100%; height:100%; object-fit:cover; display:block; }
+  .post-card .body { padding:16px 18px 18px; }
+  .post-card h3 { margin:8px 0 6px; font-size:18px; }
+  .post-card p  { margin:0; color:#4b5563; font-size:15px; }
+  .post-meta { font-size:12px; color:#6b7280; margin-bottom:6px; }
+  .post-tags { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .post-tag { font-size:12px; padding:4px 8px; border:1px solid #e5e7eb; border-radius:999px; background:#f9fafb; color:#374151; }
+  .post-card a.read-more { margin-top:12px; display:inline-block; font-weight:600; color: var(--brand); }
+  /* Responsive móvil del carrusel */
+  @media (max-width: 767px){
+    .slide { height: 240px; }
+  }
+</style>
+
+<style>
+.mini-cta { margin-top: 12px; }
+.mini-cta .btn{
+  display:block;
+  width:100%;
+  background:#f0644b;
+  color:#fff;
+  padding:14px 18px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:600;
+  font-size:16px;
+  line-height:1.2;
+}
+.mini-cta-sub { margin: 8px 0 0; font-size: 10px; color: #6b7280; text-align: center; }
+.mini-cta .btn.reactor-cta{
+  width: 100%;
+  display: block;
+}
+@media (max-width: 768px){
+ .mini-cta .btn.reactor-cta{
+    width: 100% !important;   /* 👈 vuelve a ocupar todo el ancho */
+    display: block !important;
+    padding: 10px 12px !important;  /* 👈 más compacto */
+    font-size: 12px !important;     /* 👈 texto más pequeño */
+    line-height: 1.2;
+  }
+}
+</style>
+
+
+
+
+  <!-- ====== JSON-LD (Person) ====== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Joaquín Romero Roldán",
+    "jobTitle": "Asesor en Innovación, Estrategia y Liderazgo",
+    "url": "https://joaquinchina-lgtm.github.io/mi-agente-web/",
+    "worksFor": { "@type": "Organization", "name": "JR · Innovación y Estrategia" }
+  }
+  </script>
+
+
+<style>
+/* ===== Carrusel de logos (escalable, sin saltos) ===== */
+.logo-carousel{
+  background:#ffffff;
+  padding: 18px 0 36px;
+  border-bottom:1px solid #e5e7eb;
+}
+.logo-carousel-viewport{
+  overflow:hidden;
+}
+.logo-track{
+  display:flex;
+  width:max-content;
+  /* Ajusta aquí la velocidad: 60s (elegante), 90s (premium), 120s (muy lento) */
+  animation: logoScroll 90s linear infinite;
+  will-change: transform;
+}
+.logo-slide{
+  display:flex;
+  align-items:center;
+  gap: 80px;
+  padding: 0 40px;
+}
+.logo-slide img{
+  height: 55px;
+  width: auto;
+  opacity: .78;
+  filter: grayscale(100%);
+  transition: transform .25s ease, opacity .25s ease, filter .25s ease;
+}
+.logo-slide img:hover{
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Animación basada en el ancho real del primer bloque */
+@keyframes logoScroll{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(calc(-1 * var(--scroll-width, 0px))); }
+}
+
+/* Pausa al pasar el ratón (opcional, útil en desktop) */
+.logo-carousel:hover .logo-track{
+  animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 768px){
+  .logo-slide{ gap: 50px; padding: 0 24px; }
+  .logo-slide img{ height: 40px; }
+  .logo-carousel{ padding: 18px 0 18px; }
+  .logo-carousel-title{ margin-bottom: 10px !important; }
+  .logo-slide img{ height: 34px; }
+}
+</style>
+
+
+<style id="fix-responsive-nav">
+/* =========================================================
+   FIX DEFINITIVO NAV + HEADER (desktop vs móvil)
+   ========================================================= */
+
+/* Desktop (por defecto) */
+.nav .links{ display:flex; }
+.nav-toggle{ display:none !important; }      /* nunca en desktop */
+.mobile-menu{ display:none; }               /* solo cuando se abre */
+
+/* Móvil */
+@media (max-width: 767px){
+  .nav .links{ display:none !important; }   /* en móvil: NO links */
+  .nav-toggle{ display:flex !important; }  /* en móvil: SÍ hamburguesa */
+
+  /* Header SEMITRANSPARENTE sobre el vídeo */
+  header{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background:  rgba(0,0,0,0.25) !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: 60;
+  }
+  header .nav,
+  header .container,
+  header .nav-inner{
+    background:  rgba(0,0,0,0.25);   /* negro semitransparente */
+ !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Botón hamburguesa (3 barras redondeadas) */
+  .nav-toggle{
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    background: transparent !important;
+    border: 1px solid rgba(229,231,235,.70) !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-toggle-bar{
+    width: 26px;
+    height: 2px;
+    background: rgba(229,231,235,.95) !important;
+    border-radius: 999px;
+    display:block;
+  }
+
+  /* JR recuadrado igual que hamburguesa */
+  a.brand, .nav a.brand{
+    width: 46px;
+    height: 46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background: transparent !important;
+    border: 1px solid rgba(229,231,235,.70) !important;
+    border-radius: 12px;
+
+    color: rgba(229,231,235,.95) !important;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: none !important;
+  }
+
+  /* Para que anchors no queden tapados por el header fijo */
+  section{ scroll-margin-top: 80px; }
+}
+
+/* Menú móvil: solo visible cuando se abre (tu JS añade body.menu-open) */
+body.menu-open .mobile-menu{ display:block; }
+</style>
+
+<style>
+/* Botón Contactar - versión sólida verdeazulada */
+.btn-contactar {
+  background: var(--accent);   /* verdeazulado */
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.btn-contactar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  opacity: 0.95;
+}
+
+/* Responsive móvil: fuerza el estilo del botón Contactar */
+@media (max-width: 767px) {
+  #consejos .btn-contactar,
+  .btn-contactar{
+    background: var(--accent) !important;   /* sólido, sin degradado */
+    color: #fff !important;
+    border: none !important;
+    border-radius: 14px !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08) !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+}
+
+</style>
+
+
+</head>
+
+<body>
+<header>
+  <div class="container nav">
+    <a class="brand" href="#home" aria-label="Ir al inicio">JR</a>
+
+    <!-- Botón hamburguesa (solo móvil) -->
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">
+      <span class="sr-only">Abrir menú</span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+      <span class="nav-toggle-bar" aria-hidden="true"></span>
+    </button>
+
+    <!-- Menú desktop -->
+    <nav class="links" aria-label="Secciones del sitio">
+      <a href="#innovacion">Innovación</a>
+      <a href="#estrategia">Estrategia</a>
+      <a href="#liderazgo">Liderazgo</a>
+      <a href="#consejos">Consejero</a>
+      <a href="#trayectoria">Trayectoria</a>
+      <a href="#socios">Socios</a>
+      <a href="#red">Red</a>
+      <a href="#galeria">Hitos</a>
+      <a href="#blog">Blog</a>
+    </nav>
+  </div>
+
+  <!-- Panel móvil (drawer) -->
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <div class="mobile-menu-inner">
+      <a href="#innovacion">Innovación</a>
+      <a href="#estrategia">Estrategia</a>
+      <a href="#liderazgo">Liderazgo</a>
+      <a href="#consejos">Consejero</a>
+      <a href="#trayectoria">Trayectoria</a>
+      <a href="#socios">Socios</a>
+      <a href="#red">Red</a>
+      <a href="#galeria">Hitos</a>
+      <a href="#blog">Blog</a>
+    </div>
+  </div>
+</header>
+
+<section id="home" class="hero">
+  <video autoplay muted loop playsinline aria-label="Vídeo de cabecera">
+    <!-- Vertical (móvil) -->
+    <source src="assets/video/Hero2Vertical.mp4" type="video/mp4" media="(max-width: 767px)">
+    <!-- Apaisada (escritorio/tablet) -->
+    <source src="assets/video/Hero2.mp4" type="video/mp4" media="(min-width: 768px)">
+    Tu navegador no soporta video HTML5.
+  </video>
+
+  <div class="inner container">
+    <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
+    <h2 class="big-quote">
+      
+    </h2>
+    <div class="hero-overlay-box">
+  <p class="lead" style="margin-top:0px;">Joaquín Romero Roldán</p>
+  <div class="eyebrow">Consejero / Asesor independiente</div>
+  <div class="hero-sub">INNOVACIÓN | ESTRATEGIA | LIDERAZGO </div>
+  <p class="hero-accent" style="margin-top:0px;">"En tiempos de IA y complejidad, la clave reside en la Inteligencia Colectiva"</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Banner carrusel de logotipos (clientes) ===== -->
+<section class="logo-carousel" aria-label="Logotipos de clientes">
+  <div class="container logo-carousel-title" style="text-align:center; margin-bottom:20px;">
+    <p style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:#6b7280; margin:0;">
+      Proyectos recientes
+    </p>
+  </div>
+
+  <div class="logo-carousel-viewport">
+    <div class="logo-track">
+      <div class="logo-slide">
+        <!-- ⚙️ Sustituye estos nombres por tus PNG reales en /assets/logos/ -->
+        <img src="assets/logos/BLANCO.png" alt="BLANCO" loading="lazy" decoding="async">
+        <img src="assets/logos/IDOM.png" alt="IDOM" loading="lazy" decoding="async">
+        <img src="assets/logos/VERIDAS.png" alt="VERIDAS" loading="lazy" decoding="async">
+        <img src="assets/logos/MC3.png" alt="MC3" loading="lazy" decoding="async">
+        <img src="assets/logos/CMN.png" alt="CMN" loading="lazy" decoding="async">
+        <img src="assets/logos/ESIC.png" alt="ESIC" loading="lazy" decoding="async">
+        <img src="assets/logos/UPNA.png" alt="UPNA" loading="lazy" decoding="async">
+        <img src="assets/logos/UNIOVI.png" alt="UNIOVI" loading="lazy" decoding="async">
+        <img src="assets/logos/UIB.png" alt="UIB" loading="lazy" decoding="async">
+        <img src="assets/logos/UNITA.png" alt="UNITA" loading="lazy" decoding="async">
+        <img src="assets/logos/FUS.png" alt="FUS" loading="lazy" decoding="async">
+        <img src="assets/logos/OP.png" alt="OP" loading="lazy" decoding="async">
+        <img src="assets/logos/FOP.png" alt="FOP" loading="lazy" decoding="async">
+        <img src="assets/logos/FSF.png" alt="FSF" loading="lazy" decoding="async">
+        <!-- añade aquí tantos logos como necesites -->
+      </div>
+
+      <!-- Duplicado automático para efecto infinito (se rellena por JS) -->
+      <div class="logo-slide clone" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<section id="innovacion">
+  <div class="container">
+    <h2 class="section-title">Servicios de Innovación</h2>
+
+    <div class="grid cols-3" style="margin-top:18px;">
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Universidades y centros de I+D">
+            <source src="assets/video/02.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill" aria-label="Contacto sobre Universidades y centros de I+D">Universidades y centros de I+D</span>
+          <h3>Reactor de Transferencia</h3>
+          <p>Programa de 4-6 meses de duración para mejorar la productividad de la transferencia de conocimiento. El programa combina investigadores/as, empresas e IPs senior, impulsando un trabajo que parte de intuiciones sobre problemas complejos y culmina en soluciones escalables de alto impacto y con acceso a financiación.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Industria multi-sector">
+            <source src="assets/video/03.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill" aria-label="Contacto sobre Industria multi-sector">Industria (multi-sector)</span>
+          <h3>Reactor de Innovación</h3>
+          <p>Servicio a medida para empresas, para mejorar la productividad de su inversión en I+D. El programa conecta a la organización con conocimiento multi-disciplinar disponible, generando valor desde el principio.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Administraciones públicas y tercer sector">
+            <source src="assets/video/04.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill" aria-label="Contacto sobre Administraciones públicas y tercer sector">Administraciones públicas y tercer sector</span>
+          <h3>Rediseño de servicios</h3>
+          <p>Rediseño de servicios públicos y sociales desde la experiencia de usuario, mediante procesos de inteligencia colectiva que convierten necesidades reales en soluciones operativas y escalables.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hub-agents-cta">
+      <a class="btn hub-agents-btn" href="gpts.html#buscador" target="_blank" rel="noopener">
+        Prueba nuestros agentes IA para mapear recursos de I+D o prototipar un problema identificado
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+<section id="estrategia">
+  <div class="container">
+    <h2 class="section-title">Servicios de Estrategia</h2>
+    <div class="grid cols-3" style="margin-top:18px;">
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Estrategia con equipos directivos">
+            <source src="assets/video/05.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector)</span>
+          <h3>Estrategia dinámica para entornos inciertos</h3>
+          <p>Estrategia dinámica para entornos de incertidumbre: prospectiva de escenarios futuros, ciclos cortos, foco y decisiones basadas en la acción por activación de escenarios.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Agenda y despliegue">
+            <source src="assets/video/06.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector)</span>
+          <h3>Agenda directiva y despliegue traccionado de la estrategia</h3>
+          <p>Del plan estratégico estático y rígido al músculo estratégico. Alineamiento de agendas de equipos que abren tiempo a explorar y decidir, aterrizando la estrategia en rutinas semanales hasta volverla un hábito cotidiano y fortalecer la capacidad de adaptación de toda la organización</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Estrategia desde inteligencia colectiva">
+            <source src="assets/video/07.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Administraciones públicas y tercer sector</span>
+          <h3>Estrategia de servicio público desde la inteligencia colectiva</h3>
+          <p>Programa ligero con equipos gestores públicos y usuarios que, desde la revisión de problemas, necesidades y recursos, co-diseña la estrategia, las políticas y los servicios de la organización.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="liderazgo">
+  <div class="container">
+    <h2 class="section-title">Servicios de Liderazgo</h2>
+    <div class="grid cols-3" style="margin-top:18px;">
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Modelo de liderazgo">
+            <source src="assets/video/08v2.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector) y Universidades</span>
+          <h3>Modelo de liderazgo</h3>
+          <p>Definición de líneas de enfoque común que refuerzan las competencias directivas, traccionan equipos y alinean la gestión con la estrategia.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Capacitación ejecutiva">
+            <source src="assets/video/09.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector) y Universidades</span>
+          <h3>Programas de capacitación ejecutiva</h3>
+          <p>Programa personalizado de capacitación de los equipos de líderes para la transformación efectiva de la cultura de la organización.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="media">
+          <video autoplay muted loop playsinline aria-label="Plan de acción transformacional">
+            <source src="assets/video/10.mp4" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+          </video>
+        </div>
+        <div class="body">
+          <span class="pill">Industria (multi-sector) y Universidades</span>
+          <h3>Plan de acción transformacional</h3>
+          <p>Implantación de píldoras de formación y diseño de sistemas de comunicación interna, programas de reorganización, agilidad, etc.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="consejos">
+  <div class="container">
+    <h2 class="section-title">Consejos de Administración</h2>
+    <p class="section-sub">MIEMBRO DEL INSTITUTO DE CONSEJEROS-ADMINISTRADORES (IC-A)</p>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/img_015.webp" alt="Consejos y gobernanza corporativa" />
+      </div>
+      <div class="text">
+        <p class="section-sub">Estrategia y creación de valor, aportando criterio independiente en las decisiones estratégicas</p>
+        <p class="section-sub">Supervisión y control de riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada</p>
+        <p class="section-sub">Participación en comisiones clave (Innovación, Sostenibilidad). Gobernanza corporativa y buen funcionamiento</p>
+        <div class="cta" style="margin-top:12px;">
+          <a
+            id="cta-consejos"
+            class="btn-contactar"
+            href="mailto:joaquinchina@gmail.com?subject=Consulta%3A%20Consejos%20de%20Administraci%C3%B3n&body=Hola%20Joaqu%C3%ADn%2C%0A%0AEstoy%20interesado%2Fa%20en%20tus%20servicios%20de%20Consejos%20de%20Administraci%C3%B3n.%20%0A%0A%C2%BFPodemos%20agendar%20una%20llamada%3F%0A%0AGracias."
+          >
+            Contactar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="trayectoria">
+  <div class="container">
+    <h2 class="section-title">Trayectoria</h2>
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/img_016.webp" alt="Retrato de Joaquín Romero Roldán" />
+      </div>
+      <div class="text">
+        <p>Joaquín Romero Roldán es asesor independiente en Innovación, Estrategia y Liderazgo, así como Consejero independiente, miembro del Instituto de Consejeros-Administradores (IC-A).</p>
+        <p>Ha sido <strong>gerente de la Universidad Pública de Navarra (UPNA)</strong> entre 2016 y 2025, en los equipos de los rectores Carlosena y Gonzalo. En ese periodo, la UPNA ha experimentado una fuerte expansión y se ha convertido en líder del sistema universitario español en inserción laboral de grado y master, así como en impacto en el desarrollo regional.</p>
+        <p>Atesora más de diez años de experiencia en <strong>consejos de administración</strong> de empresa tecnológica (<strong>SIGMA AIE, Barcelona</strong>), de institutos de investigación (<strong>Navarrabiomed</strong> - investigación biomédica), (<strong>IDAB-CSIC</strong> - agrobiotecnología), o del <strong>Consejo de la Cultura y Artes de Navarra</strong>.</p>
+        <p>Cuenta con una década de experiencia en gestión de instituciones culturales de prestigio, donde fue gerente en el <strong>Orfeón Pamplonés</strong> y en la <strong>Orquesta Sinfónica de Navarra</strong>, en etapas clave de su desarrollo y transformación.</p>
+        <p>Además, reúne más de 15 años de trayectoria en comercio internacional del sector industrial (<strong>ARFE, SA</strong> y <strong>Rockwool International</strong>). En <strong>China</strong>, ha sido consultor expatriado (<strong>Asia International</strong> 1999-2001) y <strong>fundador de la Offshore Terralink (Hong Kong, Shenzhen)</strong> en 2000, hoy en activo (Orientlink Group).</p>
+        <p>Es licenciado en Administración y Dirección de Empresas por la <strong>UPNA</strong> y executive program en Innovación y Emprendimiento por el <strong>MIT</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="socios">
+  <div class="container">
+    <h2 class="section-title">Socios</h2>
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/img_017.jpg" alt="Retrato de Carlos J. Martínez">
+      </div>
+      <div class="text">
+        <h2>Carlos J. Martínez</h2>
+        <p>Socio fundador de Hadrone (2003) y de MSB Ltd. una firma de consultoría con sede en el Reino Unido.</p>
+        <p>Atesora trayectoria profesional en Europa y Oriente Medio, en gestión y asesoramiento tecnológico y de negocio.</p>
+        <p>Además, acumula una década de experiencia en asesoramiento de industrias aeroespacial y de energía, como enlace corporativo y gestión de operaciones y PMO.</p>
+        <p>Cuenta con más de 10 años de experiencia en puestos operativos y de gestión en centros de I+D+i y sector público.</p>
+        <p>Actualmente, es colaborador de empresas y fondos de capital privado del sector de las energías renovables y es profesor visitante en la UPNA y la Universidad de Navarra, donde dirige programas de Innovación y Emprendimiento como el Reactor de Innovación (UPNA).</p>
+        <p>Es Ingeniero por la UPNA e Ingeniero de Organización por la Universidad de Kingston (KU) en Londres.</p>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/img_018.jpg" alt="Retrato de Jon Yerro">
+      </div>
+      <div class="text">
+        <h2>Jon Yerro</h2>
+        <p>Inversor y business angel, fundador de Impact HUB, primera aceleradora en la red Global de Impact HUB, Pocket University (adquirida por Grupo Banco Santander en 2014), Fundador y CEO deB2bizz (plataforma de contenidos digitales adquirida por HAVAS-Grupo Vivendi en 2012).</p>
+        <p>Director General de HAVAS Americas (Mexico DF y Miami).</p>
+        <p>Consultor de emprendimiento y estrategia en EE.UU. (Miami y Nueva York), con actividad Impact Hub, La Bolsa de la liga.com, fanstrader.com.</p>
+        <p>Socio de Aceleradora Metxa, primer Bootcamp digital en España desde 2017.</p>
+        <p>Experiencia en consejos de administración (Actualemnte en Veri-Das -Grupo BBVA, Hobeen y Fanstrader).</p>
+        <p>Profesor en la Universidad de Navarra (programa GIP) y en UPNA (programa reactor de innovación).</p>
+        <p>Licenciado en Administración y Dirección de Empresas por la Universidad de Deusto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="red">
+  <div class="container">
+    <h2 class="section-title">Red de colaboradores</h2>
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/019.webp" alt="Retrato de Raúl Oliván">
+      </div>
+      <div class="text">
+        <h2>Raúl Oliván</h2>
+        <p>Es un destacado experto en innovación pública y social en España. Ha desempeñado el cargo de Director General de Gobierno Abierto e Innovación Social del Gobierno de Aragón, liderando iniciativas clave como el Laboratorio de Aragón Gobierno Abierto (LAAAB).Ha sido director de Zaragoza Activa (2009–2017).</p>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/020.webp" alt="Retrato de Xavier Marcet">
+      </div>
+      <div class="text">
+        <h2>Xavier Marcet</h2>
+        <p>Es un inspirador referente en materia de estrategia, innovación y transformación organizacional. Es fundador y presidente de Lead to Change. Además, es presidente fundador de la Barcelona Peter Drucker Society y combina su actividad profesional con la docencia en la Barcelona School of Management (UPF).</p>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/021.webp" alt="Retrato de Javier Vázquez Matilla">
+      </div>
+      <div class="text">
+        <h2>Javier Vázquez Matilla</h2>
+        <p>Experto en contratación pública y Doctor en Derecho por la UPNA, acompaña en la tramitación integral de contratos públicos y en los recursos y procesos contractuales para operadores económicos y Entidades públicas. Ha impartido más de 400 conferencias sobre el tema.</p>
+      </div>
+    </div>
+
+    <div class="feature" style="margin-top:18px;">
+      <div class="image-wrap">
+        <img src="assets/img/022.webp" alt="Retrato de Elena Méndez">
+      </div>
+      <div class="text">
+        <h2>Elena Méndez</h2>
+        <p>Directora de la red de expertos en Gestión de RRHH y desarrollo profesional enEvolución. Ha desarrollado su carrera profesional en las áreas de tecnología, Recursos Humanos y estrategia. Es profesora del IE en los programas Senior Managemet Programa (SMP), MBA executive y en otros programas superiores.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="galeria">
+  <div class="container">
+    <h2 class="section-title">Hitos</h2>
+    <div class="gallery" style="margin-top:16px;">
+
+      <figure class="gallery-card">
+        <img src="assets/img/023.webp" alt="UPNA 2022: líder en empleabilidad de grado y máster" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(UPNA 2016-2025). 2022: la UPNA se convierte en la universidad líder del SUE en empleabilidad de grado y master (Fuente: Fundación CyD)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/024.webp" alt="UPNA 2020: impacto en desarrollo regional" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(UPNA 2016-2025). 2020: la UPNA es líder del SUE en impacto en el desarrollo regional (Fuente: Fundación CyD)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/025.webp" alt="SIGMA AIE: transformación hacia SIGMA NEO" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(SIGMA AIE, Barcelona 2016-2025). 2020: inicio de transformación hacia SIGMA NEO (previsto 2026)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/026.webp" alt="Navarrabiomed: estrategia de Medicina Personalizada" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(NAVARRABIOMED 2016-2025). 2017: desarrollo de estrategia integral de Medicina Personalizada (150+ acciones 2021–2030)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/027.webp" alt="Orfeón Pamplonés: Medallas de Oro 2010 y 2016" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2016: Medalla de Oro a las Bellas Artes; 2010: Medalla de Oro de Navarra</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/029.webp" alt="Orfeón Pamplonés en The New York Times" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2012: presencia en The New York Times tras ciclo con la NY Philharmonic en Lincoln Center</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/028.webp" alt="Carnegie Hall: actuación con Teatro Mariinsky" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2010: primer coro nacional en Carnegie Hall (con orquesta del Teatro Mariinsky)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/030.webp" alt="Carmina Burana de La Fura dels Baus" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2009: estreno de Carmina Burana de La Fura dels Baus; gira por cuatro continentes (2009–2025)</figcaption>
+      </figure>
+
+      <figure class="gallery-card">
+        <img src="assets/img/031.webp" alt="Terralink en Hong Kong y Shenzhen" loading="lazy" />
+        <figcaption style="text-align: center; font-size: 12px;">TRAYECTORIA INTERNACIONAL 1999-2008. 2000: Fundación de Terralink (Hong Kong y Shenzhen)</figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+<section id="blog">
+  <div class="container">
+    <h2 class="section-title">Blog</h2>
+    <p class="section-sub">Ideas, proyectos y casos prácticos sobre innovación, estrategia y liderazgo.</p>
+
+    <!-- Carrusel -->
+    <div class="blog-wrap featured" aria-label="Artículos destacados">
+      <div class="slider" role="region" aria-roledescription="carrusel" aria-label="Destacados">
+        <div class="slides" id="blog-slides"><!-- lo rellena JS --></div>
+        <button class="ctrl prev" aria-label="Anterior" type="button">‹</button>
+        <button class="ctrl next" aria-label="Siguiente" type="button">›</button>
+        <div class="dots" aria-hidden="true"></div>
+      </div>
+    </div>
+
+
+  <script>
+  (function () {
+    // --- 0) Manifest (fallback para file:// o si falla la lectura) ---
+    const MANIFEST = [
+  {
+    href: 'blog/art04.html',
+    title: '¿Qué puedes hacer tú por Europa',
+    desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
+    dateISO: '2026-01-09', dateText: '09 jan 2026',
+    tags: ['Europa','Innovación'],
+    fallbackImg: 'assets/img/art04.png'
+  },
+  {
+    href: 'blog/art03.html',
+    title: '¿El milagro de la normalidad?',
+    desc:  '15 años del Orfeón Pamplonés en el Carnegie Hall de Nueva York.',
+    dateISO: '2025-10-20', dateText: '20 oct 2025',
+    tags: ['Cultura','Orfeón','Música','Innovación'],
+    fallbackImg: 'assets/img/art03.png'
+  },
+  {
+    href: 'blog/art02.html',
+    title: 'Consejos asesores en PYMEs: una palanca para crecer en valor',
+    desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
+    dateISO: '2025-10-14', dateText: '14 oct 2025',
+    tags: ['PYMEs','Consejos'],
+    fallbackImg: 'assets/img/art02.png'
+  },  
+  {
+    href: 'blog/art01.html',
+    // TÍTULO y DESCRIPCIÓN que quieres ver también en local (file://)
+    title: '¿Por qué nos cuesta tanto innovar?',
+    desc:  'Algunas claves que explican un déficit histórico y que nos pueden ayudar a superarlo.',
+    dateISO: '2025-10-06', dateText: '06 oct 2025',
+    tags: ['Innovación','Crecimiento en valor'],
+    // FALLBACK que exista de verdad en /assets/img/
+    fallbackImg: 'assets/img/art01.png'
+  }
+];
+
+    const USE_FETCH = location.protocol !== 'file:'; // En local file:// no podemos leer otros ficheros
+
+    // --- 1) Funciones para leer portada/título/desc desde cada HTML ---
+    const META_IMG = ['meta[property="og:image"]','meta[name="twitter:image"]','meta[name="thumbnail"]'];
+    const META_DESC = ['meta[property="og:description"]','meta[name="description"]'];
+    function abs(u, base){ try { return new URL(u, base).href; } catch { return null; } }
+
+    async function readArticleInfo(url){
+      if (!USE_FETCH) return null; // en file:// saltamos
+      const r = await fetch(url, {credentials:'same-origin'});
+      if (!r.ok) throw new Error('Fetch fail '+url);
+      const html = await r.text();
+      const doc  = new DOMParser().parseFromString(html,'text/html');
+
+      // título
+      let title = doc.querySelector('meta[property="og:title"]')?.content?.trim()
+                || doc.querySelector('title')?.textContent?.trim()
+                || doc.querySelector('h1')?.textContent?.trim() || null;
+
+      // desc
+      let desc; for (const s of META_DESC){ const m=doc.querySelector(s); if(m?.content){ desc=m.content.trim(); break; } }
+
+      // imagen
+      let img; for (const s of META_IMG){ const m=doc.querySelector(s); if(m?.content){ img = abs(m.content, url); if(img) break; } }
+      if (!img) {
+        const firstImg = doc.querySelector('article img, main article img, main img, img');
+        const src = firstImg?.getAttribute('src') || firstImg?.src;
+        if (src) img = abs(src, url);
+      }
+      return {title, desc, img};
+    }
+
+    // --- 2) Pinta carrusel + grid con manifest, y luego “hidrata” desde HTMLs (si se puede) ---
+    const slidesEl = document.getElementById('blog-slides');
+    const gridEl   = document.getElementById('blog-grid');
+
+    function renderAll(posts){
+      // Carrusel
+      slidesEl.innerHTML = posts.map(p => `
+        <article class="slide" itemscope itemtype="https://schema.org/BlogPosting">
+          <img class="hero" src="${p.img || p.fallbackImg}" alt="Imagen destacada: ${p.title}" loading="lazy" decoding="async" itemprop="image">
+          <a href="${p.href}" class="stretched" aria-label="Abrir: ${p.title}" style="position:absolute;inset:0;display:block;text-indent:-9999px;overflow:hidden;">${p.title}</a>
+          <div class="caption">
+            <a href="${p.href}" style="color:#fff;text-decoration:none;">
+              <h3 itemprop="headline">${p.title}</h3>
+            </a>
+            <meta itemprop="datePublished" content="${p.dateISO}">
+            <meta itemprop="author" content="Joaquín Romero Roldán">
+          </div>
+        </article>
+      `).join('');
+
+      // Activa tu JS de carrusel si lo tienes (tu archivo ya trae el script que mueve .slides). :contentReference[oaicite:1]{index=1}
+    }
+
+    // Primero pintamos con manifest (instantáneo)
+    renderAll(MANIFEST);
+
+    // Después intentamos “beber” de las HTMLs para título/desc/portada
+    (async () => {
+      if (!USE_FETCH) return; // en file:// nos quedamos con manifest
+      const hydrated = await Promise.all(MANIFEST.map(async m => {
+        try {
+          const info = await readArticleInfo(m.href);
+          return {
+            ...m,
+            title: info?.title || m.title,
+            desc:  info?.desc  || m.desc,
+            img:   info?.img   || m.fallbackImg
+          };
+        } catch { return m; }
+      }));
+      renderAll(hydrated);
+    })();
+  })();
+  </script>
+</section>
+
+
+<footer id="contacto">
+  <style>
+    .legal-footer { padding: 36px 0; border-top:1px solid #e5e7eb; color:#374151; }
+    .legal-footer .brandline { font-size:14px; color:#6b7280; margin-bottom:14px; }
+    .accordion { border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden; }
+    .accordion details+details { border-top:1px solid #e5e7eb; }
+    .accordion summary {
+      list-style:none; cursor:pointer; padding:14px 16px; font-weight:600; outline:none;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .accordion summary::-webkit-details-marker { display:none; }
+    .accordion summary:focus { box-shadow:0 0 0 3px rgba(14,165,233,.15); border-radius:8px; }
+    .accordion .chev { transition: transform .2s ease; }
+    details[open] .chev { transform: rotate(180deg); }
+    .accordion .panel { padding:0 16px 16px; font-size:14px; color:#4b5563; }
+    .accordion .panel h4 { margin:12px 0 6px; font-size:15px; color:#111827; }
+    .accordion .muted { color:#6b7280; }
+    .accordion a { color: var(--brand, #32717E); text-decoration: none; }
+    .accordion a:hover { text-decoration: underline; }
+    .cookie-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .cookie-btn {
+      border:1px solid #32717E; color:#32717E; background:#fff; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .cookie-btn.primary { background:#32717E; color:#fff; border-color:transparent; }
+  </style>
+
+  <div class="container legal-footer">
+    <p class="brandline">© Joaquín Romero Roldán — Web creada íntegramente con herramientas OpenAI</p>
+
+    <!-- Acordeón legal -->
+    <div class="accordion" role="region" aria-label="Información legal del sitio">
+      <!-- AVISO LEGAL -->
+      <details id="aviso-legal">
+        <summary aria-controls="panel-aviso" aria-expanded="false">
+          AVISO LEGAL
+          <span class="chev" aria-hidden="true">▾</span>
+        </summary>
+        <div id="panel-aviso" class="panel">
+          <p class="muted">Última actualización: <time datetime="2025-09-24">24/09/2025</time></p>
+          <h4>1. Titularidad del sitio</h4>
+          <p>
+            Titular: <strong>[JOAQUÍN ROMERO ROLDÁN]</strong><br>
+            NIF: <strong>[44615650C]</strong><br>
+            Domicilio: <strong>[Calle Zúñiga, 1, bajo. 31015 Pamplona]</strong><br>
+            Email: <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a><br>
+            URL: <strong>https://joaquinchina-lgtm.github.io/mi-agente-web/</strong>
+          </p>
+
+          <h4>2. Objeto y condiciones de uso</h4>
+          <p>
+            El acceso y uso del sitio implican la aceptación de este Aviso Legal. El usuario se compromete a
+            hacer un uso diligente, lícito y conforme a la buena fe, absteniéndose de cualquier actividad que
+            pueda dañar a terceros o vulnerar la normativa vigente.
+          </p>
+
+          <h4>3. Propiedad intelectual e industrial</h4>
+          <p>
+            Salvo indicación expresa, los contenidos (textos, imágenes, vídeos y código) son titularidad del
+            responsable del sitio o cuentan con licencia de uso. Queda prohibida su reproducción o
+            distribución sin autorización. Para solicitar permisos, escribe a
+            <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.
+          </p>
+
+          <h4>4. Responsabilidad</h4>
+          <p>
+            Este sitio puede mostrar enlaces o contenidos de terceros. El titular no responde de su
+            actualización, exactitud o legalidad. El uso de la información se realiza bajo responsabilidad del usuario.
+          </p>
+
+          <h4>5. Protección de datos</h4>
+          <p>
+            Si se recaban datos personales (por ejemplo, a través de correo electrónico), se tratarán conforme al
+            Reglamento (UE) 2016/679 (RGPD) y a la LOPDGDD. Puedes ejercer tus derechos de acceso, rectificación,
+            supresión, oposición, limitación y portabilidad escribiendo a
+            <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.
+          </p>
+
+          <h4>6. Legislación aplicable</h4>
+          <p>
+            Este Aviso Legal se rige por la legislación española. Para cualquier controversia, las partes se
+            someten a los juzgados y tribunales de <strong>[CIUDAD/PROVINCIA]</strong>, salvo norma imperativa en contrario.
+          </p>
+        </div>
+      </details>
+
+      <!-- POLÍTICA DE COOKIES -->
+      <details id="politica-cookies">
+        <summary aria-controls="panel-cookies" aria-expanded="false">
+          POLÍTICA DE COOKIES
+          <span class="chev" aria-hidden="true">▾</span>
+        </summary>
+        <div id="panel-cookies" class="panel">
+          <p class="muted">Última actualización: <time datetime="2025-09-24">24/09/2025</time></p>
+
+          <h4>1. ¿Qué son las cookies?</h4>
+          <p>
+            Son pequeños archivos que se almacenan en tu dispositivo para recordar información de tu visita.
+            Pueden ser propias o de terceros, técnicas (necesarias), de preferencias, analíticas o de marketing.
+          </p>
+
+          <h4>2. Cookies que utiliza este sitio</h4>
+          <ul>
+            <li><strong>Técnicas/necesarias</strong> (siempre activas): imprescindibles para el funcionamiento básico del sitio.</li>
+            <li><strong>Analíticas</strong> (Google Analytics 4): ayudan a medir el uso del sitio. <em>Solo se activan con tu consentimiento.</em></li>
+          </ul>
+
+          <h4>3. Gestión del consentimiento</h4>
+          <p>
+            Puedes <button class="cookie-btn" type="button" onclick="window.toggleCookieBanner && window.toggleCookieBanner(true)">cambiar tu consentimiento</button> en cualquier momento.
+            Las cookies analíticas se establecerán únicamente si las aceptas.
+          </p>
+
+          <h4>4. Cómo borrar o bloquear cookies</h4>
+          <p>
+            Puedes configurar tu navegador para rechazar o eliminar cookies. Consulta las guías de:
+            <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a>,
+            <a href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitios-web-rastrear-preferencias" target="_blank" rel="noopener">Firefox</a>,
+            <a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a> o
+            <a href="https://support.microsoft.com/es-es/microsoft-edge/eliminar-cookies-en-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">Edge</a>.
+          </p>
+
+          <h4>5. Contacto</h4>
+          <p>Para cualquier cuestión sobre esta política, escribe a <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.</p>
+
+          <div class="cookie-actions">
+            <button class="cookie-btn" type="button" onclick="window.setCookieConsent && window.setCookieConsent(false)">Rechazar analíticas</button>
+            <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent && window.setCookieConsent(true)">Aceptar analíticas</button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- Banner mínimo de consentimiento (opcional, pero recomendado en la UE) -->
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true"
+       style="position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 10px 18px rgba(2,6,23,.08); padding:14px; display:none;">
+    <p style="margin:0 0 10px 0; font-size:14px; color:#374151;">
+      Usamos cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (Google Analytics 4) para mejorar la experiencia.
+      Puedes aceptar, rechazar o configurar tu elección.
+      <a href="#politica-cookies">Más información</a>.
+    </p>
+    <div class="cookie-actions">
+      <button class="cookie-btn" type="button" onclick="window.setCookieConsent(false)">Rechazar</button>
+      <button class="cookie-btn" type="button" onclick="window.open('#politica-cookies', '_self')">Configurar</button>
+      <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent(true)">Aceptar</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const KEY = 'cookieConsentGA'; // 'true' | 'false' | null
+      const banner = document.getElementById('cookie-banner');
+
+      function save(v){ try { localStorage.setItem(KEY, v); } catch(e){} }
+      function load(){ try { return localStorage.getItem(KEY); } catch(e){ return null; } }
+
+      // Exponer helpers para los botones del panel y el banner
+      window.setCookieConsent = function(accepted){
+        save(String(accepted));
+        if (banner) banner.style.display = 'none';
+        // Habilitar/deshabilitar GA4 según preferencia:
+        if (typeof gtag === 'function') {
+          // Consent Mode básico
+          gtag('consent', 'update', {
+            'analytics_storage': accepted ? 'granted' : 'denied'
+          });
+        }
+      };
+      window.toggleCookieBanner = function(show){
+        if (!banner) return;
+        banner.style.display = show ? 'block' : 'none';
+      };
+
+      // Mostrar banner si no hay preferencia guardada
+      const pref = load();
+      if (pref === null && banner) banner.style.display = 'block';
+
+      // Inicializar Consent Mode por defecto (denied hasta aceptar)
+      if (typeof gtag === 'function') {
+        gtag('consent', 'default', { 'analytics_storage': 'denied' });
+        if (pref === 'true') {
+          gtag('consent', 'update', { 'analytics_storage': 'granted' });
+        }
+      }
+    })();
+  </script>
+</footer>
+
+<!-- ====== Mailto tracking + accesibilidad en tarjetas ====== -->
+<script>
+  (function () {
+    const TO = "joaquinchina@gmail.com";
+
+    document.querySelectorAll(".card").forEach(card => {
+      const pill = card.querySelector(".pill");
+      if (!pill) return;
+
+      const area = (pill.textContent || "").trim();
+      const h3   = (card.querySelector("h3")?.textContent || "").trim();
+
+      const subject = `Consulta: ${area} — ${h3}`;
+      const body =
+`Hola Joaquín,
+
+Me interesa "${h3}" (${area}). ¿Podemos agendar una llamada?
+Gracias.`;
+
+      const href = `mailto:${TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      pill.style.cursor = "pointer";
+      pill.setAttribute("role", "button");
+      pill.setAttribute("tabindex", "0");
+      pill.setAttribute("aria-label", `Contactar sobre ${h3} (${area})`);
+
+      function go(){
+        /* GA4: clic en contacto */
+        if (typeof gtag === 'function') {
+          gtag('event', 'contacto_card', {
+            event_category: 'Contacto',
+            event_label: `${area} — ${h3}`
+          });
+        }
+        window.location.href = href;
+      }
+
+      pill.addEventListener("click", go);
+      pill.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" || e.key === " ") go();
+      });
+    });
+
+    /* GA4: clic específico en CTA de Consejos */
+    const ctaConsejos = document.getElementById('cta-consejos');
+    if (ctaConsejos) {
+      ctaConsejos.addEventListener('click', function() {
+        if (typeof gtag === 'function') {
+          gtag('event', 'contacto_consejos', {
+            event_category: 'Contacto',
+            event_label: 'Consejos de Administración'
+          });
+        }
+      });
+    }
+  })();
+</script>
+<script>
+(function(){
+  const root   = document.querySelector('#blog .slider');
+  if (!root) return;
+
+  const track  = root.querySelector('.slides');
+  const slides = Array.from(root.querySelectorAll('.slide'));
+  const prev   = root.querySelector('.prev');
+  const next   = root.querySelector('.next');
+  const dots   = root.querySelector('.dots');
+
+  let idx = 0, lock = false;
+
+  // Dots
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Ir al destacado ' + (i+1));
+    b.addEventListener('click', () => go(i));
+    dots.appendChild(b);
+  });
+
+  function update(){
+    track.style.transform = `translateX(-${idx * 100}%)`;
+    dots.querySelectorAll('button').forEach((b,i) => b.setAttribute('aria-current', i===idx ? 'true' : 'false'));
+  }
+  function go(n){
+    if (lock) return;
+    lock = true;
+    idx = (n + slides.length) % slides.length;
+    update();
+    setTimeout(()=> lock=false, 450);
+  }
+  prev.addEventListener('click', () => go(idx - 1));
+  next.addEventListener('click', () => go(idx + 1));
+  update();
+
+  // Teclado
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  go(idx - 1);
+    if (e.key === 'ArrowRight') go(idx + 1);
+  });
+  root.tabIndex = 0; // foco para teclado
+
+  // Swipe táctil
+  let sx=0, dx=0;
+  track.addEventListener('touchstart', (e)=>{ sx = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchmove',  (e)=>{ dx = e.touches[0].clientX - sx; }, {passive:true});
+  track.addEventListener('touchend',   ()=>{ if (Math.abs(dx)>40) (dx<0? go(idx+1):go(idx-1)); sx=dx=0; });
+
+  // Auto-rotación opcional (10s). Descomenta si quieres:
+  // setInterval(()=> go(idx+1), 10000);
+
+  // GA4 (opcional): clic en controles
+  function gaEvent(action,label){
+    if (typeof gtag === 'function'){
+      gtag('event', action, { event_category:'Blog Carousel', event_label: label });
+    }
+  }
+  prev.addEventListener('click', ()=>gaEvent('carousel_prev','Prev'));
+  next.addEventListener('click', ()=>gaEvent('carousel_next','Next'));
+  dots.querySelectorAll('button').forEach((b,i)=> b.addEventListener('click', ()=>gaEvent('carousel_dot','Dot '+(i+1))));
+})();
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const slide = document.querySelector(".logo-carousel .logo-slide:not(.clone)");
+  const clone = document.querySelector(".logo-carousel .logo-slide.clone");
+  const track = document.querySelector(".logo-carousel .logo-track");
+  if (!slide || !clone || !track) return;
+
+  // Duplicar logos automáticamente
+  clone.innerHTML = slide.innerHTML;
+
+  // Medir el ancho real del primer bloque (incluye imágenes)
+  const setWidth = () => {
+    const width = slide.getBoundingClientRect().width;
+    track.style.setProperty("--scroll-width", width + "px");
+  };
+
+  // Esperar a que carguen imágenes para medir bien
+  const imgs = Array.from(slide.querySelectorAll("img"));
+  let pending = imgs.length;
+  if (pending === 0) {
+    setWidth();
+    return;
+  }
+  const done = () => { pending -= 1; if (pending <= 0) setWidth(); };
+
+  imgs.forEach(img => {
+    if (img.complete) return done();
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+  });
+
+  // Recalcular al cambiar tamaño de ventana
+  window.addEventListener("resize", () => {
+    // pequeño debounce
+    clearTimeout(window.__jrLogoResizeT);
+    window.__jrLogoResizeT = setTimeout(setWidth, 120);
+  });
+});
+</script>
+
+<script>
+  (function(){
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('a[href="gpts.html"]');
+      if (!a) return;
+      if (typeof gtag === 'function') {
+        gtag('event', 'click_gpts_hub', {
+          event_category: 'Reactor Innovacion',
+          event_label: 'Boton: Probar agentes'
+        });
+      }
+    });
+  })();
+</script>
+
+<script>
+(function(){
+  const btn  = document.querySelector('.nav-toggle');
+  const menu = document.getElementById('mobile-menu');
+  if(!btn || !menu) return;
+
+  function openMenu(){
+    menu.hidden = false;
+    btn.setAttribute('aria-expanded','true');
+    document.body.classList.add('menu-open');
+  }
+  function closeMenu(){
+    menu.hidden = true;
+    btn.setAttribute('aria-expanded','false');
+    document.body.classList.remove('menu-open');
+  }
+  function toggleMenu(){
+    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+    isOpen ? closeMenu() : openMenu();
+  }
+
+  btn.addEventListener('click', toggleMenu);
+
+  // Cierra al hacer click en un enlace
+  menu.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if(a) closeMenu();
+  });
+
+  // Cierra con ESC
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeMenu();
+  });
+
+  // Si pasas a desktop, cierra
+  const mq = window.matchMedia('(min-width: 768px)');
+  mq.addEventListener?.('change', () => { if(mq.matches) closeMenu(); });
+})();
+</script>
+
+</body>
+</html>
