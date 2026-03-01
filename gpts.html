@@ -3,10 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reactor de Innovación · Agentes</title>
-  <meta name="description" content="Agentes GPT para prototipar problemas y trabajar en soluciones reales.">
+  <title>Agentes IA · JR</title>
+  <meta name="description" content="Agentes IA para Innovación, Estrategia y Liderazgo.">
 
-  <style>
+  
+  <!-- ====== Config global ====== -->
+  <script>
+    window.BACKEND = "https://jr-gpt-backend-1.onrender.com";
+  </script>
+
+  <!-- ====== Google Analytics 4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4H0ZT7ZTNX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-4H0ZT7ZTNX', { page_path: '/mi-agente-web/gpts.html' });
+  </script>
+<style>
     :root{
       --muted:#6b7280;
       --card:#ffffff;
@@ -173,6 +187,7 @@
   </style>
 </head>
 
+
 <body>
 
   <!-- HEADER -->
@@ -180,32 +195,249 @@
     <div class="container nav">
       <a class="brand" href="index.html#home">JR</a>
       <nav class="links">
-        <a href="index.html#innovacion">Innovación</a>
-        <a href="index.html#estrategia">Estrategia</a>
-        <a href="index.html#liderazgo">Liderazgo</a>
-        <a href="index.html#consejos">Consejero</a>
-        <a href="index.html#trayectoria">Trayectoria</a>
-        <a href="index.html#socios">Socios</a>
-        <a href="index.html#red">Red</a>
-        <a href="index.html#galeria">Hitos</a>
-        <a href="index.html#blog">Blog</a>
+        <a href="#innovacion-ai">Innovación IA</a>
+        <a href="#estrategia-ai">Estrategia IA</a>
+        <a href="#liderazgo-ai">Liderazgo IA</a>
+        <a href="index.html#home">Volver</a>
       </nav>
     </div>
   </header>
 
   <div class="container">
 
-    <div class="hero">
-      <h1>REACTOR DE INNOVACIÓN</h1>
-	<h2>¿Tienes un problema identificado? Prototípalo con nuestros agentes IA</h2>
+    <div class="hero" style="background: linear-gradient(135deg, var(--brand) 0%, #0b3a44 100%);">
+      <h1>AGENTES IA</h1>
+      <h2 style="margin:0 0 10px; font-size:18px; line-height:1.3; font-weight:600; opacity:.95;">
+        Innovación · Estrategia · Liderazgo
+      </h2>
       <p>
-        Selecciona un agente según lo que necesites: definir el problema,
-        identificar piezas, validar con personas, pensar la escala,
-        medir el impacto o detectar puntos críticos.
+        Selecciona un bloque y entra directo a los agentes. En Innovación encontrarás el buscador de capacidades de I+D y el kit del Reactor para prototipar problemas.
       </p>
+
+      <div class="agent-actions" style="margin-top:16px;">
+        <a class="btn" href="#innovacion-ai" style="border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.14); color:#fff;">
+          Innovación IA
+        </a>
+        <a class="btn" href="#estrategia-ai" style="border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.14); color:#fff;">
+          Estrategia IA
+        </a>
+        <a class="btn" href="#liderazgo-ai" style="border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.14); color:#fff;">
+          Liderazgo IA
+        </a>
+      </div>
     </div>
 
-    <div class="grid">
+    <!-- 1) Innovación -->
+    <section id="innovacion-ai" style="margin-top:26px;">
+      <div style="margin: 0 0 10px;">
+        <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);">Agentes IA</div>
+        <h2 style="margin:6px 0 6px; font-size:22px;">Servicios de Innovación</h2>
+      </div>
+
+      <!-- Mapeo de recursos I+D -->
+      <section id="buscador" style="margin: 18px 0 24px;">
+      <div style="margin: 0 0 10px;">
+        <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);">Buscador</div>
+        <h2 style="margin:6px 0 6px; font-size:20px;">Mapeo de recursos de I+D (universidades, empresas, grupos de investigación y líneas)</h2>
+        <p style="margin:0; color:#4b5563; font-size:14px;">Consulta el dataset y genera un PDF con todas las coincidencias. (Backend: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">/api/csv_search</span>).</p>
+      </div>
+      <div id="jr-agent-box" class="jr-agent" aria-live="polite">
+      <style>
+        #jr-agent-box.jr-agent{
+          --line:#e5e7eb; --muted:#6b7280; --ink:#32717E; --bg:#ffffff; --brand:#32717E;
+          border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
+          box-shadow:0 10px 18px rgba(2,6,23,.04); margin:10px 0 6px 0;
+        }
+        #jr-agent-box .jr-row{display:flex; gap:10px; align-items:stretch; flex-wrap:wrap}
+        #jr-agent-box input[type="text"]{
+          flex:1; border:1px solid var(--line); border-radius:999px; padding:12px 14px; font-size:14px; line-height:20px; outline:none; min-height:44px;
+        }
+        #jr-agent-box input[type="text"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+        #jr-agent-box select{
+          border:1px solid var(--line); border-radius:999px; padding:12px 14px; font-size:14px; background:#fff; min-height:44px;
+          color:#32717E; appearance:none; -webkit-appearance:none; -moz-appearance:none;
+          background-image: url("data:image/svg+xml;utf8,<svg fill='%2332717E' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+          background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 36px;
+        }
+        #jr-agent-box .jr-actions{display:flex; gap:10px; width:100%}
+        #jr-agent-box .jr-actions button{
+          flex:1; border:1px solid transparent; background:var(--brand); color:#fff; border-radius:999px; padding:12px 14px; font-weight:600; cursor:pointer; min-height:44px; }
+        #jr-agent-box .jr-actions button.secondary{ background:transparent; color:var(--brand); border-color:var(--brand); }
+        #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
+        #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
+        #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
+        #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
+        #jr-agent-results{ margin-top: 14px; }
+        .summary{ background:#f9fafb; border:1px dashed #e5e7eb; padding:10px 12px; border-radius:12px; }
+        @media (max-width:767px){ #jr-agent-box .jr-row{flex-direction:column} #jr-agent-box .jr-actions{flex-direction:column} }
+/* === FIX responsive: evita overflow y fuerza ancho correcto === */
+	#jr-agent-box .jr-row > *{
+	  min-width: 0;          /* clave para que flex no desborde */
+	  }
+
+	#jr-agent-box input[type="text"],
+	#jr-agent-box select{
+	  width: 100%;           /* en móvil, que ocupen el ancho del contenedor */
+	  }
+
+	/* En escritorio: que se comporten bien en fila */
+	@media (min-width: 768px){
+  	#jr-agent-box input[type="text"],
+  	#jr-agent-box select{
+	    flex: 1 1 0;
+  	  }
+ 	 #jr-agent-box .jr-actions{
+    	flex: 0 0 auto;
+    	width: auto;
+  	  }
+	}
+      </style>
+
+      <div class="jr-row">
+        <input id="jr-agent-input" type="text"
+          placeholder='Introduce el área de I+D (ej.: "renovables", "machine learning", "ensayos clínicos")'
+          autocomplete="off" />
+        <select id="jr-agent-mode" aria-label="Modo de búsqueda">
+          <option value="contextual" selected>Contextual</option>
+          <option value="estricto">Literal</option>
+        </select>
+        <select id="jr-agent-scope" aria-label="Ámbito">
+          <option value="ambas" selected>Todo (Empresas, Grupos, Líneas de investigación...)</option>
+          <option value="col1">Buscar por nombre de universidad</option>
+          <option value="col2">Buscar por nombre de empresa / PYME innovadora</option>
+          <option value="col4">Buscar por subsector</option>
+          <option value="col5">Buscar grupo de investigación</option>
+          <option value="col6">Buscar líneas de investigación</option>
+          <option value="col7">Buscar por nombre del responsable de grupo</option>
+          <option value="col8">Buscar por nombre del personal de investigación</option>
+        </select>
+        <div class="jr-actions">
+          <button id="jr-agent-retrieve" type="button">Buscar</button>
+          <button id="jr-agent-pdf" type="button" class="secondary">Imprimir PDF</button>
+        </div>
+      </div>
+
+      <div class="jr-hint">Agente de IA específico diseñado por Joaquín Romero Roldán (en pruebas). Muestra todas las coincidencias.</div>
+      <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Buscando…</div>
+      <div class="jr-error" id="jr-agent-error" role="alert"></div>
+      <div id="jr-agent-results" role="region" aria-label="Resultados del buscador"></div>
+
+      <script>
+      (function(){
+        const BACKEND_BASE = window.BACKEND || window.location.origin;
+        const norm = (s) => (s||"").toString().trim();
+
+        function renderResults(q, data){
+          const wrap = document.getElementById('jr-agent-results');
+          if (!wrap) return;
+          wrap.innerHTML = '';
+
+          const summary = document.createElement('div');
+          summary.className = 'summary';
+
+          let html = `<strong>Resumen:</strong> Se han encontrado <strong>${data.total}</strong> fichas relacionadas con "<em>${q}</em>".`;
+          if (data.total > 0) {
+            html += ` <br>Selecciona la opción <strong>Imprimir PDF</strong> para obtener todos los datos.`;
+          }
+          summary.innerHTML = html;
+          wrap.appendChild(summary);
+        }
+
+        (function(){
+          const box = document.getElementById('jr-agent-box');
+          const input = box?.querySelector('#jr-agent-input');
+          const btn = box?.querySelector('#jr-agent-retrieve');
+          const btnPDF = box?.querySelector('#jr-agent-pdf');
+          const loader = box?.querySelector('#jr-agent-loader');
+          const err = box?.querySelector('#jr-agent-error');
+          const modeSel = box?.querySelector('#jr-agent-mode');
+          const scopeSel = box?.querySelector('#jr-agent-scope');
+
+          function setLoading(on){
+            if (loader) loader.style.display = on ? 'block' : 'none';
+            if (btn) btn.disabled = on;
+            if (btnPDF) btnPDF.disabled = on;
+          }
+          function showError(msg){
+            if (!err) return;
+            err.textContent = msg || 'Ha ocurrido un error.';
+            err.style.display = 'block';
+          }
+          function hideError(){ if (err) err.style.display = 'none'; }
+
+          async function doSearch(){
+            hideError();
+            const qRaw = norm(input?.value);
+            if (!qRaw) return;
+            setLoading(true);
+            try {
+              const url = new URL('/api/csv_search', BACKEND_BASE);
+              url.searchParams.set('query', qRaw);
+              url.searchParams.set('mode', modeSel?.value || 'contextual');
+              url.searchParams.set('scope', scopeSel?.value || 'ambas');
+              const res = await fetch(url.toString(), { method: 'GET', headers: { 'Accept': 'application/json' } });
+              if (!res.ok) throw new Error('Error ' + res.status + ' al consultar el backend');
+              const data = await res.json();
+              renderResults(qRaw, data);
+
+              /* ===== GA4: evento de consulta del agente ===== */
+              if (typeof gtag === 'function') {
+                gtag('event', 'consulta_IA', {
+                  event_category: 'Agente IA',
+                  event_label: qRaw,
+                  value: Number(data?.total || 0),
+                  mode: modeSel?.value || 'contextual',
+                  scope: scopeSel?.value || 'ambas'
+                });
+              }
+            } catch(e){
+              console.error(e);
+              showError(String(e.message || e));
+            } finally {
+              setLoading(false);
+            }
+          }
+
+          function doPDF(){
+            const qRaw = norm(input?.value);
+            if (!qRaw){ showError('Primero escribe una consulta.'); return; }
+            const url = new URL('/api/csv_report', BACKEND_BASE);
+            url.searchParams.set('query', qRaw);
+            url.searchParams.set('mode', modeSel?.value || 'contextual');
+            url.searchParams.set('scope', scopeSel?.value || 'ambas');
+            window.open(url.toString(), '_blank', 'noopener');
+
+            /* ===== GA4: evento de impresión/descarga PDF ===== */
+            if (typeof gtag === 'function') {
+              gtag('event', 'descarga_pdf', {
+                event_category: 'Agente IA',
+                event_label: qRaw,
+                mode: modeSel?.value || 'contextual',
+                scope: scopeSel?.value || 'ambas'
+              });
+            }
+          }
+
+          btn?.addEventListener('click', doSearch);
+          btnPDF?.addEventListener('click', doPDF);
+          input?.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); doSearch(); } });
+        })();
+      })();
+      </script>
+</div>
+      <p class="note" style="margin-top:10px; margin-bottom:0;">Nota: este buscador es un prototipo.</p>
+    </section>
+
+      <!-- Reactor de Innovación (kit) -->
+      <div style="margin-top:26px;">
+        <div style="margin: 0 0 10px;">
+          <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);">Reactor</div>
+          <h2 style="margin:6px 0 6px; font-size:20px;">Agentes para prototipar un problema</h2>
+          <p style="margin:0; color:#4b5563; font-size:14px;">
+            Secuencia recomendada: Problema → Piezas → Personas → Escala → Impacto → Crítico → Orquestador.
+          </p>
+        </div>
+        <div class="grid">
 
       <div class="card">
         <div class="kicker">Problema</div>
@@ -303,10 +535,119 @@
     </div>
 
     <p class="note">
-      Nota: los agentes se abren en una nueva pestaña por motivos de seguridad del navegador.
+      Nota: Agentes de IA específicos diseñados por Joaquín Romero Roldán (en pruebas). Los agentes se abren en una nueva pestaña por motivos de seguridad del navegador.
     </p>
+      </div>
+    </section>
+
+    <!-- 2) Estrategia -->
+    <section id="estrategia-ai" style="margin-top:42px;">
+      <div style="margin: 0 0 10px;">
+        <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);">Agentes IA</div>
+        <h2 style="margin:6px 0 6px; font-size:22px;">Servicios de Estrategia</h2>
+        <p style="margin:0; color:#4b5563; font-size:14px; max-width:900px;">
+          Agentes para diagnóstico estratégico, escenarios, portfolio de apuestas, y diseño de hojas de ruta. (En despliegue: deja espacio para ir añadiéndolos sin tocar el resto de la página.)
+        </p>
+      </div>
+
+      <div class="grid" style="margin-top:18px;">
+        <div class="card">
+          <div class="kicker">Diagnóstico</div>
+          <h2>AGENTE JRR ESTRATEGIA · DIAGNÓSTICO</h2>
+          <p>Checklist y entrevista guiada para fijar contexto, restricciones, hipótesis estratégicas y criterios de decisión.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Escenarios</div>
+          <h2>AGENTE JRR ESTRATEGIA · ESCENARIOS</h2>
+          <p>Genera 4 escenarios, tensiones críticas, señales tempranas y preguntas de resiliencia para tu organización.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Roadmap</div>
+          <h2>AGENTE JRR ESTRATEGIA · HOJA DE RUTA</h2>
+          <p>Traduce la estrategia en apuestas, iniciativas, hitos, riesgos y métricas de seguimiento.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Portfolio</div>
+          <h2>AGENTE JRR ESTRATEGIA · PORTFOLIO</h2>
+          <p>Balancea exploración/explotación, asignación de recursos y criterios de kill/scale para iniciativas.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:10px;">
+        Nota: estos agentes de Estrategia están preparados para incorporarse cuando tengas sus enlaces definitivos.
+      </p>
+    </section>
+
+    <!-- 3) Liderazgo -->
+    <section id="liderazgo-ai" style="margin-top:42px; margin-bottom:70px;">
+      <div style="margin: 0 0 10px;">
+        <div style="font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);">Agentes IA</div>
+        <h2 style="margin:6px 0 6px; font-size:22px;">Servicios de Liderazgo</h2>
+        <p style="margin:0; color:#4b5563; font-size:14px; max-width:900px;">
+          Agentes para conversaciones difíciles, feedback, diseño de equipos, cultura, y gobernanza de decisiones.
+        </p>
+      </div>
+
+      <div class="grid" style="margin-top:18px;">
+        <div class="card">
+          <div class="kicker">Feedback</div>
+          <h2>AGENTE JRR LIDERAZGO · FEEDBACK</h2>
+          <p>Estructuras de feedback (SBI, feedforward) y guiones para conversaciones delicadas con foco en conducta y acuerdos.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Equipos</div>
+          <h2>AGENTE JRR LIDERAZGO · EQUIPOS</h2>
+          <p>Diseño de roles, interfaces, rituales y métricas. Detección de fricciones sistémicas y propuestas de ajuste.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Cultura</div>
+          <h2>AGENTE JRR LIDERAZGO · CULTURA</h2>
+          <p>Diagnóstico de cultura (valores vividos vs. declarados), palancas de cambio y señales observables en el día a día.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Decisión</div>
+          <h2>AGENTE JRR LIDERAZGO · DECISIONES</h2>
+          <p>Marco para decisiones difíciles: trade-offs, umbrales, accountability y mecanismos de revisión.</p>
+          <div class="agent-actions">
+            <a class="btn brand" href="index.html#contacto">Solicitar acceso</a>
+          </div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:10px;">
+        Nota: cuando tengas enlaces definitivos de estos agentes, basta con sustituir “Solicitar acceso” por “Abrir agente”.
+      </p>
+    </section>
 
   </div>
 
 </body>
+
 </html>
