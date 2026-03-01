@@ -119,6 +119,23 @@
     .btn.secondary { background: transparent; color:#e0f2fe; border-color: rgba(255,255,255,.35); }
     .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
     .btn.brand { background: var(--brand); color:#fff; border-color: transparent; }
+    /* CTA elegante hacia los agentes (después de las 3 tarjetas) */
+    .hub-agents-cta{ margin-top:16px; display:flex; justify-content:center; }
+    .hub-agents-btn{
+      width:100%;
+      max-width: 980px;
+      justify-content:center;
+      text-align:center;
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      color:#fff;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 32px rgba(2,6,23,.14);
+      line-height: 1.25;
+    }
+    .hub-agents-btn:hover{ text-decoration:none; filter: brightness(1.03); }
+
     .hero-title { font-size: 16px; color: #e5e7eb; font-weight: 700; margin: 0; }
     .hero-sub   { font-size: 14px; color: rgba(255,255,255,.80); margin: 6px 0 0; }
     .hero-micro { font-size: 14px; color: rgba(255,255,255,.65); margin: 4px 0 0; letter-spacing: .08em; text-transform: uppercase; }
@@ -621,6 +638,52 @@
 body.menu-open .mobile-menu{ display:block; }
 </style>
 
+<style>
+/* Botón Contactar - versión sólida verdeazulada */
+.btn-contactar {
+  background: var(--accent);   /* verdeazulado */
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.btn-contactar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  opacity: 0.95;
+}
+
+/* Responsive móvil: fuerza el estilo del botón Contactar */
+@media (max-width: 767px) {
+  #consejos .btn-contactar,
+  .btn-contactar{
+    background: var(--accent) !important;   /* sólido, sin degradado */
+    color: #fff !important;
+    border: none !important;
+    border-radius: 14px !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08) !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+}
+
+</style>
+
+
 </head>
 
 <body>
@@ -685,8 +748,8 @@ body.menu-open .mobile-menu{ display:block; }
   <div class="eyebrow">Consejero / Asesor independiente</div>
   <div class="hero-sub">INNOVACIÓN | ESTRATEGIA | LIDERAZGO </div>
   <p class="hero-accent" style="margin-top:0px;">"En tiempos de IA y complejidad, la clave reside en la Inteligencia Colectiva"</p>
+    </div>
   </div>
-</div>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
@@ -728,210 +791,6 @@ body.menu-open .mobile-menu{ display:block; }
   <div class="container">
     <h2 class="section-title">Servicios de Innovación</h2>
 
-    <!-- === JR · Caja de consulta al agente (discreta) === -->
-    <div id="jr-agent-box" class="jr-agent" aria-live="polite">
-      <style>
-        #jr-agent-box.jr-agent{
-          --line:#e5e7eb; --muted:#6b7280; --ink:#32717E; --bg:#ffffff; --brand:#32717E;
-          border:1px solid var(--line); background:var(--bg); border-radius:14px; padding:12px;
-          box-shadow:0 10px 18px rgba(2,6,23,.04); margin:10px 0 6px 0;
-        }
-        #jr-agent-box .jr-row{display:flex; gap:10px; align-items:stretch; flex-wrap:wrap}
-        #jr-agent-box input[type="text"]{
-          flex:1; border:1px solid var(--line); border-radius:999px; padding:12px 14px; font-size:14px; line-height:20px; outline:none; min-height:44px;
-        }
-        #jr-agent-box input[type="text"]:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(14,165,233,.15)}
-        #jr-agent-box select{
-          border:1px solid var(--line); border-radius:999px; padding:12px 14px; font-size:14px; background:#fff; min-height:44px;
-          color:#32717E; appearance:none; -webkit-appearance:none; -moz-appearance:none;
-          background-image: url("data:image/svg+xml;utf8,<svg fill='%2332717E' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-          background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 36px;
-        }
-        #jr-agent-box .jr-actions{display:flex; gap:10px; width:100%}
-        #jr-agent-box .jr-actions button{
-          flex:1; border:1px solid transparent; background:var(--brand); color:#fff; border-radius:999px; padding:12px 14px; font-weight:600; cursor:pointer; min-height:44px; }
-        #jr-agent-box .jr-actions button.secondary{ background:transparent; color:var(--brand); border-color:var(--brand); }
-        #jr-agent-box button[disabled]{opacity:.5; cursor:not-allowed}
-        #jr-agent-box .jr-hint{font-size:12px; color:var(--muted); margin-top:6px}
-        #jr-agent-box .jr-loader{display:none; font-size:12px; color:var(--muted); margin-top:6px}
-        #jr-agent-box .jr-error{display:none; color:#b91c1c; font-size:13px; margin-top:6px}
-        #jr-agent-results{ margin-top: 14px; }
-        .summary{ background:#f9fafb; border:1px dashed #e5e7eb; padding:10px 12px; border-radius:12px; }
-        @media (max-width:767px){ #jr-agent-box .jr-row{flex-direction:column} #jr-agent-box .jr-actions{flex-direction:column} }
-/* === FIX responsive: evita overflow y fuerza ancho correcto === */
-	#jr-agent-box .jr-row > *{
-	  min-width: 0;          /* clave para que flex no desborde */
-	  }
-
-	#jr-agent-box input[type="text"],
-	#jr-agent-box select{
-	  width: 100%;           /* en móvil, que ocupen el ancho del contenedor */
-	  }
-
-	/* En escritorio: que se comporten bien en fila */
-	@media (min-width: 768px){
-  	#jr-agent-box input[type="text"],
-  	#jr-agent-box select{
-	    flex: 1 1 0;
-  	  }
- 	 #jr-agent-box .jr-actions{
-    	flex: 0 0 auto;
-    	width: auto;
-  	  }
-	}
-      </style>
-
-      <div class="jr-row">
-        <input id="jr-agent-input" type="text"
-          placeholder='Introduce el área de I+D (ej.: "renovables", "machine learning", "ensayos clínicos")'
-          autocomplete="off" />
-        <select id="jr-agent-mode" aria-label="Modo de búsqueda">
-          <option value="contextual" selected>Contextual</option>
-          <option value="estricto">Literal</option>
-        </select>
-        <select id="jr-agent-scope" aria-label="Ámbito">
-          <option value="ambas" selected>Todo (Empresas, Grupos, Líneas de investigación...)</option>
-          <option value="col1">Buscar por nombre de universidad</option>
-          <option value="col2">Buscar por nombre de empresa / PYME innovadora</option>
-          <option value="col4">Buscar por subsector</option>
-          <option value="col5">Buscar grupo de investigación</option>
-          <option value="col6">Buscar líneas de investigación</option>
-          <option value="col7">Buscar por nombre del responsable de grupo</option>
-          <option value="col8">Buscar por nombre del personal de investigación</option>
-        </select>
-        <div class="jr-actions">
-          <button id="jr-agent-retrieve" type="button">Buscar</button>
-          <button id="jr-agent-pdf" type="button" class="secondary">Imprimir PDF</button>
-        </div>
-      </div>
-
-      <div class="jr-hint">Agente de IA específico diseñado por Joaquín Romero Roldán (en pruebas). Muestra todas las coincidencias.</div>
-      <div class="jr-loader" id="jr-agent-loader" aria-live="polite">Buscando…</div>
-      <div class="jr-error" id="jr-agent-error" role="alert"></div>
-      <div id="jr-agent-results" role="region" aria-label="Resultados del buscador"></div>
-
-      <script>
-      (function(){
-        const BACKEND_BASE = window.BACKEND || window.location.origin;
-        const norm = (s) => (s||"").toString().trim();
-
-        function renderResults(q, data){
-          const wrap = document.getElementById('jr-agent-results');
-          if (!wrap) return;
-          wrap.innerHTML = '';
-
-          const summary = document.createElement('div');
-          summary.className = 'summary';
-
-          let html = `<strong>Resumen:</strong> Se han encontrado <strong>${data.total}</strong> fichas relacionadas con "<em>${q}</em>".`;
-          if (data.total > 0) {
-            html += ` <br>Selecciona la opción <strong>Imprimir PDF</strong> para obtener todos los datos.`;
-          }
-          summary.innerHTML = html;
-          wrap.appendChild(summary);
-        }
-
-        (function(){
-          const box = document.getElementById('jr-agent-box');
-          const input = box?.querySelector('#jr-agent-input');
-          const btn = box?.querySelector('#jr-agent-retrieve');
-          const btnPDF = box?.querySelector('#jr-agent-pdf');
-          const loader = box?.querySelector('#jr-agent-loader');
-          const err = box?.querySelector('#jr-agent-error');
-          const modeSel = box?.querySelector('#jr-agent-mode');
-          const scopeSel = box?.querySelector('#jr-agent-scope');
-
-          function setLoading(on){
-            if (loader) loader.style.display = on ? 'block' : 'none';
-            if (btn) btn.disabled = on;
-            if (btnPDF) btnPDF.disabled = on;
-          }
-          function showError(msg){
-            if (!err) return;
-            err.textContent = msg || 'Ha ocurrido un error.';
-            err.style.display = 'block';
-          }
-          function hideError(){ if (err) err.style.display = 'none'; }
-
-          async function doSearch(){
-            hideError();
-            const qRaw = norm(input?.value);
-            if (!qRaw) return;
-            setLoading(true);
-            try {
-              const url = new URL('/api/csv_search', BACKEND_BASE);
-              url.searchParams.set('query', qRaw);
-              url.searchParams.set('mode', modeSel?.value || 'contextual');
-              url.searchParams.set('scope', scopeSel?.value || 'ambas');
-              const res = await fetch(url.toString(), { method: 'GET', headers: { 'Accept': 'application/json' } });
-              if (!res.ok) throw new Error('Error ' + res.status + ' al consultar el backend');
-              const data = await res.json();
-              renderResults(qRaw, data);
-
-              /* ===== GA4: evento de consulta del agente ===== */
-              if (typeof gtag === 'function') {
-                gtag('event', 'consulta_IA', {
-                  event_category: 'Agente IA',
-                  event_label: qRaw,
-                  value: Number(data?.total || 0),
-                  mode: modeSel?.value || 'contextual',
-                  scope: scopeSel?.value || 'ambas'
-                });
-              }
-            } catch(e){
-              console.error(e);
-              showError(String(e.message || e));
-            } finally {
-              setLoading(false);
-            }
-          }
-
-          function doPDF(){
-            const qRaw = norm(input?.value);
-            if (!qRaw){ showError('Primero escribe una consulta.'); return; }
-            const url = new URL('/api/csv_report', BACKEND_BASE);
-            url.searchParams.set('query', qRaw);
-            url.searchParams.set('mode', modeSel?.value || 'contextual');
-            url.searchParams.set('scope', scopeSel?.value || 'ambas');
-            window.open(url.toString(), '_blank', 'noopener');
-
-            /* ===== GA4: evento de impresión/descarga PDF ===== */
-            if (typeof gtag === 'function') {
-              gtag('event', 'descarga_pdf', {
-                event_category: 'Agente IA',
-                event_label: qRaw,
-                mode: modeSel?.value || 'contextual',
-                scope: scopeSel?.value || 'ambas'
-              });
-            }
-          }
-
-          btn?.addEventListener('click', doSearch);
-          btnPDF?.addEventListener('click', doPDF);
-          input?.addEventListener('keydown', ev => { if (ev.key === 'Enter'){ ev.preventDefault(); doSearch(); } });
-        })();
-      })();
-      </script>
-
-		<div class="mini-cta">
-  		<a class="btn reactor-cta" href="gpts.html" target="_blank" rel="noopener">
-		    ¿Tienes un problema identificado? Prueba nuestros agentes IA: prototípalo y trabaja en soluciones reales.
-		  </a>
-		  <p class="mini-cta-sub">
-  		</p>
-	      <div class="jr-hint">Ecosistema de agentes de IA específicos diseñado por Joaquín Romero Roldán (en pruebas).</div>
-	   </div>
-
-    </div>
-    <!-- === /JR · Caja de consulta al agente === -->
-
-
-    <p class="section-sub">
-      Todos los servicios ofertados utilizan la inteligencia colectiva para transformar el conocimiento generado disponible en universidades, centros y unidades de I+D, en soluciones útiles para empresas, administraciones y organizaciones, asegurando impacto con bajo coste y riesgo.
-      <br><br>Los programas son ágiles, adaptados a la cultura de cada organización, y fomentan una transferencia de conocimiento más productiva.
-      <br><br>
-    </p>
-
     <div class="grid cols-3" style="margin-top:18px;">
       <div class="card">
         <div class="media">
@@ -943,7 +802,7 @@ body.menu-open .mobile-menu{ display:block; }
         <div class="body">
           <span class="pill" aria-label="Contacto sobre Universidades y centros de I+D">Universidades y centros de I+D</span>
           <h3>Reactor de Transferencia</h3>
-          <p>Programa que conecta problemas reales complejos con investigadores/as, empresas e IPs senior, impulsando una transferencia de investigación más efectiva hacia soluciones escalables de alto impacto y con acceso a financiación.</p>
+          <p>Programa de 4-6 meses de duración para mejorar la productividad de la transferencia de conocimiento. El programa combina investigadores/as, empresas e IPs senior, impulsando un trabajo que parte de intuiciones sobre problemas complejos y culmina en soluciones escalables de alto impacto y con acceso a financiación.</p>
         </div>
       </div>
 
@@ -957,7 +816,7 @@ body.menu-open .mobile-menu{ display:block; }
         <div class="body">
           <span class="pill" aria-label="Contacto sobre Industria multi-sector">Industria (multi-sector)</span>
           <h3>Reactor de Innovación</h3>
-          <p>Servicio para empresas que hace más productiva su inversión en I+D, mediante la conexión con el conocimiento multi-disciplinar disponible, generando valor y cultura organizacional innovadora.</p>
+          <p>Servicio a medida para empresas, para mejorar la productividad de su inversión en I+D. El programa conecta a la organización con conocimiento multi-disciplinar disponible, generando valor desde el principio.</p>
         </div>
       </div>
 
@@ -975,6 +834,13 @@ body.menu-open .mobile-menu{ display:block; }
         </div>
       </div>
     </div>
+
+    <div class="hub-agents-cta">
+      <a class="btn hub-agents-btn" href="gpts.html#buscador" target="_blank" rel="noopener">
+        Prueba nuestros agentes IA para mapear recursos de I+D o prototipar un problema identificado
+      </a>
+    </div>
+
   </div>
 </section>
 
@@ -992,8 +858,8 @@ body.menu-open .mobile-menu{ display:block; }
         </div>
         <div class="body">
           <span class="pill">Industria (multi-sector)</span>
-          <h3>Estrategia dinámica con equipos directivos</h3>
-          <p>Del plan estratégico estático y rígido a la estrategia viva y cotidiana con el equipo directivo: ciclos cortos, foco y decisiones basadas en evidencias para ganar músculo estratégico y fortalecer la capacidad de adaptación de toda la organización.</p>
+          <h3>Estrategia dinámica para entornos inciertos</h3>
+          <p>Estrategia dinámica para entornos de incertidumbre: prospectiva de escenarios futuros, ciclos cortos, foco y decisiones basadas en la acción por activación de escenarios.</p>
         </div>
       </div>
       <div class="card">
@@ -1005,8 +871,8 @@ body.menu-open .mobile-menu{ display:block; }
         </div>
         <div class="body">
           <span class="pill">Industria (multi-sector)</span>
-          <h3>Agenda y despliegue traccionado de la estrategia</h3>
-          <p>Alineamiento de agendas de equipos que abren tiempo a explorar y decidir, aterrizando la estrategia en rutinas semanales hasta volverla un hábito cotidiano.</p>
+          <h3>Agenda directiva y despliegue traccionado de la estrategia</h3>
+          <p>Del plan estratégico estático y rígido al músculo estratégico. Alineamiento de agendas de equipos que abren tiempo a explorar y decidir, aterrizando la estrategia en rutinas semanales hasta volverla un hábito cotidiano y fortalecer la capacidad de adaptación de toda la organización</p>
         </div>
       </div>
       <div class="card">
@@ -1018,8 +884,8 @@ body.menu-open .mobile-menu{ display:block; }
         </div>
         <div class="body">
           <span class="pill">Administraciones públicas y tercer sector</span>
-          <h3>Estrategia desde la inteligencia colectiva</h3>
-          <p>Programa ligero con equipos de usuarios y gestores públicos que, desde la previsión de futuros, co-diseña la estrategia, las políticas y los servicios de la organización.</p>
+          <h3>Estrategia de servicio público desde la inteligencia colectiva</h3>
+          <p>Programa ligero con equipos gestores públicos y usuarios que, desde la revisión de problemas, necesidades y recursos, co-diseña la estrategia, las políticas y los servicios de la organización.</p>
         </div>
       </div>
     </div>
@@ -1029,7 +895,6 @@ body.menu-open .mobile-menu{ display:block; }
 <section id="liderazgo">
   <div class="container">
     <h2 class="section-title">Servicios de Liderazgo</h2>
-    <p class="section-sub">(Organizaciones &gt; 500 personas). Definición e implantación del modelo de liderazgo propio, evaluación y capacitación ejecutiva, y plan de acción transformacional.</p>
     <div class="grid cols-3" style="margin-top:18px;">
       <div class="card">
         <div class="media">
@@ -1090,7 +955,7 @@ body.menu-open .mobile-menu{ display:block; }
         <div class="cta" style="margin-top:12px;">
           <a
             id="cta-consejos"
-            class="btn brand"
+            class="btn-contactar"
             href="mailto:joaquinchina@gmail.com?subject=Consulta%3A%20Consejos%20de%20Administraci%C3%B3n&body=Hola%20Joaqu%C3%ADn%2C%0A%0AEstoy%20interesado%2Fa%20en%20tus%20servicios%20de%20Consejos%20de%20Administraci%C3%B3n.%20%0A%0A%C2%BFPodemos%20agendar%20una%20llamada%3F%0A%0AGracias."
           >
             Contactar
