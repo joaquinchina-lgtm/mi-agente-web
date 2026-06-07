@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="canonical" href="https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art05.html">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+
+<!-- Open Graph -->
+<meta property="og:locale" content="es_ES">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Blog JR">
+<meta property="og:url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art05.html">
+<meta property="og:title" content="¿Qué le pasa al mundo?">
+<meta property="og:description" content="Algunas claves para un mundo que está pasando de ser complicado a ser complejo.">
+<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art05-1200x630.jpg">
+<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art05-1000x1000.jpg">
+<meta property="og:image:secure_url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art05-1200x630.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Un mundo en cambio">
+
+<!-- Twitter (lo leen muchas apps también) -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Qué le pasa al mundo?">
+<meta name="twitter:description" content="Algunas claves para un mundo que está pasando de ser complicado a ser complejo.">
+<meta name="twitter:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/share-art05-1200x630.jpg">
+
+  <style>
+    :root{
+      --brand:#32717E;
+      --ink:#0e1326;
+      --muted:#6b7280;
+      --bg:#f6f7fb;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:#111827;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header.site{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(255,255,255,.8);border-bottom:1px solid #e5e7eb;z-index:40}
+    .nav{max-width:1160px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px}
+    .nav .brand{font-weight:600;color:#0b1324}
+    .nav .links a{margin-left:16px;font-size:14px;color:#374151}
+    .nav .links a:hover{color:#111827}
+
+    /* ======= LECTURA ======= */
+    .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+    .article{
+      max-width:72ch; /* columna cómoda de lectura */
+      margin:40px auto 64px;
+    }
+    .article .kicker{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+    .article h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 6px}
+    .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* HERO responsive */
+    .hero{
+      position: relative;
+      margin: 14px 0 18px;
+      border-radius: 16px;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 21/9;   /* panorámico en desktop */
+      background: #fff;
+    }
+
+/* En móvil, dale más altura (mejor lectura) */
+    @media (max-width: 768px){
+      .hero{ aspect-ratio: 16/9; }  /* puedes usar 4/3 si lo prefieres */
+    }
+
+/* Imagen dentro del hero: ocupa todo, recorta bien */
+    .hero > img{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;    /* recorte elegante sin deformar */
+      display: block;
+    }
+
+/* Imágenes fluidas por si algún <img> trae width/height en el HTML */
+img{ max-width:100%; height:auto; display:block; }
+img[width], img[height]{ width:100% !important; height:auto !important; }
+
+
+    .hero figcaption{display:none}
+
+    .prose{font-size:18px;line-height:1.75}
+    .prose > p{margin:1em 0}
+    .prose h2{font-size:clamp(22px,2.6vw,28px);line-height:1.3;margin:1.6em 0 .5em}
+    .prose h3{font-size:clamp(18px,2.2vw,22px);line-height:1.4;margin:1.4em 0 .4em}
+    .prose ul, .prose ol{padding-left:1.25rem;margin:1em 0}
+    .prose blockquote{
+      margin:1.2em 0;padding:12px 14px;border-left:4px solid var(--brand);
+      background:#fff;border-radius:12px;color:#374151
+    }
+    .share{display:flex;gap:10px;align-items:center;margin-top:22px}
+    .back{margin-top:28px;font-size:14px}
+
+    /* progreso de lectura (opcional) */
+    .progress{
+      position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),#06b6d4);
+      width:0%;z-index:60
+    }
+
+    @media (max-width:720px){
+      .article{margin:24px auto 48px}
+      .hero{aspect-ratio:16/9;max-height:260px}
+      .prose{font-size:17px}
+    }
+
+/* Contenedor fluido */
+/* Contenedor más ancho en desktop */
+:root{
+  --space: clamp(12px, 2.5vw, 24px);
+  --content: min(96vw, 1200px);   /* antes 720px */
+}
+
+.container{
+  width: 100%;
+  max-width: var(--content);       /* ¡importante! puede sobreescribir un max-width viejo */
+  margin: 0 auto;
+  padding: var(--space);
+}
+
+/* Tipografía e imágenes responsive */
+img, video, iframe{ max-width:100%; height:auto; display:block; }
+figure{ margin:0; }
+h1{ font-size: clamp(1.8rem, 1.2rem + 2vw, 2.4rem); line-height:1.2; }
+p, li{ line-height:1.65; }
+
+/* Si tienes dos columnas, colapsa a una en móvil */
+.article-grid{ display:grid; grid-template-columns: 1fr; gap: var(--space); }
+@media (min-width: 1000px){
+  .article-grid{
+    grid-template-columns: minmax(0, 1fr) 340px; /* contenido + aside */
+    column-gap: clamp(20px, 4vw, 48px);
+  }
+}
+
+/* Por si usaste tamaños fijos en <img width/height> */
+img[width], img[height]{ width:100% !important; height:auto !important; }
+
+  </style>
+</head>
+<body>
+  <!-- barra de progreso -->
+  <div class="progress" id="progress"></div>
+
+  <!-- Header del sitio -->
+  <header class="site">
+    <div class="nav">
+      <a class="brand" href="../index.html#home">JR</a>
+      <nav class="links" aria-label="Secciones del sitio">
+        <a href="../index.html#innovacion">Innovación</a>
+        <a href="../index.html#estrategia">Estrategia</a>
+        <a href="../index.html#liderazgo">Liderazgo</a>
+        <a href="../index.html#consejos">Consejero</a>
+        <a href="../index.html#trayectoria">Trayectoria</a>
+        <a href="../index.html#socios">Socios</a>
+        <a href="../index.html#red">Red</a>
+        <a href="../index.html#galeria">Hitos</a>
+        <a href="../index.html#blog" class="active">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+<main class="article-grid container">
+    <article class="article" itemscope itemtype="https://schema.org/BlogPosting">
+      <p class="kicker">Blog</p>
+      <h1 itemprop="headline">¿Qué le pasa al mundo?</h1>
+      <p class="meta">
+        <time itemprop="datePublished" datetime="2025-10-06">8 de junio de 2026</time> ·
+        <span itemprop="author">Joaquín Romero Roldán</span>
+      </p>
+
+      <figure class="hero">
+        <img src="../assets/img/art05.png" alt="Un mundo en cambio" itemprop="image">
+        <figcaption>Pie de foto (opcional)</figcaption>
+      </figure>
+
+      <section class="prose" itemprop="articleBody">
+        <p class="meta">
+        <span itemprop="pie">Algunas claves para un mundo que está pasando de ser complicado a ser complejo.</span>
+
+        <p>Una forma sencilla y útil de responder a esta pregunta y, de paso, obtener soluciones a lo que nos azota (la poli-crisis, que llaman ahora) es que “el mundo está pasando de ser complicado a ser complejo”. ¿Sabrían ustedes explicar la diferencia?</p>
+        <p></p>
+        <p>En un sistema complicado, las múltiples relaciones causa-efecto cruzadas pueden ser conocidas de antemano: sólo es cuestión de contar con las herramientas analíticas adecuadas que nos permitan predecir lo que va a suceder.</p>
+        <p></p>
+        <p>Un sistema complejo, por el contrario, es aquel en el que existen igualmente muchas relaciones causa-efecto, pero que sólo se pueden conocer a posteriori. En ese mundo hemos entrado ya.</p>
+        <p></p>
+        <p>El origen de dicha complejidad radica en dos elementos que irrumpieron hace más de treinta años en nuestras vidas y que se han extendido de forma masiva: la computación y las comunicaciones. Su combinación ha generado cambios en las relaciones humanas que van más rápido que nuestra propia capacidad para analizarlos: cada vez somos menos capaces de conocer las relaciones a priori.</p>
+        <p></p>
+        <p>En un mundo complejo, las lógicas predictivas empiezan a fallar. Dejan de funcionar, por tanto, algunos de los instrumentos analíticos que tan útiles nos habían sido hasta hace poco. Una catástrofe, de no ser porque aún contamos con herramientas que pueden salir en nuestra ayuda y que, además, son genuinamente humanas: las lógicas exploratorias. También llamadas creativas.</p>
+        <p></p>
+        <p>Efectivamente: cuando las predictivas sucumben, tenemos una manera para poder anticipar el futuro: la exploración. Combinadas con aquellas, las lógicas creativas pueden servirnos para generar las condiciones necesarias para analizar en retrospectiva y no naufragar en el mundo complejo. Se trata de añadir prospecciones a las predicciones.</p>
+        <p>En las lógicas creativas no hay IA que valga por sí sola. Al menos de momento. Para poder afirmar lo contrario, la IA primero debería demostrar que sabe resolver problemas complejos. François Chollet, científico de frontera en evaluarla a través de unas curiosas pruebas que actualiza cada cierto tiempo, no ha obtenido evidencia hasta la fecha: cualquier niño puede resolver problemas complejos, cosa que la más potente IA no es capaz de hacer.</p>
+        <p>La resolución de problemas complejos, así como la capacidad de innovar (un concepto tan desconocido como desvirtuado, pese a ocupar todos los días las páginas de actualidad), están directamente relacionadas con la capacidad de sentir un propósito genuino, de tener criterio, y de matar intuiciones o corazonadas. Esas mismas que nos llevan a querer tropezar dos (o más) veces en la misma piedra.</p>
+        <p>En el ámbito del management occidental, las lógicas dominadoras hasta hace poco eran las predictivas: la planificación estratégica (un oxímoron en términos); la competitividad por costes y la mejora incremental o calidad (dos dinastías que han venido influenciadas, sobre todo, por la industria de la automoción); las analíticas de variables, flujos, históricos, tendencias y proyecciones (que nos enseñaron en las escuelas de negocios); la formación clásica, de conocimientos teóricos, generalmente bidireccional; y una computación clásica cada vez más potente, con la IA como penúltimo elemento de disrupción.</p>
+        <p>En el paradigma de lógicas combinadas, sin embargo, los grandes planes estratégicos con cientos de indicadores dejan paso al músculo estratégico, donde toda la organización (personas) está implicada en un proceso cotidiano y no en un gran evento cuatrienal. La competitividad por valor es ahora una oportunidad si sabemos cómo generar valor (innovar: personas). La mejora disruptiva (de nuevo, innovar: personas) es más potente que la mejora continua. El aprendizaje de raíz (trabajado con personas diversas en entornos de experiencia real) es más determinante. La computación clásica dará paso a la computación cuántica, aunque tardaremos en verlo… ¿será la próxima burbuja, una vez que pinche la actual? ¿Cuánto hay de burbuja en la IA, en un año que sus dos gigantes salen a bolsa?.</p>
+        <p>La manera más eficaz para afrontar la complejidad es activar la inteligencia colectiva. ¿Signifoca que debemos abandonar las analíticas o los sistemas formativos que han demostrado miles de años de eficacia? ¡En absoluto! Y usar herramientas, ¡por supuesto! Las más sofisticadas que estén a nuestro alcance. Pero sin perder la cabeza. Imaginemos una empresa que sustituyó a todo un equipo de personas por una suscripción a IA ¿Qué pasaría si, por una decisión corporativa en la otra punta del mundo, se cancelara?</p>
+        <p>Cuanto más complejo es el mundo, más necesitamos activar una arquitectura de inteligencia colectiva en nuestra organización. Todavía hay que quitar mucho humo del sistema. Concretamente, todo el que producen sus vendedores: quienes confunden innovar con I+D o, peor, quienes venden innovaciones sin propósito. O quienes hablan del liderazgo haciéndonos jugar la gallinita ciega, en ocasiones, desde posiciones en las que nunca lideraron equipos.</p>
+        <p>Debemos acudir, en definitiva, a las fuentes donde se genera conocimiento y criterio (en universidades, por ejemplo, donde están generalmente disponibles),  y conectar inteligencia colectiva y diversa. Esa misma que tiene corazonadas, intuiciones y propósito.</p>
+        
+        <h3>Claves prácticas</h3>
+        <ul>
+          <li>Todavía nos queda el recurso de las lógicas creativas.</li>
+          <li>La complejidad la aborda mejor el cerebro humano que la máquina. Y de largo.</li>
+          <li>La clave está en saber activar procesos efectivos de inteligencia colectiva, sumada a la artificial.</li>
+        </ul>
+
+        <blockquote>“Sorprenderse, extrañarse, es comenzar a entender.” José Ortega y Gasset</blockquote>
+
+        <p>Joaquín Romero Roldán.</p>
+      </section>
+
+      <div class="share" aria-label="Compartir">
+        <span style="color:#6b7280">Compartir:</span>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art05.html" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://twitter.com/intent/tweet?url=https://joaquinchina-lgtm.github.io/mi-agente-web/blog/art05.html&text=Inteligencia%20colectiva%20en%20tiempos%20de%20IA" target="_blank" rel="noopener">X</a>
+      </div>
+
+      <p class="back"><a href="../index.html#blog">← Volver al Blog</a></p>
+    </article>
+  </main>
+
+  <footer id="contacto">
+    <div class="wrap">
+      <p style="color:#6b7280">&copy; 2025 Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</p>
+    </div>
+  </footer>
+
+  <script>
+    // Barra de progreso de lectura
+    (function(){
+      const bar = document.getElementById('progress');
+      const onScroll = () => {
+        const h = document.documentElement;
+        const sc = h.scrollTop || document.body.scrollTop;
+        const max = (h.scrollHeight - h.clientHeight);
+        const p = max > 0 ? (sc / max) * 100 : 0;
+        bar.style.width = p + '%';
+      };
+      document.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+  </script>
+</body>
+</html>
