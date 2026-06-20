@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Presupuesto · SMIC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1c2e; --panel:#16263d; --panel2:#1d3350; --card:#1b2d47;
+    --ink:#eef4fb; --muted:#9fb3cc; --line:#2a3f5f;
+    --c1:#2f80ed; --c2:#56ccf2; --c3:#27ae60; --c4:#f2c94c; --c5:#eb5757;
+    --c6:#9b51e0; --c7:#f2994a; --c8:#6fcf97; --c9:#bb6bd9; --c10:#e0e0e0;
+    --accent:#2f80ed;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:#0f1c2e;color:#eef4fb;}
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 22px 60px;}
+  header.head{margin-bottom:8px}
+  .eyebrow{color:#56ccf2;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+  h1{margin:.2em 0 .1em;font-size:1.9rem;line-height:1.15}
+  .sub{color:#9fb3cc;font-size:.95rem;max-width:760px}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0 18px}
+  .controls .lbl{color:#9fb3cc;font-size:.82rem;margin-right:4px}
+  .seg{display:inline-flex;background:#16263d;border:1px solid #2a3f5f;border-radius:10px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:#9fb3cc;padding:8px 16px;font-size:.9rem;cursor:pointer;transition:.15s}
+  .seg button.active{background:#2f80ed;color:#fff;font-weight:600}
+  .seg button:hover:not(.active){color:#eef4fb}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .kpi{background:linear-gradient(160deg,#1b2d47,#16263d);border:1px solid #2a3f5f;border-radius:14px;padding:16px 18px}
+  .kpi .t{color:#9fb3cc;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+  .kpi .v{font-size:1.7rem;font-weight:700;margin-top:6px}
+  .kpi .d{font-size:.8rem;color:#56ccf2;margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .card{background:#16263d;border:1px solid #2a3f5f;border-radius:14px;padding:18px}
+  .card.full{grid-column:1/-1}
+  .card h3{margin:0 0 2px;font-size:1.02rem}
+  .card .note{color:#9fb3cc;font-size:.8rem;margin:0 0 12px}
+  .chart-box{position:relative;height:300px}
+  .chart-box.tall{height:340px}
+  table{width:100%;border-collapse:collapse;font-size:.86rem}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid #2a3f5f}
+  th:first-child,td:first-child{text-align:left}
+  thead th{color:#9fb3cc;font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  tbody tr:hover{background:#1b2d47}
+  tfoot td{font-weight:700;border-top:2px solid #2a3f5f;border-bottom:none}
+  .pill{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  footer{margin-top:32px;color:#9fb3cc;font-size:.78rem;border-top:1px solid #2a3f5f;padding-top:14px}
+  @media(max-width:880px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <div class="eyebrow">Innova Social Lab 2026 · Reto 1: Migración y convivencia</div>
+    <h1>Presupuesto orientativo · Sandbox Música, Infancia y Convivencia</h1>
+    <p class="sub">Horizonte 2027–2029 · Inversión total prevista 200.000 €. Presupuesto de carácter orientativo, sujeto a ajuste durante el diseño definitivo del piloto. Selecciona un año para filtrar todos los gráficos.</p>
+  </header>
+
+  <div class="controls">
+    <span class="lbl">Año:</span>
+    <div class="seg" id="yearSeg">
+      <button data-y="all" class="active">Total 3 años</button>
+      <button data-y="0">2027</button>
+      <button data-y="1">2028</button>
+      <button data-y="2">2029</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Evolución del coste por año</h3>
+      <p class="note">Coste total previsto y desglose por fuente de financiación</p>
+      <div class="chart-box"><canvas id="chYears"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Fuentes de financiación</h3>
+      <p class="note">Solicitado al Lab (150.000 €) vs. otras fuentes (50.000 €)</p>
+      <div class="chart-box"><canvas id="chFunding"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Categorías de gasto</h3>
+      <p class="note">Desglose por conceptos financiables</p>
+      <div class="chart-box tall"><canvas id="chCats"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Distribución por entidad del partenariado</h3>
+      <p class="note">Reparto del presupuesto entre socios</p>
+      <div class="chart-box tall"><canvas id="chEnt"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Tabla de categorías de gasto</h3>
+      <p class="note" id="tblNote">Importes por año (€)</p>
+      <table id="catTable"></table>
+    </div>
+    <div class="card full">
+      <h3>Justificación de partidas (peso sobre 200.000 €)</h3>
+      <p class="note">Distribución cualitativa de las principales partidas del proyecto</p>
+      <div class="chart-box tall"><canvas id="chJust"></canvas></div>
+    </div>
+  </div>
+
+  <footer>
+    Fuente: «Presupuesto orientativo del proyecto Sandbox Música, Infancia y Convivencia (mayo 2026)». Cifras en euros. El presupuesto es orientativo y se revisará durante el acompañamiento del programa y la formalización del convenio. En el desglose por fuente, el Año 2 se reparte en 119.000 € (Lab) + 2.000 € (otras fuentes) para cuadrar con los totales del documento (150.000 € / 50.000 €).
+  </footer>
+</div>
+
+<script>
+const EUR = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n);
+const years = ['2027','2028','2029'];
+
+// Bloque B - categorías
+const cats = [
+  {n:'Personal propio',           v:[10000,30000,20000], c:'#2f80ed'},
+  {n:'Servicios externos',        v:[9000,61000,10000],  c:'#56ccf2'},
+  {n:'Evaluación y medición',     v:[12000,5000,1000],   c:'#27ae60'},
+  {n:'Comunicación y difusión',   v:[0,5000,5000],       c:'#f2c94c'},
+  {n:'Materiales y equipamiento', v:[0,15000,5000],      c:'#9b51e0'},
+  {n:'Gastos estructurales',      v:[0,0,7000],          c:'#f2994a'},
+  {n:'Otros (justificar)',        v:[0,5000,0],          c:'#eb5757'},
+];
+// Bloque C - entidades
+const ents = [
+  {n:'Fundación Orfeón Pamplonés / Sandbox OPEMI', v:[10000,105000,35000], c:'#2f80ed'},
+  {n:'UpSocial',                    v:[12000,5000,3000], c:'#56ccf2'},
+  {n:'CEIP San Francisco',          v:[3000,3000,2000],  c:'#27ae60'},
+  {n:'CEIP Santacara',              v:[1500,2000,2000],  c:'#f2c94c'},
+  {n:'CEIP Mélida',                 v:[1500,2000,2000],  c:'#9b51e0'},
+  {n:'CEIP Rada',                   v:[1500,2000,2000],  c:'#f2994a'},
+  {n:'CEIP Murillo',                v:[1500,2000,2000],  c:'#eb5757'},
+];
+// Bloque A - financiación (Año2 ajustado: 119k Lab + 2k otras)
+const lab   = [31000,119000,0];
+const otras = [0,2000,48000];
+const totalYear = [31000,121000,48000];
+// Bloque D - justificación
+const just = [
+  {n:'Profesorado especialista + investigación', p:29, c:'#2f80ed'},
+  {n:'Entidades socias', p:15, c:'#56ccf2'},
+  {n:'Formación y materiales', p:10, c:'#27ae60'},
+  {n:'Evaluación y medición de impacto', p:9, c:'#f2c94c'},
+  {n:'Dirección, coordinación y estudios FOP', p:7.5, c:'#9b51e0'},
+  {n:'Coordinación operativa del Sandbox', p:7.5, c:'#f2994a'},
+  {n:'Soporte administrativo', p:7.5, c:'#6fcf97'},
+  {n:'Sostenibilidad y escalado', p:7, c:'#bb6bd9'},
+  {n:'Comunicación y difusión', p:5, c:'#eb5757'},
+  {n:'Eventos y actividades abiertas', p:2.5, c:'#e0e0e0'},
+];
+
+Chart.defaults.color = '#9fb3cc';
+Chart.defaults.font.family = 'Segoe UI, system-ui, Arial, sans-serif';
+const gridC = '#2a3f5f';
+
+let yState = 'all'; // 'all' | 0 | 1 | 2
+const sel = arr => yState==='all' ? arr.reduce((a,b)=>a+b,0) : arr[yState];
+
+// KPIs
+function renderKPIs(){
+  const total = yState==='all' ? 200000 : totalYear[yState];
+  const labV  = yState==='all' ? 150000 : lab[yState];
+  const otrV  = yState==='all' ? 50000  : otras[yState];
+  const pct   = total? Math.round(labV/total*100) : 0;
+  const label = yState==='all' ? 'Total 2027–2029' : years[yState];
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="t">Coste total · ${label}</div><div class="v">${EUR(total)}</div><div class="d">${yState==='all'?'Proyecto a 3 años':'Año seleccionado'}</div></div>
+    <div class="kpi"><div class="t">Solicitado al Lab</div><div class="v">${EUR(labV)}</div><div class="d">${pct}% del coste</div></div>
+    <div class="kpi"><div class="t">Otras fuentes</div><div class="v">${EUR(otrV)}</div><div class="d">Alianzas y patrocinios</div></div>
+    <div class="kpi"><div class="t">Partida principal</div><div class="v">29%</div><div class="d">Profesorado + investigación</div></div>`;
+}
+
+// Chart: years (always shows all 3 years, highlights selected)
+const chYears = new Chart(document.getElementById('chYears'),{
+  type:'bar',
+  data:{labels:years,datasets:[
+    {label:'Solicitado al Lab',data:lab,backgroundColor:'#2f80ed',stack:'s'},
+    {label:'Otras fuentes',data:otras,backgroundColor:'#56ccf2',stack:'s'},
+  ]},
+  options:{maintainAspectRatio:false,responsive:true,
+    plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${EUR(c.parsed.y)}`}}},
+    scales:{x:{grid:{display:false}},y:{grid:{color:gridC},ticks:{callback:v=>EUR(v)}}}}
+});
+
+// Chart: funding donut
+const chFunding = new Chart(document.getElementById('chFunding'),{
+  type:'doughnut',
+  data:{labels:['Solicitado al Lab','Otras fuentes'],datasets:[{data:[150000,50000],backgroundColor:['#2f80ed','#56ccf2'],borderColor:'#16263d',borderWidth:2}]},
+  options:{maintainAspectRatio:false,responsive:true,cutout:'62%',
+    plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.label}: ${EUR(c.parsed)} (${Math.round(c.parsed/(c.dataset.data.reduce((a,b)=>a+b,0))*100)}%)`}}}}
+});
+
+// Chart: categories horizontal bar
+const chCats = new Chart(document.getElementById('chCats'),{
+  type:'bar',
+  data:{labels:cats.map(c=>c.n),datasets:[{label:'Importe',data:cats.map(c=>sel(c.v)),backgroundColor:cats.map(c=>c.c),borderRadius:5}]},
+  options:{indexAxis:'y',maintainAspectRatio:false,responsive:true,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>EUR(c.parsed.x)}}},
+    scales:{x:{grid:{color:gridC},ticks:{callback:v=>EUR(v)}},y:{grid:{display:false}}}}
+});
+
+// Chart: entities donut
+const chEnt = new Chart(document.getElementById('chEnt'),{
+  type:'doughnut',
+  data:{labels:ents.map(e=>e.n),datasets:[{data:ents.map(e=>sel(e.v)),backgroundColor:ents.map(e=>e.c),borderColor:'#16263d',borderWidth:2}]},
+  options:{maintainAspectRatio:false,responsive:true,cutout:'55%',
+    plugins:{legend:{position:'bottom',labels:{boxWidth:11,font:{size:10}}},
+    tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return `${c.label}: ${EUR(c.parsed)} (${t?Math.round(c.parsed/t*100):0}%)`;}}}}}
+});
+
+// Chart: justification (static, % over 200k)
+new Chart(document.getElementById('chJust'),{
+  type:'bar',
+  data:{labels:just.map(j=>j.n),datasets:[{label:'% sobre total',data:just.map(j=>j.p),backgroundColor:just.map(j=>j.c),borderRadius:5}]},
+  options:{indexAxis:'y',maintainAspectRatio:false,responsive:true,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'% · '+EUR(c.parsed.x/100*200000)}}},
+    scales:{x:{grid:{color:gridC},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}
+});
+
+// Table
+function renderTable(){
+  const showYear = yState!=='all';
+  const head = showYear
+    ? `<tr><th>Categoría</th><th>${years[yState]}</th><th>% del año</th></tr>`
+    : `<tr><th>Categoría</th><th>2027</th><th>2028</th><th>2029</th><th>Total</th><th>%</th></tr>`;
+  const grand = showYear ? totalYear[yState] : 200000;
+  let rows = '';
+  cats.forEach(c=>{
+    if(showYear){
+      const v=c.v[yState];
+      rows += `<tr><td><span class="pill" style="background:${c.c}"></span>${c.n}</td><td>${EUR(v)}</td><td>${grand?(v/grand*100).toFixed(1):0}%</td></tr>`;
+    }else{
+      const t=c.v.reduce((a,b)=>a+b,0);
+      rows += `<tr><td><span class="pill" style="background:${c.c}"></span>${c.n}</td><td>${EUR(c.v[0])}</td><td>${EUR(c.v[1])}</td><td>${EUR(c.v[2])}</td><td>${EUR(t)}</td><td>${(t/grand*100).toFixed(1)}%</td></tr>`;
+    }
+  });
+  const foot = showYear
+    ? `<tr><td>TOTAL</td><td>${EUR(grand)}</td><td>100%</td></tr>`
+    : `<tr><td>TOTAL</td><td>${EUR(31000)}</td><td>${EUR(121000)}</td><td>${EUR(48000)}</td><td>${EUR(200000)}</td><td>100%</td></tr>`;
+  document.getElementById('catTable').innerHTML = `<thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot>`;
+  document.getElementById('tblNote').textContent = showYear ? `Importes del año ${years[yState]} (€)` : 'Importes por año (€)';
+}
+
+function update(){
+  renderKPIs();
+  chCats.data.datasets[0].data = cats.map(c=>sel(c.v));
+  chCats.update();
+  chEnt.data.datasets[0].data = ents.map(e=>sel(e.v));
+  chEnt.update();
+  // highlight selected year bars
+  const dim = (base,on)=> base.map((_,i)=> (yState==='all'||i==yState)?on:on+'55');
+  chYears.data.datasets[0].backgroundColor = dim(years,'#2f80ed');
+  chYears.data.datasets[1].backgroundColor = dim(years,'#56ccf2');
+  chYears.update();
+  renderTable();
+}
+
+document.getElementById('yearSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#yearSeg button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const y=b.dataset.y; yState = y==='all'?'all':parseInt(y);
+  update();
+});
+
+update();
+</script>
+</body>
+</html>

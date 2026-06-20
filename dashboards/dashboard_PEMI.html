@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PEMI · Evaluación del piloto 2015-16</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --green:#7C8C1B;
+  --green-soft:#a9b85f;
+  --orange:#D17E2A;
+  --orange-soft:#e3a868;
+  --ink:#1a1a1a;
+  --paper:#ffffff;
+  --mist:#f4f3ef;
+  --line:#e6e4dc;
+  --grey:#8a8a82;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+/* HEADER */
+header{
+  background:var(--ink);
+  color:#fff;
+  padding:54px 0 46px;
+  position:relative;
+  overflow:hidden;
+}
+header .bar{position:absolute;top:0;left:0;height:6px;width:100%;
+  background:linear-gradient(90deg,var(--green) 0 50%,var(--orange) 50% 100%);}
+header .kicker{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--orange-soft);font-weight:700}
+header h1{font-size:42px;font-weight:800;letter-spacing:-.5px;margin:10px 0 8px;line-height:1.05}
+header h1 span{color:var(--green-soft)}
+header p{max-width:680px;color:#cfcec7;font-size:15.5px}
+
+/* KPI STRIP */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin:-34px auto 0;position:relative;z-index:3}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;
+  box-shadow:0 14px 34px -22px rgba(0,0,0,.35)}
+.kpi .num{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+.kpi .num.g{color:var(--green)} .kpi .num.o{color:var(--orange)}
+.kpi .lbl{font-size:12.5px;color:var(--grey);margin-top:7px;font-weight:600}
+
+/* SECTION */
+section{padding:46px 0 8px}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.sec-head .tag{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+  padding:5px 11px;border-radius:30px;color:#fff}
+.tag.fam{background:var(--orange)} .tag.prof{background:var(--green)}
+.sec-head h2{font-size:25px;font-weight:800;letter-spacing:-.3px}
+.sec-sub{color:var(--grey);font-size:14.5px;margin-bottom:26px;max-width:760px}
+
+/* TABS / toggle */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px}
+.seg{display:inline-flex;background:var(--mist);border:1px solid var(--line);border-radius:30px;padding:4px}
+.seg button{border:none;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--grey);
+  padding:8px 16px;border-radius:30px;cursor:pointer;transition:.18s}
+.seg button.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px -3px rgba(0,0,0,.3)}
+.seg.green button.active{color:var(--green)}
+.seg.orange button.active{color:var(--orange)}
+.hint{font-size:12.5px;color:var(--grey)}
+
+/* CARDS GRID */
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 24px 18px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:3px}
+.card .q-eu{font-size:12.5px;color:var(--grey);font-style:italic;margin-bottom:16px}
+.chart-box{position:relative;height:320px}
+
+/* question rankings list */
+.qlist{display:flex;flex-direction:column;gap:14px}
+.qrow{cursor:pointer;padding:14px 16px;border:1px solid var(--line);border-radius:12px;transition:.16s;background:#fff}
+.qrow:hover{border-color:var(--grey)}
+.qrow.active{border-color:transparent;color:#fff}
+.qrow.active.fam{background:var(--orange)} .qrow.active.prof{background:var(--green)}
+.qrow .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.qrow .qt{font-size:13.5px;font-weight:600;line-height:1.35}
+.qrow .score{font-size:22px;font-weight:800;letter-spacing:-1px;white-space:nowrap}
+.qrow .meter{height:6px;border-radius:6px;background:var(--mist);margin-top:10px;overflow:hidden}
+.qrow.active .meter{background:rgba(255,255,255,.3)}
+.qrow .fill{height:100%;border-radius:6px;background:var(--orange)}
+.qrow.prof .fill{background:var(--green)}
+.qrow.active .fill{background:#fff}
+
+/* summary compare */
+.compare{background:var(--mist);border-radius:16px;padding:30px;margin-top:8px}
+.compare h3{font-size:16px;font-weight:800;margin-bottom:18px}
+.cb-box{position:relative;height:360px}
+
+/* quotes */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:6px}
+.quote{background:#fff;border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:10px;
+  padding:18px 18px;font-size:13.5px;color:#3a3a36;line-height:1.5}
+.quote:nth-child(3n+2){border-left-color:var(--green)}
+.quote:nth-child(3n){border-left-color:var(--ink)}
+.quote .src{display:block;margin-top:10px;font-size:11.5px;color:var(--grey);font-weight:600}
+
+/* centers */
+.centers{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.chip{font-size:13px;font-weight:600;background:var(--mist);border:1px solid var(--line);
+  border-radius:30px;padding:9px 16px}
+.chip b{color:var(--orange)}
+
+footer{margin-top:54px;border-top:1px solid var(--line);padding:26px 0 50px;color:var(--grey);font-size:12.5px}
+.note{font-size:12px;color:var(--grey);font-style:italic;margin-top:14px}
+
+@media(max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+  .quotes{grid-template-columns:1fr}
+  header h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar"></div>
+  <div class="wrap">
+    <div class="kicker">Orfeón Pamplonés · OPEMI</div>
+    <h1>Programa de Educación<br>Musical Infantil · <span>Evaluación del piloto</span></h1>
+    <p>Resultados de la valoración del PEMI (curso 2015-16) recogida entre <strong>familias</strong>, <strong>direcciones, coordinadores y profesorado tutor</strong> de los ocho centros participantes. Escala de valoración de 1 a 10.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi"><div class="num">8</div><div class="lbl">Centros educativos</div></div>
+    <div class="kpi"><div class="num">1.350</div><div class="lbl">Niños y niñas</div></div>
+    <div class="kpi"><div class="num o" id="kpiFam">374</div><div class="lbl">Respuestas de familias</div></div>
+    <div class="kpi"><div class="num g" id="kpiProf">21</div><div class="lbl">Respuestas de profesorado</div></div>
+    <div class="kpi"><div class="num" id="kpiGlobal">8,7</div><div class="lbl">Valoración media global /10</div></div>
+  </div>
+</div>
+
+<!-- ================= FAMILIES ================= -->
+<div class="wrap">
+<section>
+  <div class="sec-head">
+    <span class="tag fam">Familias</span>
+    <h2>La mirada de las madres y padres</h2>
+  </div>
+  <p class="sec-sub">374 familias del 2º ciclo de Educación Infantil valoraron el impacto del programa. Selecciona una pregunta para ver cómo se distribuyeron las respuestas en la escala 1-10.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3 id="famTitle"></h3>
+      <div class="q-eu" id="famEu"></div>
+      <div class="chart-box"><canvas id="famChart"></canvas></div>
+      <p class="note" id="famMeta"></p>
+    </div>
+    <div>
+      <div class="qlist" id="famList"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ================= TEACHERS ================= -->
+<div class="wrap">
+<section>
+  <div class="sec-head">
+    <span class="tag prof">Centros · Profesorado</span>
+    <h2>La mirada de quienes lo viven en el aula</h2>
+  </div>
+  <p class="sec-sub">21 direcciones, coordinadores y tutores valoraron la calidad pedagógica, la coordinación y el efecto sobre el alumnado. Selecciona una pregunta para explorar la distribución.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3 id="profTitle"></h3>
+      <div class="q-eu" id="profEu"></div>
+      <div class="chart-box"><canvas id="profChart"></canvas></div>
+      <p class="note" id="profMeta"></p>
+    </div>
+    <div>
+      <div class="qlist" id="profList"></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ================= COMPARE ================= -->
+<div class="wrap">
+<section>
+  <div class="sec-head"><h2>Valoración media por dimensión</h2></div>
+  <p class="sec-sub">Medias de cada pregunta sobre 10. Cuanto más a la derecha, mayor el grado de satisfacción.</p>
+  <div class="toolbar">
+    <div class="seg" id="cmpSeg">
+      <button data-v="all" class="active">Todas</button>
+      <button data-v="fam">Solo familias</button>
+      <button data-v="prof">Solo profesorado</button>
+    </div>
+  </div>
+  <div class="compare">
+    <div class="cb-box"><canvas id="cmpChart"></canvas></div>
+  </div>
+</section>
+</div>
+
+<!-- ================= QUOTES ================= -->
+<div class="wrap">
+<section>
+  <div class="sec-head"><h2>En sus propias palabras</h2></div>
+  <p class="sec-sub">Una selección de los comentarios abiertos recogidos en los cuestionarios.</p>
+  <div class="quotes" id="quotes"></div>
+</section>
+</div>
+
+<!-- ================= CENTERS ================= -->
+<div class="wrap">
+<section>
+  <div class="sec-head"><h2>Ocho centros · curso 2015-16</h2></div>
+  <p class="sec-sub">Más de 120 sesiones por curso, media hora diaria de lunes a jueves, en horario lectivo.</p>
+  <div class="centers" id="centers"></div>
+</section>
+</div>
+
+<div class="wrap">
+<footer>
+  <strong>Fuente:</strong> Cuestionario de evaluación del piloto PEMI / OPEMI, curso 2015-16 (Orfeón Pamplonés · Orquesta Sinfónica de Navarra). Distribuciones de respuesta leídas de los gráficos del informe; las medias son aproximadas a partir de dichas lecturas. Escala 1-10.
+</footer>
+</div>
+
+<script>
+const GREEN='#7C8C1B', ORANGE='#D17E2A', INK='#1a1a1a', MIST='#f4f3ef', LINE='#e6e4dc', GREY='#8a8a82';
+Chart.defaults.font.family="'Helvetica Neue',Helvetica,Arial,sans-serif";
+Chart.defaults.font.size=12;
+Chart.defaults.color=GREY;
+
+// ---- DATA (distribuciones 1..10) ----
+const FAM=[
+ {q:"Tu hijo/a muestra mayor interés por la música y disfruta con ella",
+  eu:"Zure seme/alabarengan musikarekiko interesa areagotu da.",
+  n:374,om:2, d:[0,5,0,8,22,30,53,74,67,115]},
+ {q:"Tu hijo/a desarrolla sensibilidad, creatividad y expresividad",
+  eu:"Sormena, sentikortasuna eta adierazmena garatzen ari da.",
+  n:369,om:7, d:[3,3,7,7,32,38,69,82,57,71]},
+ {q:"Valoración de la aportación del PEMI al desarrollo integral del niño/a",
+  eu:"PEMI-k izandako eragina zure seme/alabaren garapenean.",
+  n:372,om:4, d:[0,0,9,0,14,18,30,68,73,160]},
+ {q:"Valoración del compromiso de la entidad con la sociedad",
+  eu:"Entitatearen konpromezua gizartearekiko OPEMI-ren bitartez.",
+  n:374,om:2, d:[0,0,0,4,6,9,14,50,73,218]},
+];
+const PROF=[
+ {q:"El especialista programa las sesiones con recursos y metodologías adecuados",
+  eu:"Adituak saioak baliabide eta metodologia aproposekin antolatu ditu.",
+  n:21, d:[0,0,0,0,0,0,1,6,3,11]},
+ {q:"La coordinación y comunicación especialista–tutor han sido positivas",
+  eu:"Adituaren eta tutorearen arteko komunikazioa eta koordinazioa egokia izan da.",
+  n:21, d:[0,0,0,0,0,0,0,4,4,13]},
+ {q:"El especialista ha mostrado iniciativa y proactividad en las sesiones",
+  eu:"Adituak jarrera proaktiboa azaldu du saioetan.",
+  n:21, d:[0,0,0,0,0,0,1,3,4,13]},
+ {q:"Se percibe en los niños desarrollo de competencias mediante la música",
+  eu:"Konpetentzien garapena somatzen da umeengan.",
+  n:21, d:[0,0,0,0,1,0,2,4,6,8]},
+ {q:"El PEMI favorece sensibilidad, creatividad y expresividad",
+  eu:"Sormena, sentikortasuna eta adierazmena sustatu du umeengan.",
+  n:21, d:[0,0,0,0,0,1,2,4,6,8]},
+ {q:"El PEMI promueve el gusto por la música y el disfrute de la misma",
+  eu:"Musikarekiko nahia sustatzen du, era berean ongi pasatuz.",
+  n:21, d:[0,0,0,0,0,0,0,3,7,11]},
+ {q:"La coordinación, organización y seguimiento del PEMI es satisfactoria",
+  eu:"OPEMI-ren koordinazioa, organizazioa eta jarraipena egokia izan da.",
+  n:21, d:[0,0,0,1,1,1,2,5,5,6]},
+ {q:"Las familias valoran positivamente la aportación del PEMI",
+  eu:"Familiek OPEMI-ren ekarpena positiboa dela ikusten dute.",
+  n:21, d:[0,0,0,0,0,1,1,3,11,5]},
+];
+
+const labels10=['1','2','3','4','5','6','7','8','9','10'];
+function mean(d){let s=0,n=0;d.forEach((c,i)=>{s+=c*(i+1);n+=c});return n?s/n:0;}
+function total(d){return d.reduce((a,b)=>a+b,0);}
+function fmt(x){return x.toFixed(1).replace('.',',');}
+
+// bar colors: gradient green->orange across the scale, emphasising high scores
+function barColors(active){
+  return labels10.map((_,i)=>{
+    const t=i/9;
+    // blend mist(low) toward strong color(high)
+    return active;
+  });
+}
+
+// ---------- FAMILY ----------
+let famChart;
+function colScale(strong){
+  return labels10.map((_,i)=>{
+    const t=i/9;
+    const a=0.30+0.70*t; // opacity grows with score
+    const c=strong==='o'?[209,126,42]:[124,140,27];
+    return `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(2)})`;
+  });
+}
+function buildBar(ctxId,d,strong){
+  return new Chart(document.getElementById(ctxId),{
+    type:'bar',
+    data:{labels:labels10,datasets:[{data:d,backgroundColor:colScale(strong),
+      borderRadius:5,borderSkipped:false,maxBarThickness:46}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:INK,padding:10,displayColors:false,
+          callbacks:{title:i=>'Valoración '+i[0].label,
+            label:c=>c.parsed.y+' respuestas'}}},
+      scales:{x:{grid:{display:false},border:{display:false}},
+        y:{beginAtZero:true,grid:{color:LINE},border:{display:false},ticks:{precision:0}}}}
+  });
+}
+function renderFam(i){
+  const o=FAM[i];
+  document.getElementById('famTitle').textContent=o.q;
+  document.getElementById('famEu').textContent=o.eu;
+  document.getElementById('famMeta').textContent=
+    `Respondieron ${o.n} familias · valoración media ${fmt(mean(o.d))} / 10`;
+  famChart.data.datasets[0].data=o.d; famChart.update();
+  document.querySelectorAll('#famList .qrow').forEach((el,k)=>el.classList.toggle('active',k===i));
+}
+function buildFamList(){
+  const c=document.getElementById('famList');
+  FAM.forEach((o,i)=>{
+    const m=mean(o.d);
+    const r=document.createElement('div');
+    r.className='qrow fam'+(i===0?' active':'');
+    r.innerHTML=`<div class="top"><span class="qt">${o.q}</span><span class="score">${fmt(m)}</span></div>
+      <div class="meter"><div class="fill" style="width:${m*10}%"></div></div>`;
+    r.onclick=()=>renderFam(i);
+    c.appendChild(r);
+  });
+}
+
+// ---------- PROF ----------
+let profChart;
+function renderProf(i){
+  const o=PROF[i];
+  document.getElementById('profTitle').textContent=o.q;
+  document.getElementById('profEu').textContent=o.eu;
+  document.getElementById('profMeta').textContent=
+    `Respondieron ${o.n} profesionales · valoración media ${fmt(mean(o.d))} / 10`;
+  profChart.data.datasets[0].data=o.d; profChart.update();
+  document.querySelectorAll('#profList .qrow').forEach((el,k)=>el.classList.toggle('active',k===i));
+}
+function buildProfList(){
+  const c=document.getElementById('profList');
+  PROF.forEach((o,i)=>{
+    const m=mean(o.d);
+    const r=document.createElement('div');
+    r.className='qrow prof'+(i===0?' active':'');
+    r.innerHTML=`<div class="top"><span class="qt">${o.q}</span><span class="score">${fmt(m)}</span></div>
+      <div class="meter"><div class="fill" style="width:${m*10}%"></div></div>`;
+    r.onclick=()=>renderProf(i);
+    c.appendChild(r);
+  });
+}
+
+// ---------- COMPARE ----------
+let cmpChart;
+function cmpData(view){
+  let items=[];
+  if(view!=='prof') FAM.forEach(o=>items.push({l:o.q,m:mean(o.d),c:ORANGE}));
+  if(view!=='fam') PROF.forEach(o=>items.push({l:o.q,m:mean(o.d),c:GREEN}));
+  items.sort((a,b)=>a.m-b.m);
+  return items;
+}
+function buildCmp(view){
+  const it=cmpData(view);
+  const cfg={
+    type:'bar',
+    data:{labels:it.map(x=>x.l),
+      datasets:[{data:it.map(x=>x.m),backgroundColor:it.map(x=>x.c),
+        borderRadius:5,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:INK,padding:10,displayColors:false,
+          callbacks:{label:c=>'Media '+fmt(c.parsed.x)+' / 10'}}},
+      scales:{x:{min:0,max:10,grid:{color:LINE},border:{display:false},ticks:{stepSize:2}},
+        y:{grid:{display:false},border:{display:false},
+          ticks:{autoSkip:false,callback:function(v){
+            let s=this.getLabelForValue(v);return s.length>52?s.slice(0,50)+'…':s;},font:{size:11}}}}}
+  };
+  if(cmpChart){cmpChart.data=cfg.data;cmpChart.update();}
+  else cmpChart=new Chart(document.getElementById('cmpChart'),cfg);
+}
+
+// ---------- QUOTES ----------
+const QUOTES=[
+ {t:"Es una actividad increíblemente enriquecedora y positiva para los niños. Participan, aprenden y trasladan a casa sus inquietudes musicales. Es un lujazo.",s:"Familia · 20/02/2016"},
+ {t:"Mi hijo es un niño con necesidades especiales. Este año, con el programa, se mueve mucho mejor y ha ganado mucho en expresión corporal. Estoy encantada.",s:"Familia · 18/02/2016"},
+ {t:"Creo que esta actividad favorece la integración de todos los niños de una forma inmejorable, despertando su sensibilidad y su equilibrio personal.",s:"Profesorado · 15/02/2016"},
+ {t:"Ojalá continúe esta iniciativa en primaria. Es estupenda, consideramos la música imprescindible para una formación integral.",s:"Familia · 21/02/2016"},
+ {t:"Las especialistas están totalmente integradas y desarrollan su trabajo muy bien. Un proyecto muy interesante. Zorionak! Eskerrik asko!",s:"Profesorado · 16/02/2016"},
+ {t:"Mi hijo cuenta todos los días algo de la clase de música y siempre es positivo. Les aporta muchísimo a los niños.",s:"Familia · 20/02/2016"},
+];
+function buildQuotes(){
+  const c=document.getElementById('quotes');
+  QUOTES.forEach(q=>{
+    const d=document.createElement('div');d.className='quote';
+    d.innerHTML=`“${q.t}”<span class="src">${q.s}</span>`;c.appendChild(d);
+  });
+}
+
+// ---------- CENTERS ----------
+const CENTERS=['Colegio Ermitagaña','Colegio Iturrama','Colegio San Francisco','Colegio San Juan de la Cadena','Colegio Hijas de Jesús','Colegio Larraona','Colegio Santo Tomás','Ikastola San Fermín'];
+function buildCenters(){
+  const c=document.getElementById('centers');
+  CENTERS.forEach((n,i)=>{const s=document.createElement('span');s.className='chip';
+    s.innerHTML=`<b>${i+1}.</b> ${n}`;c.appendChild(s);});
+}
+
+// ---------- GLOBAL KPI ----------
+function globalMean(){
+  let s=0,n=0;
+  FAM.concat(PROF).forEach(o=>{s+=mean(o.d);n++;});
+  return s/n;
+}
+
+// INIT
+famChart=buildBar('famChart',FAM[0].d,'o'); renderFam(0); buildFamList();
+profChart=buildBar('profChart',PROF[0].d,'g'); renderProf(0); buildProfList();
+buildCmp('all');
+buildQuotes(); buildCenters();
+document.getElementById('kpiGlobal').textContent=fmt(globalMean());
+document.querySelectorAll('#cmpSeg button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#cmpSeg button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');buildCmp(b.dataset.v);};
+});
+</script>
+</body>
+</html>
