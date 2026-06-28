@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reactor de Innovación</title>
+<style>
+:root{ color-scheme: light; }
+*{ box-sizing:border-box; }
+body{
+  margin:0; background:#f6f7f9; color:#1c2024;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5; font-size:15px;
+}
+.wrap{ max-width:880px; margin:0 auto; padding:20px 18px 80px; }
+h1{ font-size:21px; margin:0 0 4px; }
+.sub{ color:#5b6470; font-size:13.5px; margin:0 0 16px; }
+.banner{ background:#eef3ff; border:1px solid #cdddff; border-radius:10px; padding:12px 14px; font-size:13px; color:#2a3a5c; margin-bottom:18px; }
+.banner b{ color:#1b2a4a; }
+.problema-box{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; padding:14px; margin-bottom:18px; }
+.problema-box label{ font-weight:600; font-size:13.5px; display:block; margin-bottom:6px; }
+textarea{ width:100%; border:1px solid #d4d8df; border-radius:8px; padding:9px 10px; font-family:inherit; font-size:13.5px; resize:vertical; color:#1c2024; background:#fff; }
+.progress{ height:7px; background:#e4e7ec; border-radius:5px; overflow:hidden; margin:14px 0 22px; }
+.progress > div{ height:100%; width:0; background:#3b82f6; transition:width .3s; }
+.stage{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; margin-bottom:14px; overflow:hidden; border-left:5px solid var(--c,#999); }
+.stage-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; user-select:none; }
+.dot{ width:11px; height:11px; border-radius:50%; background:#cfd4db; flex:0 0 auto; }
+.dot.done{ background:#16a34a; }
+.stage-num{ font-weight:700; font-size:12px; color:#fff; background:var(--c,#999); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.stage-title{ font-weight:650; font-size:15px; flex:1; }
+.stage-status{ font-size:12px; color:#8a929c; }
+.chev{ transition:transform .2s; color:#9aa1ab; font-size:13px; }
+.stage.open .chev{ transform:rotate(90deg); }
+.stage-body{ display:none; padding:0 14px 14px; }
+.stage.open .stage-body{ display:block; }
+.deps{ font-size:12.5px; color:#5b6470; margin:2px 0 12px; }
+.deps b{ color:#1c2024; }
+.deps .miss{ color:#c2410c; }
+.btnrow{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; align-items:center; }
+button{ font-family:inherit; font-size:13px; border-radius:8px; padding:8px 12px; cursor:pointer; border:1px solid #d4d8df; background:#fff; color:#1c2024; font-weight:550; }
+button:hover{ background:#f2f4f7; }
+button.primary{ background:#2563eb; border-color:#2563eb; color:#fff; }
+button.primary:hover{ background:#1d4ed8; }
+button:disabled{ opacity:.55; cursor:default; }
+.out-label{ font-size:12.5px; font-weight:600; color:#444c56; margin:12px 0 5px; }
+.matiz-wrap{ background:#fff8ec; border:1px solid #f3e2bf; border-radius:9px; padding:11px 12px; margin-top:12px; }
+.matiz-wrap .out-label{ margin-top:0; color:#8a5a00; }
+.matiz-hint{ font-size:11.5px; color:#9a7b3a; margin:0 0 7px; }
+details.prompt{ margin:10px 0 0; }
+details.prompt summary{ font-size:12px; color:#7a828d; cursor:pointer; }
+details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; border-radius:8px; padding:10px; color:#3a414b; max-height:240px; overflow:auto; margin:6px 0 0; }
+.toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#1c2024; color:#fff; font-size:13px; padding:9px 16px; border-radius:9px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:200; }
+.toast.show{ opacity:1; }
+.topbar{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.thinking{ font-size:12.5px; color:#2563eb; }
+.footer-note{ font-size:11.5px; color:#9aa1ab; margin-top:24px; text-align:center; }
+.runall{ background:#0f172a; border-color:#0f172a; color:#fff; }
+.runall:hover{ background:#1e293b; }
+.gen-dash-wrap{ text-align:center; margin:24px 0 6px; }
+.gen-dash{ background:#7c3aed; border-color:#7c3aed; color:#fff; font-size:14px; padding:11px 22px; }
+.gen-dash:hover{ background:#6d28d9; }
+.dash-overlay{ position:fixed; inset:0; background:#f6f7f9; z-index:100; overflow:auto; display:none; }
+.dash-overlay.show{ display:block; }
+.dash-inner{ max-width:1000px; margin:0 auto; padding:24px 22px 80px; }
+.dash-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
+.dash-title{ font-size:23px; font-weight:700; margin:0; }
+.dash-problem{ background:#fff; border:1px solid #e2e5ea; border-left:5px solid #2563eb; border-radius:12px; padding:15px 18px; margin:14px 0 20px; font-size:15px; }
+.dash-problem .lbl{ font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:#7a828d; font-weight:700; margin-bottom:6px; }
+.pipeline{ display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin:0 0 22px; }
+.pipe-chip{ display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #e2e5ea; border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; }
+.pipe-chip .pdot{ width:9px; height:9px; border-radius:50%; }
+.pipe-arrow{ color:#c2c7cf; font-size:13px; }
+.stats{ display:flex; gap:12px; margin:0 0 22px; flex-wrap:wrap; }
+.stat{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; padding:12px 16px; flex:1; min-width:120px; }
+.stat .num{ font-size:25px; font-weight:700; }
+.stat .cap{ font-size:12px; color:#7a828d; }
+.dcard{ background:#fff; border:1px solid #e2e5ea; border-radius:14px; margin-bottom:16px; overflow:hidden; border-top:4px solid var(--c,#999); }
+.dcard-head{ display:flex; align-items:center; gap:10px; padding:14px 18px 6px; }
+.dcard-head .n{ width:26px;height:26px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;background:var(--c,#999);}
+.dcard-head h3{ margin:0; font-size:16.5px; }
+.dcard-body{ padding:4px 18px 16px; font-size:13.5px; color:#26303a; }
+.dcard-body table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:12px; }
+.dcard-body th,.dcard-body td{ border:1px solid #e2e5ea; padding:6px 9px; text-align:left; vertical-align:top; }
+.dcard-body th{ background:#f4f5f7; font-weight:650; }
+.dcard-body h4{ margin:14px 0 4px; font-size:13.5px; color:#1c2024; }
+.dcard-body ul,.dcard-body ol{ margin:8px 0; padding-left:20px; }
+.dcard-body li{ margin:3px 0; }
+.dcard-body p{ margin:8px 0; }
+.dcard-body code{ background:#f0f1f4; padding:1px 4px; border-radius:4px; font-size:12px; }
+.dcard-empty{ color:#a3a9b2; font-style:italic; padding:0 18px 16px; font-size:13px; }
+.dmatiz{ background:#fff8ec; border:1px solid #f3e2bf; border-radius:9px; padding:9px 12px; margin:0 18px 16px; font-size:12.5px; color:#7a5a14; }
+@media print{ .dash-noprint{ display:none !important; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>🧪 Reactor de Innovación</h1>
+      <p class="sub">Problema → Piezas → Personas → Escala → Impacto → Crítico → Orquestador</p>
+    </div>
+    <button onclick="resetAll()">Reiniciar</button>
+  </div>
+
+  <div class="banner">
+    Cadena de 7 asistentes. Cada etapa recibe <b>solo</b> las salidas que su agente declara (es un grafo, no una fila).
+    Tras generar una salida puedes escribir <b>matices</b>: viajan al siguiente asistente, y puedes <b>regenerar la propia etapa</b> incorporándolos.
+    Tus respuestas se registran de forma anónima para mejorar la herramienta.
+  </div>
+
+  <div class="problema-box">
+    <label for="problema">Problema o intuición inicial</label>
+    <textarea id="problema" rows="3" placeholder="Describe un problema complejo o una intuición. No pienses todavía en soluciones."></textarea>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="runall" onclick="runAll()">⏩ Ejecutar toda la cadena</button>
+      <span class="thinking" id="think-all" style="display:none">ejecutando cadena…</span>
+    </div>
+  </div>
+
+  <div class="progress"><div id="bar"></div></div>
+
+  <div id="stages"></div>
+
+  <div class="gen-dash-wrap">
+    <button class="gen-dash" onclick="buildDashboard()">📊 Generar dashboard visual</button>
+  </div>
+
+  <p class="footer-note">Agentes de IA diseñados por Joaquín Romero Roldán (en pruebas). Verifica siempre las respuestas.</p>
+</div>
+
+<div class="dash-overlay" id="dash"><div class="dash-inner" id="dash-inner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ====== PROMPTS DE LOS AGENTES ====== -->
+<script type="text/plain" id="sys-problema">Eres un especialista en estructuración de problemas complejos. Tu trabajo es CONVERTIR un presentimiento vago en un problema estructurado con tres características: Solucionable, Reconocible, Verificable. NO propones soluciones. Tu tarea es definir el problema de forma que podamos reconocer cuándo está resuelto.
+TU TAREA - Responde A1 y A2:
+A1. ¿QUÉ DEBERÍA HACER POSIBLE UNA SOLUCIÓN? (Define qué capacidad nueva tendríamos si el problema estuviera resuelto.)
+A2. ¿CÓMO VERIFICARÍAS QUE EL PROBLEMA ESTÁ RESUELTO? (Evita proponer solución. Define el criterio de verificación.)
+B. ESCRIBE UNA DECLARACIÓN DE PROBLEMA GENERAL que incluya A1 y A2. Cuanto más general, mejor; pero sé PRECISO, no vago.
+OUTPUT ESPERADO:
+1. Declaración del problema (1-2 oraciones)
+2. Lo que una solución debería hacer posible (capacidad nueva)
+3. Verificador: cómo sabemos que está resuelto (métrica concreta)
+4. Variantes del problema que también podrían ser válidas (lista de 3)
+Termina SIEMPRE con una CABECERA DE TRASPASO con: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-piezas">Eres un especialista en identificar "piezas" para maquetar problemas complejos a escala reducida. Una pieza es cualquier recurso que permite ilustrar el problema a menor escala y revelar qué podemos hacer a mayor escala.
+Identifica piezas en cuatro categorías:
+1. PIEZAS DE DATOS (qué información tenemos o podemos conseguir)
+2. PIEZAS TECNOLÓGICAS (sensores low-cost, modelos predictivos simples, APIs abiertas, plataformas de datos abiertos)
+3. PIEZAS DE CONOCIMIENTO (papers sobre umbrales, protocolos existentes, estudios de vulnerabilidad)
+4. PIEZAS AUXILIARES (contactos para acceso a datos, software de visualización)
+PARA CADA PIEZA indica: qué ilustra sobre el problema, a qué escala podemos usarla (mesa/piloto/comunidad), qué nos revelaría sobre el siguiente paso a mayor escala.
+OUTPUT ESPERADO: Tabla con columnas: Pieza | Categoría | Escala inicial | Qué revela | Siguiente escala.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-personas">Eres un especialista en diseñar conversaciones genuinas para validar (mejor: refutar) supuestos sobre problemas complejos. Tu objetivo NO es buscar aprobación: es diseñar preguntas que hagan visible por qué nuestra definición del problema podría estar equivocada.
+PRINCIPIOS: nunca cuestionario; busca que te digan "estás equivocado"; no estereotipes; comparte información para recibir feedback.
+PERFILES CLAVE: 1) EXPERTOS TÉCNICOS, 2) OPERADORES DE PRIMERA LÍNEA, 3) PERSONAS AFECTADAS.
+Para cada perfil diseña: A) CÓMO ENCONTRARLOS (eventos, contactos en cadena, lugares naturales); B) GUION DE CONVERSACIÓN (5-7 preguntas abiertas máximo); C) QUÉ BUSCAS REFUTAR; D) SEÑALES DE "ESTÁS EQUIVOCADO" que queremos oír.
+OUTPUT ESPERADO: por cada perfil (3 mínimo): perfil + cómo encontrarlos; guion de conversación; supuesto clave a refutar; cómo usaremos lo que digan para redefinir el problema.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-escala">Eres un especialista en "escalar hacia abajo": reducir problemas complejos a versiones que se puedan probar en mesa, laboratorio o comunidad pequeña, sin perder la esencia del problema original.
+PRINCIPIOS: si no puedes resolver el problema, encuentra uno más sencillo que lo ilumine; reduce tamaño de comunidad (5 → 50 → 500); cada pieza es una representación a escala de una realidad mayor.
+Diseña 3 PRUEBAS DE CONCEPTO secuenciales:
+PRUEBA 1: REPRODUCIR EL PROBLEMA (Mesa/Laboratorio) — demostrar que podemos simular el fenómeno clave.
+PRUEBA 2: SIMULAR EL IMPACTO (Comunidad pequeña) — demostrar que podemos predecir/construir lo que la solución debería hacer posible.
+PRUEBA 3: VERIFICAR ESCALABILIDAD (Piloto) — probar en condiciones realistas, identificar fallos que solo aparecen a esta escala.
+PARA CADA PRUEBA: recursos exactos (tiempo, dinero, personas, datos); supuestos que la hacen viable; criterio de éxito para pasar a la siguiente; qué aprenderíamos que no sabemos ahora.
+OUTPUT ESPERADO: Tabla de 3 pruebas con: Objetivo | Escala | Recursos | Supuestos | Éxito | Aprendizaje.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-impacto">Eres un especialista en definir cómo verificar que un problema está resuelto, centrándote en qué NUEVOS LOGROS habilita la solución para la comunidad, no solo en reducir daño.
+PRINCIPIO CLAVE: el impacto se deriva de que la comunidad que experimenta el problema sea capaz de alcanzar nuevas metas después de que lo hayas resuelto.
+TU TAREA - Diseña el sistema de verificación:
+1. VERIFICADOR PRINCIPAL (métrica concreta, método de medición, umbral crítico).
+2. INDICADORES DE NUEVOS LOGROS (qué puede hacer ahora la comunidad que no podía antes).
+3. VERIFICADORES POR ESCALA (mesa / comunidad / piloto).
+4. SEÑALES DE ALERTA TEMPRANA (qué nos dice que NO funciona antes del fracaso total).
+OUTPUT ESPERADO: verificador principal (fórmula/métrica); 3 nuevos logros habilitados; tabla de verificadores por escala; 5 señales de alerta temprana con acción correctiva.
+Termina con una CABECERA DE TRASPASO: hallazgos_clave, pendiente.</script>
+
+<script type="text/plain" id="sys-critico">Eres un especialista en demostrar que las propuestas están equivocadas. No eres negativo sin más: identificas puntos ciegos, sesgos y suposiciones no verificadas que podrían hacer fracasar el proyecto. Ojalá encuentres errores: detrás de cada "estás equivocado" hay información valiosa.
+Refuta sistemáticamente:
+1. REFUTACIÓN DEL PROBLEMA (reframing completo).
+2. REFUTACIÓN DE LAS PIEZAS.
+3. REFUTACIÓN DE LAS PERSONAS (sesgo de selección).
+4. REFUTACIÓN DEL ESCALADO.
+5. REFUTACIÓN DEL IMPACTO (métricas engañosas, impactos secundarios negativos).
+6. ESCENARIOS DE FRACASO: 3 escenarios donde esto fracasa completamente; para cada uno qué lo desencadena y cómo lo detectamos temprano.
+OUTPUT ESPERADO: mínimo 5 refutaciones sustanciales (una por categoría), cada una con argumento + implicación + cómo corregirlo; 3 escenarios de fracaso con señales de alerta temprana; recomendación final: ¿Seguir? ¿Pivotar? ¿Ampliar? ¿Abandonar?</script>
+
+<script type="text/plain" id="sys-orquestador">Toma todos los outputs anteriores y produce el KIT DE INNOVACIÓN FINAL:
+1. PROBLEMA RE-DEFINIDO (incorporando refutaciones)
+2. PIEZAS ACTUALIZADAS (añadiendo las que faltaban, quitando las que no sirven)
+3. PERSONAS CLAVE PRIORITARIAS (máximo 3 perfiles para empezar)
+4. RUTA DE ESCALADO AJUSTADA (con puntos de decisión claros)
+5. VERIFICADORES DE IMPACTO (métricas finales)
+6. DECISIÓN: ¿Seguimos adelante? Condiciones para continuar.
+PRÓXIMOS PASOS CONCRETOS:
+- Esta semana: [acción específica]
+- Próximas 2 semanas: [acción específica]
+- Mes 2: [acción específica]</script>
+
+<script>
+// ===== CONFIGURACIÓN: tu backend en Render =====
+const BACKEND = "https://jr-gpt-backend-1.onrender.com";
+
+const AGENTS = [
+  { id:'problema',    name:'PROBLEMA',    c:'#2563eb', deps:[] },
+  { id:'piezas',      name:'PIEZAS',      c:'#16a34a', deps:['problema'] },
+  { id:'personas',    name:'PERSONAS',    c:'#ca8a04', deps:['problema','piezas'] },
+  { id:'escala',      name:'ESCALA',      c:'#ea580c', deps:['problema','piezas','personas'] },
+  { id:'impacto',     name:'IMPACTO',     c:'#dc2626', deps:['problema','escala'] },
+  { id:'critico',     name:'CRÍTICO',     c:'#334155', deps:['problema','piezas','personas','escala','impacto'] },
+  { id:'orquestador', name:'ORQUESTADOR', c:'#7c3aed', deps:['problema','piezas','personas','escala','impacto','critico'] },
+];
+const LABEL = Object.fromEntries(AGENTS.map(a=>[a.id,a.name]));
+const KEY = 'reactor-web-v1';
+let state = load();
+
+// Identificador de sesión (anónimo) para agrupar las respuestas de un mismo usuario
+let SESSION = localStorage.getItem('reactor-sesion');
+if(!SESSION){ SESSION = 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); localStorage.setItem('reactor-sesion', SESSION); }
+
+// Modelo por etapa: refuerzo en las dos etapas de razonamiento duro
+function modelFor(id){ return (id==='critico' || id==='orquestador') ? 'gpt-4o' : 'gpt-4o-mini'; }
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s){ s.matices=s.matices||{}; s.outputs=s.outputs||{}; return s; } }catch(e){}
+  return { problema:'', outputs:{}, matices:{} };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function sysPrompt(id){ return document.getElementById('sys-'+id).textContent.trim(); }
+
+function buildInput(agent){
+  const parts = [];
+  parts.push('=== PROBLEMA / INTUICIÓN INICIAL ===\n' + (state.problema || '(vacío)'));
+  agent.deps.forEach(d=>{
+    const o = state.outputs[d];
+    if(o && o.trim()){
+      parts.push('=== SALIDA DEL AGENTE '+LABEL[d]+' ===\n'+o.trim());
+      const m = state.matices[d];
+      if(m && m.trim()) parts.push('=== MATICES DEL USUARIO SOBRE '+LABEL[d]+' (tenlos muy en cuenta) ===\n'+m.trim());
+    }
+  });
+  return parts.join('\n\n');
+}
+function missingDeps(agent){ return agent.deps.filter(d=> !(state.outputs[d] && state.outputs[d].trim())); }
+
+// ===== Llamadas al backend =====
+async function callAgent(systemPrompt, inputText, model){
+  const r = await fetch(BACKEND + "/api/ask", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ system: systemPrompt, message: inputText, model: model, temperature: 0.3 })
+  });
+  let data;
+  try{ data = await r.json(); }catch(e){ throw new Error("Respuesta no válida del servidor (HTTP "+r.status+")"); }
+  if(!r.ok || data.error) throw new Error((data && data.error && data.error.message) || ("HTTP "+r.status));
+  return data.reply || "";
+}
+async function saveResponse(rec){
+  try{
+    await fetch(BACKEND + "/api/save", {
+      method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(rec)
+    });
+  }catch(e){ console.warn("No se pudo guardar la respuesta:", e); }
+}
+
+function render(){
+  const root = document.getElementById('stages');
+  root.innerHTML = '';
+  AGENTS.forEach((a,i)=>{
+    const done = !!(state.outputs[a.id] && state.outputs[a.id].trim());
+    const miss = missingDeps(a);
+    const depTxt = a.deps.length
+      ? 'Recibe: ' + a.deps.map(d=> miss.includes(d) ? '<span class="miss">'+LABEL[d]+' (pendiente)</span>' : '<b>'+LABEL[d]+'</b>').join(' + ') + ' &nbsp;+&nbsp; sus matices'
+      : 'Recibe: solo el problema inicial.';
+    const el = document.createElement('div');
+    el.className = 'stage'; el.style.setProperty('--c', a.c);
+    el.innerHTML = `
+      <div class="stage-head" onclick="toggle(this)">
+        <span class="stage-num">${i+1}</span>
+        <span class="dot ${done?'done':''}"></span>
+        <span class="stage-title">${a.name}</span>
+        <span class="stage-status">${done?'✓ hecho':'pendiente'}</span>
+        <span class="chev">▶</span>
+      </div>
+      <div class="stage-body">
+        <div class="deps">${depTxt}</div>
+        <div class="btnrow">
+          <button class="primary" id="run-${a.id}" onclick="runStage('${a.id}',false)">⚡ Ejecutar</button>
+          <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">🔁 Regenerar con matices</button>
+          <span class="thinking" id="think-${a.id}" style="display:none">pensando…</span>
+        </div>
+        <div class="out-label">Salida del asistente (editable):</div>
+        <textarea id="out-${a.id}" rows="7" oninput="onOut('${a.id}',this.value)" placeholder="Aún sin salida.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
+        <div class="matiz-wrap">
+          <div class="out-label">✏️ Matices para esta salida</div>
+          <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
+          <textarea id="mat-${a.id}" rows="3" oninput="onMat('${a.id}',this.value)" placeholder="Ej.: céntrate en el ámbito rural; descarta la variante 2; prioriza coste bajo…">${escapeHtml(state.matices[a.id]||'')}</textarea>
+        </div>
+        <details class="prompt"><summary>Ver instrucciones de este asistente</summary><pre>${escapeHtml(sysPrompt(a.id))}</pre></details>
+      </div>`;
+    root.appendChild(el);
+  });
+  updateBar();
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function toggle(head){ head.parentElement.classList.toggle('open'); }
+function updateBar(){
+  const n = AGENTS.filter(a=> state.outputs[a.id] && state.outputs[a.id].trim()).length;
+  document.getElementById('bar').style.width = Math.round(n/AGENTS.length*100)+'%';
+}
+function stageEl(id){ return document.querySelectorAll('.stage')[AGENTS.findIndex(a=>a.id===id)]; }
+function onOut(id,val){
+  state.outputs[id]=val; save();
+  const head = stageEl(id), done = !!val.trim();
+  head.querySelector('.dot').classList.toggle('done',done);
+  head.querySelector('.stage-status').textContent = done?'✓ hecho':'pendiente';
+  updateBar();
+}
+function onMat(id,val){ state.matices[id]=val; save(); }
+
+async function runStage(id, withMatices){
+  const a = AGENTS.find(x=>x.id===id);
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  const miss = missingDeps(a);
+  if(!withMatices && miss.length && !confirm('Faltan salidas de: '+miss.map(d=>LABEL[d]).join(', ')+'. ¿Ejecutar igualmente con contexto incompleto?')) return;
+  const btn = document.getElementById('run-'+id), rbtn = document.getElementById('regen-'+id);
+  const think = document.getElementById('think-'+id), box = document.getElementById('out-'+id);
+  btn.disabled=true; rbtn.disabled=true; think.style.display='inline';
+
+  let system = sysPrompt(id);
+  let input = buildInput(a);
+  if(withMatices){
+    input += '\n\n=== SALIDA PREVIA A REVISAR ===\n' + (state.outputs[id] || '(sin salida previa)')
+          + '\n\n=== MATICES DEL USUARIO (incorpóralos obligatoriamente) ===\n' + (state.matices[id] || '(sin matices)');
+    system += '\n\nIMPORTANTE: reescribe tu OUTPUT ESPERADO incorporando los matices del usuario, manteniendo el resto coherente. Responde en español.';
+  } else {
+    system += '\n\nResponde en español con EXACTAMENTE el OUTPUT ESPERADO de este asistente.';
+  }
+  try{
+    box.value = '⏳ Consultando al modelo…';
+    const text = await callAgent(system, input, modelFor(id));
+    state.outputs[id]=text; save();
+    box.value=text; onOut(id,text);
+    saveResponse({ sesion:SESSION, problema:state.problema, etapa:a.name, salida:text, matices:state.matices[id]||'' });
+    toast(a.name+(withMatices?' regenerado con matices.':' ejecutado.'));
+  }catch(e){
+    box.value = '⚠️ ERROR al ejecutar:\n' + (e && e.message ? e.message : String(e));
+    toast('Error (lo he escrito en la caja).');
+  }
+  finally{ btn.disabled=false; rbtn.disabled=false; think.style.display='none'; }
+}
+
+async function runAll(){
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  const think = document.getElementById('think-all'); think.style.display='inline';
+  for(const a of AGENTS){ await runStage(a.id,false); }
+  think.style.display='none'; toast('Cadena completa.');
+}
+
+function resetAll(){
+  if(!confirm('¿Borrar el problema, las salidas y los matices?')) return;
+  state = { problema:'', outputs:{}, matices:{} }; save();
+  document.getElementById('problema').value='';
+  render();
+}
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ===== Dashboard visual =====
+function mdInline(s){ return escapeHtml(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>'); }
+function splitRow(l){ let s=l.trim(); if(s.startsWith('|')) s=s.slice(1); if(s.endsWith('|')) s=s.slice(0,-1); return s.split('|').map(x=>x.trim()); }
+function isSep(l){ return !!l && l.indexOf('|')!==-1 && /^[\s:\-\|]+$/.test(l); }
+function mdToHtml(md){
+  if(!md || !md.trim()) return '';
+  const lines = md.replace(/\r/g,'').split('\n');
+  const out=[]; let i=0, list=null;
+  const closeL=()=>{ if(list){ out.push('</'+list+'>'); list=null; } };
+  while(i<lines.length){
+    const l=lines[i], t=l.trim();
+    if(t.indexOf('|')!==-1 && isSep(lines[i+1]||'')){
+      closeL();
+      const header=splitRow(l); i+=2; const rows=[];
+      while(i<lines.length && lines[i].indexOf('|')!==-1 && lines[i].trim()!==''){ rows.push(splitRow(lines[i])); i++; }
+      out.push('<table><thead><tr>'+header.map(h=>'<th>'+mdInline(h)+'</th>').join('')+'</tr></thead><tbody>'
+        + rows.map(r=>'<tr>'+r.map(c=>'<td>'+mdInline(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>');
+      continue;
+    }
+    if(t===''){ closeL(); i++; continue; }
+    let m;
+    if(m=t.match(/^#{1,6}\s+(.*)$/)){ closeL(); out.push('<h4>'+mdInline(m[1])+'</h4>'); i++; continue; }
+    if(m=t.match(/^[-*]\s+(.*)$/)){ if(list!=='ul'){ closeL(); out.push('<ul>'); list='ul'; } out.push('<li>'+mdInline(m[1])+'</li>'); i++; continue; }
+    if(m=t.match(/^\d+[.)]\s+(.*)$/)){ if(list!=='ol'){ closeL(); out.push('<ol>'); list='ol'; } out.push('<li>'+mdInline(m[1])+'</li>'); i++; continue; }
+    closeL(); out.push('<p>'+mdInline(t)+'</p>'); i++;
+  }
+  closeL();
+  return out.join('\n');
+}
+function buildDashboard(){
+  const done = AGENTS.filter(a=>state.outputs[a.id]&&state.outputs[a.id].trim()).length;
+  const conMat = AGENTS.filter(a=>state.matices[a.id]&&state.matices[a.id].trim()).length;
+  let h='';
+  h += '<div class="dash-top dash-noprint"><h1 class="dash-title">📊 Dashboard · Reactor de Innovación</h1>'
+     + '<div style="display:flex;gap:8px"><button onclick="window.print()">🖨️ Imprimir / PDF</button>'
+     + '<button onclick="closeDashboard()">✕ Cerrar</button></div></div>';
+  h += '<div class="dash-problem"><div class="lbl">Problema / intuición</div>'+ escapeHtml(state.problema||'(sin definir)') +'</div>';
+  h += '<div class="pipeline">';
+  AGENTS.forEach((a,idx)=>{
+    const d = state.outputs[a.id]&&state.outputs[a.id].trim();
+    h += '<span class="pipe-chip"><span class="pdot" style="background:'+(d?'#16a34a':'#cfd4db')+'"></span>'+a.name+'</span>';
+    if(idx<AGENTS.length-1) h += '<span class="pipe-arrow">→</span>';
+  });
+  h += '</div>';
+  h += '<div class="stats">'
+     + '<div class="stat"><div class="num">'+done+'/'+AGENTS.length+'</div><div class="cap">etapas completadas</div></div>'
+     + '<div class="stat"><div class="num">'+Math.round(done/AGENTS.length*100)+'%</div><div class="cap">de la cadena</div></div>'
+     + '<div class="stat"><div class="num">'+conMat+'</div><div class="cap">etapas con matices</div></div>'
+     + '</div>';
+  AGENTS.forEach((a,idx)=>{
+    const out = state.outputs[a.id]||'';
+    h += '<div class="dcard" style="--c:'+a.c+'">';
+    h += '<div class="dcard-head"><span class="n">'+(idx+1)+'</span><h3>'+a.name+'</h3></div>';
+    if(out.trim()){
+      h += '<div class="dcard-body">'+mdToHtml(out)+'</div>';
+      if(state.matices[a.id]&&state.matices[a.id].trim())
+        h += '<div class="dmatiz"><b>✏️ Matices:</b> '+escapeHtml(state.matices[a.id])+'</div>';
+    } else {
+      h += '<div class="dcard-empty">Sin salida todavía.</div>';
+    }
+    h += '</div>';
+  });
+  document.getElementById('dash-inner').innerHTML = h;
+  const d = document.getElementById('dash'); d.classList.add('show'); d.scrollTop=0;
+}
+function closeDashboard(){ document.getElementById('dash').classList.remove('show'); }
+
+// init
+const pEl = document.getElementById('problema');
+pEl.value = state.problema || '';
+pEl.addEventListener('input', e=>{ state.problema=e.target.value; save(); });
+render();
+document.querySelector('.stage') && document.querySelector('.stage').classList.add('open');
+</script>
+</body>
+</html>
