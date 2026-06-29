@@ -412,14 +412,19 @@ function mdToHtml(md){
   closeL();
   return out.join('\n');
 }
-function buildDashboard(){
+let _resumenCache = { src:'', txt:'' };
+async function buildDashboard(){
   const done = AGENTS.filter(a=>state.outputs[a.id]&&state.outputs[a.id].trim()).length;
   const conMat = AGENTS.filter(a=>state.matices[a.id]&&state.matices[a.id].trim()).length;
   let h='';
   h += '<div class="dash-top dash-noprint"><h1 class="dash-title">📊 Dashboard · Reactor de Innovación</h1>'
      + '<div style="display:flex;gap:8px"><button onclick="window.print()">🖨️ Imprimir / PDF</button>'
      + '<button onclick="closeDashboard()">✕ Cerrar</button></div></div>';
-  h += '<div class="dash-problem"><div class="lbl">Problema / intuición</div>'+ escapeHtml(state.problema||'(sin definir)') +'</div>';
+  const _prob = state.problema || '';
+  const _needsSum = !!_prob && (_prob.length > 600 || _prob.indexOf('[Contenido de') !== -1);
+  const _lbl = _needsSum ? 'Problema / intuición (resumen)' : 'Problema / intuición';
+  const _probHtml = _needsSum ? '<span id="dash-prob-text">⏳ Resumiendo el contenido adjunto…</span>' : escapeHtml(_prob || '(sin definir)');
+  h += '<div class="dash-problem"><div class="lbl">'+_lbl+'</div>'+ _probHtml +'</div>';
   h += '<div class="pipeline">';
   AGENTS.forEach((a,idx)=>{
     const d = state.outputs[a.id]&&state.outputs[a.id].trim();
@@ -447,6 +452,22 @@ function buildDashboard(){
   });
   document.getElementById('dash-inner').innerHTML = h;
   const d = document.getElementById('dash'); d.classList.add('show'); d.scrollTop=0;
+  if(_needsSum) fillResumen(_prob);
+}
+async function fillResumen(prob){
+  let el = document.getElementById('dash-prob-text');
+  if(!el) return;
+  if(_resumenCache.src === prob && _resumenCache.txt){ el.textContent = _resumenCache.txt; return; }
+  try{
+    const sys = 'Eres un resumidor. Resume en español, de forma clara y breve (máximo 6 frases), el problema y el contenido de los archivos adjuntos que aparecen abajo. No inventes nada que no esté en el texto. Devuelve solo el resumen, sin preámbulos.';
+    const txt = await callAgent(sys, prob, 'gpt-4o-mini');
+    _resumenCache = { src: prob, txt: txt };
+    el = document.getElementById('dash-prob-text');
+    if(el) el.textContent = txt;
+  }catch(e){
+    el = document.getElementById('dash-prob-text');
+    if(el) el.textContent = (prob.length > 600 ? prob.slice(0, 600) + '… [resumen no disponible]' : prob);
+  }
 }
 function closeDashboard(){ document.getElementById('dash').classList.remove('show'); }
 
