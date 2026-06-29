@@ -90,7 +90,12 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
 .dcard-empty{ color:#a3a9b2; font-style:italic; padding:0 18px 16px; font-size:13px; }
 .dmatiz{ background:#fff8ec; border:1px solid #f3e2bf; border-radius:9px; padding:9px 12px; margin:0 18px 16px; font-size:12.5px; color:#7a5a14; }
 @media print{ .dash-noprint{ display:none !important; } body{ background:#fff; } }
+.attach-btn{ font-size:12.5px; padding:6px 11px; }
 </style>
+<!-- Librerías para extraer texto de archivos adjuntos -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -114,6 +119,7 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
     <textarea id="problema" rows="3" placeholder="Describe un problema complejo o una intuición. No pienses todavía en soluciones."></textarea>
     <div class="btnrow" style="margin-top:10px">
       <button class="runall" onclick="runAll()">⏩ Ejecutar toda la cadena</button>
+      <button class="attach-btn" onclick="pickFile('problema')">📎 Adjuntar archivo</button>
       <span class="thinking" id="think-all" style="display:none">ejecutando cadena…</span>
     </div>
   </div>
@@ -302,6 +308,7 @@ function render(){
           <div class="out-label">✏️ Matices para esta salida</div>
           <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
           <textarea id="mat-${a.id}" rows="3" oninput="onMat('${a.id}',this.value)" placeholder="Ej.: céntrate en el ámbito rural; descarta la variante 2; prioriza coste bajo…">${escapeHtml(state.matices[a.id]||'')}</textarea>
+          <div style="margin-top:7px"><button class="attach-btn" onclick="pickFile('mat-${a.id}')">📎 Adjuntar archivo</button></div>
         </div>
         <details class="prompt"><summary>Ver instrucciones de este asistente</summary><pre>${escapeHtml(sysPrompt(a.id))}</pre></details>
       </div>`;
@@ -442,6 +449,83 @@ function buildDashboard(){
   const d = document.getElementById('dash'); d.classList.add('show'); d.scrollTop=0;
 }
 function closeDashboard(){ document.getElementById('dash').classList.remove('show'); }
+
+// ===== Adjuntar archivos: extracción de texto en el navegador =====
+const MAX_PALABRAS = 6000; // tope para no disparar tokens/coste
+
+function pickFile(targetId){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.pdf,.docx,.pptx,.txt,.md';
+  inp.onchange = () => { if(inp.files && inp.files[0]) attachTo(targetId, inp.files[0]); };
+  inp.click();
+}
+
+async function extractPdf(file){
+  if(typeof pdfjsLib === 'undefined') throw new Error('pdf.js no cargó (¿sin conexión?)');
+  if(!pdfjsLib.GlobalWorkerOptions.workerSrc)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const out = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    out.push(tc.items.map(i => i.str).join(' '));
+  }
+  return out.join('\n');
+}
+async function extractDocx(file){
+  if(typeof mammoth === 'undefined') throw new Error('mammoth no cargó (¿sin conexión?)');
+  const buf = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({ arrayBuffer: buf });
+  return res.value || '';
+}
+async function extractPptx(file){
+  if(typeof JSZip === 'undefined') throw new Error('JSZip no cargó (¿sin conexión?)');
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const slides = Object.keys(zip.files)
+    .filter(n => /ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a,b) => (+a.match(/slide(\d+)/)[1]) - (+b.match(/slide(\d+)/)[1]));
+  const out = [];
+  for(const n of slides){
+    const xml = await zip.files[n].async('string');
+    const texts = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m => m[1]);
+    if(texts.length) out.push(texts.join(' '));
+  }
+  return out.join('\n');
+}
+async function extractFile(file){
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if(ext === 'pdf')  return await extractPdf(file);
+  if(ext === 'docx') return await extractDocx(file);
+  if(ext === 'pptx') return await extractPptx(file);
+  if(ext === 'txt' || ext === 'md') return await file.text();
+  if(ext === 'doc' || ext === 'ppt')
+    throw new Error('Formato antiguo .'+ext+' no soportado. Guárdalo como .docx/.pptx.');
+  throw new Error('Formato no soportado: .'+ext);
+}
+
+async function attachTo(targetId, file){
+  const ta = document.getElementById(targetId);
+  if(!ta) return;
+  toast('Extrayendo «'+file.name+'»…');
+  try{
+    let text = (await extractFile(file) || '').replace(/\s+\n/g,'\n').trim();
+    if(!text){ toast('No se extrajo texto (¿PDF escaneado/imagen?).'); return; }
+    const words = text.split(/\s+/);
+    let truncated = false;
+    if(words.length > MAX_PALABRAS){ text = words.slice(0, MAX_PALABRAS).join(' '); truncated = true; }
+    const cab = '[Contenido de '+file.name + (truncated ? ' · recortado a '+MAX_PALABRAS+' de '+words.length+' palabras' : '') + ']:';
+    ta.value = (ta.value ? ta.value.trimEnd()+'\n\n' : '') + cab + '\n' + text;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.scrollTop = ta.scrollHeight;
+    toast('Añadido «'+file.name+'»'+(truncated?' (recortado)':'')+'.');
+  }catch(e){
+    toast('Error: '+(e && e.message ? e.message : e));
+  }
+}
 
 // init
 const pEl = document.getElementById('problema');
