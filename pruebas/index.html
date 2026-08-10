@@ -298,7 +298,23 @@
     align-self: center;
     justify-self: center;
   }
-  </style>
+  
+/* texto de etapas: intro + hitos en cuerpo menor */
+#etapas .etapas-texto{max-width:64ch;margin:34px auto 0;min-height:0;text-align:left;opacity:0;transition:opacity .3s ease}
+#etapas .etapas-texto.visible{opacity:1}
+#etapas .etapas-texto .e-intro{margin:0 0 16px;font-size:17px;line-height:1.6;color:#2f3a36}
+#etapas .etapas-texto .e-intro b{font-weight:600;color:#16211f}
+#etapas .etapas-texto .e-hitos-t{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#a3aba7}
+#etapas .etapas-texto .e-hitos{margin:0;padding-left:1.15em;font-size:14.5px;line-height:1.55;color:#5c6662}
+#etapas .etapas-texto .e-hitos li{margin:0 0 6px}
+#etapas .etapas-texto .e-hitos li::marker{color:#cbd2cd}
+#etapas .etapas-texto .e-hitos em{font-style:normal;font-weight:600;color:#3f4a46}
+@media (max-width:900px){
+  #etapas .etapas-texto{margin-top:26px}
+  #etapas .etapas-texto .e-intro{font-size:16px}
+  #etapas .etapas-texto .e-hitos{font-size:13.5px}
+}
+</style>
 
 <style>
   /* === Fix de márgenes/espaciado en cards === */
@@ -746,7 +762,7 @@ body.menu-open .mobile-menu{ display:block; }
   <div class="container">
     <h2 id="etapas-h" class="etapas-eyebrow">Trayectoria en cuatro etapas</h2>
     <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/026.webp" loading="lazy" decoding="async" alt="Laboratorio de investigación de Navarrabiomed"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span></button></div>
-    <p class="etapas-texto" id="etapa-texto" aria-live="polite"></p>
+    <div class="etapas-texto" id="etapa-texto" aria-live="polite"></div>
     <p class="etapas-cred">Licenciado en Administración y Dirección de Empresas (UPNA) <i>·</i> Executive Program en Innovación y Emprendimiento (MIT) <i>·</i> Miembro del Instituto de Consejeros-Administradores (IC-A)</p>
   </div>
 </section>
@@ -1643,29 +1659,26 @@ document.addEventListener("DOMContentLoaded", function () {
 </style>
 <script>
 (function(){
-  var TX=[
-   'Gerente de la <b>Universidad Pública de Navarra</b>. En ese periodo la Universidad se convirtió en líder del sistema universitario español en empleabilidad de Grado y Máster, así como en impacto en el desarrollo regional.',
-   'Presidente y consejero de administración en <b>SIGMA AIE</b>, empresa tecnológica de Barcelona, así como del consejo rector de los institutos de investigación <b>Navarrabiomed</b> (biomedicina) e <b>IDAB</b> (instituto mixto CSIC de agrobiotecnología).',
-   'Gerente del <b>Orfeón Pamplonés</b> y de la <b>Orquesta Sinfónica de Navarra</b>. El Orfeón se convierte en el primer coro español en actuar en el Carnegie Hall de Nueva York.',
-   'Ámbito internacional. Fundador en 2000 de <b>Terralink</b> (hoy Orientlink), en Shenzhen y Hong Kong. Residente en Nanjing y Shanghái entre 1999 y 2001. Responsable de aprovisionamientos de <b>Rockwool</b> (Caparroso) y área manager para Europa en <b>ARFE</b> (Alsasua). Asesor de la Cámara de Comercio de La Rioja.'
-  ];
-  var grid=document.querySelector('.etapas-grid');
-  var out=document.querySelector('.etapas-texto');
+  var TX=["<p class=\"e-intro\"><b>2016 – 2025.</b> Gerente de la <b>Universidad Pública de Navarra</b> en los equipos de los rectores Carlosena y Gonzalo. En ese periodo la UPNA experimentó una fuerte expansión.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li>Aumento de la oferta de grado del 50 %</li><li>Aumento del número de estudiantes del 25 %</li><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li><li>Líder en impacto en el desarrollo regional</li></ul>","<p class=\"e-intro\"><b>2016 – 2025.</b> Presidente y consejero de administración en <b>SIGMA AIE</b>, empresa tecnológica de Barcelona, así como del consejo rector de los institutos de investigación <b>Navarrabiomed</b> (biomedicina) e <b>IDAB</b> (instituto mixto CSIC de agrobiotecnología).</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>SIGMA AIE.</em> 2020: inicio de la transformación estratégica hacia SIGMA NEO, implantada en 2026</li><li><em>Navarrabiomed.</em> 2017: desarrollo de la estrategia integral de Medicina Personalizada, con más de 150 acciones para 2021–2030</li></ul>","<p class=\"e-intro\"><b>2008 – 2016.</b> Gerente del <b>Orfeón Pamplonés</b> y de la <b>Orquesta Sinfónica de Navarra</b> en etapas clave de su desarrollo y transformación. Miembro del Consejo de la Cultura y las Artes de Navarra.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>Orfeón.</em> 2016: Medalla de Oro a las Bellas Artes; 2010: Medalla de Oro de Navarra</li><li><em>Orfeón.</em> Primer coro español en actuar en el Carnegie Hall de Nueva York (2010) y en el ciclo de la New York Philharmonic en el Lincoln Center (2012), con presencia en <i>The New York Times</i></li><li><em>Orfeón.</em> 2009: diseño y estreno del proyecto de producción escénica <i>Carmina Burana</i> con La Fura dels Baus; gira por cuatro continentes (2009–2025)</li><li><em>Orquesta Sinfónica de Navarra.</em> Plan de viabilidad diseñado y ejecutado para transformar la institución en una organización equilibrada, controlada y transparente</li></ul>","<p class=\"e-intro\"><b>1999 – 2008.</b> Ámbito internacional. Consultor residente en China (Nanjing, Shanghái y Shenzhen) entre 1999 y 2001. Responsable de aprovisionamientos de <b>Rockwool</b> (Caparroso) y área manager para Europa en <b>ARFE</b> (Alsasua). Asesor de la Cámara de Comercio de La Rioja.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>China.</em> Fundador en 2000 de Terralink, hoy Orientlink, en Shenzhen y Hong Kong</li><li><em>Rockwool.</em> Arranque de la planta de Caparroso en 2001</li><li><em>ARFE.</em> Premio a la exportación de la Cámara Navarra en 2004</li></ul>"];
+  var grid=document.querySelector(".etapas-grid");
+  var out=document.querySelector(".etapas-texto");
   if(!grid||!out) return;
-  var btns=[].slice.call(grid.querySelectorAll('.etapa'));
-  var tactil=window.matchMedia('(hover:none)').matches;
-  function mostrar(i){ out.innerHTML=TX[i]; out.classList.add('visible'); }
-  function limpiar(){ out.classList.remove('visible'); }
+  var btns=[].slice.call(grid.querySelectorAll(".etapa"));
+  var act=-1;
+  function set(i){
+    if(i===act) return; act=i;
+    btns.forEach(function(b,k){ b.classList.toggle("on", k===i); b.setAttribute("aria-current", k===i?"true":"false"); });
+    out.classList.remove("visible");
+    out.innerHTML=TX[i];
+    void out.offsetWidth;
+    out.classList.add("visible");
+  }
   btns.forEach(function(b,i){
-    b.addEventListener('mouseenter',function(){ if(!tactil) mostrar(i); });
-    b.addEventListener('focus',function(){ mostrar(i); });
-    b.addEventListener('click',function(){
-      var ya=b.classList.contains('on');
-      btns.forEach(function(x){ x.classList.remove('on'); });
-      if(ya){ limpiar(); } else { b.classList.add('on'); mostrar(i); }
-    });
+    b.addEventListener("mouseenter",function(){ set(i); });
+    b.addEventListener("focus",function(){ set(i); });
+    b.addEventListener("click",function(){ set(i); });
   });
-  grid.addEventListener('mouseleave',function(){ if(!tactil && !grid.querySelector('.etapa.on')) limpiar(); });
+  set(0);
 })();
 </script>
 
