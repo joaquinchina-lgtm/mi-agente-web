@@ -358,6 +358,16 @@
   #servicios .serv-lede{margin-bottom:30px}
   #servicios .sit{gap:12px;padding:13px 4px}
 }
+
+/* cabecera: cuatro cajas enlazadas */
+#home.hero .hero-tag{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0}
+#home.hero .hero-tag a{display:inline-block;background:#111;color:#fff;text-decoration:none;
+  font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  padding:9px 16px;transition:background .2s ease,transform .2s ease}
+#home.hero .hero-tag a:hover,#home.hero .hero-tag a:focus-visible{background:#32717E;transform:translateY(-1px)}
+#home.hero .hero-tag a:focus-visible{outline:2px solid #32717E;outline-offset:3px}
+@media (max-width:900px){ #home.hero .hero-tag{gap:6px} #home.hero .hero-tag a{padding:8px 12px;letter-spacing:.1em} }
+@media (max-width:380px){ #home.hero .hero-tag a{font-size:10.5px;padding:7px 10px;letter-spacing:.06em} }
 </style>
 
 <style>
@@ -796,7 +806,7 @@ body.menu-open .mobile-menu{ display:block; }
     <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
     
     
-  <div class="hero-text"><p class="hero-quote"><em>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb">Inteligencia Colectiva</span></strong></em></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación <i>|</i> Estrategia <i>|</i> Liderazgo</span></p></div></div>
+  <div class="hero-text"><p class="hero-quote"><em>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb">Inteligencia Colectiva</span></strong></em></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><a href="#fam-innovacion">Innovación</a><a href="#fam-estrategia">Estrategia</a><a href="#fam-liderazgo">Liderazgo</a><a href="#consejos">Consejero</a></p></div></div>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
@@ -861,7 +871,7 @@ body.menu-open .mobile-menu{ display:block; }
     <p class="sit-status"><span id="sit-msg">Los nueve servicios, agrupados en tres familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
 
     <div class="srv-wrap">
-      <div class="srv-fam" data-fam="Innovación">
+      <div class="srv-fam" id="fam-innovacion" data-fam="Innovación">
         <h3 class="srv-fam-t">Innovación</h3>
         <div class="srv-grid">
         <article class="srv" data-sit="s3" id="srv-0">
@@ -878,7 +888,7 @@ body.menu-open .mobile-menu{ display:block; }
         </article>
         </div>
       </div>
-      <div class="srv-fam" data-fam="Estrategia">
+      <div class="srv-fam" id="fam-estrategia" data-fam="Estrategia">
         <h3 class="srv-fam-t">Estrategia</h3>
         <div class="srv-grid">
         <article class="srv" data-sit="s1" id="srv-2">
@@ -907,7 +917,7 @@ body.menu-open .mobile-menu{ display:block; }
         </article>
         </div>
       </div>
-      <div class="srv-fam" data-fam="Liderazgo">
+      <div class="srv-fam" id="fam-liderazgo" data-fam="Liderazgo">
         <h3 class="srv-fam-t">Liderazgo</h3>
         <div class="srv-grid">
         <article class="srv" data-sit="s5" id="srv-6">
