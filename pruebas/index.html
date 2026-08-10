@@ -1668,11 +1668,12 @@ document.addEventListener("DOMContentLoaded", function () {
 @media (max-width:900px){
   #home.hero{display:block;min-height:0}
   #home.hero .hero-media{position:relative;inset:auto}
-  #home.hero .hero-photo{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:100% 50%}
-  #home.hero .inner{position:relative;inset:auto;display:block;padding:30px 0 46px}
-  #home.hero .hero-photo{-webkit-mask-image:none;mask-image:none}
+  #home.hero .hero-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;object-position:100% 50%;-webkit-mask-image:none;mask-image:none}
+  #home.hero .inner{position:relative;inset:auto;display:block;padding:24px 0 44px}
   #home.hero .hero-text{width:100%;max-width:none;padding:0 22px}
-  #home.hero .hero-quote{margin-bottom:26px}
-  #home.hero .hero-role{margin-bottom:24px}
+  /* la cita se superpone sobre el fondo claro de la foto */
+  #home.hero .hero-quote{position:absolute;top:0;left:0;z-index:2;width:57%;height:calc(100vw / 1.5);margin:0;padding:14px 8px 14px 16px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(13px,3.4vw,17px);line-height:1.34;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
+  #home.hero .hero-name{margin-top:0}
+  #home.hero .hero-role{margin-bottom:22px}
 }
 </style></body></html>
