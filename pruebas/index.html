@@ -410,6 +410,18 @@
 #servicios .srv-m--cta{color:#4b5551}
 #servicios .srv-m--cta a{color:#32717E}
 @media (min-width:1001px){ #servicios .srv--ancho .srv-c{column-count:3;column-gap:34px} #servicios .srv--ancho .srv-c li{break-inside:avoid} }
+
+/* (1) la cabecera fija deja de pisar las secciones al saltar por el menú */
+section[id],.srv-fam[id]{scroll-margin-top:84px}
+/* (2) el lede de servicios ocupa el ancho completo */
+#servicios .serv-lede{max-width:none}
+/* (3.5) enlace a los agentes dentro de la ficha del Reactor */
+#servicios .srv-agentes{margin:14px 0 0;padding-top:14px;border-top:1px solid #efeee9;
+  font-size:13.5px;line-height:1.5;color:#7b8480}
+#servicios .srv-agentes a{display:inline-block;margin-top:6px;color:#32717E;font-weight:600;text-underline-offset:3px}
+#servicios .srv-m{margin-top:auto}
+/* (5) la ficha de colaborador nunca más alta que su foto */
+#red .feature .text p{font-size:15.5px;line-height:1.55}
 </style>
 
 <style>
@@ -904,12 +916,12 @@ body.menu-open .mobile-menu{ display:block; }
 
     <div class="sit-list" role="group" aria-label="Elige tu situación">
       <button class="sit" type="button" data-sit="s1" aria-pressed="false"><span class="sit-n">01</span><span class="sit-t">Tenemos que hacer o revisar el plan estratégico</span></button>
-      <button class="sit" type="button" data-sit="s2" aria-pressed="false"><span class="sit-n">02</span><span class="sit-t">La estrategia está escrita, pero no se ejecuta</span></button>
-      <button class="sit" type="button" data-sit="s3" aria-pressed="false"><span class="sit-n">03</span><span class="sit-t">Nuestra transferencia de conocimiento no produce resultados</span></button>
-      <button class="sit" type="button" data-sit="s4" aria-pressed="false"><span class="sit-n">04</span><span class="sit-t">Un servicio público no funciona para quien lo usa</span></button>
+      <button class="sit" type="button" data-sit="s2" aria-pressed="false"><span class="sit-n">02</span><span class="sit-t">La estrategia está aprobada y publicada, pero no tracciona</span></button>
+      <button class="sit" type="button" data-sit="s3" aria-pressed="false"><span class="sit-n">03</span><span class="sit-t">Nuestra I+D puede ser más productiva y de más impacto</span></button>
+      <button class="sit" type="button" data-sit="s4" aria-pressed="false"><span class="sit-n">04</span><span class="sit-t">Nuestros servicios públicos deberían aportar más valor al usuario</span></button>
       <button class="sit" type="button" data-sit="s5" aria-pressed="false"><span class="sit-n">05</span><span class="sit-t">El equipo directivo no tira en la misma dirección</span></button>
       <button class="sit" type="button" data-sit="s6" aria-pressed="false"><span class="sit-n">06</span><span class="sit-t">No sabemos por dónde entrar en la IA</span></button>
-    </div>
+    <button class="sit" type="button" data-sit="s7" aria-pressed="false"><span class="sit-n">07</span><span class="sit-t">Me gustaría saber cómo un consejo asesor puede aumentar el valor de mi organización</span></button></div>
     <p class="sit-status"><span id="sit-msg">Los diez servicios, agrupados en cuatro familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
 
     <div class="srv-wrap">
@@ -921,7 +933,7 @@ body.menu-open .mobile-menu{ display:block; }
           <p class="srv-q"><span>Para</span> Universidades, centros de I+D y empresas con unidades de I+D</p>
           <ul class="srv-c"><li>Formulación del problema y mapa de agentes</li><li>Hipótesis organizacionales</li><li>Tecnologías disponibles</li><li>Escalado de soluciones</li></ul>
           <p class="srv-m">Programa de 4 a 6 meses. Combina investigadores, empresas e IPs senior.</p>
-        </article>
+        <p class="srv-agentes">¿En qué consiste el Reactor? Haz una prueba con agentes de IA para mapear recursos y prototipar problemas. <a href="../gpts.html">Probar los agentes</a></p></article>
         <article class="srv" data-sit="s4" id="srv-1">
           <h4 class="srv-t">Rediseño de servicios</h4>
           <p class="srv-q"><span>Para</span> Administraciones públicas y tercer sector</p>
@@ -982,10 +994,10 @@ body.menu-open .mobile-menu{ display:block; }
         </article>
         </div>
       </div>
-    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" data-sit=""><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave —Innovación, Sostenibilidad— y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquinchina@gmail.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
+    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" data-sit="s7"><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave —Innovación, Sostenibilidad— y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquinchina@gmail.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
 
     <p class="serv-nota"><b>Inteligencia colectiva a escala.</b> Buena parte de estos servicios se ejecutan en sesiones híbridas, presenciales u online, con grupos de hasta cien personas.</p>
-    <p class="serv-cta"><a href="../gpts.html">Probar los agentes de IA para mapear recursos de I+D o prototipar un problema</a></p>
+    
   </div>
 </section>
 
@@ -1007,7 +1019,7 @@ body.menu-open .mobile-menu{ display:block; }
         <img src="../assets/img/img_017.jpg" alt="Retrato de Carlos J. Martínez">
       </div>
       <div class="text">
-        <h2>Carlos J. Martínez</h2><p>Socio fundador de Hadrone (2003) y de MSB Ltd., consultora con sede en el Reino Unido. Acumula trayectoria en Europa y Oriente Medio en gestión y asesoramiento tecnológico y de negocio, una década en las industrias aeroespacial y de energía, y más de diez años en centros de I+D+i y sector público. Colabora con empresas y fondos de capital privado en renovables y es profesor visitante en la UPNA y la Universidad de Navarra, donde dirige el Reactor de Innovación. Ingeniero por la UPNA e Ingeniero de Organización por la Universidad de Kingston, en Londres.</p>
+        <h2>Carlos J. Martínez</h2><p>Socio fundador de Hadrone (2003) y de MSB Ltd., consultora con sede en el Reino Unido. Trayectoria en Europa y Oriente Medio en asesoramiento tecnológico y de negocio, con experiencia en industria aeroespacial, energía y centros de I+D+i. Profesor visitante en la UPNA y la Universidad de Navarra, donde dirige el Reactor de Innovación.</p>
         
         
         
@@ -1020,7 +1032,7 @@ body.menu-open .mobile-menu{ display:block; }
         <img src="../assets/img/img_018.jpg" alt="Retrato de Jon Yerro">
       </div>
       <div class="text">
-        <h2>Jon Yerro</h2><p>Inversor y business angel. Fundador de Impact HUB —primera aceleradora de la red global—, de Pocket University, adquirida por el Grupo Santander en 2014, y de B2bizz, adquirida por Havas-Vivendi en 2012. Fue director general de Havas Americas en México DF y Miami, y consultor de emprendimiento y estrategia en Estados Unidos. Socio de la aceleradora Metxa. Consejero en Veridas (Grupo BBVA), Hobeen y Fanstrader. Profesor en la Universidad de Navarra y en la UPNA. Licenciado en Administración y Dirección de Empresas por la Universidad de Deusto.</p>
+        <h2>Jon Yerro</h2><p>Inversor y business angel. Fundador de Impact HUB, de Pocket University —adquirida por el Grupo Santander— y de B2bizz —adquirida por Havas-Vivendi—. Fue director general de Havas Americas. Consejero en Veridas (Grupo BBVA), Hobeen y Fanstrader. Profesor en la Universidad de Navarra y en la UPNA.</p>
         
         
         
@@ -1733,6 +1745,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var m=/[#&]situacion=(s[1-6])/.exec(location.hash); aplica(m?m[1]:null);
 })();
 </script>
+
 
 
 
