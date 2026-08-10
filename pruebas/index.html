@@ -740,6 +740,16 @@ body.menu-open .mobile-menu{ display:block; }
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
+
+<!-- ===== Etapas: panel B/N que revela color ===== -->
+<section class="etapas" id="etapas" aria-labelledby="etapas-h">
+  <div class="container">
+    <h2 id="etapas-h" class="etapas-eyebrow">Cuatro etapas</h2>
+    <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/025.webp" loading="lazy" decoding="async" alt="Sede de SIGMA AIE en Barcelona"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span></button></div>
+    <p class="etapas-texto" id="etapa-texto" aria-live="polite"></p>
+    <p class="etapas-cred">Licenciado en Administración y Dirección de Empresas (UPNA) <i>·</i> Executive Program en Innovación y Emprendimiento (MIT) <i>·</i> Miembro del Instituto de Consejeros-Administradores (IC-A)</p>
+  </div>
+</section>
 <section class="logo-carousel" aria-label="Logotipos de clientes">
   <div class="container logo-carousel-title" style="text-align:center; margin-bottom:20px;">
     <p style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:#6b7280; margin:0;">
@@ -1681,4 +1691,57 @@ document.addEventListener("DOMContentLoaded", function () {
 @media (max-width:380px){
   #home.hero .hero-tag span{font-size:11px;letter-spacing:.08em;padding:8px 12px}
 }
-</style></body></html>
+
+/* ===== Panel de etapas ===== */
+.etapas{background:#fff;padding:74px 0 66px;border-top:1px solid #e6e4de;border-bottom:1px solid #e6e4de}
+.etapas-eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7b8480;text-align:center;margin:0 0 34px}
+.etapas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.etapa{appearance:none;border:0;padding:0;margin:0;background:none;cursor:pointer;text-align:left;font:inherit;display:block}
+.etapa-img{display:block;overflow:hidden;background:#efeee9}
+.etapa-img img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;filter:grayscale(1) contrast(1.02);transition:filter .45s ease,transform .6s ease}
+.etapa-anio{display:block;margin-top:11px;font-size:12px;font-weight:600;letter-spacing:.13em;color:#9aa29e;transition:color .3s ease}
+.etapa:hover .etapa-img img,.etapa.on .etapa-img img{filter:grayscale(0) contrast(1);transform:scale(1.03)}
+.etapa:hover .etapa-anio,.etapa.on .etapa-anio{color:#32717E}
+.etapa:focus-visible{outline:2px solid #32717E;outline-offset:4px}
+.etapas-texto{max-width:70ch;margin:30px auto 0;min-height:5.4em;text-align:center;font-size:17px;line-height:1.6;color:#4b5551;opacity:0;transition:opacity .35s ease}
+.etapas-texto.visible{opacity:1}
+.etapas-texto b{font-weight:600;color:#16211f}
+.etapas-cred{max-width:74ch;margin:34px auto 0;padding-top:26px;border-top:1px solid #ececE6;text-align:center;font-size:13.5px;line-height:1.75;color:#8b938f}
+.etapas-cred i{font-style:normal;color:#c9cec9;padding:0 7px}
+@media (max-width:900px){
+  .etapas{padding:52px 0 46px}
+  .etapas-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .etapas-texto{min-height:8.2em;font-size:16px;margin-top:24px}
+  .etapas-cred{font-size:12.5px;margin-top:26px}
+}
+@media (hover:none){ .etapas-eyebrow::after{content:" · toca cada imagen";color:#b9c0bb} }
+@media (prefers-reduced-motion:reduce){ .etapa-img img{transition:none} .etapa:hover .etapa-img img{transform:none} }
+</style>
+<script>
+(function(){
+  var TX=[
+   'Gerente de la <b>Universidad Pública de Navarra</b>. En ese periodo la Universidad se convirtió en líder del sistema universitario español en empleabilidad de Grado y Máster, así como en impacto en el desarrollo regional.',
+   'Presidente y consejero de administración en <b>SIGMA AIE</b>, empresa tecnológica de Barcelona, así como del consejo rector de los institutos de investigación <b>Navarrabiomed</b> (biomedicina) e <b>IDAB</b> (instituto mixto CSIC de agrobiotecnología).',
+   'Gerente del <b>Orfeón Pamplonés</b> y de la <b>Orquesta Sinfónica de Navarra</b>. El Orfeón se convierte en el primer coro español en actuar en el Carnegie Hall de Nueva York.',
+   'Ámbito internacional. Fundador en 2000 de <b>Terralink</b> (hoy Orientlink), en Shenzhen y Hong Kong. Residente en Nanjing y Shanghái entre 1999 y 2001. Responsable de aprovisionamientos de <b>Rockwool</b> (Caparroso) y área manager para Europa en <b>ARFE</b> (Alsasua). Asesor de la Cámara de Comercio de La Rioja.'
+  ];
+  var grid=document.querySelector('.etapas-grid');
+  var out=document.querySelector('.etapas-texto');
+  if(!grid||!out) return;
+  var btns=[].slice.call(grid.querySelectorAll('.etapa'));
+  var tactil=window.matchMedia('(hover:none)').matches;
+  function mostrar(i){ out.innerHTML=TX[i]; out.classList.add('visible'); }
+  function limpiar(){ out.classList.remove('visible'); }
+  btns.forEach(function(b,i){
+    b.addEventListener('mouseenter',function(){ if(!tactil) mostrar(i); });
+    b.addEventListener('focus',function(){ mostrar(i); });
+    b.addEventListener('click',function(){
+      var ya=b.classList.contains('on');
+      btns.forEach(function(x){ x.classList.remove('on'); });
+      if(ya){ limpiar(); } else { b.classList.add('on'); mostrar(i); }
+    });
+  });
+  grid.addEventListener('mouseleave',function(){ if(!tactil && !grid.querySelector('.etapa.on')) limpiar(); });
+})();
+</script>
+</body></html>
