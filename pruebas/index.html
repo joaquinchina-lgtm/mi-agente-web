@@ -1666,14 +1666,18 @@ document.addEventListener("DOMContentLoaded", function () {
 #home.hero .hero-tag span{display:inline-block;background:#111;color:#fff;font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;padding:9px 18px}
 #home.hero .hero-tag i{font-style:normal;opacity:.45;padding:0 4px}
 @media (max-width:900px){
-  #home.hero{display:block;min-height:0}
+  /* --hdr = alto de la cabecera fija, para que no pise la foto */
+  #home.hero{display:block;min-height:0;--hdr:64px;padding-top:var(--hdr)}
   #home.hero .hero-media{position:relative;inset:auto}
   #home.hero .hero-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;object-position:100% 50%;-webkit-mask-image:none;mask-image:none}
   #home.hero .inner{position:static;inset:auto;display:block;padding:24px 0 44px}
   #home.hero .hero-text{width:100%;max-width:none;padding:0 22px}
   /* la cita se superpone sobre el fondo claro de la foto; aspect-ratio = 0.57 x 1.5 */
-  #home.hero .hero-quote{position:absolute;top:0;left:0;z-index:2;width:57%;aspect-ratio:.855;height:auto;margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
+  #home.hero .hero-quote{position:absolute;top:var(--hdr);left:0;z-index:2;width:57%;aspect-ratio:.855;height:auto;margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
   #home.hero .hero-name{margin-top:0}
   #home.hero .hero-role{margin-bottom:22px}
+}
+@media (max-width:380px){
+  #home.hero .hero-tag span{font-size:11px;letter-spacing:.08em;padding:8px 12px}
 }
 </style></body></html>
