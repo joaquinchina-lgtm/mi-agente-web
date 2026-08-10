@@ -377,6 +377,39 @@
 @media (max-width:900px){ #etapas .etapa-rol{font-size:11px;letter-spacing:.06em} }
 
 #etapas .etapa-anio i{display:inline;font-style:normal;text-transform:none;letter-spacing:.01em;color:#c8cfca;margin-left:8px}
+
+/* (1)(2) cabecera: cuatro cajas sin enlace, 4 en línea y 2+2 en móvil */
+#home.hero .hero-tag{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:center;margin:0}
+#home.hero .hero-tag span{display:block;text-align:center;background:#111;color:#fff;
+  font-size:clamp(11px,.9vw,14px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px}
+@media (max-width:900px){
+  #home.hero .hero-tag{grid-template-columns:1fr 1fr;gap:7px;max-width:340px;margin:0 auto}
+  #home.hero .hero-tag span{padding:9px 6px;letter-spacing:.08em;font-size:11.5px}
+}
+/* (3) el texto de cada etapa ocupa el ancho completo de las cuatro imágenes */
+#etapas .etapas-texto{max-width:none;margin-left:0;margin-right:0}
+#etapas .etapas-texto .e-intro{max-width:none}
+@media (min-width:901px){
+  #etapas .etapas-texto .e-hitos{column-count:2;column-gap:52px}
+  #etapas .etapas-texto .e-hitos li{break-inside:avoid}
+}
+/* (4) móvil: las cuatro etapas alineadas entre sí */
+@media (max-width:900px){
+  #etapas .etapas-grid{align-items:start}
+  #etapas .etapa{display:flex;flex-direction:column}
+  #etapas .etapa-rol{min-height:2.7em}
+}
+/* (5) banda gris a todo el ancho para las titulaciones */
+#etapas .cred-band{margin:46px 0 0;padding:26px 0;background:#EFEFEC;border-top:1px solid #e2e0d9}
+#etapas .cred-band .etapas-cred{margin:0 auto;padding:0;border:0;max-width:78ch}
+#etapas{padding-bottom:0}
+/* (7) ficha de Consejero: una sola tarjeta a todo el ancho */
+#servicios .srv-grid--uno{grid-template-columns:1fr}
+#servicios .srv--ancho .srv-c{column-count:1}
+#servicios .srv-c b{font-weight:600;color:#16211f}
+#servicios .srv-m--cta{color:#4b5551}
+#servicios .srv-m--cta a{color:#32717E}
+@media (min-width:1001px){ #servicios .srv--ancho .srv-c{column-count:3;column-gap:34px} #servicios .srv--ancho .srv-c li{break-inside:avoid} }
 </style>
 
 <style>
@@ -780,31 +813,31 @@ body.menu-open .mobile-menu{ display:block; }
 
     <!-- Menú desktop -->
     <nav class="links" aria-label="Secciones del sitio">
-      <a href="#servicios">Servicios</a>
       
       
-      <a href="#consejos">Consejero</a>
       
       
-      <a href="#red">Red</a>
       
-      <a href="#blog">Blog</a>
-    </nav>
+      
+      
+      
+      
+    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#blog">Blog</a></nav>
   </div>
 
   <!-- Panel móvil (drawer) -->
   <div id="mobile-menu" class="mobile-menu" hidden="">
     <div class="mobile-menu-inner">
-      <a href="#servicios">Servicios</a>
       
       
-      <a href="#consejos">Consejero</a>
       
       
-      <a href="#red">Red</a>
       
-      <a href="#blog">Blog</a>
-    </div>
+      
+      
+      
+      
+    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#blog">Blog</a></div>
   </div>
 </header>
 
@@ -815,7 +848,7 @@ body.menu-open .mobile-menu{ display:block; }
     <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
     
     
-  <div class="hero-text"><p class="hero-quote"><em>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb">Inteligencia Colectiva</span></strong></em></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><a href="#fam-innovacion">Innovación</a><a href="#fam-estrategia">Estrategia</a><a href="#fam-liderazgo">Liderazgo</a><a href="#consejos">Consejero</a></p></div></div>
+  <div class="hero-text"><p class="hero-quote"><em>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb">Inteligencia Colectiva</span></strong></em></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></p></div></div>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
@@ -826,10 +859,10 @@ body.menu-open .mobile-menu{ display:block; }
     <h2 id="etapas-h" class="etapas-eyebrow">Trayectoria en cuatro etapas</h2>
     <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span><span class="etapa-rol">Gerente universidad</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/026.webp" loading="lazy" decoding="async" alt="Laboratorio de investigación de Navarrabiomed"></span><span class="etapa-anio">2016 — 2025<i>en paralelo</i></span><span class="etapa-rol">Consejero</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span><span class="etapa-rol">Gerente cultural y consejero</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span><span class="etapa-rol">Ámbito internacional</span></button></div>
     <div class="etapas-texto" id="etapa-texto" aria-live="polite"></div>
-    <p class="etapas-cred">Licenciado en Administración y Dirección de Empresas (UPNA) <i>·</i> Executive Program en Innovación y Emprendimiento (MIT) <i>·</i> Miembro del Instituto de Consejeros-Administradores (IC-A)</p>
+    
   </div>
-</section>
-<section class="logo-carousel" aria-label="Logotipos de clientes">
+<div class="cred-band"><div class="container"><p class="etapas-cred">Licenciado en Administración y Dirección de Empresas (UPNA) <i>·</i> Executive Program en Innovación y Emprendimiento (MIT) <i>·</i> Miembro del Instituto de Consejeros-Administradores (IC-A)</p></div></div></section>
+<section class="logo-carousel" aria-label="Logotipos de clientes" id="proyectos">
   <div class="container logo-carousel-title" style="text-align:center; margin-bottom:20px;">
     <p style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:#6b7280; margin:0;">
       Proyectos recientes
@@ -877,7 +910,7 @@ body.menu-open .mobile-menu{ display:block; }
       <button class="sit" type="button" data-sit="s5" aria-pressed="false"><span class="sit-n">05</span><span class="sit-t">El equipo directivo no tira en la misma dirección</span></button>
       <button class="sit" type="button" data-sit="s6" aria-pressed="false"><span class="sit-n">06</span><span class="sit-t">No sabemos por dónde entrar en la IA</span></button>
     </div>
-    <p class="sit-status"><span id="sit-msg">Los nueve servicios, agrupados en tres familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
+    <p class="sit-status"><span id="sit-msg">Los diez servicios, agrupados en cuatro familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
 
     <div class="srv-wrap">
       <div class="srv-fam" id="fam-innovacion" data-fam="Innovación">
@@ -949,7 +982,7 @@ body.menu-open .mobile-menu{ display:block; }
         </article>
         </div>
       </div>
-    </div>
+    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" data-sit=""><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave —Innovación, Sostenibilidad— y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquinchina@gmail.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
 
     <p class="serv-nota"><b>Inteligencia colectiva a escala.</b> Buena parte de estos servicios se ejecutan en sesiones híbridas, presenciales u online, con grupos de hasta cien personas.</p>
     <p class="serv-cta"><a href="../gpts.html">Probar los agentes de IA para mapear recursos de I+D o prototipar un problema</a></p>
@@ -961,28 +994,7 @@ body.menu-open .mobile-menu{ display:block; }
 
 
 
-<section id="consejos">
-  <div class="container">
-    <h2 class="section-title">Consejos de Administración</h2>
-    <p class="section-sub">MIEMBRO DEL INSTITUTO DE CONSEJEROS-ADMINISTRADORES (IC-A)</p>
 
-    <div class="feature" style="margin-top:18px;">
-      <div class="image-wrap">
-        <img src="../assets/img/img_015.webp" alt="Consejos y gobernanza corporativa">
-      </div>
-      <div class="text">
-        <p class="section-sub">Estrategia y creación de valor, aportando criterio independiente en las decisiones estratégicas</p>
-        <p class="section-sub">Supervisión y control de riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada</p>
-        <p class="section-sub">Participación en comisiones clave (Innovación, Sostenibilidad). Gobernanza corporativa y buen funcionamiento</p>
-        <div class="cta" style="margin-top:12px;">
-          <a id="cta-consejos" class="btn-contactar" href="mailto:joaquinchina@gmail.com?subject=Consulta%3A%20Consejos%20de%20Administraci%C3%B3n&amp;body=Hola%20Joaqu%C3%ADn%2C%0A%0AEstoy%20interesado%2Fa%20en%20tus%20servicios%20de%20Consejos%20de%20Administraci%C3%B3n.%20%0A%0A%C2%BFPodemos%20agendar%20una%20llamada%3F%0A%0AGracias.">
-            Contactar
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 
 
@@ -995,27 +1007,27 @@ body.menu-open .mobile-menu{ display:block; }
         <img src="../assets/img/img_017.jpg" alt="Retrato de Carlos J. Martínez">
       </div>
       <div class="text">
-        <h2>Carlos J. Martínez</h2>
-        <p>Socio fundador de Hadrone (2003) y de MSB Ltd. una firma de consultoría con sede en el Reino Unido.</p>
-        <p>Atesora trayectoria profesional en Europa y Oriente Medio, en gestión y asesoramiento tecnológico y de negocio.</p>
-        <p>Además, acumula una década de experiencia en asesoramiento de industrias aeroespacial y de energía, como enlace corporativo y gestión de operaciones y PMO.</p>
-        <p>Cuenta con más de 10 años de experiencia en puestos operativos y de gestión en centros de I+D+i y sector público.</p>
-        <p>Actualmente, es colaborador de empresas y fondos de capital privado del sector de las energías renovables y es profesor visitante en la UPNA y la Universidad de Navarra, donde dirige programas de Innovación y Emprendimiento como el Reactor de Innovación (UPNA).</p>
-        <p>Es Ingeniero por la UPNA e Ingeniero de Organización por la Universidad de Kingston (KU) en Londres.</p>
+        <h2>Carlos J. Martínez</h2><p>Socio fundador de Hadrone (2003) y de MSB Ltd., consultora con sede en el Reino Unido. Acumula trayectoria en Europa y Oriente Medio en gestión y asesoramiento tecnológico y de negocio, una década en las industrias aeroespacial y de energía, y más de diez años en centros de I+D+i y sector público. Colabora con empresas y fondos de capital privado en renovables y es profesor visitante en la UPNA y la Universidad de Navarra, donde dirige el Reactor de Innovación. Ingeniero por la UPNA e Ingeniero de Organización por la Universidad de Kingston, en Londres.</p>
+        
+        
+        
+        
+        
+        
       </div>
     </div><div class="feature" style="margin-top:18px;">
       <div class="image-wrap">
         <img src="../assets/img/img_018.jpg" alt="Retrato de Jon Yerro">
       </div>
       <div class="text">
-        <h2>Jon Yerro</h2>
-        <p>Inversor y business angel, fundador de Impact HUB, primera aceleradora en la red Global de Impact HUB, Pocket University (adquirida por Grupo Banco Santander en 2014), Fundador y CEO deB2bizz (plataforma de contenidos digitales adquirida por HAVAS-Grupo Vivendi en 2012).</p>
-        <p>Director General de HAVAS Americas (Mexico DF y Miami).</p>
-        <p>Consultor de emprendimiento y estrategia en EE.UU. (Miami y Nueva York), con actividad Impact Hub, La Bolsa de la liga.com, fanstrader.com.</p>
-        <p>Socio de Aceleradora Metxa, primer Bootcamp digital en España desde 2017.</p>
-        <p>Experiencia en consejos de administración (Actualemnte en Veri-Das -Grupo BBVA, Hobeen y Fanstrader).</p>
-        <p>Profesor en la Universidad de Navarra (programa GIP) y en UPNA (programa reactor de innovación).</p>
-        <p>Licenciado en Administración y Dirección de Empresas por la Universidad de Deusto.</p>
+        <h2>Jon Yerro</h2><p>Inversor y business angel. Fundador de Impact HUB —primera aceleradora de la red global—, de Pocket University, adquirida por el Grupo Santander en 2014, y de B2bizz, adquirida por Havas-Vivendi en 2012. Fue director general de Havas Americas en México DF y Miami, y consultor de emprendimiento y estrategia en Estados Unidos. Socio de la aceleradora Metxa. Consejero en Veridas (Grupo BBVA), Hobeen y Fanstrader. Profesor en la Universidad de Navarra y en la UPNA. Licenciado en Administración y Dirección de Empresas por la Universidad de Deusto.</p>
+        
+        
+        
+        
+        
+        
+        
       </div>
     </div>
     <div class="feature" style="margin-top:18px;">
@@ -1709,7 +1721,7 @@ document.addEventListener("DOMContentLoaded", function () {
     sits.forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.sit===id)); });
     if(id){ var txt=""; sits.forEach(function(b){ if(b.dataset.sit===id) txt=b.querySelector(".sit-t").textContent; });
       msg.textContent = n + (n===1?" servicio para: ":" servicios para: ") + txt.charAt(0).toLowerCase()+txt.slice(1);
-    } else { msg.textContent = "Los nueve servicios, agrupados en tres familias."; }
+    } else { msg.textContent = "Los diez servicios, agrupados en cuatro familias."; }
     clr.hidden=!id;
     history.replaceState(null,"",location.pathname+location.search+(id?"#situacion="+id:"#servicios"));
   }
@@ -1721,6 +1733,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var m=/[#&]situacion=(s[1-6])/.exec(location.hash); aplica(m?m[1]:null);
 })();
 </script>
+
 
 
 </body></html>
