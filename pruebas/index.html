@@ -368,6 +368,13 @@
 #home.hero .hero-tag a:focus-visible{outline:2px solid #32717E;outline-offset:3px}
 @media (max-width:900px){ #home.hero .hero-tag{gap:6px} #home.hero .hero-tag a{padding:8px 12px;letter-spacing:.1em} }
 @media (max-width:380px){ #home.hero .hero-tag a{font-size:10.5px;padding:7px 10px;letter-spacing:.06em} }
+
+/* etapas: año + rol */
+#etapas .etapa-anio{font-size:11px;letter-spacing:.13em;color:#b8bfbb;margin-top:11px}
+#etapas .etapa-rol{display:block;margin-top:3px;font-size:12px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;line-height:1.35;color:#4b5551;transition:color .3s ease}
+#etapas .etapa:hover .etapa-rol,#etapas .etapa.on .etapa-rol{color:#32717E}
+@media (max-width:900px){ #etapas .etapa-rol{font-size:11px;letter-spacing:.06em} }
 </style>
 
 <style>
@@ -815,7 +822,7 @@ body.menu-open .mobile-menu{ display:block; }
 <section class="etapas" id="etapas" aria-labelledby="etapas-h">
   <div class="container">
     <h2 id="etapas-h" class="etapas-eyebrow">Trayectoria en cuatro etapas</h2>
-    <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/026.webp" loading="lazy" decoding="async" alt="Laboratorio de investigación de Navarrabiomed"></span><span class="etapa-anio">2016 — 2025</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span></button></div>
+    <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span><span class="etapa-rol">Gerente universidad</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/026.webp" loading="lazy" decoding="async" alt="Laboratorio de investigación de Navarrabiomed"></span><span class="etapa-anio">2016 — 2025</span><span class="etapa-rol">Consejero</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span><span class="etapa-rol">Gerente cultural y consejero</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="../assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span><span class="etapa-rol">Ámbito internacional</span></button></div>
     <div class="etapas-texto" id="etapa-texto" aria-live="polite"></div>
     <p class="etapas-cred">Licenciado en Administración y Dirección de Empresas (UPNA) <i>·</i> Executive Program en Innovación y Emprendimiento (MIT) <i>·</i> Miembro del Instituto de Consejeros-Administradores (IC-A)</p>
   </div>
@@ -1712,4 +1719,5 @@ document.addEventListener("DOMContentLoaded", function () {
   var m=/[#&]situacion=(s[1-6])/.exec(location.hash); aplica(m?m[1]:null);
 })();
 </script>
+
 </body></html>
