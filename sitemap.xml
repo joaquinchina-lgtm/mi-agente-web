@@ -2,8 +2,47 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://joaquinromero.com/</loc>
-    <lastmod>2025-09-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-08-11</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/blog/art01.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/blog/art02.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/blog/art03.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/blog/art04.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/blog/art05.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/gpts.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/reactor.html</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://joaquinromero.com/contacto/</loc>
+    <lastmod>2026-08-11</lastmod>
+    <priority>0.4</priority>
   </url>
 </urlset>
