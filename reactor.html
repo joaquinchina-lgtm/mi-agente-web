@@ -99,10 +99,12 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
 </head>
 <body>
 <div class="wrap">
+<p style="margin:0 0 14px"><a href="https://joaquinromero.com/" style="color:#2b6270;text-decoration:none;font:600 14px/1.4 system-ui,sans-serif">&#8592; Volver a joaquinromero.com</a></p>
+
 
   <div class="topbar">
     <div>
-      <h1>🧪 Reactor de Innovación</h1>
+      <h1>Reactor de Innovación</h1>
       <p class="sub">Problema → Piezas → Personas → Escala → Impacto → Crítico → Orquestador</p>
     </div>
     <button onclick="resetAll()">Reiniciar</button>
@@ -119,7 +121,7 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
     <textarea id="problema" rows="3" placeholder="Describe un problema complejo o una intuición. No pienses todavía en soluciones."></textarea>
     <div class="btnrow" style="margin-top:10px">
       <button class="runall" onclick="runAll()">⏩ Ejecutar toda la cadena</button>
-      <button class="attach-btn" onclick="pickFile('problema')">📎 Adjuntar archivo</button>
+      <button class="attach-btn" onclick="pickFile('problema')">Adjuntar archivo</button>
       <span class="thinking" id="think-all" style="display:none">ejecutando cadena…</span>
     </div>
   </div>
@@ -129,7 +131,7 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
   <div id="stages"></div>
 
   <div class="gen-dash-wrap">
-    <button class="gen-dash" onclick="buildDashboard()">📊 Generar dashboard visual</button>
+    <button class="gen-dash" onclick="buildDashboard()">Generar dashboard visual</button>
   </div>
 
   <p class="footer-note">Agentes de IA diseñados por Joaquín Romero Roldán (en pruebas). Verifica siempre las respuestas.</p>
@@ -298,8 +300,8 @@ function render(){
       <div class="stage-body">
         <div class="deps">${depTxt}</div>
         <div class="btnrow">
-          <button class="primary" id="run-${a.id}" onclick="runStage('${a.id}',false)">⚡ Ejecutar</button>
-          <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">🔁 Regenerar con matices</button>
+          <button class="primary" id="run-${a.id}" onclick="runStage('${a.id}',false)">Ejecutar</button>
+          <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">Regenerar con matices</button>
           <span class="thinking" id="think-${a.id}" style="display:none">pensando…</span>
         </div>
         <div class="out-label">Salida del asistente (editable):</div>
@@ -308,7 +310,7 @@ function render(){
           <div class="out-label">✏️ Matices para esta salida</div>
           <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
           <textarea id="mat-${a.id}" rows="3" oninput="onMat('${a.id}',this.value)" placeholder="Ej.: céntrate en el ámbito rural; descarta la variante 2; prioriza coste bajo…">${escapeHtml(state.matices[a.id]||'')}</textarea>
-          <div style="margin-top:7px"><button class="attach-btn" onclick="pickFile('mat-${a.id}')">📎 Adjuntar archivo</button></div>
+          <div style="margin-top:7px"><button class="attach-btn" onclick="pickFile('mat-${a.id}')">Adjuntar archivo</button></div>
         </div>
         <details class="prompt"><summary>Ver instrucciones de este asistente</summary><pre>${escapeHtml(sysPrompt(a.id))}</pre></details>
       </div>`;
@@ -417,9 +419,9 @@ async function buildDashboard(){
   const done = AGENTS.filter(a=>state.outputs[a.id]&&state.outputs[a.id].trim()).length;
   const conMat = AGENTS.filter(a=>state.matices[a.id]&&state.matices[a.id].trim()).length;
   let h='';
-  h += '<div class="dash-top dash-noprint"><h1 class="dash-title">📊 Dashboard · Reactor de Innovación</h1>'
-     + '<div style="display:flex;gap:8px"><button onclick="window.print()">🖨️ Imprimir / PDF</button>'
-     + '<button onclick="closeDashboard()">✕ Cerrar</button></div></div>';
+  h += '<div class="dash-top dash-noprint"><h1 class="dash-title">Dashboard · Reactor de Innovación</h1>'
+     + '<div style="display:flex;gap:8px"><button onclick="window.print()">Imprimir / PDF</button>'
+     + '<button onclick="closeDashboard()">Cerrar</button></div></div>';
   const _prob = state.problema || '';
   const _needsSum = !!_prob && (_prob.length > 600 || _prob.indexOf('[Contenido de') !== -1);
   const _lbl = _needsSum ? 'Problema / intuición (resumen)' : 'Problema / intuición';
@@ -444,7 +446,7 @@ async function buildDashboard(){
     if(out.trim()){
       h += '<div class="dcard-body">'+mdToHtml(out)+'</div>';
       if(state.matices[a.id]&&state.matices[a.id].trim())
-        h += '<div class="dmatiz"><b>✏️ Matices:</b> '+escapeHtml(state.matices[a.id])+'</div>';
+        h += '<div class="dmatiz"><b>Matices:</b> '+escapeHtml(state.matices[a.id])+'</div>';
     } else {
       h += '<div class="dcard-empty">Sin salida todavía.</div>';
     }
