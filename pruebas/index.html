@@ -449,60 +449,6 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 #etapas .etapas-texto .e-hitos-t{color:#717875}
 #red .feature .text p{color:#4b5551}
 
-/* =========================================================
-   SISTEMA TIPOGRÁFICO · Archivo (titulares) + Inter (texto)
-   Tratamiento B: titular hasta 52px, interlineado 1,02,
-   interletrado -0,035em, peso 600.
-   ========================================================= */
-body,button,input,select,textarea{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-
-/* --- titulares: Archivo --- */
-h1,h2,h3,
-#servicios .serv-h,#servicios .srv-t,
-#home.hero .hero-quote,#home.hero .hero-name,
-#red .section-title,#red .feature h2,#red .feature h3,
-#blog h2,#blog h3,
-.section-title{font-family:'Archivo',system-ui,sans-serif;font-weight:600;letter-spacing:-.035em;line-height:1.02}
-
-/* títulos de sección */
-#servicios .serv-h,#red .section-title,#blog h2,.section-title{font-size:clamp(30px,4vw,52px)}
-
-/* cita de cabecera: Archivo cursiva */
-#home.hero .hero-quote{font-family:'Archivo',system-ui,sans-serif;font-style:italic;font-weight:500;
-  font-size:clamp(20px,2.3vw,33px);line-height:1.2;letter-spacing:-.026em}
-#home.hero .hero-quote strong{font-weight:800;font-style:italic}
-#home.hero .hero-name{font-size:22px;font-weight:600;letter-spacing:-.028em}
-
-/* fichas y nombres */
-#servicios .srv-t{font-size:20px;line-height:1.12;letter-spacing:-.03em}
-#red .feature h2,#red .feature h3{font-size:26px;letter-spacing:-.03em}
-#blog h3{font-size:24px;letter-spacing:-.03em}
-
-/* --- texto corrido: Inter, algo más ceñido --- */
-#servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:18px;line-height:1.5;letter-spacing:-.01em}
-#servicios .sit-t{font-size:18px;line-height:1.32;letter-spacing:-.014em}
-#servicios .srv-c,#etapas .etapas-texto .e-hitos{font-size:15px;line-height:1.48;letter-spacing:-.006em}
-#servicios .srv-q{font-size:14px;line-height:1.42;letter-spacing:-.004em}
-#servicios .srv-m,#servicios .srv-agentes{font-size:13.5px;line-height:1.42;letter-spacing:-.004em}
-#red .feature .text p{font-size:16px;line-height:1.5;letter-spacing:-.008em}
-#etapas .etapas-cred span{font-size:14px;line-height:1.5;letter-spacing:-.004em}
-#servicios .serv-nota{font-size:16px;line-height:1.5;letter-spacing:-.008em}
-
-/* versalitas y etiquetas: sin apretar, que necesitan aire */
-#servicios .serv-eyebrow,#etapas .etapas-eyebrow,#servicios .srv-fam-t,
-#etapas .etapa-rol,#etapas .etapas-texto .e-hitos-t,#servicios .srv-q span,
-#home.hero .hero-role,#home.hero .hero-tag span,#etapas .etapa-anio{font-family:'Inter',system-ui,sans-serif}
-
-/* menú y pie */
-header a,footer,.sit-status{font-family:'Inter',system-ui,sans-serif;letter-spacing:-.006em}
-header a{font-size:15.5px}
-@media (max-width:900px){
-  body{font-size:17px}
-  #servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:17px}
-  #servicios .sit-t{font-size:16.5px}
-  #red .feature h2,#red .feature h3{font-size:23px}
-}
 </style>
 
 <style>
@@ -1774,6 +1720,60 @@ document.addEventListener("DOMContentLoaded", function () {
 }
 @media (hover:none){ .etapas-eyebrow::after{content:" · toca cada imagen";color:#b9c0bb} }
 @media (prefers-reduced-motion:reduce){ .etapa-img img{transition:none} .etapa:hover .etapa-img img{transform:none} }
+/* =========================================================
+   SISTEMA TIPOGRÁFICO · Archivo (titulares) + Inter (texto)
+   Tratamiento B: titular hasta 52px, interlineado 1,02,
+   interletrado -0,035em, peso 600.
+   ========================================================= */
+body,button,input,select,textarea{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* --- titulares: Archivo --- */
+h1,h2,h3,
+#servicios .serv-h,#servicios .srv-t,
+#home.hero .hero-quote,#home.hero .hero-name,
+#red .section-title,#red .feature h2,#red .feature h3,
+#blog h2,#blog h3,
+.section-title{font-family:'Archivo',system-ui,sans-serif;font-weight:600;letter-spacing:-.035em;line-height:1.02}
+
+/* títulos de sección */
+#servicios .serv-h,#red .section-title,#blog h2,.section-title{font-size:clamp(30px,4vw,52px)}
+
+/* cita de cabecera: Archivo cursiva */
+#home.hero .hero-quote{font-family:'Archivo',system-ui,sans-serif;font-style:italic;font-weight:500;
+  font-size:clamp(20px,2.3vw,33px);line-height:1.2;letter-spacing:-.026em}
+#home.hero .hero-quote strong{font-weight:800;font-style:italic}
+#home.hero .hero-name{font-size:22px;font-weight:600;letter-spacing:-.028em}
+
+/* fichas y nombres */
+#servicios .srv-t{font-size:20px;line-height:1.12;letter-spacing:-.03em}
+#red .feature h2,#red .feature h3{font-size:26px;letter-spacing:-.03em}
+#blog h3{font-size:24px;letter-spacing:-.03em}
+
+/* --- texto corrido: Inter, algo más ceñido --- */
+#servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:18px;line-height:1.5;letter-spacing:-.01em}
+#servicios .sit-t{font-size:18px;line-height:1.32;letter-spacing:-.014em}
+#servicios .srv-c,#etapas .etapas-texto .e-hitos{font-size:15px;line-height:1.48;letter-spacing:-.006em}
+#servicios .srv-q{font-size:14px;line-height:1.42;letter-spacing:-.004em}
+#servicios .srv-m,#servicios .srv-agentes{font-size:13.5px;line-height:1.42;letter-spacing:-.004em}
+#red .feature .text p{font-size:16px;line-height:1.5;letter-spacing:-.008em}
+#etapas .etapas-cred span{font-size:14px;line-height:1.5;letter-spacing:-.004em}
+#servicios .serv-nota{font-size:16px;line-height:1.5;letter-spacing:-.008em}
+
+/* versalitas y etiquetas: sin apretar, que necesitan aire */
+#servicios .serv-eyebrow,#etapas .etapas-eyebrow,#servicios .srv-fam-t,
+#etapas .etapa-rol,#etapas .etapas-texto .e-hitos-t,#servicios .srv-q span,
+#home.hero .hero-role,#home.hero .hero-tag span,#etapas .etapa-anio{font-family:'Inter',system-ui,sans-serif}
+
+/* menú y pie */
+header a,footer,.sit-status{font-family:'Inter',system-ui,sans-serif;letter-spacing:-.006em}
+header a{font-size:15.5px}
+@media (max-width:900px){
+  body{font-size:17px}
+  #servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:17px}
+  #servicios .sit-t{font-size:16.5px}
+  #red .feature h2,#red .feature h3{font-size:23px}
+}
 </style>
 <script>
 (function(){
