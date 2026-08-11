@@ -837,8 +837,8 @@ body.menu-open .mobile-menu{ display:block; }
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400..800;1,400..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..800;1,300..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -891,7 +891,7 @@ body.menu-open .mobile-menu{ display:block; }
     <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
     
     
-  <div class="hero-text"><p class="hero-quote"><em>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb">Inteligencia Colectiva</span></strong></em></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></p></div></div>
+  <div class="hero-text"><p class="hero-quote"><span class="q-abre" aria-hidden="true">“</span>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb trazo">Inteligencia Colectiva</span></strong></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></p></div></div>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
@@ -1774,6 +1774,23 @@ header a{font-size:15.5px}
   #servicios .sit-t{font-size:16.5px}
   #red .feature h2,#red .feature h3{font-size:23px}
 }
+
+/* ===== Cita de cabecera: sin cursiva, fina, con comilla grande y trazo a mano ===== */
+#home.hero .hero-quote{font-family:'Archivo',system-ui,sans-serif;font-style:normal;font-weight:300;
+  font-size:clamp(21px,2.4vw,35px);line-height:1.24;letter-spacing:-.022em;color:#16211f}
+#home.hero .hero-quote strong{font-weight:700;font-style:normal}
+#home.hero .hero-quote .q-abre{display:inline-block;font-family:'Archivo',system-ui,sans-serif;
+  font-weight:700;font-size:2.1em;line-height:0;vertical-align:-.34em;margin-right:.06em;
+  color:#32717E;opacity:.42;letter-spacing:-.06em}
+#home.hero .hero-quote .trazo{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' preserveAspectRatio='none'%3E%3Cpath d='M4,9.8 C42,4.2 78,11.4 118,7.2 C158,3 196,11 236,6.4 C262,3.5 280,8.2 296,5.6' fill='none' stroke='%2332717E' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:0 100%;background-size:100% .34em;
+  padding-bottom:.16em}
+@media (max-width:900px){
+  #home.hero .hero-quote{font-size:clamp(15px,3.6vw,19px);line-height:1.26}
+  #home.hero .hero-quote .q-abre{font-size:1.8em;vertical-align:-.3em}
+  #home.hero .hero-quote .trazo{background-size:100% .3em}
+}
 </style>
 <script>
 (function(){
@@ -1830,6 +1847,7 @@ header a{font-size:15.5px}
   var m=/[#&]situacion=(s[1-7])/.exec(location.hash); aplica(m?m[1]:null,false);
 })();
 </script>
+
 
 
 
