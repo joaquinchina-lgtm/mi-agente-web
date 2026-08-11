@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Archivo · tratamientos · JRR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Archivo:ital,wdth,wght@0,62..125,400..800;1,62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#32717E;--ink:#16211f;--muted:#6f7773;--line:#e2e0d9;--paper:#F6F7FB}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.intro{padding:54px 0 30px;border-bottom:1px solid var(--line);background:#fff}
+.intro h1{margin:0 0 10px;font:600 30px/1.15 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;letter-spacing:-.015em}
+.intro p{margin:0;max-width:74ch;font:400 16px/1.6 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:#4b5551}
+.nav{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.nav a{font:600 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:9px 14px;border:1px solid var(--line);background:#fff}
+.nav a:hover{color:var(--teal);border-color:var(--teal)}
+
+section.muestra{padding:56px 0 62px;border-bottom:1px solid var(--line)}
+section.muestra:nth-child(even){background:#fff}
+.etiqueta{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:34px}
+.etiqueta .num{font:700 11px/1 -apple-system,system-ui,sans-serif;letter-spacing:.16em;color:#fff;background:var(--ink);padding:7px 10px}
+.etiqueta .nom{font:600 20px/1.2 -apple-system,system-ui,sans-serif}
+.etiqueta .desc{font:400 14px/1.5 -apple-system,system-ui,sans-serif;color:var(--muted)}
+
+/* ==== bloque de muestra: hereda la tipografía de su sección ==== */
+.demo{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:start}
+@media(max-width:900px){.demo{grid-template-columns:1fr;gap:34px}}
+.cita{font-size:clamp(19px,2vw,30px);line-height:1.42;font-style:italic;margin:0 0 26px;text-wrap:balance}
+.cita b{font-weight:700;font-style:italic}
+.nombre{font-size:21px;font-weight:600;margin:0 0 5px}
+.cargo{font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin:0 0 24px}
+.cajas{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 34px}
+.cajas span{background:#111;color:#fff;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:9px 15px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin:0 0 12px}
+.titulo{font-size:clamp(26px,3vw,38px);line-height:1.14;font-weight:600;letter-spacing:-.015em;margin:0 0 12px}
+.lede{font-size:17px;line-height:1.62;color:#4b5551;margin:0 0 26px}
+.sit{display:flex;gap:16px;align-items:baseline;border-top:1px solid var(--line);padding:13px 2px}
+.sit:last-of-type{border-bottom:1px solid var(--line)}
+.sit .n{font-size:11.5px;font-weight:600;letter-spacing:.1em;color:#a9b0ac;width:2em;flex:none}
+.sit .t{font-size:17px;line-height:1.4}
+.ficha{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px 22px;margin-top:26px}
+section.muestra:nth-child(even) .ficha{background:var(--paper)}
+.ficha h4{font-size:19px;line-height:1.3;font-weight:600;margin:0 0 12px}
+.ficha .para{font-size:13.5px;line-height:1.5;color:var(--muted);margin:0 0 14px}
+.ficha .para span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#9aa29e;margin-bottom:3px}
+.ficha ul{margin:0;padding-left:1.05em;font-size:14.5px;line-height:1.55;color:#4b5551}
+.ficha li{margin:0 0 6px}
+.hitos{margin-top:22px}
+.hitos .h{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#9aa29e;margin:0 0 7px}
+.hitos ul{margin:0;padding-left:1.1em;font-size:14.5px;line-height:1.55;color:#5c6662}
+
+/* ===== SISTEMAS ===== */
+/* Todos: Archivo en titulares, Inter en texto */
+.muestra{font-family:'Inter',system-ui,sans-serif}
+.muestra .cita,.muestra .titulo,.muestra .nombre,.muestra .ficha h4{font-family:'Archivo',system-ui,sans-serif}
+
+#sA .titulo{font-size:clamp(26px,3vw,38px);line-height:1.14;letter-spacing:-.025em;font-weight:600}
+#sA .cita{font-size:clamp(19px,2vw,30px);line-height:1.42;letter-spacing:-.01em;font-style:italic;font-weight:500}
+
+#sB .titulo{font-size:clamp(30px,4vw,52px);line-height:1.02;letter-spacing:-.035em;font-weight:600}
+#sB .cita{font-size:clamp(20px,2.3vw,33px);line-height:1.18;letter-spacing:-.028em;font-style:normal;font-weight:500}
+#sB .nombre{font-size:22px;letter-spacing:-.025em}
+
+#sC .titulo{font-size:clamp(32px,4.6vw,60px);line-height:.96;letter-spacing:-.045em;font-weight:700}
+#sC .cita{font-size:clamp(21px,2.5vw,36px);line-height:1.1;letter-spacing:-.038em;font-style:normal;font-weight:600}
+#sC .nombre{font-size:23px;letter-spacing:-.03em;font-weight:700}
+#sC .ficha h4{letter-spacing:-.03em;font-weight:700}
+
+#sD .titulo{font-size:clamp(32px,4.4vw,58px);line-height:.98;letter-spacing:-.04em;font-weight:700;font-variation-settings:"wdth" 112}
+#sD .cita{font-size:clamp(20px,2.4vw,34px);line-height:1.12;letter-spacing:-.032em;font-style:normal;font-weight:600;font-variation-settings:"wdth" 112}
+#sD .nombre,#sD .ficha h4{font-variation-settings:"wdth" 112;letter-spacing:-.028em;font-weight:700}
+
+#sE .titulo{font-size:clamp(34px,5.2vw,68px);line-height:.94;letter-spacing:-.035em;font-weight:700;font-variation-settings:"wdth" 88}
+#sE .cita{font-size:clamp(22px,2.7vw,38px);line-height:1.08;letter-spacing:-.028em;font-style:normal;font-weight:600;font-variation-settings:"wdth" 88}
+#sE .nombre,#sE .ficha h4{font-variation-settings:"wdth" 88;letter-spacing:-.025em;font-weight:700}
+
+
+#sF .titulo{font-size:clamp(34px,5vw,64px);line-height:.92;letter-spacing:-.058em;font-weight:700}
+#sF .cita{font-size:clamp(22px,2.6vw,38px);line-height:1.04;letter-spacing:-.05em;font-style:normal;font-weight:600}
+#sF .nombre{font-size:24px;letter-spacing:-.045em;font-weight:700}
+#sF .ficha h4{letter-spacing:-.042em;font-weight:700}
+#sF .sit .t{letter-spacing:-.022em}
+#sF .lede{letter-spacing:-.012em}
+
+.muestra:not(#sA) .cita b{font-weight:800}
+.muestra .lede{font-size:17.5px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="intro"><div class="wrap">
+  <h1>Archivo + Inter: cinco tratamientos</h1>
+  <p>Misma pareja tipográfica en los cinco. Lo que cambia es el tamaño del titular, el interlineado, el interletrado y, en los dos últimos, la anchura de la letra. El primero es el que ya viste; los demás van de menos a más contundente. Compara sobre todo el titular de la derecha y la cita de la izquierda.</p>
+</div></div>
+
+<nav class="nav"><div class="wrap"><a href="#sA">A</a> <a href="#sB">B</a> <a href="#sC">C</a> <a href="#sD">D</a> <a href="#sE">E</a> <a href="#sF">F</a></div></nav>
+
+<section class="muestra" id="sA"><div class="wrap">
+  <div class="etiqueta"><span class="num">A</span><span class="nom">Archivo · actual (ronda 2)</span><span class="desc">El que viste: titular 38 px, interletrado -0,025em, interlineado 1,14.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="muestra" id="sB"><div class="wrap">
+  <div class="etiqueta"><span class="num">B</span><span class="nom">Archivo · grande y apretado</span><span class="desc">Titular hasta 52 px, interlineado 1,02, interletrado -0,035em. Peso 600.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="muestra" id="sC"><div class="wrap">
+  <div class="etiqueta"><span class="num">C</span><span class="nom">Archivo · contundente</span><span class="desc">Titular hasta 60 px, interlineado 0,96, interletrado -0,045em. Peso 700. El más rotundo.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="muestra" id="sD"><div class="wrap">
+  <div class="etiqueta"><span class="num">D</span><span class="nom">Archivo Semi Expanded</span><span class="desc">Misma escala que C pero con la anchura ampliada a 112. Ocupa más y pesa más en la página.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="muestra" id="sE"><div class="wrap">
+  <div class="etiqueta"><span class="num">E</span><span class="nom">Archivo Condensed</span><span class="desc">Anchura reducida a 88, lo que permite un titular aún mayor sin partir línea. Muy editorial.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+<section class="muestra" id="sF"><div class="wrap">
+  <div class="etiqueta"><span class="num">F</span><span class="nom">Archivo · máximo apriete</span><span class="desc">Anchura normal, interletrado -0,058em e interlineado 0,92. El límite antes de que las letras se toquen.</span></div>
+  <div class="demo">
+    <div>
+      <p class="cita">En tiempos de Inteligencia Artificial y de complejidad, la clave es la competitividad por <b>valor</b>, y reside en saber <b>conectar la Inteligencia Colectiva</b></p>
+      <p class="nombre">Joaquín Romero Roldán</p>
+      <p class="cargo">Consejero / Asesor independiente</p>
+      <div class="cajas"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></div>
+      <div class="hitos"><p class="h">Hitos</p><ul><li>Aumento de los ingresos por investigación del 325 %</li><li>Líder del sistema universitario español en inserción laboral de Grado y Máster</li></ul></div>
+    </div>
+    <div>
+      <p class="eyebrow">Servicios</p>
+      <h2 class="titulo">Empecemos por lo que te está pasando</h2>
+      <p class="lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+      <div class="sit"><span class="n">01</span><span class="t">Tenemos que hacer o revisar el plan estratégico</span></div>
+      <div class="sit"><span class="n">02</span><span class="t">La estrategia está aprobada y publicada, pero no tracciona</span></div>
+      <div class="ficha">
+        <h4>Contraste de estrategia para una estrategia ágil</h4>
+        <p class="para"><span>Para</span>Universidades y centros de I+D que elaboran planes estratégicos</p>
+        <ul><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li></ul>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+</body>
+</html>
