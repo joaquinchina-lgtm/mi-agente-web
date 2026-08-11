@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="es">
-<head>
+<html lang="es"><head>
   <!-- ====== Config global ====== -->
   <script>
     window.BACKEND = "https://jr-gpt-backend-1.onrender.com";  /* pon tu URL real si cambia */
   </script>
 
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- ====== SEO básico ====== -->
   <title>Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo</title>
   <meta name="description" content="Asesoría en Innovación, Estrategia y Liderazgo. Programas de inteligencia colectiva y transferencia de conocimiento para empresas, universidades y administraciones públicas.">
-  <link rel="canonical" href="https://joaquinchina-lgtm.github.io/mi-agente-web/">
-  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
-  <meta name="theme-color" content="#32717E" />
+  <link rel="canonical" href="https://joaquinromero.com/">
+  <meta name="robots" content="noindex,nofollow">
+  <!-- ENTORNO DE PRUEBAS - no indexar. Copia de index.html -->
+  <meta name="theme-color" content="#32717E">
 
 <!-- ===== HEAD funcional mínimo para previews WhatsApp/X/LinkedIn ===== -->
 
@@ -22,40 +22,40 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo">
-<meta property="og:url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/index.html">
+<meta property="og:url" content="https://joaquinromero.com/">
 <meta property="og:title" content="Joaquín Romero Roldán · Innovación, Estrategia y Liderazgo">
 <meta property="og:description" content="Consejero-asesor independiente. Programas de inteligencia colectiva y transferencia de conocimiento.">
-<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
-<meta property="og:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1000x1000.jpg">
-<meta property="og:image:secure_url" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1000x1000.jpg">
+<meta property="og:image:secure_url" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Joaquín Romero Roldán. Consejero-asesor independiente".">
+<meta property="og:image:alt" content="Joaquín Romero Roldán. Consejero-asesor independiente" ."="">
 
 
 <!-- (Opcional pero recomendable) Twitter Card: muchas apps lo leen también -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Consejero-asesor independiente en Innovación, Estrategia y Liderazgo.">
 <meta name="twitter:description" content="Programas de inteligencia colectiva y transferencia de conocimiento.">
-<meta name="twitter:image" content="https://joaquinchina-lgtm.github.io/mi-agente-web/assets/share/WebPortada1200x630.jpg">
+<meta name="twitter:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
 
 <!-- ===== FIN bloque funcional ===== -->
 
   <!-- ====== Favicons ====== -->
-  <link rel="icon" href="/mi-agente-web/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 
   <!-- ====== Google Analytics 4 ====== -->
   <!-- Sustituye G-XXXXXXXXXX por tu ID de GA4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4H0ZT7ZTNX"></script>
+  <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-4H0ZT7ZTNX"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-4H0ZT7ZTNX', {
       /* ejemplo: page_path más limpio si usas anchors */
-      page_path: '/mi-agente-web/'
+      page_path: '/'
     });
   </script>
 
@@ -298,7 +298,158 @@
     align-self: center;
     justify-self: center;
   }
-  </style>
+  
+/* texto de etapas: intro + hitos en cuerpo menor */
+#etapas .etapas-texto{max-width:64ch;margin:34px auto 0;min-height:0;text-align:left;opacity:0;transition:opacity .3s ease}
+#etapas .etapas-texto.visible{opacity:1}
+#etapas .etapas-texto .e-intro{margin:0 0 16px;font-size:17px;line-height:1.6;color:#2f3a36}
+#etapas .etapas-texto .e-intro b{font-weight:600;color:#16211f}
+#etapas .etapas-texto .e-hitos-t{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#a3aba7}
+#etapas .etapas-texto .e-hitos{margin:0;padding-left:1.15em;font-size:14.5px;line-height:1.55;color:#5c6662}
+#etapas .etapas-texto .e-hitos li{margin:0 0 6px}
+#etapas .etapas-texto .e-hitos li::marker{color:#cbd2cd}
+#etapas .etapas-texto .e-hitos em{font-style:normal;font-weight:600;color:#3f4a46}
+@media (max-width:900px){
+  #etapas .etapas-texto{margin-top:26px}
+  #etapas .etapas-texto .e-intro{font-size:16px}
+  #etapas .etapas-texto .e-hitos{font-size:13.5px}
+}
+
+/* Red: mismo alto de banda y misma escala de rostro para los seis */
+#red .image-wrap{aspect-ratio:2.85;background:#fff;overflow:hidden;display:block}
+#red .image-wrap img{width:100%;height:100%;object-fit:contain;object-position:50% 50%;display:block}
+@media (max-width:900px){ #red .image-wrap{aspect-ratio:2.4} }
+
+/* ===== Servicios: entrada por situación ===== */
+#servicios{padding:78px 0 74px;border-top:1px solid #e6e4de}
+#servicios .serv-eyebrow{margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#32717E}
+#servicios .serv-h{margin:0 0 14px;font-size:clamp(26px,3vw,38px);line-height:1.15;font-weight:600;letter-spacing:-.015em;color:#16211f}
+#servicios .serv-lede{margin:0 0 42px;max-width:66ch;font-size:17px;line-height:1.6;color:#5c6662}
+#servicios .sit-list{border-top:1px solid #e2e0d9}
+#servicios .sit{display:flex;gap:18px;align-items:baseline;width:100%;text-align:left;font:inherit;background:none;border:0;border-bottom:1px solid #e2e0d9;padding:15px 6px;cursor:pointer;color:#2f3a36;transition:background .2s,color .2s,padding-left .2s}
+#servicios .sit:hover{background:#fff;padding-left:14px;color:#16211f}
+#servicios .sit[aria-pressed="true"]{background:#fff;padding-left:14px;color:#16211f;box-shadow:inset 3px 0 0 #32717E}
+#servicios .sit-n{font-size:11.5px;font-weight:600;letter-spacing:.1em;color:#b3bab6;flex:none;width:2em}
+#servicios .sit[aria-pressed="true"] .sit-n{color:#32717E}
+#servicios .sit-t{font-size:clamp(15.5px,1.35vw,18px);line-height:1.4}
+#servicios .sit-status{margin:22px 0 40px;font-size:14px;color:#8b938f;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#servicios .sit-status button{background:none;border:0;padding:0;font:inherit;color:#32717E;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#servicios .srv-fam{margin:0 0 42px}
+#servicios .srv-fam[hidden]{display:none}
+#servicios .srv-fam-t{margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid #e2e0d9;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#9aa29e}
+#servicios .srv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+#servicios .srv{background:#fff;border:1px solid #e6e4de;border-radius:4px;padding:26px 24px;display:flex;flex-direction:column}
+#servicios .srv[hidden]{display:none}
+#servicios .srv-t{margin:0 0 14px;font-size:19px;line-height:1.3;font-weight:600;color:#16211f}
+#servicios .srv-q{margin:0 0 16px;font-size:13.5px;line-height:1.5;color:#7b8480}
+#servicios .srv-q span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#b3bab6;margin-bottom:3px}
+#servicios .srv-c{margin:0 0 16px;padding-left:1.05em;font-size:14.5px;line-height:1.5;color:#4b5551}
+#servicios .srv-c li{margin:0 0 6px}
+#servicios .srv-c li::marker{color:#cbd2cd}
+#servicios .srv-c i{font-style:italic;color:#8b938f}
+#servicios .srv-m{margin:auto 0 0;padding-top:14px;border-top:1px solid #efeee9;font-size:13px;line-height:1.5;color:#8b938f}
+#servicios .serv-nota{margin:8px 0 26px;padding:18px 20px;background:#EAF0F1;border-left:3px solid #32717E;font-size:15px;line-height:1.55;color:#3f4a46}
+#servicios .serv-nota b{font-weight:600;color:#22525C}
+#servicios .serv-cta a{font-size:15px;color:#32717E;text-underline-offset:4px}
+@media (max-width:1000px){ #servicios .srv-grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:700px){
+  #servicios{padding:54px 0 50px}
+  #servicios .srv-grid{grid-template-columns:1fr;gap:14px}
+  #servicios .serv-lede{margin-bottom:30px}
+  #servicios .sit{gap:12px;padding:13px 4px}
+}
+
+/* cabecera: cuatro cajas enlazadas */
+#home.hero .hero-tag{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0}
+#home.hero .hero-tag a{display:inline-block;background:#111;color:#fff;text-decoration:none;
+  font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  padding:9px 16px;transition:background .2s ease,transform .2s ease}
+#home.hero .hero-tag a:hover,#home.hero .hero-tag a:focus-visible{background:#32717E;transform:translateY(-1px)}
+#home.hero .hero-tag a:focus-visible{outline:2px solid #32717E;outline-offset:3px}
+@media (max-width:900px){ #home.hero .hero-tag{gap:6px} #home.hero .hero-tag a{padding:8px 12px;letter-spacing:.1em} }
+@media (max-width:380px){ #home.hero .hero-tag a{font-size:10.5px;padding:7px 10px;letter-spacing:.06em} }
+
+/* etapas: año + rol */
+#etapas .etapa-anio{font-size:11px;letter-spacing:.13em;color:#b8bfbb;margin-top:11px}
+#etapas .etapa-rol{display:block;margin-top:3px;font-size:12px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;line-height:1.35;color:#4b5551;transition:color .3s ease}
+#etapas .etapa:hover .etapa-rol,#etapas .etapa.on .etapa-rol{color:#32717E}
+@media (max-width:900px){ #etapas .etapa-rol{font-size:11px;letter-spacing:.06em} }
+
+#etapas .etapa-anio i{display:inline;font-style:normal;text-transform:none;letter-spacing:.01em;color:#c8cfca;margin-left:8px}
+
+/* (1)(2) cabecera: cuatro cajas sin enlace, 4 en línea y 2+2 en móvil */
+#home.hero .hero-tag{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:center;margin:0}
+#home.hero .hero-tag span{display:block;text-align:center;background:#111;color:#fff;
+  font-size:clamp(11px,.9vw,14px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px}
+@media (max-width:900px){
+  #home.hero .hero-tag{grid-template-columns:1fr 1fr;gap:7px;max-width:340px;margin:0 auto}
+  #home.hero .hero-tag span{padding:9px 6px;letter-spacing:.08em;font-size:11.5px}
+}
+/* (3) el texto de cada etapa ocupa el ancho completo de las cuatro imágenes */
+#etapas .etapas-texto{max-width:none;margin-left:0;margin-right:0}
+#etapas .etapas-texto .e-intro{max-width:none}
+@media (min-width:901px){
+  #etapas .etapas-texto .e-hitos{column-count:2;column-gap:52px}
+  #etapas .etapas-texto .e-hitos li{break-inside:avoid}
+}
+/* (4) móvil: las cuatro etapas alineadas entre sí */
+@media (max-width:900px){
+  #etapas .etapas-grid{align-items:start}
+  #etapas .etapa{display:flex;flex-direction:column}
+  #etapas .etapa-rol{min-height:2.7em}
+}
+/* (5) banda gris a todo el ancho para las titulaciones */
+#etapas .cred-band{margin:46px 0 0;padding:26px 0;background:#EFEFEC;border-top:1px solid #e2e0d9}
+#etapas .cred-band .etapas-cred{margin:0 auto;padding:0;border:0;max-width:78ch}
+#etapas{padding-bottom:0}
+/* (7) ficha de Consejero: una sola tarjeta a todo el ancho */
+#servicios .srv-grid--uno{grid-template-columns:1fr}
+#servicios .srv--ancho .srv-c{column-count:1}
+#servicios .srv-c b{font-weight:600;color:#16211f}
+#servicios .srv-m--cta{color:#4b5551}
+#servicios .srv-m--cta a{color:#32717E}
+@media (min-width:1001px){ #servicios .srv--ancho .srv-c{column-count:3;column-gap:34px} #servicios .srv--ancho .srv-c li{break-inside:avoid} }
+
+/* (1) la cabecera fija deja de pisar las secciones al saltar por el menú */
+section[id],.srv-fam[id]{scroll-margin-top:84px}
+/* (2) el lede de servicios ocupa el ancho completo */
+#servicios .serv-lede{max-width:none}
+/* (3.5) enlace a los agentes dentro de la ficha del Reactor */
+#servicios .srv-agentes{margin:14px 0 0;padding-top:14px;border-top:1px solid #efeee9;
+  font-size:13.5px;line-height:1.5;color:#7b8480}
+#servicios .srv-agentes a{display:inline-block;margin-top:6px;color:#32717E;font-weight:600;text-underline-offset:3px}
+#servicios .srv-m{margin-top:auto}
+/* (5) la ficha de colaborador nunca más alta que su foto */
+#red .feature .text p{font-size:15.5px;line-height:1.55}
+
+/* titulaciones: una por línea */
+#etapas .cred-band .etapas-cred{max-width:none}
+#etapas .etapas-cred span{display:block;margin:0 0 5px}
+#etapas .etapas-cred span:last-child{margin-bottom:0}
+/* enlace a los agentes, en línea propia al final de la ficha */
+#servicios .srv-agentes-cta{display:block;margin-top:10px;color:#32717E;font-weight:600;text-underline-offset:3px}
+
+/* el enlace de agentes, siempre en línea propia (gana en especificidad a la regla previa) */
+#servicios .srv .srv-agentes a.srv-agentes-cta{display:block;width:100%;margin-top:10px;color:#32717E;font-weight:600}
+
+/* el logotipo de la UAM es compacto: +20% de alto para igualar peso visual con UPNA */
+#proyectos img[src*="UAM.png"]{height:66px}
+
+/* ===== Contraste: todos los grises secundarios a 4,5:1 o más (WCAG AA) ===== */
+#etapas .etapa-anio{color:#727674}
+#etapas .etapa-anio i{color:#8a908d}
+#servicios .srv-fam-t{color:#6c716f}
+#etapas .etapas-cred span{color:#656b68}
+#servicios .sit-status{color:#6b716e}
+#servicios .srv-m{color:#6f7672}
+#servicios .srv-q{color:#6f7773}
+#servicios .srv-q span{color:#717875}
+#servicios .srv-agentes{color:#6f7672}
+#etapas .etapas-texto .e-hitos-t{color:#717875}
+#red .feature .text p{color:#4b5551}
+
+</style>
 
 <style>
   /* === Fix de márgenes/espaciado en cards === */
@@ -488,7 +639,7 @@
     "@type": "Person",
     "name": "Joaquín Romero Roldán",
     "jobTitle": "Asesor en Innovación, Estrategia y Liderazgo",
-    "url": "https://joaquinchina-lgtm.github.io/mi-agente-web/",
+    "url": "https://joaquinromero.com/",
     "worksFor": { "@type": "Organization", "name": "JR · Innovación y Estrategia" }
   }
   </script>
@@ -684,6 +835,10 @@ body.menu-open .mobile-menu{ display:block; }
 </style>
 
 
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..800;1,300..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -701,59 +856,56 @@ body.menu-open .mobile-menu{ display:block; }
 
     <!-- Menú desktop -->
     <nav class="links" aria-label="Secciones del sitio">
-      <a href="#innovacion">Innovación</a>
-      <a href="#estrategia">Estrategia</a>
-      <a href="#liderazgo">Liderazgo</a>
-      <a href="#consejos">Consejero</a>
-      <a href="#trayectoria">Trayectoria</a>
-      <a href="#socios">Socios</a>
-      <a href="#red">Red</a>
-      <a href="#galeria">Hitos</a>
-      <a href="#blog">Blog</a>
-    </nav>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#red">Red</a><a href="#blog">Blog</a></nav>
   </div>
 
   <!-- Panel móvil (drawer) -->
-  <div id="mobile-menu" class="mobile-menu" hidden>
+  <div id="mobile-menu" class="mobile-menu" hidden="">
     <div class="mobile-menu-inner">
-      <a href="#innovacion">Innovación</a>
-      <a href="#estrategia">Estrategia</a>
-      <a href="#liderazgo">Liderazgo</a>
-      <a href="#consejos">Consejero</a>
-      <a href="#trayectoria">Trayectoria</a>
-      <a href="#socios">Socios</a>
-      <a href="#red">Red</a>
-      <a href="#galeria">Hitos</a>
-      <a href="#blog">Blog</a>
-    </div>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#red">Red</a><a href="#blog">Blog</a></div>
   </div>
 </header>
 
-<section id="home" class="hero">
-  <video autoplay muted loop playsinline aria-label="Vídeo de cabecera">
-    <!-- Vertical (móvil) -->
-    <source src="assets/video/Hero2Vertical.mp4" type="video/mp4" media="(max-width: 767px)">
-    <!-- Apaisada (escritorio/tablet) -->
-    <source src="assets/video/Hero2.mp4" type="video/mp4" media="(min-width: 768px)">
-    Tu navegador no soporta video HTML5.
-  </video>
+<section id="home" class="hero"><div class="hero-media"><img class="hero-photo" src="assets/img/hero-jrr-2400.webp" srcset="assets/img/hero-jrr-1100.webp 1100w, assets/img/hero-jrr-2400.webp 2400w" sizes="100vw" width="2400" height="1340" fetchpriority="high" decoding="async" alt="Joaquín Romero Roldán, consejero y asesor independiente"></div>
+  
 
   <div class="inner container">
     <h1 class="sr-only">Joaquín Romero Roldán — Innovación, Estrategia y Liderazgo</h1>
-    <h2 class="big-quote">
-      
-    </h2>
-    <div class="hero-overlay-box">
-  <p class="lead" style="margin-top:0px;">Joaquín Romero Roldán</p>
-  <div class="eyebrow">Consejero / Asesor independiente</div>
-  <div class="hero-sub">INNOVACIÓN | ESTRATEGIA | LIDERAZGO </div>
-  <p class="hero-accent" style="margin-top:0px;">"En tiempos de IA y complejidad, la clave reside en la Inteligencia Colectiva"</p>
-    </div>
-  </div>
+    
+    
+  <div class="hero-text"><p class="hero-quote"><span class="hq-in"><span class="q-abre" aria-hidden="true">“</span>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb trazo">Inteligencia Colectiva</span></strong></span></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></p></div></div>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
-<section class="logo-carousel" aria-label="Logotipos de clientes">
+
+<!-- ===== Etapas: panel B/N que revela color ===== -->
+<section class="etapas" id="etapas" aria-labelledby="etapas-h">
+  <div class="container">
+    <h2 id="etapas-h" class="etapas-eyebrow">Tres décadas de trayectoria en cuatro etapas</h2>
+    <div class="etapas-grid"><button class="etapa" type="button" data-i="0" aria-describedby="etapa-texto"><span class="etapa-img"><img src="assets/img/023.webp" loading="lazy" decoding="async" alt="Campus de la Universidad Pública de Navarra"></span><span class="etapa-anio">2016 — 2025</span><span class="etapa-rol">Gerente universidad</span></button><button class="etapa" type="button" data-i="1" aria-describedby="etapa-texto"><span class="etapa-img"><img src="assets/img/026.webp" loading="lazy" decoding="async" alt="Laboratorio de investigación de Navarrabiomed"></span><span class="etapa-anio">2016 — 2025<i>en paralelo</i></span><span class="etapa-rol">Consejero innovación</span></button><button class="etapa" type="button" data-i="2" aria-describedby="etapa-texto"><span class="etapa-img"><img src="assets/img/028.webp" loading="lazy" decoding="async" alt="Interior del Carnegie Hall de Nueva York durante un concierto"></span><span class="etapa-anio">2008 — 2016</span><span class="etapa-rol">Gerente y consejero cultural</span></button><button class="etapa" type="button" data-i="3" aria-describedby="etapa-texto"><span class="etapa-img"><img src="assets/img/031.webp" loading="lazy" decoding="async" alt="Vista nocturna de Hong Kong"></span><span class="etapa-anio">1999 — 2008</span><span class="etapa-rol">Ámbito internacional</span></button></div>
+    <div class="etapas-texto" id="etapa-texto" aria-live="polite"></div>
+    
+  </div>
+<div class="cred-band"><div class="container"><p class="etapas-cred"><span><svg class="cred-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 2.108" stroke-linecap="round"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M9 12.1 11 14.2 15.1 9.9" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>Licenciado en Administración y Dirección de Empresas (UPNA)</span><span><svg class="cred-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 2.108" stroke-linecap="round"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M9 12.1 11 14.2 15.1 9.9" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>Executive Program en Innovación y Emprendimiento (MIT)</span><span><svg class="cred-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 2.108" stroke-linecap="round"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M9 12.1 11 14.2 15.1 9.9" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>Miembro del Instituto de Consejeros-Administradores (IC-A)</span></p></div></div></section>
+<section class="logo-carousel" aria-label="Logotipos de clientes" id="proyectos">
   <div class="container logo-carousel-title" style="text-align:center; margin-bottom:20px;">
     <p style="font-size:13px; letter-spacing:.15em; text-transform:uppercase; color:#6b7280; margin:0;">
       Proyectos recientes
@@ -764,19 +916,19 @@ body.menu-open .mobile-menu{ display:block; }
     <div class="logo-track">
       <div class="logo-slide">
         <!-- ⚙️ Sustituye estos nombres por tus PNG reales en /assets/logos/ -->
-        <img src="assets/logos/BLANCO.png" alt="BLANCO" loading="lazy" decoding="async">
-        <img src="assets/logos/IDOM.png" alt="IDOM" loading="lazy" decoding="async">
+        
+        <img src="assets/logos/IDOM.webp" alt="IDOM" loading="lazy" decoding="async"><img src="assets/logos/KFUPM.png" alt="King Fahd University of Petroleum and Minerals (KFUPM)" loading="lazy" decoding="async">
         <img src="assets/logos/VERIDAS.png" alt="VERIDAS" loading="lazy" decoding="async">
-        <img src="assets/logos/MC3.png" alt="MC3" loading="lazy" decoding="async">
-        <img src="assets/logos/CMN.png" alt="CMN" loading="lazy" decoding="async">
-        <img src="assets/logos/ESIC.png" alt="ESIC" loading="lazy" decoding="async">
+        <img src="assets/logos/MC3.webp" alt="MC3" loading="lazy" decoding="async"><img src="assets/logos/SNE-empleo.png" alt="Servicio Navarro de Empleo · Nafar Lansare" loading="lazy" decoding="async">
+        <img src="assets/logos/CMN.webp" alt="CMN" loading="lazy" decoding="async">
+        <img src="assets/logos/ESIC.webp" alt="ESIC" loading="lazy" decoding="async"><img src="assets/logos/UAM.png" alt="Universidad Autónoma de Madrid" loading="lazy" decoding="async">
         <img src="assets/logos/UPNA.png" alt="UPNA" loading="lazy" decoding="async">
-        <img src="assets/logos/UNIOVI.png" alt="UNIOVI" loading="lazy" decoding="async">
-        <img src="assets/logos/UIB.png" alt="UIB" loading="lazy" decoding="async">
-        <img src="assets/logos/UNITA.png" alt="UNITA" loading="lazy" decoding="async">
-        <img src="assets/logos/FUS.png" alt="FUS" loading="lazy" decoding="async">
-        <img src="assets/logos/OP.png" alt="OP" loading="lazy" decoding="async">
-        <img src="assets/logos/FOP.png" alt="FOP" loading="lazy" decoding="async">
+        <img src="assets/logos/UNIOVI.webp" alt="UNIOVI" loading="lazy" decoding="async">
+        <img src="assets/logos/UIB.webp" alt="UIB" loading="lazy" decoding="async"><img src="assets/logos/EHU.png" alt="Universidad del País Vasco · Euskal Herriko Unibertsitatea" loading="lazy" decoding="async">
+        <img src="assets/logos/UNITA.webp" alt="UNITA" loading="lazy" decoding="async">
+        <img src="assets/logos/FUS.webp" alt="FUS" loading="lazy" decoding="async">
+        <img src="assets/logos/OP.webp" alt="OP" loading="lazy" decoding="async">
+        <img src="assets/logos/FOP.webp" alt="FOP" loading="lazy" decoding="async">
         <img src="assets/logos/FSF.png" alt="FSF" loading="lazy" decoding="async">
         <!-- añade aquí tantos logos como necesites -->
       </div>
@@ -787,243 +939,140 @@ body.menu-open .mobile-menu{ display:block; }
   </div>
 </section>
 
-<section id="innovacion">
+<section class="servicios" id="servicios" aria-labelledby="serv-h">
   <div class="container">
-    <h2 class="section-title">Servicios de Innovación</h2>
+    <p class="serv-eyebrow">Servicios</p>
+    <h2 id="serv-h" class="serv-h">Empecemos por lo que te está pasando</h2>
+    <p class="serv-lede">Acompaño a universidades, centros de investigación, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
 
-    <div class="grid cols-3" style="margin-top:18px;">
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Universidades y centros de I+D">
-            <source src="assets/video/02.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill" aria-label="Contacto sobre Universidades y centros de I+D">Universidades y centros de I+D</span>
-          <h3>Reactor de Transferencia</h3>
-          <p>Programa de 4-6 meses de duración para mejorar la productividad de la transferencia de conocimiento. El programa combina investigadores/as, empresas e IPs senior, impulsando un trabajo que parte de intuiciones sobre problemas complejos y culmina en soluciones escalables de alto impacto y con acceso a financiación.</p>
+    <div class="sit-list" role="group" aria-label="Elige tu situación">
+      <button class="sit" type="button" data-sit="s1" aria-pressed="false"><span class="sit-n">01</span><span class="sit-t">Tenemos que hacer o revisar el plan estratégico</span></button>
+      <button class="sit" type="button" data-sit="s2" aria-pressed="false"><span class="sit-n">02</span><span class="sit-t">La estrategia está aprobada y publicada, pero no tracciona</span></button>
+      <button class="sit" type="button" data-sit="s3" aria-pressed="false"><span class="sit-n">03</span><span class="sit-t">Nuestra I+D puede ser más productiva y de más impacto</span></button>
+      <button class="sit" type="button" data-sit="s4" aria-pressed="false"><span class="sit-n">04</span><span class="sit-t">Nuestros servicios públicos deberían aportar más valor al usuario</span></button>
+      <button class="sit" type="button" data-sit="s5" aria-pressed="false"><span class="sit-n">05</span><span class="sit-t">El equipo directivo no tira en la misma dirección</span></button>
+      <button class="sit" type="button" data-sit="s6" aria-pressed="false"><span class="sit-n">06</span><span class="sit-t">No sabemos por dónde entrar en la IA</span></button>
+    <button class="sit" type="button" data-sit="s7" aria-pressed="false"><span class="sit-n">07</span><span class="sit-t">Quiero saber cómo un Consejo Asesor puede contribuir a aumentar el valor de mi organización</span></button></div>
+    <p class="sit-status"><span id="sit-msg">Los diez servicios, agrupados en cuatro familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
+
+    <div class="srv-wrap">
+      <div class="srv-fam" id="fam-innovacion" data-fam="Innovación">
+        <h3 class="srv-fam-t">Innovación</h3>
+        <div class="srv-grid">
+        <article class="srv" data-sit="s3" id="srv-0">
+          <h4 class="srv-t">Reactor de innovación y transferencia de conocimiento</h4>
+          <p class="srv-q"><span>Para</span> Universidades, centros de I+D y empresas con unidades de I+D</p>
+          <ul class="srv-c"><li>Formulación del problema y mapa de agentes</li><li>Hipótesis organizacionales</li><li>Tecnologías disponibles</li><li>Escalado de soluciones</li></ul>
+          <p class="srv-m">Programa de 4 a 6 meses. Combina investigadores, empresas e IPs senior.</p>
+        <p class="srv-agentes">¿En qué consiste el Reactor? Haz una prueba con la cadena de siete agentes de IA que estructura un problema complejo hasta convertirlo en algo prototipable.<a class="srv-agentes-cta" href="reactor.html">Abrir el Reactor</a></p></article>
+        <article class="srv" data-sit="s4" id="srv-1">
+          <h4 class="srv-t">Rediseño de servicios</h4>
+          <p class="srv-q"><span>Para</span> Administraciones públicas y tercer sector</p>
+          <ul class="srv-c"><li>Construcción de un LAB</li><li>Análisis de usuarios y necesidades</li><li>Ideación y selección de propuestas</li><li>Despliegue y puesta en marcha de pilotos</li><li>Escalado</li></ul>
+          <p class="srv-m">Trabajo con equipos directivos, equipos de gestores y usuarios reales del servicio.</p>
+        </article>
         </div>
       </div>
-
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Industria multi-sector">
-            <source src="assets/video/03.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill" aria-label="Contacto sobre Industria multi-sector">Industria (multi-sector)</span>
-          <h3>Reactor de Innovación</h3>
-          <p>Servicio a medida para empresas, para mejorar la productividad de su inversión en I+D. El programa conecta a la organización con conocimiento multi-disciplinar disponible, generando valor desde el principio.</p>
+      <div class="srv-fam" id="fam-estrategia" data-fam="Estrategia">
+        <h3 class="srv-fam-t">Estrategia</h3>
+        <div class="srv-grid">
+        <article class="srv" data-sit="s1" id="srv-2">
+          <h4 class="srv-t">Contraste de estrategia para una estrategia ágil</h4>
+          <p class="srv-q"><span>Para</span> Universidades y centros de I+D que elaboran planes estratégicos, organizaciones con estrategia corporativa y administraciones públicas</p>
+          <ul class="srv-c"><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Prospectiva de escenarios futuros</li><li>Talleres de posicionamiento con equipos directivos y stakeholders de alto nivel</li><li>Diseño del despliegue ágil con equipos directivos</li></ul>
+          <p class="srv-m">Trabajo presencial con equipos directivos y trabajo en sesiones híbridas, presenciales u online, para grupos de hasta 100 personas.</p>
+        </article>
+        <article class="srv" data-sit="s2" id="srv-3">
+          <h4 class="srv-t">Agenda directiva y despliegue traccionado</h4>
+          <p class="srv-q"><span>Para</span> Universidades y centros de I+D de gran tamaño, organizaciones grandes y administraciones públicas</p>
+          <ul class="srv-c"><li>Conversión de prioridades en proyectos que traccionan</li><li>Organización de la agenda estratégica en los procesos cotidianos</li></ul>
+          <p class="srv-m">Sesiones con equipos directivos y con mandos intermedios.</p>
+        </article>
+        <article class="srv" data-sit="s4" id="srv-4">
+          <h4 class="srv-t">Estrategia de servicio público desde la inteligencia colectiva</h4>
+          <p class="srv-q"><span>Para</span> Universidades y administraciones públicas</p>
+          <ul class="srv-c"><li>Diagnóstico comunitario para la estrategia</li><li>Activación de equipos core</li><li>Mapeo institucional para la estrategia</li><li>Roadmap para servicios centrados en usuarios</li></ul>
+          <p class="srv-m">Trabajo presencial con equipos directivos y trabajo en sesiones híbridas, presenciales u online, para grupos de hasta 100 personas.</p>
+        </article>
+        <article class="srv" data-sit="s6" id="srv-5">
+          <h4 class="srv-t">Estrategia de IA</h4>
+          <p class="srv-q"><span>Para</span> Todo tipo de organizaciones</p>
+          <ul class="srv-c"><li>Gobierno del dato <i>(en colaboración con especialistas)</i></li><li>Catálogo de herramientas <i>(en colaboración especializada)</i></li><li>Elección de herramientas prioritarias <i>(en colaboración con especialistas)</i></li></ul>
+          <p class="srv-m">Trabajo con equipos directivos y tecnológicos para transicionar del inventario de herramientas disponibles a la decisión sobre cuáles son prioritarias porque aportan más valor.</p>
+        </article>
         </div>
       </div>
-
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Administraciones públicas y tercer sector">
-            <source src="assets/video/04.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill" aria-label="Contacto sobre Administraciones públicas y tercer sector">Administraciones públicas y tercer sector</span>
-          <h3>Rediseño de servicios</h3>
-          <p>Rediseño de servicios públicos y sociales desde la experiencia de usuario, mediante procesos de inteligencia colectiva que convierten necesidades reales en soluciones operativas y escalables.</p>
+      <div class="srv-fam" id="fam-liderazgo" data-fam="Liderazgo">
+        <h3 class="srv-fam-t">Liderazgo</h3>
+        <div class="srv-grid">
+        <article class="srv" data-sit="s5" id="srv-6">
+          <h4 class="srv-t">Modelo de liderazgo</h4>
+          <p class="srv-q"><span>Para</span> Universidades, organizaciones de salud pública, grandes organizaciones y administraciones públicas</p>
+          <ul class="srv-c"><li>Medición de la cultura de la organización, heredada frente a deseada</li><li>Identificación de artefactos, valores declarados y supuestos básicos</li><li>Definición del modelo propio de liderazgo y su alcance</li><li>Elección de las funciones clave del liderazgo</li><li>Evaluación del liderazgo actual</li><li>Consensos de inteligencia colectiva en torno al liderazgo</li></ul>
+          <p class="srv-m">Trabajo presencial con equipos directivos y trabajo en sesiones híbridas, presenciales u online, para grupos de hasta 100 personas.</p>
+        </article>
+        <article class="srv" data-sit="s5" id="srv-7">
+          <h4 class="srv-t">Programas de capacitación ejecutiva</h4>
+          <p class="srv-q"><span>Para</span> Universidades, organizaciones de salud pública, grandes organizaciones y administraciones públicas</p>
+          <ul class="srv-c"><li>Diseño de capacitación in-house sobre casos de uso reales</li><li>Alineamiento con la estrategia corporativa</li><li>Gestión del cambio: patrones, mapas de resistencias y plan de acción</li><li>Gestión de la innovación y del intraemprendimiento</li></ul>
+          <p class="srv-m">Trabajo con equipos directivos, para desplegar después en toda la organización.</p>
+        </article>
+        <article class="srv" data-sit="s6" id="srv-8">
+          <h4 class="srv-t">Despliegue de liderazgo transformacional</h4>
+          <p class="srv-q"><span>Para</span> Universidades, organizaciones de salud pública, grandes organizaciones y administraciones públicas</p>
+          <ul class="srv-c"><li>Organización y procesos adaptados a la IA</li><li>Plan de desarrollo de talento: perfiles, formación, atracción y plan de carrera</li><li>Análisis y transformación de RPT, en administraciones públicas</li><li>Plan de acción alineado, con quick wins de bajo coste</li></ul>
+          <p class="srv-m">Trabajo con equipos directivos, de desarrollo de personas y especialistas.</p>
+        </article>
         </div>
       </div>
-    </div>
+    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" data-sit="s7"><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración, consejos asesores y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave —Innovación, Sostenibilidad— y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquinchina@gmail.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
 
-    <div class="hub-agents-cta">
-      <a class="btn hub-agents-btn" href="gpts.html" target="_blank" rel="noopener">
-        Prueba nuestros agentes IA para mapear recursos de I+D o prototipar un problema identificado
-      </a>
-    </div>
-
+    <p class="serv-nota"><b>Inteligencia colectiva a escala.</b> Buena parte de estos servicios se ejecutan en sesiones híbridas, presenciales u online, con grupos de hasta cien personas.</p>
+    
   </div>
 </section>
 
 
-<section id="estrategia">
-  <div class="container">
-    <h2 class="section-title">Servicios de Estrategia</h2>
-    <div class="grid cols-3" style="margin-top:18px;">
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Estrategia con equipos directivos">
-            <source src="assets/video/05.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Industria (multi-sector)</span>
-          <h3>Estrategia dinámica para entornos inciertos</h3>
-          <p>Estrategia dinámica para entornos de incertidumbre: prospectiva de escenarios futuros, ciclos cortos, foco y decisiones basadas en la acción por activación de escenarios.</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Agenda y despliegue">
-            <source src="assets/video/06.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Industria (multi-sector)</span>
-          <h3>Agenda directiva y despliegue traccionado de la estrategia</h3>
-          <p>Del plan estratégico estático y rígido al músculo estratégico. Alineamiento de agendas de equipos que abren tiempo a explorar y decidir, aterrizando la estrategia en rutinas semanales hasta volverla un hábito cotidiano y fortalecer la capacidad de adaptación de toda la organización</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Estrategia desde inteligencia colectiva">
-            <source src="assets/video/07.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Administraciones públicas y tercer sector</span>
-          <h3>Estrategia de servicio público desde la inteligencia colectiva</h3>
-          <p>Programa ligero con equipos gestores públicos y usuarios que, desde la revisión de problemas, necesidades y recursos, co-diseña la estrategia, las políticas y los servicios de la organización.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="liderazgo">
-  <div class="container">
-    <h2 class="section-title">Servicios de Liderazgo</h2>
-    <div class="grid cols-3" style="margin-top:18px;">
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Modelo de liderazgo">
-            <source src="assets/video/08v2.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Industria (multi-sector) y Universidades</span>
-          <h3>Modelo de liderazgo</h3>
-          <p>Definición de líneas de enfoque común que refuerzan las competencias directivas, traccionan equipos y alinean la gestión con la estrategia.</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Capacitación ejecutiva">
-            <source src="assets/video/09.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Industria (multi-sector) y Universidades</span>
-          <h3>Programas de capacitación ejecutiva</h3>
-          <p>Programa personalizado de capacitación de los equipos de líderes para la transformación efectiva de la cultura de la organización.</p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="media">
-          <video autoplay muted loop playsinline aria-label="Plan de acción transformacional">
-            <source src="assets/video/10.mp4" type="video/mp4">
-            Tu navegador no soporta video HTML5.
-          </video>
-        </div>
-        <div class="body">
-          <span class="pill">Industria (multi-sector) y Universidades</span>
-          <h3>Plan de acción transformacional</h3>
-          <p>Implantación de píldoras de formación y diseño de sistemas de comunicación interna, programas de reorganización, agilidad, etc.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="consejos">
-  <div class="container">
-    <h2 class="section-title">Consejos de Administración</h2>
-    <p class="section-sub">MIEMBRO DEL INSTITUTO DE CONSEJEROS-ADMINISTRADORES (IC-A)</p>
 
-    <div class="feature" style="margin-top:18px;">
-      <div class="image-wrap">
-        <img src="assets/img/img_015.webp" alt="Consejos y gobernanza corporativa" />
-      </div>
-      <div class="text">
-        <p class="section-sub">Estrategia y creación de valor, aportando criterio independiente en las decisiones estratégicas</p>
-        <p class="section-sub">Supervisión y control de riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada</p>
-        <p class="section-sub">Participación en comisiones clave (Innovación, Sostenibilidad). Gobernanza corporativa y buen funcionamiento</p>
-        <div class="cta" style="margin-top:12px;">
-          <a
-            id="cta-consejos"
-            class="btn-contactar"
-            href="mailto:joaquinchina@gmail.com?subject=Consulta%3A%20Consejos%20de%20Administraci%C3%B3n&body=Hola%20Joaqu%C3%ADn%2C%0A%0AEstoy%20interesado%2Fa%20en%20tus%20servicios%20de%20Consejos%20de%20Administraci%C3%B3n.%20%0A%0A%C2%BFPodemos%20agendar%20una%20llamada%3F%0A%0AGracias."
-          >
-            Contactar
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="trayectoria">
-  <div class="container">
-    <h2 class="section-title">Trayectoria</h2>
-    <div class="feature" style="margin-top:18px;">
-      <div class="image-wrap">
-        <img src="assets/img/img_016.webp" alt="Retrato de Joaquín Romero Roldán" />
-      </div>
-      <div class="text">
-        <p>Joaquín Romero Roldán es asesor independiente en Innovación, Estrategia y Liderazgo, así como Consejero independiente, miembro del Instituto de Consejeros-Administradores (IC-A).</p>
-        <p>Ha sido <strong>gerente de la Universidad Pública de Navarra (UPNA)</strong> entre 2016 y 2025, en los equipos de los rectores Carlosena y Gonzalo. En ese periodo, la UPNA ha experimentado una fuerte expansión y se ha convertido en líder del sistema universitario español en inserción laboral de grado y master, así como en impacto en el desarrollo regional.</p>
-        <p>Atesora más de diez años de experiencia en <strong>consejos de administración</strong> de empresa tecnológica (<strong>SIGMA AIE, Barcelona</strong>), de institutos de investigación (<strong>Navarrabiomed</strong> - investigación biomédica), (<strong>IDAB-CSIC</strong> - agrobiotecnología), o del <strong>Consejo de la Cultura y Artes de Navarra</strong>.</p>
-        <p>Cuenta con una década de experiencia en gestión de instituciones culturales de prestigio, donde fue gerente en el <strong>Orfeón Pamplonés</strong> y en la <strong>Orquesta Sinfónica de Navarra</strong>, en etapas clave de su desarrollo y transformación.</p>
-        <p>Además, reúne más de 15 años de trayectoria en comercio internacional del sector industrial (<strong>ARFE, SA</strong> y <strong>Rockwool International</strong>). En <strong>China</strong>, ha sido consultor expatriado (<strong>Asia International</strong> 1999-2001) y <strong>fundador de la Offshore Terralink (Hong Kong, Shenzhen)</strong> en 2000, hoy en activo (Orientlink Group).</p>
-        <p>Es licenciado en Administración y Dirección de Empresas por la <strong>UPNA</strong> y executive program en Innovación y Emprendimiento por el <strong>MIT</strong>.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section id="socios">
+
+
+
+
+
+<section id="red">
   <div class="container">
-    <h2 class="section-title">Socios</h2>
-    <div class="feature" style="margin-top:18px;">
+    <h2 class="section-title">Red de colaboradores</h2><div class="feature" style="margin-top:18px;">
       <div class="image-wrap">
         <img src="assets/img/img_017.jpg" alt="Retrato de Carlos J. Martínez">
       </div>
       <div class="text">
-        <h2>Carlos J. Martínez</h2>
-        <p>Socio fundador de Hadrone (2003) y de MSB Ltd. una firma de consultoría con sede en el Reino Unido.</p>
-        <p>Atesora trayectoria profesional en Europa y Oriente Medio, en gestión y asesoramiento tecnológico y de negocio.</p>
-        <p>Además, acumula una década de experiencia en asesoramiento de industrias aeroespacial y de energía, como enlace corporativo y gestión de operaciones y PMO.</p>
-        <p>Cuenta con más de 10 años de experiencia en puestos operativos y de gestión en centros de I+D+i y sector público.</p>
-        <p>Actualmente, es colaborador de empresas y fondos de capital privado del sector de las energías renovables y es profesor visitante en la UPNA y la Universidad de Navarra, donde dirige programas de Innovación y Emprendimiento como el Reactor de Innovación (UPNA).</p>
-        <p>Es Ingeniero por la UPNA e Ingeniero de Organización por la Universidad de Kingston (KU) en Londres.</p>
+        <h2>Carlos J. Martínez</h2><p>Socio fundador de Hadrone (2003) y de MSB Ltd., consultora con sede en el Reino Unido. Trayectoria en Europa y Oriente Medio en asesoramiento tecnológico y de negocio, con experiencia en industria aeroespacial, energía y centros de I+D+i. Profesor visitante en la UPNA y la Universidad de Navarra, donde dirige el Reactor de Innovación.</p>
+        
+        
+        
+        
+        
+        
       </div>
-    </div>
-
-    <div class="feature" style="margin-top:18px;">
+    </div><div class="feature" style="margin-top:18px;">
       <div class="image-wrap">
         <img src="assets/img/img_018.jpg" alt="Retrato de Jon Yerro">
       </div>
       <div class="text">
-        <h2>Jon Yerro</h2>
-        <p>Inversor y business angel, fundador de Impact HUB, primera aceleradora en la red Global de Impact HUB, Pocket University (adquirida por Grupo Banco Santander en 2014), Fundador y CEO deB2bizz (plataforma de contenidos digitales adquirida por HAVAS-Grupo Vivendi en 2012).</p>
-        <p>Director General de HAVAS Americas (Mexico DF y Miami).</p>
-        <p>Consultor de emprendimiento y estrategia en EE.UU. (Miami y Nueva York), con actividad Impact Hub, La Bolsa de la liga.com, fanstrader.com.</p>
-        <p>Socio de Aceleradora Metxa, primer Bootcamp digital en España desde 2017.</p>
-        <p>Experiencia en consejos de administración (Actualemnte en Veri-Das -Grupo BBVA, Hobeen y Fanstrader).</p>
-        <p>Profesor en la Universidad de Navarra (programa GIP) y en UPNA (programa reactor de innovación).</p>
-        <p>Licenciado en Administración y Dirección de Empresas por la Universidad de Deusto.</p>
+        <h2>Jon Yerro</h2><p>Inversor y business angel. Fundador de Impact HUB, de Pocket University —adquirida por el Grupo Santander— y de B2bizz —adquirida por Havas-Vivendi—. Fue director general de Havas Americas. Consejero en Veridas (Grupo BBVA), Hobeen y Fanstrader. Profesor en la Universidad de Navarra y en la UPNA.</p>
+        
+        
+        
+        
+        
+        
+        
       </div>
     </div>
-  </div>
-</section>
-
-<section id="red">
-  <div class="container">
-    <h2 class="section-title">Red de colaboradores</h2>
     <div class="feature" style="margin-top:18px;">
       <div class="image-wrap">
         <img src="assets/img/019.webp" alt="Retrato de Raúl Oliván">
@@ -1066,64 +1115,12 @@ body.menu-open .mobile-menu{ display:block; }
   </div>
 </section>
 
-<section id="galeria">
-  <div class="container">
-    <h2 class="section-title">Hitos</h2>
-    <div class="gallery" style="margin-top:16px;">
 
-      <figure class="gallery-card">
-        <img src="assets/img/023.webp" alt="UPNA 2022: líder en empleabilidad de grado y máster" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(UPNA 2016-2025). 2022: la UPNA se convierte en la universidad líder del SUE en empleabilidad de grado y master (Fuente: Fundación CyD)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/024.webp" alt="UPNA 2020: impacto en desarrollo regional" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(UPNA 2016-2025). 2020: la UPNA es líder del SUE en impacto en el desarrollo regional (Fuente: Fundación CyD)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/025.webp" alt="SIGMA AIE: transformación hacia SIGMA NEO" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(SIGMA AIE, Barcelona 2016-2025). 2020: inicio de transformación hacia SIGMA NEO (previsto 2026)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/026.webp" alt="Navarrabiomed: estrategia de Medicina Personalizada" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(NAVARRABIOMED 2016-2025). 2017: desarrollo de estrategia integral de Medicina Personalizada (150+ acciones 2021–2030)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/027.webp" alt="Orfeón Pamplonés: Medallas de Oro 2010 y 2016" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2016: Medalla de Oro a las Bellas Artes; 2010: Medalla de Oro de Navarra</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/029.webp" alt="Orfeón Pamplonés en The New York Times" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2012: presencia en The New York Times tras ciclo con la NY Philharmonic en Lincoln Center</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/028.webp" alt="Carnegie Hall: actuación con Teatro Mariinsky" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2010: primer coro nacional en Carnegie Hall (con orquesta del Teatro Mariinsky)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/030.webp" alt="Carmina Burana de La Fura dels Baus" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">(ORFEÓN PAMPLONÉS 2008-2016). 2009: estreno de Carmina Burana de La Fura dels Baus; gira por cuatro continentes (2009–2025)</figcaption>
-      </figure>
-
-      <figure class="gallery-card">
-        <img src="assets/img/031.webp" alt="Terralink en Hong Kong y Shenzhen" loading="lazy" />
-        <figcaption style="text-align: center; font-size: 12px;">TRAYECTORIA INTERNACIONAL 1999-2008. 2000: Fundación de Terralink (Hong Kong y Shenzhen)</figcaption>
-      </figure>
-
-    </div>
-  </div>
-</section>
 
 <section id="blog">
   <div class="container">
     <h2 class="section-title">Blog</h2>
-    <p class="section-sub">Ideas, proyectos y casos prácticos sobre innovación, estrategia y liderazgo.</p>
+    <p class="section-sub">Ideas, proyectos y casos prácticos sobre innovación, estrategia, liderazgo, consejos asesores y otros temas de actualidad.</p>
 
     <!-- Carrusel -->
     <div class="blog-wrap featured" aria-label="Artículos destacados">
@@ -1146,7 +1143,7 @@ body.menu-open .mobile-menu{ display:block; }
     desc:  'Algunas claves para un mundo que está pasando de ser complicado a ser complejo.',
     dateISO: '2026-06-08', dateText: '08 jun 2026',
     tags: ['Europa','Innovación'],
-    fallbackImg: 'assets/img/art05.png'
+    fallbackImg: 'assets/img/art05.webp'
   },
   {
     href: 'blog/art04.html',
@@ -1154,7 +1151,7 @@ body.menu-open .mobile-menu{ display:block; }
     desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
     dateISO: '2026-01-09', dateText: '09 jan 2026',
     tags: ['Europa','Innovación'],
-    fallbackImg: 'assets/img/art04.png'
+    fallbackImg: 'assets/img/art04.webp'
   },
   {
     href: 'blog/art03.html',
@@ -1162,7 +1159,7 @@ body.menu-open .mobile-menu{ display:block; }
     desc:  '15 años del Orfeón Pamplonés en el Carnegie Hall de Nueva York.',
     dateISO: '2025-10-20', dateText: '20 oct 2025',
     tags: ['Cultura','Orfeón','Música','Innovación'],
-    fallbackImg: 'assets/img/art03.png'
+    fallbackImg: 'assets/img/art03.webp'
   },
   {
     href: 'blog/art02.html',
@@ -1170,7 +1167,7 @@ body.menu-open .mobile-menu{ display:block; }
     desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
     dateISO: '2025-10-14', dateText: '14 oct 2025',
     tags: ['PYMEs','Consejos'],
-    fallbackImg: 'assets/img/art02.png'
+    fallbackImg: 'assets/img/art02.webp'
   },  
   {
     href: 'blog/art01.html',
@@ -1180,7 +1177,7 @@ body.menu-open .mobile-menu{ display:block; }
     dateISO: '2025-10-06', dateText: '06 oct 2025',
     tags: ['Innovación','Crecimiento en valor'],
     // FALLBACK que exista de verdad en /assets/img/
-    fallbackImg: 'assets/img/art01.png'
+    fallbackImg: 'assets/img/art01.webp'
   }
 ];
 
@@ -1260,7 +1257,7 @@ body.menu-open .mobile-menu{ display:block; }
     })();
   })();
   </script>
-</section>
+</div></section>
 
 
 <footer id="contacto">
@@ -1290,7 +1287,7 @@ body.menu-open .mobile-menu{ display:block; }
   </style>
 
   <div class="container legal-footer">
-    <p class="brandline">© Joaquín Romero Roldán — Web creada íntegramente con herramientas OpenAI</p>
+    <p class="brandline">© Joaquín Romero Roldán</p>
 
     <!-- Acordeón legal -->
     <div class="accordion" role="region" aria-label="Información legal del sitio">
@@ -1304,11 +1301,11 @@ body.menu-open .mobile-menu{ display:block; }
           <p class="muted">Última actualización: <time datetime="2025-09-24">24/09/2025</time></p>
           <h4>1. Titularidad del sitio</h4>
           <p>
-            Titular: <strong>[JOAQUÍN ROMERO ROLDÁN]</strong><br>
-            NIF: <strong>[44615650C]</strong><br>
-            Domicilio: <strong>[Calle Zúñiga, 1, bajo. 31015 Pamplona]</strong><br>
+            Titular: <strong>Joaquín Romero Roldán</strong><br>
+            NIF: <strong>44615650C</strong><br>
+            Domicilio: <strong>Calle Zúñiga, 1, bajo. 31015 Pamplona</strong><br>
             Email: <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a><br>
-            URL: <strong>https://joaquinchina-lgtm.github.io/mi-agente-web/</strong>
+            URL: <strong>https://joaquinromero.com/</strong>
           </p>
 
           <h4>2. Objeto y condiciones de uso</h4>
@@ -1343,7 +1340,7 @@ body.menu-open .mobile-menu{ display:block; }
           <h4>6. Legislación aplicable</h4>
           <p>
             Este Aviso Legal se rige por la legislación española. Para cualquier controversia, las partes se
-            someten a los juzgados y tribunales de <strong>[CIUDAD/PROVINCIA]</strong>, salvo norma imperativa en contrario.
+            someten a los juzgados y tribunales de <strong>Pamplona (Navarra)</strong>, salvo norma imperativa en contrario.
           </p>
         </div>
       </details>
@@ -1371,7 +1368,7 @@ body.menu-open .mobile-menu{ display:block; }
 
           <h4>3. Gestión del consentimiento</h4>
           <p>
-            Puedes <button class="cookie-btn" type="button" onclick="window.toggleCookieBanner && window.toggleCookieBanner(true)">cambiar tu consentimiento</button> en cualquier momento.
+            Puedes <button class="cookie-btn" type="button" onclick="window.toggleCookieBanner &amp;&amp; window.toggleCookieBanner(true)">cambiar tu consentimiento</button> en cualquier momento.
             Las cookies analíticas se establecerán únicamente si las aceptas.
           </p>
 
@@ -1388,8 +1385,8 @@ body.menu-open .mobile-menu{ display:block; }
           <p>Para cualquier cuestión sobre esta política, escribe a <a href="mailto:joaquinchina@gmail.com">joaquinchina@gmail.com</a>.</p>
 
           <div class="cookie-actions">
-            <button class="cookie-btn" type="button" onclick="window.setCookieConsent && window.setCookieConsent(false)">Rechazar analíticas</button>
-            <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent && window.setCookieConsent(true)">Aceptar analíticas</button>
+            <button class="cookie-btn" type="button" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(false)">Rechazar analíticas</button>
+            <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(true)">Aceptar analíticas</button>
           </div>
         </div>
       </details>
@@ -1397,8 +1394,7 @@ body.menu-open .mobile-menu{ display:block; }
   </div>
 
   <!-- Banner mínimo de consentimiento (opcional, pero recomendado en la UE) -->
-  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true"
-       style="position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 10px 18px rgba(2,6,23,.08); padding:14px; display:none;">
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true" style="position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 10px 18px rgba(2,6,23,.08); padding:14px; display:none;">
     <p style="margin:0 0 10px 0; font-size:14px; color:#374151;">
       Usamos cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (Google Analytics 4) para mejorar la experiencia.
       Puedes aceptar, rechazar o configurar tu elección.
@@ -1668,5 +1664,207 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
-</body>
-</html>
+
+
+<style>
+/* ===== Cabecera con retrato fijo — entorno de pruebas ===== */
+#home.hero{position:relative;background:#F5F5F5;min-height:min(80vh,720px);display:flex;align-items:center;overflow:hidden;padding:0}
+#home.hero .hero-media{position:absolute;inset:0;z-index:0;pointer-events:none;display:flex;justify-content:flex-end;overflow:hidden}
+#home.hero .hero-photo{height:100%;width:auto;max-width:none;flex:none;object-fit:cover;object-position:100% 50%;display:block;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 170px);mask-image:linear-gradient(90deg,transparent 0,#000 170px)}
+#home.hero .inner{position:absolute;inset:0;max-width:none;width:100%;padding:0 27% 0 0;display:grid;align-items:center;z-index:1}
+#home.hero .hero-text{width:100%;max-width:720px;padding:0 clamp(20px,3vw,40px);text-align:center;color:#111;margin:0 auto}
+#home.hero .hero-quote{font-size:clamp(19px,2.05vw,31px);line-height:1.42;font-weight:400;letter-spacing:-.005em;margin:0 0 34px;text-wrap:balance}
+#home.hero .hero-name{font-size:clamp(17px,1.35vw,21px);font-weight:600;margin:0 0 6px}
+#home.hero .hero-role{font-size:clamp(12px,.95vw,15px);font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#32717E;margin:0 0 30px}
+#home.hero .hero-tag{margin:0 auto}
+#home.hero .hero-tag span{display:inline-block;background:#111;color:#fff;font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;padding:9px 18px}
+#home.hero .hero-tag i{font-style:normal;opacity:.45;padding:0 4px}
+#home.hero .hero-quote .nb{white-space:nowrap}
+@media (max-width:900px){
+  /* --hdr = alto de la cabecera fija, para que no pise la foto */
+  #home.hero{display:block;min-height:0;--hdr:64px;padding-top:var(--hdr)}
+  #home.hero .hero-media{position:relative;inset:auto}
+  #home.hero .hero-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;object-position:100% 50%;-webkit-mask-image:none;mask-image:none}
+  #home.hero .inner{position:static;inset:auto;display:block;padding:24px 0 44px}
+  #home.hero .hero-text{width:100%;max-width:none;padding:0 22px}
+  /* la cita se superpone sobre el fondo claro de la foto; aspect-ratio = 0.57 x 1.5 */
+  #home.hero .hero-quote{position:absolute;top:var(--hdr);left:0;z-index:2;width:57%;aspect-ratio:.855;height:auto;margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
+  #home.hero .hero-name{margin-top:0}
+  #home.hero .hero-role{margin-bottom:22px}
+}
+@media (max-width:380px){
+  #home.hero .hero-tag span{font-size:11px;letter-spacing:.08em;padding:8px 12px}
+}
+
+/* ===== Panel de etapas ===== */
+.etapas{background:#fff;padding:74px 0 66px;border-top:1px solid #e6e4de;border-bottom:1px solid #e6e4de}
+.etapas-eyebrow{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#7b8480;text-align:center;margin:0 0 34px}
+.etapas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.etapa{appearance:none;border:0;padding:0;margin:0;background:none;cursor:pointer;text-align:left;font:inherit;display:block}
+.etapa-img{display:block;overflow:hidden;background:#efeee9}
+.etapa-img img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;filter:grayscale(1) contrast(1.02);transition:filter .45s ease,transform .6s ease}
+.etapa-anio{display:block;margin-top:11px;font-size:12px;font-weight:600;letter-spacing:.13em;color:#9aa29e;transition:color .3s ease}
+.etapa:hover .etapa-img img,.etapa.on .etapa-img img{filter:grayscale(0) contrast(1);transform:scale(1.03)}
+.etapa:hover .etapa-anio,.etapa.on .etapa-anio{color:#32717E}
+.etapa:focus-visible{outline:2px solid #32717E;outline-offset:4px}
+.etapas-texto{max-width:70ch;margin:30px auto 0;min-height:5.4em;text-align:center;font-size:17px;line-height:1.6;color:#4b5551;opacity:0;transition:opacity .35s ease}
+.etapas-texto.visible{opacity:1}
+.etapas-texto b{font-weight:600;color:#16211f}
+.etapas-cred{max-width:74ch;margin:34px auto 0;padding-top:26px;border-top:1px solid #ececE6;text-align:center;font-size:13.5px;line-height:1.75;color:#8b938f}
+.etapas-cred i{font-style:normal;color:#c9cec9;padding:0 7px}
+@media (max-width:900px){
+  .etapas{padding:52px 0 46px}
+  .etapas-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .etapas-texto{min-height:8.2em;font-size:16px;margin-top:24px}
+  .etapas-cred{font-size:12.5px;margin-top:26px}
+}
+@media (hover:none){ .etapas-eyebrow::after{content:" · toca cada imagen";color:#b9c0bb} }
+@media (prefers-reduced-motion:reduce){ .etapa-img img{transition:none} .etapa:hover .etapa-img img{transform:none} }
+/* =========================================================
+   SISTEMA TIPOGRÁFICO · Archivo (titulares) + Inter (texto)
+   Tratamiento B: titular hasta 52px, interlineado 1,02,
+   interletrado -0,035em, peso 600.
+   ========================================================= */
+body,button,input,select,textarea{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* --- titulares: Archivo --- */
+h1,h2,h3,
+#servicios .serv-h,#servicios .srv-t,
+#home.hero .hero-quote,#home.hero .hero-name,
+#red .section-title,#red .feature h2,#red .feature h3,
+#blog h2,#blog h3,
+.section-title{font-family:'Archivo',system-ui,sans-serif;font-weight:600;letter-spacing:-.035em;line-height:1.02}
+
+/* títulos de sección */
+#servicios .serv-h,#red .section-title,#blog h2,.section-title{font-size:clamp(30px,4vw,52px)}
+
+/* cita de cabecera: Archivo cursiva */
+#home.hero .hero-quote{font-family:'Archivo',system-ui,sans-serif;font-style:italic;font-weight:500;
+  font-size:clamp(20px,2.3vw,33px);line-height:1.2;letter-spacing:-.026em}
+#home.hero .hero-quote strong{font-weight:800;font-style:italic}
+#home.hero .hero-name{font-size:22px;font-weight:600;letter-spacing:-.028em}
+
+/* fichas y nombres */
+#servicios .srv-t{font-size:20px;line-height:1.12;letter-spacing:-.03em}
+#red .feature h2,#red .feature h3{font-size:26px;letter-spacing:-.03em}
+#blog h3{font-size:24px;letter-spacing:-.03em}
+
+/* --- texto corrido: Inter, algo más ceñido --- */
+#servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:18px;line-height:1.5;letter-spacing:-.01em}
+#servicios .sit-t{font-size:18px;line-height:1.32;letter-spacing:-.014em}
+#servicios .srv-c,#etapas .etapas-texto .e-hitos{font-size:15px;line-height:1.48;letter-spacing:-.006em}
+#servicios .srv-q{font-size:14px;line-height:1.42;letter-spacing:-.004em}
+#servicios .srv-m,#servicios .srv-agentes{font-size:13.5px;line-height:1.42;letter-spacing:-.004em}
+#red .feature .text p{font-size:16px;line-height:1.5;letter-spacing:-.008em}
+#etapas .etapas-cred span{font-size:14px;line-height:1.5;letter-spacing:-.004em}
+#servicios .serv-nota{font-size:16px;line-height:1.5;letter-spacing:-.008em}
+
+/* versalitas y etiquetas: sin apretar, que necesitan aire */
+#servicios .serv-eyebrow,#etapas .etapas-eyebrow,#servicios .srv-fam-t,
+#etapas .etapa-rol,#etapas .etapas-texto .e-hitos-t,#servicios .srv-q span,
+#home.hero .hero-role,#home.hero .hero-tag span,#etapas .etapa-anio{font-family:'Inter',system-ui,sans-serif}
+
+/* menú y pie */
+header a,footer,.sit-status{font-family:'Inter',system-ui,sans-serif;letter-spacing:-.006em}
+header a{font-size:15.5px}
+@media (max-width:900px){
+  body{font-size:17px}
+  #servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:17px}
+  #servicios .sit-t{font-size:16.5px}
+  #red .feature h2,#red .feature h3{font-size:23px}
+}
+
+/* ===== Cita de cabecera: sin cursiva, fina, con comilla grande y trazo a mano ===== */
+#home.hero .hero-quote{font-family:'Archivo',system-ui,sans-serif;font-style:normal;font-weight:300;
+  font-size:clamp(21px,2.4vw,35px);line-height:1.24;letter-spacing:-.022em;color:#16211f}
+#home.hero .hero-quote strong{font-weight:700;font-style:normal}
+#home.hero .hero-quote .q-abre{display:inline-block;font-family:'Archivo',system-ui,sans-serif;
+  font-weight:700;font-size:2.1em;line-height:0;vertical-align:-.34em;margin-right:.06em;
+  color:#111;opacity:1;letter-spacing:-.06em}
+#home.hero .hero-quote .trazo{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M3,7.6 C70,4.4 190,3.4 297,4.8 C190,7.8 70,9.6 3,8.6 Z' fill='%23111'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:0 100%;background-size:100% .34em;
+  padding-bottom:.16em}
+@media (max-width:900px){
+  #home.hero .hero-quote{font-size:clamp(15px,3.6vw,19px);line-height:1.26}
+  #home.hero .hero-quote .q-abre{font-size:1.8em;vertical-align:-.3em}
+  #home.hero .hero-quote .trazo{background-size:100% .3em}
+}
+
+#etapas .etapas-texto li,#servicios .srv li,#red li{line-height:1.30}
+#etapas .etapas-texto .e-intro{line-height:1.38}
+#servicios .srv p,#servicios .srv-m,#servicios .srv-q,#servicios .sit-d{line-height:1.32}
+
+#home.hero .hero-quote .hq-in{display:block;width:100%}
+@media (max-width:900px){#home.hero .hero-quote{width:auto;right:36%;padding:12px 16px}}
+
+#etapas .etapas-cred span{font-size:clamp(15px,1.15vw,17px);line-height:1.45}
+#etapas .etapas-cred .cred-ico{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;margin-right:.42em;color:#32717E;opacity:.9}
+@media (max-width:900px){#etapas .etapas-cred span{font-size:14.5px;line-height:1.34;margin-bottom:.62em;text-wrap:balance;text-align:center}}
+
+footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:left}
+</style>
+<script>
+(function(){
+  var TX=["<p class=\"e-intro\">Gerente de la <b>Universidad Pública de Navarra</b> en los equipos de los rectores Alfonso Carlosena y Ramón Gonzalo. En ese periodo la UPNA experimentó una fuerte expansión.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li>Aumento de la oferta de grado en un 50 %</li><li>Aumento del número de estudiantes en un 25 %</li><li>Aumento de los ingresos por investigación en un 325 %</li><li>Universidad líder del Sistema Universitario Español (SUE) en inserción laboral de egresados de Grado y Máster</li><li>Universidad líder del SUE en impacto en desarrollo regional</li></ul>","<p class=\"e-intro\">Presidente y consejero de administración en <b>SIGMA AIE</b>, empresa tecnológica de Barcelona, así como del consejo rector de los institutos de investigación <b>Navarrabiomed</b> (biomedicina) e <b>IDAB</b> (instituto mixto CSIC de agrobiotecnología).</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>SIGMA AIE.</em> 2020: inicio de la transformación estratégica hacia SIGMA NEO, implantada en 2026</li><li><em>Navarrabiomed.</em> 2017: desarrollo de la estrategia integral de Medicina Personalizada, con más de 150 acciones para 2021–2030</li></ul>","<p class=\"e-intro\">Gerente del <b>Orfeón Pamplonés</b> y de la <b>Orquesta Sinfónica de Navarra</b> en etapas clave de su desarrollo y transformación. Miembro del <b>Consejo Navarro de la Cultura y las Artes</b>.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>Orfeón.</em> 2016: Medalla de Oro a las Bellas Artes; 2010: Medalla de Oro de Navarra</li><li><em>Orfeón.</em> Primer coro español en actuar en el Carnegie Hall de Nueva York (2010) y en el ciclo de la New York Philharmonic en el Lincoln Center (2012), con presencia en <i>The New York Times</i></li><li><em>Orfeón.</em> 2009: diseño y estreno del proyecto de producción escénica <i>Carmina Burana</i> con La Fura dels Baus; gira por cuatro continentes (2009–2025)</li><li><em>Orquesta Sinfónica de Navarra.</em> 2014: plan de viabilidad diseñado y ejecutado para transformar la institución en una organización equilibrada, controlada y transparente</li><li><em>Consejo Navarro de la Cultura y las Artes.</em> 2014: diseño y propuesta de la Ley de Mecenazgo Cultural de Navarra (MECNA), pionera en España</li></ul>","<p class=\"e-intro\">Consultor residente en <b>China</b> (Nanjing, Shanghái y Shenzhen) entre 1999 y 2001. Responsable de aprovisionamientos de <b>Rockwool</b> (Caparroso) y área manager para Europa en <b>ARFE</b> (Alsasua). Asesor de la Cámara de Comercio de La Rioja.</p><p class=\"e-hitos-t\">Hitos</p><ul class=\"e-hitos\"><li><em>China.</em> Fundador en 2000 de Terralink, hoy Orientlink, en Shenzhen y Hong Kong</li><li><em>Rockwool.</em> Arranque de la planta de Caparroso en 2001</li><li><em>ARFE.</em> Premio a la exportación de la Cámara Navarra en 2004</li></ul>"];
+  var grid=document.querySelector(".etapas-grid");
+  var out=document.querySelector(".etapas-texto");
+  if(!grid||!out) return;
+  var btns=[].slice.call(grid.querySelectorAll(".etapa"));
+  var act=-1;
+  function set(i){
+    if(i===act) return; act=i;
+    btns.forEach(function(b,k){ b.classList.toggle("on", k===i); b.setAttribute("aria-current", k===i?"true":"false"); });
+    out.classList.remove("visible");
+    out.innerHTML=TX[i];
+    void out.offsetWidth;
+    out.classList.add("visible");
+  }
+  btns.forEach(function(b,i){
+    b.addEventListener("mouseenter",function(){ set(i); });
+    b.addEventListener("focus",function(){ set(i); });
+    b.addEventListener("click",function(){ set(i); });
+  });
+  set(0);
+})();
+</script>
+
+
+<script>
+(function(){
+  var sits=[].slice.call(document.querySelectorAll("#servicios .sit"));
+  var cards=[].slice.call(document.querySelectorAll("#servicios .srv"));
+  var fams=[].slice.call(document.querySelectorAll("#servicios .srv-fam"));
+  var msg=document.getElementById("sit-msg"), clr=document.getElementById("sit-clear");
+  if(!sits.length) return;
+  function aplica(id,tocarURL){
+    var n=0;
+    cards.forEach(function(c){
+      var ok = !id || (" "+c.getAttribute("data-sit")+" ").indexOf(" "+id+" ")>-1;
+      c.hidden=!ok; if(ok) n++;
+    });
+    fams.forEach(function(f){ f.hidden = !f.querySelector(".srv:not([hidden])"); });
+    sits.forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.sit===id)); });
+    if(id){ var txt=""; sits.forEach(function(b){ if(b.dataset.sit===id) txt=b.querySelector(".sit-t").textContent; });
+      msg.textContent = n + (n===1?" servicio para: ":" servicios para: ") + txt.charAt(0).toLowerCase()+txt.slice(1);
+    } else { msg.textContent = "Los diez servicios, agrupados en cuatro familias."; }
+    clr.hidden=!id;
+    if(tocarURL) history.replaceState(null,"",location.pathname+location.search+(id?"#situacion="+id:""));
+  }
+  sits.forEach(function(b){ b.addEventListener("click",function(){
+    aplica(b.getAttribute("aria-pressed")==="true" ? null : b.dataset.sit, true);
+    document.getElementById("servicios").scrollIntoView({behavior:"smooth",block:"start"});
+  }); });
+  clr.addEventListener("click",function(){ aplica(null,true); });
+  var m=/[#&]situacion=(s[1-7])/.exec(location.hash); aplica(m?m[1]:null,false);
+})();
+</script>
+
+
+
+
+
+
+
+</body></html>
