@@ -1736,7 +1736,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var fams=[].slice.call(document.querySelectorAll("#servicios .srv-fam"));
   var msg=document.getElementById("sit-msg"), clr=document.getElementById("sit-clear");
   if(!sits.length) return;
-  function aplica(id){
+  function aplica(id,tocarURL){
     var n=0;
     cards.forEach(function(c){
       var ok = !id || (" "+c.getAttribute("data-sit")+" ").indexOf(" "+id+" ")>-1;
@@ -1748,14 +1748,14 @@ document.addEventListener("DOMContentLoaded", function () {
       msg.textContent = n + (n===1?" servicio para: ":" servicios para: ") + txt.charAt(0).toLowerCase()+txt.slice(1);
     } else { msg.textContent = "Los diez servicios, agrupados en cuatro familias."; }
     clr.hidden=!id;
-    history.replaceState(null,"",location.pathname+location.search+(id?"#situacion="+id:"#servicios"));
+    if(tocarURL) history.replaceState(null,"",location.pathname+location.search+(id?"#situacion="+id:""));
   }
   sits.forEach(function(b){ b.addEventListener("click",function(){
-    aplica(b.getAttribute("aria-pressed")==="true" ? null : b.dataset.sit);
+    aplica(b.getAttribute("aria-pressed")==="true" ? null : b.dataset.sit, true);
     document.getElementById("servicios").scrollIntoView({behavior:"smooth",block:"start"});
   }); });
-  clr.addEventListener("click",function(){ aplica(null); });
-  var m=/[#&]situacion=(s[1-6])/.exec(location.hash); aplica(m?m[1]:null);
+  clr.addEventListener("click",function(){ aplica(null,true); });
+  var m=/[#&]situacion=(s[1-7])/.exec(location.hash); aplica(m?m[1]:null,false);
 })();
 </script>
 
