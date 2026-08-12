@@ -107,6 +107,7 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff}
 body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:18px;line-height:1.48;letter-spacing:-.008em}
@@ -170,6 +171,49 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 #agentes .app .wrap{max-width:none;padding:18px 20px 30px}
 #agentes .app h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.02em}
 </style>
+
+<style>
+/* ===== Consola de agentes: estetica oscura tecnica ===== */
+#agentes .kick,#agentes .ag .n{font-family:'IBM Plex Mono',ui-monospace,monospace}
+#agentes h2,#agentes .ag .t{font-family:'Space Grotesk','Archivo',sans-serif;letter-spacing:-.02em}
+#agentes .cadena{background:#1b2320;border-color:#1b2320}
+#agentes summary{font-family:'Space Grotesk',sans-serif;letter-spacing:.01em}
+
+#agentes .app{background:#0a0e0d;border:1px solid #1e2724;border-radius:4px;color:#d7dedb;
+  font-family:'Space Grotesk',system-ui,sans-serif}
+#agentes .app .wrap{max-width:none;padding:26px 24px 34px}
+#agentes .app .topbar{border-bottom:1px solid #1e2724;padding-bottom:16px;margin-bottom:20px}
+#agentes .app h1{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;color:#fff;letter-spacing:.01em}
+#agentes .app .sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#7f938d}
+#agentes .app .banner{background:#0f1614;border:1px solid #1e2724;border-radius:3px;color:#9fb0ab;font-size:13px}
+#agentes .app .banner b{color:#dfe7e4}
+#agentes .app .problema-box{background:#0f1614;border:1px solid #1e2724;border-radius:3px}
+#agentes .app label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8aa39c;font-weight:500}
+#agentes .app textarea{background:#060909;border:1px solid #232e2a;color:#e6ecea;border-radius:3px;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;line-height:1.55}
+#agentes .app textarea:focus{outline:none;border-color:#3f7f77;box-shadow:0 0 0 3px rgba(63,127,119,.16)}
+#agentes .app textarea::placeholder{color:#5d6d69}
+#agentes .app .progress{background:#1b2320}
+#agentes .app .stage{background:#0f1614;border:1px solid #1e2724;border-radius:3px;margin-bottom:12px}
+#agentes .app .stage-head{border-bottom:1px solid #1a2320}
+#agentes .app .stage-num{background:#3f7f77;color:#04100e;font-family:'IBM Plex Mono',monospace;font-weight:600}
+#agentes .app .stage-title{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.08em;color:#fff;font-size:13.5px}
+#agentes .app .stage-status,#agentes .app .deps,#agentes .app .matiz-hint,#agentes .app .out-label,#agentes .app .miss{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:#7f938d}
+#agentes .app .chev{color:#7f938d}
+#agentes .app button{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.02em;border-radius:3px;
+  background:#131c19;border:1px solid #26332f;color:#d7dedb}
+#agentes .app button:hover{background:#1a2723;border-color:#3f7f77}
+#agentes .app button.primary,#agentes .app button.runall{background:#3f7f77;border-color:#3f7f77;color:#04100e}
+#agentes .app button.primary:hover,#agentes .app button.runall:hover{background:#4d9990;border-color:#4d9990}
+#agentes .app details.prompt summary{background:transparent;color:#7f938d;padding:6px 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em}
+#agentes .app details.prompt summary:hover{background:transparent;color:#b9c4c0}
+#agentes .app pre{background:#060909;border:1px solid #1e2724;color:#9fb0ab;border-radius:3px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.5}
+#agentes .app .thinking{color:#4d9990;font-family:'IBM Plex Mono',monospace;font-size:11px}
+#agentes .app .dot{filter:saturate(.8)}
+#agentes .app a{color:#5fb3a9}
+</style>
 </head>
 <body>
 
@@ -197,9 +241,9 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 <p>La mayoría de las organizaciones que investigan tienen el mismo problema y no lo saben. Producen conocimiento con eficacia —artículos, patentes, tesis, informes— y después esperan que ese conocimiento se convierta en impacto por su cuenta. No ocurre. Investigar y desarrollar tecnología <em>no garantiza innovar</em>: la I+D produce conocimiento; innovar es lo que transforma ese conocimiento en valor. Son dos procesos distintos, con lógicas distintas, y el segundo casi nadie lo organiza.</p>
 <p>El Reactor organiza el segundo. Reúne durante unos meses a un grupo reducido de personas de perfiles deliberadamente distintos, les da un método, un problema y un ritmo, y las somete a una presión útil: la de tener que demostrar, una y otra vez, que lo que están haciendo importa.</p>
 
-<h2>De dónde viene el método</h2>
-<p>El Reactor se apoya en el trabajo de <strong>Luis Pérez Breva</strong> en el MIT y en la <strong>Value Creation Wheel</strong>, usada en proyectos europeos. De ahí toma su premisa más incómoda y más productiva: <em>no empiezas con una idea, empiezas con un presentimiento</em>.</p>
-<p>Esto invierte el orden habitual. Casi todos los programas de innovación piden una idea brillante y luego buscan a quién vendérsela. El Reactor hace lo contrario: parte de una intuición imperfecta sobre un problema y dedica el esfuerzo a entender ese problema hasta que se vuelve manejable. Es lo que se llama <strong>emprendimiento inverso</strong>: el problema primero, la solución después, si es que llega.</p>
+<h2>El punto de partida</h2>
+<p>El Reactor arranca de una premisa incómoda y muy productiva: <em>no empiezas con una idea, empiezas con un presentimiento</em>.</p>
+<p>Esto invierte el orden habitual. Casi todos los programas de innovación piden una idea brillante y luego buscan a quién vendérsela. El Reactor hace lo contrario: parte de una intuición imperfecta sobre un problema y dedica el esfuerzo a entender ese problema hasta que se vuelve manejable. Es lo que llamo <strong>emprendimiento inverso</strong>: el problema primero, la solución después, si es que llega.</p>
 <p>La consecuencia práctica es que <strong>lo primero que se prototipa no es la solución: es el problema</strong>. Un problema sirve para trabajar cuando cumple tres condiciones: que sea <em>solucionable</em>, que sea <em>reconocible</em> —se puede describir qué haría posible la solución— y que sea <em>verificable</em>, es decir, que exista una forma de saber si de verdad está resuelto. Un problema que no cumple las tres no es un problema: es una queja.</p>
 
 <h2>El proceso de trabajo</h2>
