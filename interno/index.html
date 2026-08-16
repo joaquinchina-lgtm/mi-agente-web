@@ -237,6 +237,14 @@ const PANTALLAS = [
   {n:12, pasada:1, sub:"CE", orden:["FAM","INN","RES","JER"]}
 ];
 const TOTAL = 100, PASO = 10;
+/* Texto del indicador de techo en la consola. Que diga qué pantalla es, no
+   solo su número: en una sala no te acuerdas de que la 8 es «LO deseada». */
+function etiquetaTecho(n){
+  if(n == null) return "sin techo · cada cual a su ritmo";
+  if(n === 0)   return "nadie puede empezar todavía";
+  const p = PANTALLAS[n-1];
+  return p ? `abierto hasta ${p.pasada ? "DESEADA" : "ACTUAL"} · ${SUBS[p.sub]}` : "";
+}
 const VISTAS_PROY = [{k:"espera", t:"Espera / código"}]
   .concat(PANTALLAS.map(p=>({k:"p"+p.n, t:`${p.n}. ${p.pasada?"DES":"ACT"} ${SUBS[p.sub]}`})))
   .concat([{k:"resultados", t:"Perfil general"},{k:"subcategorias", t:"Por subcategoría"}]);
@@ -345,6 +353,7 @@ const API = {
       if(!s) return null;
       const d = {existe:true, titulo:s.titulo, organizacion:(s.organizacion||{}).nombre,
         modo:s.modo, estado:s.estado, vista_activa:s.vista_activa,
+        pantalla_max: s.modo === "directo" ? (s.pantalla_max ?? null) : null,
         instrumento:s.instrumento || "cultura", version:s.instrumento_version || VERSION,
         resultados_publicos:s.resultados_publicos, admite_respuestas:s.estado==="abierta"};
       recordarInstrumento(d); return d;
@@ -773,7 +782,26 @@ async function vistaParticipante(codigo){
     return;
   }
 
-  const estado = {paso:"segmentos", idx:0, resp:{}, envio:null};
+  // `techo` es la última pantalla que el facilitador ha abierto. null = sin
+  // freno (survey, o directo sin techo puesto), que es el comportamiento de
+  // siempre. Se refresca solo mientras la persona está esperando.
+  const estado = {paso:"segmentos", idx:0, resp:{}, envio:null,
+                  techo: (s.pantalla_max === undefined ? null : s.pantalla_max)};
+  let relojTecho = null;
+  const vigilarTecho = async (ahora) => {
+    clearTimeout(relojTecho);
+    const mirar = async () => {
+      try{
+        const n = await API.sesionPublica(codigo);
+        const t = (n && n.pantalla_max !== undefined) ? n.pantalla_max : null;
+        if(t !== estado.techo){ estado.techo = t; pintar(); return; }
+      }catch(e){ /* la sala tiene mal wifi; se reintenta */ }
+      relojTecho = setTimeout(mirar, 3000);
+    };
+    relojTecho = setTimeout(mirar, ahora ? 0 : 3000);
+  };
+  window.addEventListener("beforeunload", () => clearTimeout(relojTecho));
+
   const pintar = async () => {
     if(estado.paso === "segmentos"){
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
@@ -813,6 +841,28 @@ async function vistaParticipante(codigo){
           organización, sino cómo <b>debería ser</b> para responder bien a lo que tiene por delante.</p>
         <div class="btnrow"><button class="btn" id="sig">Continuar</button></div></div></div>`;
       $("#sig").onclick = () => { estado.paso="quiz"; pintar(); };
+      return;
+    }
+    // ── Techo de avance ──────────────────────────────────────────────
+    // El facilitador abre pantallas; nadie pasa de la última abierta. Frena
+    // al rápido, no arrastra al lento: quien va por la 3 sigue en la 3
+    // aunque se abra la 7. `techo === null` (survey, o directo sin techo)
+    // significa que no hay freno y todo funciona como siempre.
+    if(estado.paso === "quiz" && estado.techo !== null
+       && estado.techo !== undefined && estado.idx + 1 > estado.techo){
+      const falta = PANTALLAS[estado.idx];
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <div class="progress"><i style="width:${estado.idx/12*100}%"></i></div>
+        <span class="phasetag">Pantalla ${estado.idx+1} de 12</span>
+        <h2 style="margin-top:10px">Espera un momento</h2>
+        <p class="lead">${estado.techo === 0
+          ? "La sesión aún no ha empezado."
+          : "Has terminado lo que estaba abierto. En cuanto se abra la siguiente, aparecerá sola."}</p>
+        <p class="small">No cierres esta página ni recargues: lo que has respondido está guardado.</p>
+        <div class="btnrow"><button class="btn ghost" id="rev">Comprobar ahora</button></div>
+      </div></div>`;
+      $("#rev").onclick = () => vigilarTecho(true);
+      vigilarTecho(false);
       return;
     }
     if(estado.paso === "fin"){
@@ -1260,6 +1310,11 @@ async function panelAdmin(u){
     if(modo === "survey"){
       s.ventana_inicio = $("#s-ini").value ? new Date($("#s-ini").value).toISOString() : null;
       s.ventana_fin    = $("#s-fin").value ? new Date($("#s-fin").value).toISOString() : null;
+    } else {
+      // En directo la sesión nace con el paso cerrado: nadie empieza hasta
+      // que tú abres la primera pantalla. Si prefieres que corran solos,
+      // «Quitar el techo» en la consola.
+      s.pantalla_max = 0;
     }
     try{ const r = await API.crearSesion(s); location.hash = "#/admin/sesion/" + r.id; }
     catch(e){ alert("No se ha podido crear: " + (e.message||e)); }
@@ -1321,13 +1376,41 @@ async function consolaSesion(id){
           <button class="btn ghost" id="pub">${s.resultados_publicos?"Ocultar resultados":"Publicar resultados"}</button>
           ${API.demo() ? `<button class="btn ghost" id="ejemplo">Cargar 24 respuestas de ejemplo</button>
           <button class="btn ghost" onclick="borrarDemo()">Borrar datos de demostración</button>` : ""}
+          ${(!API.demo() && s.estado==="abierta" && prog.completos===0 && !s.es_prueba)
+            ? `<button class="btn ghost" id="ensayo">Cargar 24 respuestas de ensayo</button>` : ""}
         </div>
+        ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas simuladas.
+          Queda fuera del benchmark de forma permanente y esa marca no se puede quitar desde aquí:
+          si se pudiera, un descuido metería datos inventados en «la media del sector», que es
+          justo el activo que este sistema existe para proteger. Bórrala cuando termines de probar.</div>` : ""}
       </div>
 
       ${s.modo==="directo" ? `<div class="card">
+        <h2>Avance de la sala</h2>
+        <p class="small">Ve abriendo pantallas conforme conduzcas. <b>Nadie puede pasar de la última
+          abierta</b>, pero quien vaya más lento se queda donde estaba: el techo frena al rápido, no
+          arrastra al lento. Al abrir una pantalla, la proyección la sigue.</p>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:14px 0">
+          <button class="btn ghost" id="tmenos">◀ Cerrar una</button>
+          <div style="min-width:190px">
+            <div class="codigo" id="tnum" style="font-size:34px">${
+              s.pantalla_max == null ? "libre" : (s.pantalla_max === 0 ? "0" : s.pantalla_max)}</div>
+            <div class="small" id="ttxt">${etiquetaTecho(s.pantalla_max)}</div>
+          </div>
+          <button class="btn" id="tmas">Abrir siguiente ▶</button>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost" id="tcero">Cerrar el paso</button>
+          <button class="btn ghost" id="tsin">Quitar el techo</button>
+        </div>
+        <p class="note">«Quitar el techo» devuelve el comportamiento anterior: cada cual completa las
+          doce pantallas a su ritmo. Útil si la sala se te descompensa y prefieres dejarles correr.</p>
+      </div>
+
+      <div class="card">
         <h2>Qué se proyecta</h2>
-        <p class="small">Lo que marques aquí aparece en la pantalla de proyección. Los participantes
-          responden a su ritmo en el móvil: esto es para acompañar la sala, no para marcarles el paso.</p>
+        <p class="small">Lo que marques aquí aparece en la pantalla de proyección. Normalmente no
+          hace falta tocarlo: al abrir una pantalla arriba, la proyección la sigue sola.</p>
         <div class="vistas" id="vistas">${VISTAS_PROY.map(v=>
           `<button data-k="${v.k}" class="${s.vista_activa===v.k?"on":""}">${esc(v.t)}</button>`).join("")}</div>
       </div>` : ""}
@@ -1365,6 +1448,32 @@ async function consolaSesion(id){
       prog = await API.progreso(s.codigo) || prog;
       pinta();
     };
+    if(btn("ensayo")) btn("ensayo").onclick = async () => {
+      if(!confirm("Se van a crear 24 respuestas simuladas en esta sesión.\n\n"
+        + "La sesión quedará marcada como ENSAYO para siempre y no entrará nunca en el benchmark. "
+        + "No uses esto en una sesión con un cliente delante.")) return;
+      btn("ensayo").disabled = true; btn("ensayo").textContent = "Generando…";
+      try{
+        // Primero la marca, después los datos. Si se cayera la conexión a
+        // medias, prefiero una sesión marcada de ensayo sin datos que una
+        // sesión con datos falsos sin marcar.
+        Object.assign(s, await API.actualizarSesion(s.id, {es_prueba:true}));
+        await respuestasDeEjemplo(s.codigo, 24);
+        prog = await API.progreso(s.codigo) || prog;
+      }catch(e){ alert("No se han podido generar: " + (e.message||e)); }
+      pinta();
+    };
+    const fijarTecho = async n => {
+      const v = (n === null) ? null : Math.max(0, Math.min(12, n));
+      const cambios = {pantalla_max: v};
+      if(v) cambios.vista_activa = "p" + v;       // la proyección sigue al techo
+      Object.assign(s, await API.actualizarSesion(s.id, cambios));
+      pinta();
+    };
+    if(btn("tmas"))   btn("tmas").onclick   = () => fijarTecho((s.pantalla_max ?? 0) + 1);
+    if(btn("tmenos")) btn("tmenos").onclick = () => fijarTecho((s.pantalla_max ?? 1) - 1);
+    if(btn("tcero"))  btn("tcero").onclick  = () => fijarTecho(0);
+    if(btn("tsin"))   btn("tsin").onclick   = () => fijarTecho(null);
     btn("recargar").onclick = () => cargarResultados();
     btn("csv").onclick = () => descargarCSV(s, datos);
     cargarResultados();
