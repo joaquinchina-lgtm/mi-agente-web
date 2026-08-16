@@ -371,6 +371,28 @@ const API = {
     if(error) throw error; return data;
   },
   /* ── Motor de preguntas (instrumentos distintos de cultura) ────── */
+  // Lo que ve el móvil: solo las que no están cerradas.
+  async preguntasPublicas(codigo){
+    if(this.demo()){
+      MEM.cargar();
+      const s = MEM.sesiones.find(x=>x.codigo.toUpperCase()===codigo.toUpperCase());
+      if(!s) return [];
+      return (MEM.preguntas||[]).filter(p=>p.sesion_id===s.id && p.estado!=="cerrada")
+        .sort((a,b)=>a.orden-b.orden);
+    }
+    const { data, error } = await sb.rpc("preguntas_sesion", {p_codigo:codigo});
+    if(error) throw error; return data || [];
+  },
+  async guardarItem(envio, pregunta, valor){
+    if(this.demo()){ MEM.cargar(); MEM.items = MEM.items || [];
+      const i = MEM.items.findIndex(x=>x.envio_id===envio && x.pregunta_id===pregunta);
+      const fila = {envio_id:envio, pregunta_id:pregunta, valor};
+      if(i>=0) MEM.items[i]=fila; else MEM.items.push(fila);
+      MEM.guardar(); return; }
+    const { error } = await sb.rpc("guardar_item",
+      {p_envio:envio, p_pregunta:pregunta, p_valor:valor});
+    if(error) throw error;
+  },
   async preguntas(sesionId){
     if(this.demo()){ MEM.cargar(); return (MEM.preguntas||[])
       .filter(p=>p.sesion_id===sesionId).sort((a,b)=>a.orden-b.orden); }
@@ -838,6 +860,10 @@ async function vistaParticipante(codigo){
       <p>Si crees que es un error, avisa a quien conduce la sesión.</p></div></div>`;
     return;
   }
+  // Cultura tiene sus doce pantallas fijas. Los demás instrumentos van por
+  // el motor: una lista de preguntas que el facilitador abre una a una.
+  if(String(s.instrumento||"").split("-")[0] !== "cultura")
+    return participanteMotor(codigo, s);
 
   // `techo` es la última pantalla que el facilitador ha abierto. null = sin
   // freno (survey, o directo sin techo puesto), que es el comportamiento de
@@ -995,6 +1021,226 @@ async function vistaParticipante(codigo){
       if(estado.idx===11){ await API.cerrarEnvio(estado.envio); estado.paso="fin"; pintar(); return; }
       if(estado.idx===5){ estado.idx=6; estado.paso="switch"; pintar(); return; }
       estado.idx++; pintar(); window.scrollTo({top:0});
+    };
+    window.scrollTo({top:0});
+  };
+  pintar();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   5 bis · PARTICIPANTE DEL MOTOR
+
+   Una pregunta cada vez, la que el facilitador tenga abierta. Cuando has
+   respondido todo lo abierto, esperas: es el mismo «ritmo libre con
+   techo» de cultura, generalizado. Cada respuesta se guarda al pasar de
+   pregunta, no al final: si alguien se queda sin batería a mitad, lo
+   respondido no se pierde.
+   ═══════════════════════════════════════════════════════════════════ */
+async function participanteMotor(codigo, s){
+  const estado = {paso:"segmentos", envio:null, hechas:{}, actual:null};
+  let reloj = null;
+  const parar = () => clearTimeout(reloj);
+  window.addEventListener("beforeunload", parar);
+
+  const siguiente = async () => {
+    const todas = await API.preguntasPublicas(codigo);
+    return todas.find(p => p.estado === "abierta" && !estado.hechas[p.id]) || null;
+  };
+
+  const esperar = () => { parar(); reloj = setTimeout(async () => {
+    const n = await API.sesionPublica(codigo).catch(()=>null);
+    if(n && !n.admite_respuestas){          // el facilitador ha cerrado
+      try{ await API.cerrarEnvio(estado.envio); }catch(e){}
+      estado.paso = "fin"; return pintar();
+    }
+    const p = await siguiente();
+    if(p){ estado.actual = p; estado.paso = "pregunta"; return pintar(); }
+    esperar();
+  }, 3000); };
+
+  const pintar = async () => {
+    if(estado.paso === "segmentos"){
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <span class="phasetag">${esc(s.organizacion||"")}</span>
+        <h1 style="margin-top:10px">${esc(s.titulo)}</h1>
+        <p class="lead">Iremos pregunta a pregunta. Cada una aparece cuando quien conduce la
+          sesión la abre; mientras tanto, verás una pantalla de espera.</p>
+        <p><b>Es anónimo</b>: no se registra tu nombre, tu correo ni ningún identificador.</p>
+        <h3>Tres datos sobre tu posición</h3>
+        <div class="field"><label for="f1">Ámbito en el que trabajas</label><select id="f1">
+          <option value="">Prefiero no indicarlo</option><option>Dirección o gobierno</option>
+          <option>Gestión y administración</option>
+          <option>Actividad principal</option><option>Apoyo técnico</option></select></div>
+        <div class="field"><label for="f2">Responsabilidad sobre equipos</label><select id="f2">
+          <option value="">Prefiero no indicarlo</option><option>Sí, dirijo un equipo</option>
+          <option>No dirijo equipo</option></select></div>
+        <div class="field"><label for="f3">Antigüedad</label><select id="f3">
+          <option value="">Prefiero no indicarlo</option><option>Menos de 3 años</option>
+          <option>Entre 3 y 10 años</option><option>Más de 10 años</option></select></div>
+        <div class="btnrow"><button class="btn" id="ir">Empezar</button></div></div></div>`;
+      $("#ir").onclick = async () => {
+        $("#ir").disabled = true; $("#ir").textContent = "Conectando…";
+        try{
+          estado.envio = await API.abrirEnvio(codigo, {ambito:$("#f1").value||null,
+            responsable:$("#f2").value||null, antiguedad:$("#f3").value||null});
+          const p = await siguiente();
+          if(p){ estado.actual = p; estado.paso = "pregunta"; } else estado.paso = "espera";
+          pintar();
+        }catch(e){ $("#ir").disabled=false; $("#ir").textContent="Empezar"; alert(e.message||e); }
+      };
+      return;
+    }
+
+    if(estado.paso === "fin"){
+      parar();
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h1>Gracias</h1><p class="lead">Tus respuestas se han guardado de forma anónima.</p>
+        <p>Ya puedes dejar el móvil.</p></div></div>`;
+      return;
+    }
+
+    if(estado.paso === "espera"){
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h2>Espera un momento</h2>
+        <p class="lead">Has respondido todo lo que está abierto. La siguiente pregunta
+          aparecerá sola en cuanto se abra.</p>
+        <p class="small">No cierres esta página ni recargues: lo respondido está guardado.</p>
+        <div class="btnrow"><button class="btn ghost" id="rev">Comprobar ahora</button></div>
+      </div></div>`;
+      $("#rev").onclick = async () => {
+        const p = await siguiente();
+        if(p){ estado.actual = p; estado.paso = "pregunta"; pintar(); }
+      };
+      esperar();
+      return;
+    }
+
+    parar();
+    const p = estado.actual, cfg = p.config || {};
+    const hechas = Object.keys(estado.hechas).length;
+    app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+      <span class="phasetag">${esc(p.codigo||"")}${hechas ? " · llevas "+hechas+" respondidas" : ""}</span>
+      <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
+      ${p.ayuda ? `<p class="small">${esc(p.ayuda)}</p>` : ""}
+      <div id="campo"></div>
+      <div id="aviso"></div>
+      <div class="btnrow"><button class="btn" id="env">Enviar respuesta</button></div>
+    </div></div>`;
+
+    const campo = $("#campo");
+    let leer = () => null;              // devuelve el valor jsonb o null si falta algo
+
+    if(p.tipo === "unica" || p.tipo === "multiple"){
+      const ops = cfg.opciones || [];
+      const max = p.tipo === "multiple" ? (cfg.maximo || ops.length) : 1;
+      const sel = new Set();
+      campo.innerHTML = ops.map((o,i)=>
+        `<button type="button" class="btn ghost" data-o="${i}"
+           style="display:block;width:100%;text-align:left;margin:6px 0">${esc(o)}</button>`).join("")
+        + (p.tipo==="multiple" ? `<p class="small">Puedes elegir hasta ${max}.</p>` : "");
+      campo.querySelectorAll("[data-o]").forEach(b => b.onclick = () => {
+        const i = +b.dataset.o;
+        if(p.tipo === "unica"){ sel.clear(); sel.add(i); }
+        else if(sel.has(i)) sel.delete(i);
+        else if(sel.size < max) sel.add(i);
+        campo.querySelectorAll("[data-o]").forEach(x =>
+          x.classList.toggle("ghost", !sel.has(+x.dataset.o)));
+      });
+      leer = () => !sel.size ? null : (p.tipo === "unica"
+        ? {opcion: ops[[...sel][0]]}
+        : {opciones: [...sel].sort((a,b)=>a-b).map(i=>ops[i])});
+
+    } else if(p.tipo === "escala"){
+      const min = cfg.min ?? 1, max = cfg.max ?? 7; let v = null;
+      campo.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:14px 0">${
+        Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
+          `<button type="button" class="btn ghost" data-n="${n}"
+             style="flex:1;min-width:44px">${n}</button>`).join("")}</div>
+        <div style="display:flex;justify-content:space-between;gap:10px">
+          <span class="small">${esc(cfg.ancla_min||"")}</span>
+          <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>`;
+      campo.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { v = +b.dataset.n;
+        campo.querySelectorAll("[data-n]").forEach(x => x.classList.toggle("ghost", +x.dataset.n !== v)); });
+      leer = () => v == null ? null : {n: v};
+
+    } else if(p.tipo === "matriz_escala"){
+      const min = cfg.min ?? 1, max = cfg.max ?? 7, items = cfg.items || {}, val = {};
+      const lista = Array.isArray(items) ? items : Object.keys(items);
+      campo.innerHTML = lista.map((it,ix)=>`<div style="margin:16px 0">
+        <div style="margin-bottom:6px">${esc(it)}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap" data-fila="${ix}">${
+          Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
+            `<button type="button" class="btn ghost" data-n="${n}"
+               style="flex:1;min-width:40px;padding:9px 0">${n}</button>`).join("")}</div></div>`).join("")
+        + `<div style="display:flex;justify-content:space-between;gap:10px">
+             <span class="small">${esc(cfg.ancla_min||"")}</span>
+             <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>`;
+      campo.querySelectorAll("[data-fila]").forEach(f => f.onclick = ev => {
+        const b = ev.target.closest("[data-n]"); if(!b) return;
+        val[lista[+f.dataset.fila]] = +b.dataset.n;
+        f.querySelectorAll("[data-n]").forEach(x => x.classList.toggle("ghost", x !== b));
+      });
+      leer = () => Object.keys(val).length === lista.length ? {items: val} : null;
+
+    } else if(p.tipo === "abierta"){
+      const lim = cfg.maximo_caracteres || 300;
+      campo.innerHTML = `<div class="field"><textarea id="tx" rows="4" maxlength="${lim}"
+        placeholder="Escribe aquí"></textarea><p class="small" id="cnt">${lim} caracteres</p></div>`;
+      $("#tx").oninput = () => $("#cnt").textContent = (lim - $("#tx").value.length) + " caracteres";
+      leer = () => $("#tx").value.trim() ? {texto: $("#tx").value.trim()} : null;
+
+    } else if(p.tipo === "abierta_campos"){
+      const cs = cfg.campos || [];
+      campo.innerHTML = cs.map((c,i)=>`<div class="field">
+        <label for="c${i}">${esc(c.etiqueta)}</label>
+        <input id="c${i}" maxlength="200" autocomplete="off"></div>`).join("");
+      leer = () => { const o = {}; let algo = false;
+        cs.forEach((c,i)=>{ const v = $("#c"+i).value.trim(); if(v){ o[c.clave]=v; algo=true; } });
+        return algo ? {campos:o} : null; };
+
+    } else if(p.tipo === "puntos100"){
+      const ops = cfg.opciones || [], total = cfg.total || 100, paso = cfg.paso || 5;
+      const r = {}; ops.forEach(o=>r[o]=0);
+      const suma = () => ops.reduce((a,o)=>a+r[o],0);
+      campo.innerHTML = `<div class="restante" id="rest"><b id="restN">${total}</b>
+          <span>puntos por repartir</span></div><div id="ops"></div>`;
+      const cont = $("#ops");
+      ops.forEach(o=>{
+        const d = document.createElement("div"); d.className="opt";
+        const t = document.createElement("p"); t.textContent = o;
+        const st = document.createElement("div"); st.className="stepper";
+        const menos = document.createElement("button"); menos.type="button"; menos.textContent="−"+paso;
+        const val = document.createElement("div"); val.className="val";
+        const mas = document.createElement("button"); mas.type="button"; mas.textContent="+"+paso;
+        const barra = document.createElement("div"); barra.className="barmini";
+        const rel = document.createElement("i"); barra.appendChild(rel);
+        d._ref = () => { val.textContent = r[o]; val.classList.toggle("puesto", r[o]>0);
+          rel.style.width = (r[o]/total*100)+"%"; menos.disabled = r[o]<=0; mas.disabled = suma()>=total; };
+        menos.onclick = () => { r[o]=Math.max(0,r[o]-paso); act(); };
+        mas.onclick   = () => { r[o]=Math.min(r[o]+paso, r[o]+(total-suma())); act(); };
+        st.append(menos,val,mas,barra); d.append(t,st); cont.appendChild(d);
+      });
+      const act = () => { const q = total - suma();
+        $("#restN").textContent = q; $("#rest").classList.toggle("ok", q===0);
+        [...cont.children].forEach(d=>d._ref()); };
+      act();
+      leer = () => suma() === total ? {reparto: r} : null;
+    }
+
+    $("#env").onclick = async () => {
+      const valor = leer();
+      if(!valor){ $("#aviso").innerHTML =
+        `<div class="aviso rojo">${p.tipo==="puntos100" ? "Tienes que repartir los "+(cfg.total||100)+" puntos."
+          : p.tipo==="matriz_escala" ? "Falta valorar alguna fila."
+          : "Responde antes de enviar."}</div>`; return; }
+      $("#env").disabled = true; $("#env").textContent = "Guardando…";
+      try{ await API.guardarItem(estado.envio, p.id, valor); }
+      catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar respuesta";
+        $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
+      estado.hechas[p.id] = true;
+      const sig = await siguiente();
+      if(sig){ estado.actual = sig; } else { estado.paso = "espera"; }
+      pintar(); window.scrollTo({top:0});
     };
     window.scrollTo({top:0});
   };
