@@ -383,6 +383,95 @@ const API = {
     const { data, error } = await sb.rpc("preguntas_sesion", {p_codigo:codigo});
     if(error) throw error; return data || [];
   },
+  /* ── Tarjetas ──────────────────────────────────────────────────── */
+  async guardarTarjetas(envio, pregunta, textos){
+    if(this.demo()){ MEM.cargar(); MEM.tarjetas = (MEM.tarjetas||[])
+        .filter(t => !(t.envio_id===envio && t.pregunta_id===pregunta));
+      textos.forEach(t => MEM.tarjetas.push({id:MEM.id(), pregunta_id:pregunta,
+        envio_id:envio, texto:t, grupo_id:null, oculta:false}));
+      MEM.guardar(); return textos.length; }
+    const { data, error } = await sb.rpc("guardar_tarjetas",
+      {p_envio:envio, p_pregunta:pregunta, p_textos:textos});
+    if(error) throw error; return data;
+  },
+  async gruposParaVotar(codigo, pregunta){
+    if(this.demo()){ MEM.cargar();
+      const p = (MEM.preguntas||[]).find(x=>x.id===pregunta) || {};
+      return {fase:p.fase, votos:(p.config||{}).votos || 3,
+        grupos:(MEM.grupos||[]).filter(g=>g.pregunta_id===pregunta)
+          .map(g=>({id:g.id, etiqueta:g.etiqueta}))}; }
+    const { data, error } = await sb.rpc("grupos_para_votar",
+      {p_codigo:codigo, p_pregunta:pregunta});
+    if(error) throw error; return data;
+  },
+  async guardarVotos(envio, pregunta, grupos){
+    if(this.demo()){ MEM.cargar();
+      const ids = new Set((MEM.grupos||[]).filter(g=>g.pregunta_id===pregunta).map(g=>g.id));
+      MEM.votos = (MEM.votos||[]).filter(v => !(v.envio_id===envio && ids.has(v.grupo_id)));
+      grupos.forEach(g => MEM.votos.push({envio_id:envio, grupo_id:g}));
+      MEM.guardar(); return grupos.length; }
+    const { data, error } = await sb.rpc("guardar_votos",
+      {p_envio:envio, p_pregunta:pregunta, p_grupos:grupos});
+    if(error) throw error; return data;
+  },
+  async resultadosTarjetas(codigo, pregunta){
+    if(this.demo()){ MEM.cargar();
+      const p = (MEM.preguntas||[]).find(x=>x.id===pregunta);
+      if(!p) return {existe:false};
+      const ts = (MEM.tarjetas||[]).filter(t=>t.pregunta_id===pregunta && !t.oculta);
+      const vs = (MEM.votos||[]).filter(v =>
+        (MEM.grupos||[]).some(g=>g.id===v.grupo_id && g.pregunta_id===pregunta));
+      const votantes = new Set(vs.map(v=>v.envio_id)).size;
+      return {existe:true, pregunta, fase:p.fase, estado:p.estado,
+        n_tarjetas:ts.length, n_votantes:votantes, minimo:3,
+        tarjetas: (p.fase && p.fase!=="recogida")
+          ? ts.map(t=>({id:t.id, texto:t.texto, grupo:t.grupo_id})) : null,
+        grupos: (p.fase==="resultados" && votantes>=3)
+          ? (MEM.grupos||[]).filter(g=>g.pregunta_id===pregunta).map(g=>({id:g.id,
+              etiqueta:g.etiqueta,
+              tarjetas: ts.filter(t=>t.grupo_id===g.id).length,
+              votos: vs.filter(v=>v.grupo_id===g.id).length}))
+            .sort((a,b)=>b.votos-a.votos) : null};
+    }
+    const { data, error } = await sb.rpc("resultados_tarjetas",
+      {p_codigo:codigo, p_pregunta:pregunta});
+    if(error) throw error; return data;
+  },
+  async grupos(preguntaId){
+    if(this.demo()){ MEM.cargar(); return (MEM.grupos||[])
+      .filter(g=>g.pregunta_id===preguntaId).sort((a,b)=>a.orden-b.orden); }
+    const { data, error } = await sb.from("grupo").select("*")
+      .eq("pregunta_id", preguntaId).order("orden");
+    if(error) throw error; return data;
+  },
+  async crearGrupo(preguntaId, etiqueta, orden){
+    if(this.demo()){ MEM.cargar(); MEM.grupos = MEM.grupos || [];
+      const g = {id:MEM.id(), pregunta_id:preguntaId, etiqueta, orden};
+      MEM.grupos.push(g); MEM.guardar(); return g; }
+    const { data, error } = await sb.from("grupo")
+      .insert({pregunta_id:preguntaId, etiqueta, orden}).select().single();
+    if(error) throw error; return data;
+  },
+  async borrarGrupo(id){
+    if(this.demo()){ MEM.cargar(); MEM.grupos=(MEM.grupos||[]).filter(g=>g.id!==id);
+      (MEM.tarjetas||[]).forEach(t=>{ if(t.grupo_id===id) t.grupo_id=null; });
+      MEM.guardar(); return; }
+    const { error } = await sb.from("grupo").delete().eq("id", id);
+    if(error) throw error;
+  },
+  async tarjetasAdmin(preguntaId){
+    if(this.demo()){ MEM.cargar(); return (MEM.tarjetas||[])
+      .filter(t=>t.pregunta_id===preguntaId); }
+    const { data, error } = await sb.from("tarjeta").select("*")
+      .eq("pregunta_id", preguntaId).order("creado_en");
+    if(error) throw error; return data;
+  },
+  async tocarTarjeta(id, cambios){
+    if(this.demo()){ MEM.cargar(); const t=(MEM.tarjetas||[]).find(x=>x.id===id);
+      Object.assign(t, cambios); MEM.guardar(); return t; }
+    const { data, error } = await sb.from("tarjeta").update(cambios).eq("id",id).select().single();
+    if(error) throw error; return data;
+  },
   async resultadosPregunta(codigo, preguntaId){
     if(this.demo()){
       MEM.cargar();
@@ -1058,7 +1147,17 @@ async function participanteMotor(codigo, s){
 
   const siguiente = async () => {
     const todas = await API.preguntasPublicas(codigo);
-    return todas.find(p => p.estado === "abierta" && !estado.hechas[p.id]) || null;
+    // Una de tarjetas se ve dos veces: para escribir y, más tarde, para
+    // votar. Por eso la marca de «hecha» lleva la fase pegada.
+    return todas.find(p => {
+      if(p.estado !== "abierta") return false;
+      if(p.tipo === "tarjetas"){
+        const f = p.fase || "recogida";
+        if(f !== "recogida" && f !== "votacion") return false;
+        return !estado.hechas[p.id + ":" + f];
+      }
+      return !estado.hechas[p.id];
+    }) || null;
   };
 
   const esperar = () => { parar(); reloj = setTimeout(async () => {
@@ -1132,6 +1231,75 @@ async function participanteMotor(codigo, s){
     parar();
     const p = estado.actual, cfg = p.config || {};
     const hechas = Object.keys(estado.hechas).length;
+
+    // ── Tarjetas: escribir o votar, según la fase ──────────────────
+    if(p.tipo === "tarjetas"){
+      const fase = p.fase || "recogida";
+      if(fase === "recogida"){
+        const maxA = cfg.maximo_aportaciones || 5, lim = cfg.maximo_caracteres || 200;
+        app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+          <span class="phasetag">${esc(p.codigo||"")} · escribir</span>
+          <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
+          ${p.ayuda ? `<p class="small">${esc(p.ayuda)}</p>` : ""}
+          <p class="small">Una idea por casilla, hasta ${maxA}. No hace falta rellenarlas todas.</p>
+          <div id="cs">${Array.from({length:maxA},(_,i)=>`
+            <div class="field"><input id="tj${i}" maxlength="${lim}"
+              placeholder="${i===0?"Escribe aquí":"Otra idea (opcional)"}" autocomplete="off"></div>`).join("")}</div>
+          <div id="aviso"></div>
+          <div class="btnrow"><button class="btn" id="env">Enviar</button></div>
+        </div></div>`;
+        $("#env").onclick = async () => {
+          const txt = Array.from({length:maxA},(_,i)=>$("#tj"+i).value.trim()).filter(Boolean);
+          if(!txt.length){ $("#aviso").innerHTML =
+            `<div class="aviso rojo">Escribe al menos una idea.</div>`; return; }
+          $("#env").disabled = true; $("#env").textContent = "Guardando…";
+          try{ await API.guardarTarjetas(estado.envio, p.id, txt); }
+          catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar";
+            $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
+          estado.hechas[p.id + ":recogida"] = true;
+          const sig = await siguiente();
+          if(sig) estado.actual = sig; else estado.paso = "espera";
+          pintar(); window.scrollTo({top:0});
+        };
+        window.scrollTo({top:0});
+        return;
+      }
+      // votación
+      let g = {grupos:[], votos:3};
+      try{ g = await API.gruposParaVotar(codigo, p.id) || g; }catch(e){}
+      const maxV = g.votos || 3, sel = new Set();
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <span class="phasetag">${esc(p.codigo||"")} · votar</span>
+        <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
+        <p class="small">Elige hasta ${maxV} de los temas en que se han agrupado las respuestas.</p>
+        <div id="gs">${(g.grupos||[]).map(x=>
+          `<button type="button" class="btn ghost" data-g="${esc(x.id)}"
+             style="display:block;width:100%;text-align:left;margin:6px 0">${esc(x.etiqueta)}</button>`).join("")}</div>
+        <div id="aviso"></div>
+        <div class="btnrow"><button class="btn" id="env">Enviar votos</button></div>
+      </div></div>`;
+      app().querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+        const id = b.dataset.g;
+        if(sel.has(id)) sel.delete(id); else if(sel.size < maxV) sel.add(id);
+        app().querySelectorAll("[data-g]").forEach(x =>
+          x.classList.toggle("ghost", !sel.has(x.dataset.g)));
+      });
+      $("#env").onclick = async () => {
+        if(!sel.size){ $("#aviso").innerHTML =
+          `<div class="aviso rojo">Elige al menos uno.</div>`; return; }
+        $("#env").disabled = true; $("#env").textContent = "Guardando…";
+        try{ await API.guardarVotos(estado.envio, p.id, [...sel]); }
+        catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar votos";
+          $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
+        estado.hechas[p.id + ":votacion"] = true;
+        const sig = await siguiente();
+        if(sig) estado.actual = sig; else estado.paso = "espera";
+        pintar(); window.scrollTo({top:0});
+      };
+      window.scrollTo({top:0});
+      return;
+    }
+
     app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
       <span class="phasetag">${esc(p.codigo||"")}${hechas ? " · llevas "+hechas+" respondidas" : ""}</span>
       <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
@@ -1387,6 +1555,109 @@ async function vistaProyeccion(codigo){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   6 quater · MESA DE AGRUPACIÓN
+
+   La pantalla más delicada del sistema. Cuarenta tarjetas de texto libre
+   y tú fusionando equivalentes con la sala esperando. Está pensada para
+   eso: leer rápido, crear temas de un golpe y asignar con un clic.
+
+   Deliberadamente sin agrupación automática. Decidir que «se nos jubila
+   la plantilla» y «falta de relevo generacional» son lo mismo exige
+   criterio, y ese criterio es parte de lo que cobras.
+   ═══════════════════════════════════════════════════════════════════ */
+async function mesaAgrupacion(s, pregunta, volver){
+  let tarjetas = [], grupos = [], activo = null;
+
+  const cargar = async () => {
+    [tarjetas, grupos] = await Promise.all([
+      API.tarjetasAdmin(pregunta.id), API.grupos(pregunta.id)]);
+    if(activo && !grupos.some(g=>g.id===activo)) activo = null;
+    if(!activo && grupos.length) activo = grupos[0].id;
+  };
+
+  const pinta = async () => {
+    const sinGrupo = tarjetas.filter(t=>!t.grupo_id && !t.oculta);
+    const ocultas  = tarjetas.filter(t=>t.oculta);
+    app().innerHTML = `<div class="wrap ancho">${cabecera(
+      `<button class="iconbtn" id="atras">Volver</button>`)}
+      <div class="card">
+        <span class="phasetag">${esc(pregunta.codigo||"")} · agrupación</span>
+        <h1 style="margin:6px 0 0">${esc(pregunta.titulo)}</h1>
+        <p class="small" style="margin-top:8px">
+          <b>${tarjetas.length - ocultas.length}</b> tarjetas ·
+          <b>${sinGrupo.length}</b> sin agrupar ·
+          <b>${grupos.length}</b> temas${ocultas.length ? " · "+ocultas.length+" descartadas" : ""}</p>
+        <p class="note">Elige un tema a la derecha y pulsa una tarjeta para meterla ahí.
+          Mantén entre seis y diez temas: por encima, la votación se degrada.</p>
+      </div>
+
+      <div class="multi" style="align-items:start">
+        <div class="card" style="margin:0">
+          <h2>Sin agrupar <span class="estado">${sinGrupo.length}</span></h2>
+          ${sinGrupo.length ? `<div class="lista">${sinGrupo.map(t=>`
+            <div class="it">
+              <div style="flex:1">${esc(t.texto)}</div>
+              <div class="btnrow" style="margin:0">
+                <button class="btn sm" data-mete="${t.id}" ${activo?"":"disabled"}>Al tema</button>
+                <button class="btn ghost sm" data-oculta="${t.id}">Descartar</button>
+              </div></div>`).join("")}</div>`
+            : `<p class="small">Todas agrupadas o descartadas.</p>`}
+          ${ocultas.length ? `<details style="margin-top:14px"><summary class="small">
+            Descartadas (${ocultas.length})</summary><div class="lista">${ocultas.map(t=>`
+            <div class="it"><div style="flex:1;opacity:.6">${esc(t.texto)}</div>
+              <button class="btn ghost sm" data-recupera="${t.id}">Recuperar</button></div>`).join("")}
+            </div></details>` : ""}
+        </div>
+
+        <div class="card" style="margin:0">
+          <h2>Temas</h2>
+          <form id="fg"><div class="grid2">
+            <div class="field"><input id="et" placeholder="Nombre del tema" autocomplete="off"></div>
+            <div class="field" style="align-self:end"><button class="btn" type="submit">Crear tema</button></div>
+          </div></form>
+          ${grupos.length ? `<div class="lista">${grupos.map(g=>{
+            const dentro = tarjetas.filter(t=>t.grupo_id===g.id && !t.oculta);
+            return `<div class="it" style="${g.id===activo?"outline:2px solid var(--actual)":""}">
+              <div style="flex:1">
+                <b>${esc(g.etiqueta)}</b> <span class="estado">${dentro.length}</span>
+                ${dentro.length ? `<div class="small" style="margin-top:6px">${
+                  dentro.map(t=>`<span style="display:inline-block;margin:2px 6px 2px 0">${esc(t.texto)}
+                    <button class="btn ghost sm" data-saca="${t.id}"
+                      style="padding:2px 6px;margin-left:2px">×</button></span>`).join("")}</div>` : ""}
+              </div>
+              <div class="btnrow" style="margin:0">
+                <button class="btn ghost sm" data-activa="${g.id}">${g.id===activo?"activo":"elegir"}</button>
+                <button class="btn ghost sm" data-borra="${g.id}">Borrar</button>
+              </div></div>`;}).join("")}</div>`
+            : `<p class="small">Todavía no hay temas. Crea el primero leyendo las tarjetas.</p>`}
+        </div>
+      </div></div>`;
+
+    $("#atras").onclick = volver;
+    $("#fg").onsubmit = async ev => { ev.preventDefault();
+      const e = $("#et").value.trim(); if(!e) return;
+      const g = await API.crearGrupo(pregunta.id, e, grupos.length + 1);
+      activo = g.id; await cargar(); pinta(); };
+    const rec = async fn => { await fn(); await cargar(); pinta(); };
+    app().querySelectorAll("[data-activa]").forEach(b => b.onclick = () => {
+      activo = b.dataset.activa; pinta(); });
+    app().querySelectorAll("[data-mete]").forEach(b => b.onclick = () =>
+      rec(() => API.tocarTarjeta(b.dataset.mete, {grupo_id: activo})));
+    app().querySelectorAll("[data-saca]").forEach(b => b.onclick = () =>
+      rec(() => API.tocarTarjeta(b.dataset.saca, {grupo_id: null})));
+    app().querySelectorAll("[data-oculta]").forEach(b => b.onclick = () =>
+      rec(() => API.tocarTarjeta(b.dataset.oculta, {oculta: true})));
+    app().querySelectorAll("[data-recupera]").forEach(b => b.onclick = () =>
+      rec(() => API.tocarTarjeta(b.dataset.recupera, {oculta: false})));
+    app().querySelectorAll("[data-borra]").forEach(b => b.onclick = () =>
+      rec(() => API.borrarGrupo(b.dataset.borra)));
+  };
+
+  await cargar();
+  await pinta();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    6 ter · PROYECCIÓN DEL MOTOR
 
    Mientras la pregunta está abierta se proyecta el enunciado y cuánta
@@ -1428,9 +1699,32 @@ async function proyeccionMotor(codigo, s){
           ni tu correo.</p>`;
     } else {
       const id = va.slice(2);
-      const r = await API.resultadosPregunta(codigo, id).catch(()=>null);
       const ps = await API.preguntasPublicas(codigo).catch(()=>[]);
       const p = (ps || []).find(x => x.id === id);
+      if(p && p.tipo === "tarjetas"){
+        const rt = await API.resultadosTarjetas(codigo, id).catch(()=>null);
+        const cab = `<div class="small">${esc(p.codigo||"")}</div><h1>${esc(p.titulo)}</h1>`;
+        if(!rt || rt.existe === false) cuerpo = `<h1>Preparando…</h1>`;
+        else if(rt.grupos && rt.grupos.length)
+          cuerpo = cab + barras(rt.grupos, d=>d.etiqueta + " ("+d.tarjetas+")", d=>d.votos)
+            + `<p class="small" style="margin-top:18px">Votos de ${rt.n_votantes} personas ·
+                 entre paréntesis, cuántas aportaciones agrupa cada tema</p>`;
+        else if(rt.tarjetas && rt.tarjetas.length)
+          // Las tarjetas sueltas sí se proyectan: son material de
+          // conversación, no una media que ancle a nadie.
+          cuerpo = cab + `<div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px">${
+            rt.tarjetas.slice(0,40).map(t=>
+              `<div class="enun" style="flex:1 1 300px;margin:0">${esc(t.texto)}</div>`).join("")}</div>
+            <p class="small" style="margin-top:18px">${rt.n_tarjetas} aportaciones</p>`;
+        else
+          cuerpo = cab + `<div class="contador" style="margin-top:30px"><b>${rt.n_tarjetas}</b>
+            <span style="font-size:20px">${rt.n_tarjetas===1?"aportación recibida":"aportaciones recibidas"}</span></div>
+            <p class="small" style="margin-top:18px">Escribe en tu móvil. Lo aportado se mostrará
+              cuando cerremos la recogida.</p>`;
+        app().innerHTML = `<div class="proy">${cuerpo}</div>`;
+        return;
+      }
+      const r = await API.resultadosPregunta(codigo, id).catch(()=>null);
       if(!p || !r || r.existe === false){
         cuerpo = `<h1>Preparando…</h1>`;
       } else {
@@ -1548,6 +1842,9 @@ function agregarDemo(p, items){
 // Costó un «Cannot read properties of null» en la primera prueba.
 const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
 
+const FASES_TARJ = [{k:"recogida",t:"Recoger"},{k:"agrupando",t:"Agrupando"},
+                    {k:"votacion",t:"Votar"},{k:"resultados",t:"Resultados"}];
+
 const NAT_ETIQ = {
   fija:      {t:"fija",         d:"Su contenido existe antes de la sesión."},
   derivada:  {t:"derivada",     d:"Se construye durante la sesión con lo que responda el grupo. La añades ahora con las opciones vacías y las rellenas en directo."},
@@ -1566,8 +1863,13 @@ async function consolaMotor(s){
     // sondear todas cada tres segundos es castigar la base de datos por nada.
     const cuentas = {};
     await Promise.all(preguntas.filter(p=>p.estado!=="cerrada").map(async p => {
-      try{ const r = await API.resultadosPregunta(s.codigo, p.id);
-           if(r && r.existe !== false) cuentas[p.id] = r.respondidos; }catch(e){}
+      try{
+        const r = p.tipo === "tarjetas"
+          ? await API.resultadosTarjetas(s.codigo, p.id)
+          : await API.resultadosPregunta(s.codigo, p.id);
+        if(r && r.existe !== false)
+          cuentas[p.id] = p.tipo === "tarjetas" ? r.n_tarjetas : r.respondidos;
+      }catch(e){}
     }));
     const prog = await API.progreso(s.codigo).catch(()=>null);
     const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
@@ -1616,9 +1918,14 @@ async function consolaMotor(s){
             <div><b>${i+1}. ${esc(p.titulo)}</b>
               <div class="small"><code>${esc(p.codigo||"propia")}</code> ·
                 ${esc(TIPOS_NOMBRE[p.tipo]||p.tipo)} ·
-                <b>${esc(p.estado)}</b>${cuentas[p.id]!=null ? " · "+cuentas[p.id]+" respuestas" : ""}
+                <b>${esc(p.estado)}</b>${p.fase ? " · fase "+esc(p.fase) : ""}${
+                  cuentas[p.id]!=null ? " · "+cuentas[p.id]+(p.tipo==="tarjetas"?" tarjetas":" respuestas") : ""}
                 ${s.vista_activa === "q:"+p.id ? " · <b>en el proyector</b>" : ""}</div></div>
             <div class="btnrow" style="margin:0">
+              ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? FASES_TARJ.map(f=>
+                `<button class="btn ${p.fase===f.k?"":"ghost"} sm" data-fase="${p.id}"
+                   data-k="${f.k}">${esc(f.t)}</button>`).join("")
+                + `<button class="btn ghost sm" data-mesa="${p.id}">Agrupar…</button>` : ""}
               ${p.estado==="cerrada"   ? `<button class="btn sm" data-abrir="${p.id}">Abrir</button>` : ""}
               ${p.estado==="abierta"   ? `<button class="btn ghost sm" data-fin="${p.id}">Terminar</button>` : ""}
               ${p.estado==="terminada" ? `<button class="btn ghost sm" data-reabrir="${p.id}">Reabrir</button>` : ""}
@@ -1683,6 +1990,19 @@ async function consolaMotor(s){
       tocar(b.dataset.fin, {estado:"terminada"}, true));
     app().querySelectorAll("[data-reabrir]").forEach(b => b.onclick = () =>
       tocar(b.dataset.reabrir, {estado:"abierta"}, true));
+    app().querySelectorAll("[data-fase]").forEach(b => b.onclick = () =>
+      tocar(b.dataset.fase, {fase: b.dataset.k, estado:"abierta"}, true));
+    app().querySelectorAll("[data-mesa]").forEach(b => b.onclick = async () => {
+      const p = preguntas.find(x=>x.id === b.dataset.mesa);
+      // Al entrar a agrupar se cierra la recogida: si sigue abierta, el
+      // recuento te cambia debajo mientras estás fusionando.
+      if((p.fase||"recogida") === "recogida"){
+        await API.actualizarPregunta(p.id, {fase:"agrupando"});
+        preguntas = await API.preguntas(s.id);
+      }
+      mesaAgrupacion(s, preguntas.find(x=>x.id===b.dataset.mesa),
+        async () => { preguntas = await API.preguntas(s.id); pinta(); });
+    });
     app().querySelectorAll("[data-proy]").forEach(b => b.onclick = async () => {
       Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"q:"+b.dataset.proy})); pinta(); });
 
@@ -1844,7 +2164,7 @@ const BLOQUES_ESC = [
    puede añadir todavía: es mejor que veas el mapa entero y sepas qué
    falta, a que descubras el hueco preparando una sesión. */
 const TIPOS_LISTOS = ["unica","multiple","escala","matriz_escala",
-                      "abierta","abierta_campos","puntos100"];
+                      "abierta","abierta_campos","puntos100","tarjetas"];
 
 const TIPOS_NOMBRE = {
   unica:"Opción única", multiple:"Opción múltiple", escala:"Escala 1–7",
@@ -2125,9 +2445,10 @@ const MODULOS = [
    ruta:"#/admin/sesiones"},
   {k:"escenarios", nombre:"Escenarios futuros", est:"parcial",
    publico:"Prospectiva y escenarios de futuro",
-   desc:"Banco de 60 preguntas, 38 construidas: opción única y múltiple, escalas, "
-      + "matriz de escalas, abiertas y reparto de 100 puntos. Ya se puede pasar. "
-      + "Faltan tarjetas, nubes, rankings, dos ejes, secuencia y matriz de robustez.",
+   desc:"Banco de 60 preguntas, 47 construidas y 16 de las 21 del itinerario núcleo: "
+      + "opción única y múltiple, escalas, matriz, abiertas, reparto de 100 puntos y "
+      + "tarjetas con agrupación y votación. Faltan nubes, rankings, dos ejes, "
+      + "secuencia, clasificación y matriz de robustez.",
    ruta:"#/admin/sesiones"},
   {k:"reactor", nombre:"Reactor de innovación", est:"pendiente",
    desc:"Enunciados canónicos y valoración colectiva. Es tu activo más defendible."},
