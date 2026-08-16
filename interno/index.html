@@ -343,12 +343,14 @@ const API = {
       MEM.cargar();
       const s = MEM.sesiones.find(x=>x.codigo.toUpperCase()===codigo.toUpperCase());
       if(!s) return null;
-      return {existe:true, titulo:s.titulo, organizacion:(s.organizacion||{}).nombre,
+      const d = {existe:true, titulo:s.titulo, organizacion:(s.organizacion||{}).nombre,
         modo:s.modo, estado:s.estado, vista_activa:s.vista_activa,
+        instrumento:s.instrumento || "cultura", version:s.instrumento_version || VERSION,
         resultados_publicos:s.resultados_publicos, admite_respuestas:s.estado==="abierta"};
+      recordarInstrumento(d); return d;
     }
     const { data, error } = await sb.rpc("sesion_publica", {p_codigo:codigo});
-    if(error) throw error; return data;
+    if(error) throw error; recordarInstrumento(data); return data;
   },
   async abrirEnvio(codigo, segmentos){
     if(this.demo()){
@@ -517,18 +519,36 @@ function pintarQR(id, url, celda){
 }
 
 /* La cabecera dice dos cosas distintas según quién mira.
-   En la sala —móvil del participante y proyector— tiene que decir qué está
-   respondiendo la gente: el nombre del instrumento y su versión. En tu lado
-   dice de quién es la casa. Poner «Consola de proyectos de joaquinromero.com»
-   en el móvil de cuarenta personas de un cliente sería enseñar tu cocina. */
+   En tu lado dice de quién es la casa. En la sala —móvil del participante y
+   proyector— dice qué está respondiendo la gente, y ese nombre NO puede estar
+   escrito a mano: sale de la propia sesión (`instrumento`), porque el día que
+   pases liderazgo o escenarios la cabecera tiene que cambiar sola. */
 function enLaSala(){
   const p = params();
   return !!(p.get("s") || p.get("proy"));
 }
+let _instrumento = null;          // {clave, version} de la sesión que se mira
+function recordarInstrumento(s){
+  if(s && s.existe !== false && s.instrumento){
+    _instrumento = {clave:s.instrumento, version:s.version || null};
+    document.title = nombreInstrumento(_instrumento.clave);
+    const el = document.querySelector(".brand");
+    if(el && enLaSala()) el.innerHTML = marcaSala();
+  }
+}
+function nombreInstrumento(clave){
+  const m = (typeof MODULOS !== "undefined") ? MODULOS.find(x => x.k === clave) : null;
+  // `publico` es el nombre que ve la sala; `nombre` el de tu consola.
+  return m ? (m.publico || m.nombre) : "Diagnóstico";
+}
+function marcaSala(){
+  if(!_instrumento) return `<b>Diagnóstico</b>`;
+  return `<b>${esc(nombreInstrumento(_instrumento.clave))}</b>`
+       + (_instrumento.version ? ` · v${esc(_instrumento.version)}` : "");
+}
 function cabecera(extra){
-  const marca = enLaSala()
-    ? `<b>Diagnóstico de cultura organizativa</b> · v${VERSION}`
-    : `<b>Consola de proyectos</b> de joaquinromero.com`;
+  const marca = enLaSala() ? marcaSala()
+                           : `<b>Consola de proyectos</b> de joaquinromero.com`;
   return `<header class="top">
     <div class="brand">${marca}${
       API.demo() ? ' · <span style="color:#d03b3b">modo demostración</span>' : ''}</div>
@@ -879,6 +899,9 @@ async function vistaParticipante(codigo){
    ═══════════════════════════════════════════════════════════════════ */
 async function vistaProyeccion(codigo){
   let sub = null, timer = null;
+  // Antes del primer pintado, para que el proyector no arranque con el nombre
+  // equivocado delante de la sala.
+  await API.sesionPublica(codigo);
   const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
   const pinta = async () => {
     const prog = await API.progreso(codigo);
@@ -1002,8 +1025,12 @@ async function vistaAdmin(){
   return hubPrivado(u);
 }
 
+/* Registro único de instrumentos. `nombre` es como lo llamas tú en la consola;
+   `publico` es como lo ve la sala —si falta, se usa `nombre`—. La cabecera del
+   participante sale de aquí, así que añadir un instrumento no obliga a tocarla. */
 const MODULOS = [
   {k:"cultura", nombre:"Cultura organizativa", est:"activo",
+   publico:"Diagnóstico de cultura organizativa",
    desc:"Cuatro vectores, reparto de 100 puntos, doce pantallas. Directo y survey.",
    ruta:"#/admin/sesiones"},
   {k:"escenarios", nombre:"Escenarios futuros", est:"pendiente",
@@ -1578,8 +1605,9 @@ function descargarCSV(s, res){
 // El título de la pestaña también: con diez pestañas abiertas, «Consola de
 // proyectos» se encuentra; «Diagnóstico de cultura organizativa» no distingue
 // tu consola de la pantalla que está mirando la sala.
-document.title = enLaSala() ? "Diagnóstico de cultura organizativa"
-                            : "Consola de proyectos · joaquinromero.com";
+// El título de la pestaña arranca neutro; en cuanto se conoce la sesión,
+// `recordarInstrumento` lo sustituye por el nombre real del instrumento.
+document.title = enLaSala() ? "Diagnóstico" : "Consola de proyectos · joaquinromero.com";
 
 let redib;
 window.addEventListener("resize", ()=>{ clearTimeout(redib);
