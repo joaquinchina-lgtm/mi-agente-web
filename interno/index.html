@@ -370,6 +370,33 @@ const API = {
     const { data, error } = await sb.rpc("pantalla_publica", {p_codigo:codigo, p_pantalla:n});
     if(error) throw error; return data;
   },
+  /* ── Motor de preguntas (instrumentos distintos de cultura) ────── */
+  async preguntas(sesionId){
+    if(this.demo()){ MEM.cargar(); return (MEM.preguntas||[])
+      .filter(p=>p.sesion_id===sesionId).sort((a,b)=>a.orden-b.orden); }
+    const { data, error } = await sb.from("pregunta").select("*")
+      .eq("sesion_id", sesionId).order("orden");
+    if(error) throw error; return data;
+  },
+  async crearPreguntas(filas){
+    if(this.demo()){ MEM.cargar(); MEM.preguntas = MEM.preguntas || [];
+      const r = filas.map(f=>({...f, id:MEM.id()})); MEM.preguntas.push(...r);
+      MEM.guardar(); return r; }
+    const { data, error } = await sb.from("pregunta").insert(filas).select();
+    if(error) throw error; return data;
+  },
+  async actualizarPregunta(id, cambios){
+    if(this.demo()){ MEM.cargar(); const p=(MEM.preguntas||[]).find(x=>x.id===id);
+      Object.assign(p, cambios); MEM.guardar(); return p; }
+    const { data, error } = await sb.from("pregunta").update(cambios).eq("id",id).select().single();
+    if(error) throw error; return data;
+  },
+  async borrarPregunta(id){
+    if(this.demo()){ MEM.cargar(); MEM.preguntas=(MEM.preguntas||[]).filter(x=>x.id!==id);
+      MEM.guardar(); return; }
+    const { error } = await sb.from("pregunta").delete().eq("id",id);
+    if(error) throw error;
+  },
   async sesionPublica(codigo){
     if(this.demo()){
       MEM.cargar();
@@ -1098,6 +1125,155 @@ async function vistaProyeccion(codigo){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   6 bis · CONSTRUCTOR DE SESIÓN (motor de preguntas)
+
+   Aquí compones la sesión: resuelves las variables del banco y eliges
+   qué preguntas entran. El banco tiene 60; de momento solo 38 se pueden
+   añadir. Las otras 22 aparecen igualmente, en gris y con el tipo que
+   les falta, porque es peor descubrir el hueco preparando una sesión
+   que verlo desde el principio.
+   ═══════════════════════════════════════════════════════════════════ */
+// «TEMA FOCAL» lleva un espacio, y un id con espacio rompe querySelector.
+// Costó un «Cannot read properties of null» en la primera prueba.
+const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
+
+const NAT_ETIQ = {
+  fija:      {t:"fija",         d:"Su contenido existe antes de la sesión."},
+  derivada:  {t:"derivada",     d:"Se construye durante la sesión con lo que responda el grupo. La añades ahora con las opciones vacías y las rellenas en directo."},
+  escenario: {t:"por escenario",d:"Plantilla que se repite una vez por escenario, con el nombre que le ponga el grupo."}
+};
+
+async function consolaMotor(s){
+  const vars = s.variables || {};
+  let preguntas = await API.preguntas(s.id);
+  const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
+
+  const pinta = async () => {
+    const usados = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
+    const faltanVars = VARIABLES_ESC.filter(v => !vars[v.clave]);
+
+    app().innerHTML = `<div class="wrap ancho">${cabecera(
+      `<a class="iconbtn" href="#/admin/sesiones">Sesiones</a>`)}
+      <div class="card">
+        <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · escenarios futuros</span>
+        <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1>
+        <p class="small" style="margin-top:8px">Código <code>${esc(s.codigo)}</code> ·
+          ${esc(s.estado)} · ${esc(s.modo)}</p>
+        <div class="aviso"><b>Instrumento en construcción.</b> El constructor y la base de datos
+          están listos; el móvil del participante y la proyección todavía no. Puedes componer la
+          sesión y guardarla, pero aún no pasarla.</div>
+      </div>
+
+      <div class="card">
+        <h2>Variables del ejercicio</h2>
+        <p class="small">Se sustituyen en el enunciado <b>al añadir la pregunta</b>, no al mostrarla:
+          así el texto que leyó la gente queda congelado aunque después cambies una variable.</p>
+        <div class="grid2">${VARIABLES_ESC.map(v=>`
+          <div class="field"><label for="${idVar(v.clave)}">${esc(v.etiqueta)}</label>
+            <input id="${idVar(v.clave)}" value="${esc(vars[v.clave]||"")}" placeholder="${esc(v.ayuda)}">
+          </div>`).join("")}</div>
+        <div class="btnrow"><button class="btn" id="gv">Guardar variables</button></div>
+        ${faltanVars.length ? `<p class="note">Sin rellenar: ${faltanVars.map(v=>esc(v.etiqueta)).join(", ")}.
+          Las preguntas que las usen se añadirán con el hueco sin resolver.</p>` : ""}
+      </div>
+
+      <div class="card">
+        <h2>Preguntas de esta sesión <span class="estado">${preguntas.length}</span></h2>
+        ${preguntas.length ? `<div class="lista">${preguntas.map((p,i)=>`
+          <div class="it">
+            <div><b>${i+1}. ${esc(p.titulo)}</b>
+              <div class="small"><code>${esc(p.codigo||"propia")}</code> ·
+                ${esc(TIPOS_NOMBRE[p.tipo]||p.tipo)} · ${esc(p.estado)}</div></div>
+            <div class="btnrow" style="margin:0">
+              <button class="btn ghost sm" data-sube="${p.id}" ${i===0?"disabled":""}>↑</button>
+              <button class="btn ghost sm" data-baja="${p.id}" ${i===preguntas.length-1?"disabled":""}>↓</button>
+              <button class="btn ghost sm" data-quita="${p.id}">Quitar</button>
+            </div>
+          </div>`).join("")}</div>`
+          : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
+        <div class="btnrow">
+          <button class="btn ghost" id="nucleo">Añadir el itinerario núcleo</button>
+          <button class="btn ghost" id="bench">Añadir solo las comparables</button>
+        </div>
+        <p class="note">El itinerario núcleo son 21 preguntas; de esas, ${
+          BANCO_ESC.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)).length} son de tipos ya
+          construidos. Las comparables son las nueve que sí acumulan conocimiento entre clientes.</p>
+      </div>
+
+      ${BLOQUES_ESC.map((nb, bi) => {
+        const ps = BANCO_ESC.filter(p=>p.b===bi);
+        return `<div class="card">
+          <h3 style="margin-top:0">Bloque ${bi} · ${esc(nb)}</h3>
+          <div class="lista">${ps.map(p=>{
+            const listo = TIPOS_LISTOS.includes(p.t);
+            const puesta = usados.has(p.c);
+            return `<div class="it" style="${listo?"":"opacity:.55"}">
+              <div><b>${esc(p.c)}.</b> ${esc(resolverTexto(p.q, vars))}
+                <div class="small">${esc(TIPOS_NOMBRE[p.t])} ·
+                  <span title="${esc(NAT_ETIQ[p.nat].d)}">${esc(NAT_ETIQ[p.nat].t)}</span>
+                  ${p.nuc ? " · núcleo" : ""}${p.bench ? " · comparable" : ""}
+                  ${listo ? "" : " · <b>tipo no construido</b>"}</div></div>
+              <div>${puesta ? `<span class="estado">añadida</span>`
+                : listo ? `<button class="btn ghost sm" data-add="${p.c}">Añadir</button>`
+                : `<span class="estado">fase siguiente</span>`}</div>
+            </div>`;}).join("")}</div>
+        </div>`;}).join("")}
+      </div>`;
+
+    $("#gv").onclick = async () => {
+      const nv = {}; VARIABLES_ESC.forEach(v=>{
+        const el = $("#" + idVar(v.clave)); const x = el ? el.value.trim() : "";
+        if(x) nv[v.clave] = x; });
+      Object.assign(s, await API.actualizarSesion(s.id, {variables:nv}));
+      Object.keys(vars).forEach(k=>delete vars[k]); Object.assign(vars, nv);
+      pinta();
+    };
+    $("#nucleo").onclick = () => añadir(BANCO_ESC.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)));
+    $("#bench").onclick  = () => añadir(BANCO_ESC.filter(p=>p.bench));
+    app().querySelectorAll("[data-add]").forEach(b => b.onclick = () =>
+      añadir([BANCO_ESC.find(p=>p.c===b.dataset.add)]));
+    app().querySelectorAll("[data-quita]").forEach(b => b.onclick = async () => {
+      await API.borrarPregunta(b.dataset.quita);
+      preguntas = await API.preguntas(s.id); pinta(); });
+    const mover = async (id, delta) => {
+      const i = preguntas.findIndex(p=>p.id===id), j = i + delta;
+      if(j < 0 || j >= preguntas.length) return;
+      // Los dos valores se capturan ANTES de tocar nada. Leerlos del array
+      // entre las dos escrituras deja las dos filas con el mismo orden si el
+      // backend devuelve el mismo objeto que ya tenías.
+      const [idA, ordA] = [preguntas[i].id, preguntas[i].orden];
+      const [idB, ordB] = [preguntas[j].id, preguntas[j].orden];
+      await API.actualizarPregunta(idA, {orden: ordB});
+      await API.actualizarPregunta(idB, {orden: ordA});
+      preguntas = await API.preguntas(s.id); pinta();
+    };
+    app().querySelectorAll("[data-sube]").forEach(b => b.onclick = () => mover(b.dataset.sube, -1));
+    app().querySelectorAll("[data-baja]").forEach(b => b.onclick = () => mover(b.dataset.baja, +1));
+  };
+
+  // Resuelve las variables también dentro de la configuración: los ítems de
+  // una matriz de escalas llevan [ORGANIZACION] igual que el enunciado.
+  const resolverCfg = cfg => JSON.parse(resolverTexto(JSON.stringify(cfg||{}), vars));
+
+  const añadir = async lista => {
+    const ya = new Set(preguntas.map(p=>p.codigo));
+    const nuevas = lista.filter(p => p && !ya.has(p.c) && TIPOS_LISTOS.includes(p.t));
+    if(!nuevas.length) return;
+    let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
+    await API.crearPreguntas(nuevas.map(p => ({
+      sesion_id: s.id, orden: ++orden, codigo: p.c, tipo: p.t,
+      titulo: resolverTexto(p.q, vars),
+      ayuda: p.ayuda ? resolverTexto(p.ayuda, vars) : null,
+      config: resolverCfg(p.cfg), estado: "cerrada"
+    })));
+    preguntas = await API.preguntas(s.id);
+    pinta();
+  };
+
+  await pinta();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    7 · ADMINISTRADOR
    ═══════════════════════════════════════════════════════════════════ */
 async function vistaAdmin(){
@@ -1160,6 +1336,307 @@ async function vistaAdmin(){
   return hubPrivado(u);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   BANCO DE PREGUNTAS · Escenarios futuros
+   Prospectiva y planificación por escenarios, inspirado en Oxford
+   Scenario Planning.
+
+   Vive aquí y no en la base de datos a propósito: es contenido
+   metodológico que evoluciona con la práctica, no dato de cliente. Lo
+   que sí va a la base de datos es la pregunta concreta que entró en una
+   sesión, con su texto ya resuelto.
+
+   Claves: c=código · b=bloque · t=tipo · nuc=itinerario núcleo
+           nat= fija (existe antes) | derivada (se construye en sesión)
+                | escenario (plantilla ×4)
+   ═══════════════════════════════════════════════════════════════════ */
+
+const BLOQUES_ESC = [
+  "Perfil y perspectiva",
+  "Activación y orientación al futuro",
+  "Pregunta focal, sistema y situación actual",
+  "Entorno y fuerzas impulsoras",
+  "Incertidumbres críticas",
+  "Arquitectura de escenarios",
+  "Implicaciones, opciones y robustez",
+  "Señales tempranas, aprendizaje y cierre"
+];
+
+/* Tipos ya construidos (fase 1). El resto aparece en el banco pero no se
+   puede añadir todavía: es mejor que veas el mapa entero y sepas qué
+   falta, a que descubras el hueco preparando una sesión. */
+const TIPOS_LISTOS = ["unica","multiple","escala","matriz_escala",
+                      "abierta","abierta_campos","puntos100"];
+
+const TIPOS_NOMBRE = {
+  unica:"Opción única", multiple:"Opción múltiple", escala:"Escala 1–7",
+  matriz_escala:"Matriz de escalas", abierta:"Respuesta abierta",
+  abierta_campos:"Abierta con campos", puntos100:"Reparto de 100 puntos",
+  tarjetas:"Tarjetas + agrupación + votación", nube:"Nube de palabras",
+  ranking:"Priorización", dos_ejes:"Posicionamiento en dos ejes",
+  clasificar:"Clasificación por categorías", secuencia:"Secuenciación",
+  matriz_valoracion:"Matriz de robustez"
+};
+
+const ESC_1a7 = {min:1, max:7};
+
+const BANCO_ESC = [
+/* ── Bloque 0 · Perfil ─────────────────────────────────────────── */
+{c:"P01", b:0, t:"unica", nuc:true, nat:"fija",
+ q:"¿Desde qué relación con [ORGANIZACION] respondes?",
+ cfg:{opciones:["Dirección o gobierno","Mando intermedio","Personal técnico u operativo",
+   "Cliente, usuario o beneficiario","Proveedor o socio","Administración o regulador",
+   "Comunidad o ciudadanía","Experto/a externo/a","Otro"]}},
+{c:"P02", b:0, t:"unica", nuc:false, nat:"fija",
+ q:"¿Cuál es tu principal ámbito funcional o área de vinculación?",
+ cfg:{opciones:["Estrategia y dirección","Operaciones","Personas y cultura","Finanzas",
+   "Comercial o relación con usuarios","Tecnología y datos","Innovación","Sostenibilidad",
+   "Comunicación","Regulación y asuntos públicos","Investigación y conocimiento","Otro"]}},
+{c:"P03", b:0, t:"unica", nuc:false, nat:"fija",
+ q:"¿Cuánto tiempo llevas vinculado/a a [ORGANIZACION] o a su ámbito de actividad?",
+ cfg:{opciones:["Menos de 1 año","1–3 años","4–7 años","8–15 años","Más de 15 años","No aplica"]}},
+{c:"P04", b:0, t:"unica", nuc:false, nat:"fija",
+ q:"¿En qué tramo se sitúa el tamaño de [ORGANIZACION]?",
+ ayuda:"Solo en sesiones con varias organizaciones.",
+ cfg:{opciones:["1–10","11–50","51–250","251–1.000","1.001–5.000","Más de 5.000","No lo sé o no aplica"]}},
+{c:"P05", b:0, t:"unica", nuc:false, nat:"fija",
+ q:"¿Desde qué perspectiva observas principalmente [TEMA FOCAL]?",
+ cfg:{opciones:["Estratégica","Operativa","Económica","Tecnológica","Humana o social",
+   "Ambiental","Regulatoria o política","Usuario o mercado","Otra"]}},
+
+/* ── Bloque 1 · Activación ─────────────────────────────────────── */
+{c:"P06", b:1, t:"nube", nuc:true, nat:"fija",
+ q:"Cuando piensas en el futuro de [ORGANIZACION], ¿qué palabra te viene primero a la cabeza?",
+ cfg:{maximo:2}},
+{c:"P07", b:1, t:"unica", nuc:false, nat:"fija", bench:true,
+ q:"¿Qué emoción describe mejor cómo afrontas el futuro de [ORGANIZACION]?",
+ cfg:{opciones:["Entusiasmo","Confianza","Curiosidad","Incertidumbre","Preocupación",
+   "Temor","Indiferencia","Otra"]}},
+{c:"P08", b:1, t:"matriz_escala", nuc:false, nat:"fija", bench:true,
+ q:"¿En qué medida te preocupa el futuro de cada ámbito?",
+ cfg:{...ESC_1a7, ancla_min:"Nada", ancla_max:"Muchísimo",
+   items:["[ORGANIZACION]","[TERRITORIO]","El sector o ecosistema","El mundo"]}},
+{c:"P09", b:1, t:"matriz_escala", nuc:false, nat:"fija", bench:true,
+ q:"Pensando en [HORIZONTE], ¿en qué medida crees que cada ámbito evolucionará favorablemente?",
+ cfg:{...ESC_1a7, ancla_min:"Mucho peor", ancla_med:"Similar", ancla_max:"Mucho mejor",
+   items:["[ORGANIZACION]","[TERRITORIO]","El sector o ecosistema","El mundo"]}},
+{c:"P10", b:1, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Hasta qué punto serán suficientes en [HORIZONTE] las capacidades y fórmulas que hoy nos dan buenos resultados?",
+ cfg:{...ESC_1a7, ancla_min:"Totalmente en desacuerdo", ancla_max:"Totalmente de acuerdo"}},
+{c:"P11", b:1, t:"abierta", nuc:false, nat:"fija",
+ q:"Completa la frase: «En [HORIZONTE], [ORGANIZACION] debería ser…»",
+ cfg:{maximo_caracteres:140}},
+
+/* ── Bloque 2 · Pregunta focal y sistema ───────────────────────── */
+{c:"P12", b:2, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Cuál es la decisión estratégica que [ORGANIZACION] necesita iluminar mediante este ejercicio?",
+ cfg:{maximo_caracteres:200, votos:3}},
+{c:"P13", b:2, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Qué formulación de la pregunta focal debería guiar el ejercicio?",
+ ayuda:"Plantilla: «¿Cómo podría cambiar [TEMA FOCAL] para [ORGANIZACION] de aquí a [HORIZONTE], y qué decisiones deberíamos tomar hoy?»",
+ cfg:{opciones:[]}},
+{c:"P14", b:2, t:"multiple", nuc:false, nat:"fija",
+ q:"¿Qué partes del sistema deben quedar dentro del alcance del análisis?",
+ cfg:{maximo:5, opciones:["Clientes o usuarios","Personas y talento","Productos y servicios",
+   "Operaciones","Tecnología y datos","Financiación","Proveedores","Socios","Reguladores",
+   "Territorio y comunidad","Medioambiente","Competidores o alternativas","Otras"]}},
+{c:"P15", b:2, t:"puntos100", nuc:false, nat:"fija", bench:true,
+ q:"¿Qué actores tendrán mayor capacidad para condicionar la evolución de [TEMA FOCAL]?",
+ cfg:{total:100, paso:5, opciones:["[ORGANIZACION]","Clientes o usuarios","Plantilla","Proveedores",
+   "Competidores","Administraciones y reguladores","Socios y alianzas","Financiadores",
+   "Ciudadanía y comunidad","Nuevos entrantes o plataformas"]}},
+{c:"P16", b:2, t:"multiple", nuc:false, nat:"fija", bench:true,
+ q:"¿En qué dimensiones es hoy más vulnerable [ORGANIZACION]?",
+ cfg:{maximo:3, opciones:["Propuesta de valor","Ingresos y financiación","Costes","Talento",
+   "Conocimiento","Cultura","Liderazgo y gobernanza","Tecnología y datos",
+   "Operaciones y cadena de suministro","Reputación y confianza","Regulación",
+   "Activos e infraestructura","Sostenibilidad","Alianzas"]}},
+{c:"P17", b:2, t:"ranking", nuc:false, nat:"fija",
+ q:"¿Qué capacidad actual de [ORGANIZACION] sería más difícil de replicar por otra entidad?",
+ cfg:{opciones:["Personas y conocimiento","Cultura y valores","Relaciones y confianza",
+   "Marca y reputación","Datos y tecnología","Procesos y operaciones","Activos e infraestructura",
+   "Acceso a usuarios o mercados","Capacidad de decisión","Alianzas"]}},
+{c:"P18", b:2, t:"tarjetas", nuc:false, nat:"fija",
+ q:"¿Qué conocimiento crítico depende hoy de muy pocas personas o está insuficientemente documentado?",
+ cfg:{maximo_caracteres:200, votos:3}},
+
+/* ── Bloque 3 · Entorno y fuerzas ──────────────────────────────── */
+{c:"P19", b:3, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué cambios del entorno podrían transformar de forma significativa [TEMA FOCAL] antes de [HORIZONTE]?",
+ ayuda:"Un cambio por tarjeta. Describe una fuerza, no una solución ni un deseo.",
+ cfg:{maximo_aportaciones:5, votos:3}},
+{c:"P20", b:3, t:"nube", nuc:false, nat:"fija",
+ q:"¿Qué tendencias influirán más en el futuro de [ORGANIZACION]?", cfg:{maximo:3}},
+{c:"P21", b:3, t:"multiple", nuc:false, nat:"fija", bench:true,
+ q:"¿En qué ámbitos se concentran las fuerzas de cambio detectadas?",
+ ayuda:"Clasificación PESTEL ampliada.",
+ cfg:{opciones:["Política y geopolítica","Economía y financiación","Sociedad y cultura",
+   "Tecnología y ciencia","Medioambiente y recursos","Regulación y gobernanza","Demografía",
+   "Mercado y usuarios","Talento y trabajo"]}},
+{c:"P22", b:3, t:"multiple", nuc:false, nat:"derivada",
+ q:"¿Cuáles de estas tendencias son ya suficientemente visibles y persistentes como para tratarlas como predeterminadas?",
+ ayuda:"Lista consolidada de P19–P21. Solo procesos con dirección relativamente estable.",
+ cfg:{maximo:5, opciones:[]}},
+{c:"P23", b:3, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué señal débil podría parecer marginal hoy y resultar decisiva en [HORIZONTE]?",
+ cfg:{maximo_caracteres:200, maximo_aportaciones:2, votos:3}},
+{c:"P24", b:3, t:"abierta_campos", nuc:false, nat:"fija",
+ q:"Si una regla del sector pudiera romperse, ¿cuál sería y qué podría provocar la ruptura?",
+ cfg:{campos:[{clave:"regla", etiqueta:"Regla o supuesto"},
+              {clave:"causa", etiqueta:"Causa de ruptura"}]}},
+{c:"P25", b:3, t:"multiple", nuc:false, nat:"fija", bench:true,
+ q:"¿Dónde aparecerían primero los puntos de ruptura?",
+ cfg:{maximo:3, opciones:["Demanda y usuarios","Ingresos y precios","Talento",
+   "Operaciones y suministro","Tecnología y datos","Regulación","Financiación",
+   "Infraestructura","Reputación y confianza","Cohesión social","Recursos naturales","Gobernanza"]}},
+
+/* ── Bloque 4 · Incertidumbres críticas ────────────────────────── */
+{c:"P26", b:4, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué factores relevantes podrían evolucionar en direcciones plausibles muy diferentes?",
+ ayuda:"Formula cada incertidumbre como variable neutral: «grado de centralización de las decisiones», no «exceso de centralización».",
+ cfg:{maximo_aportaciones:5, votos:3}},
+{c:"P27", b:4, t:"multiple", nuc:false, nat:"derivada",
+ q:"Para la incertidumbre elegida, ¿qué es exactamente lo que desconocemos?",
+ cfg:{opciones:["Si ocurrirá","Cuándo ocurrirá","Con qué velocidad","Con qué intensidad",
+   "En qué dirección evolucionará","A quién afectará más","Cómo interactuará con otras fuerzas",
+   "Cuánto durará","Otra"]}},
+{c:"P28", b:4, t:"abierta_campos", nuc:true, nat:"derivada",
+ q:"¿Cuáles son los dos extremos plausibles de esta incertidumbre en [HORIZONTE]?",
+ cfg:{campos:[{clave:"a", etiqueta:"Extremo A"},{clave:"ev_a", etiqueta:"Evidencia de plausibilidad de A"},
+              {clave:"b", etiqueta:"Extremo B"},{clave:"ev_b", etiqueta:"Evidencia de plausibilidad de B"}]}},
+{c:"P29", b:4, t:"dos_ejes", nuc:true, nat:"derivada",
+ q:"Clasifica las incertidumbres según su impacto potencial y su grado de incertidumbre.",
+ cfg:{eje_x:"Baja incertidumbre → alta incertidumbre", eje_y:"Bajo impacto → alto impacto", elementos:[]}},
+{c:"P30", b:4, t:"ranking", nuc:false, nat:"derivada",
+ q:"¿Qué incertidumbres tienen mayor impacto potencial sobre [ORGANIZACION]?",
+ ayuda:"Alternativa a P29, no adicional. Usar solo si no se puede extraer el eje Y.", cfg:{opciones:[]}},
+{c:"P31", b:4, t:"ranking", nuc:false, nat:"derivada",
+ q:"¿Qué incertidumbres son más difíciles de anticipar?",
+ ayuda:"Alternativa a P29, no adicional. Usar solo si no se puede extraer el eje X.", cfg:{opciones:[]}},
+{c:"P32", b:4, t:"puntos100", nuc:true, nat:"derivada",
+ q:"Distribuye 100 puntos entre las incertidumbres según su criticidad para la pregunta focal.",
+ ayuda:"Crítica = relevancia decisional + impacto + imprevisibilidad.",
+ cfg:{total:100, paso:5, opciones:[]}},
+{c:"P33", b:4, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Qué par de incertidumbres es simultáneamente crítico, independiente y capaz de producir futuros sustancialmente distintos?",
+ cfg:{opciones:[]}},
+{c:"P34", b:4, t:"escala", nuc:true, nat:"derivada",
+ q:"¿En qué medida son independientes entre sí las dos incertidumbres seleccionadas?",
+ ayuda:"Si la mediana baja de 5, revisa la pareja de ejes.",
+ cfg:{...ESC_1a7, ancla_min:"Casi el mismo fenómeno", ancla_max:"Claramente independientes"}},
+
+/* ── Bloque 5 · Arquitectura de escenarios ─────────────────────── */
+{c:"P35", b:5, t:"dos_ejes", nuc:true, nat:"derivada",
+ q:"Sitúa los cuatro futuros resultantes en la matriz formada por las dos incertidumbres críticas.",
+ cfg:{eje_x:"", eje_y:"", elementos:["Escenario 1","Escenario 2","Escenario 3","Escenario 4"]}},
+{c:"P36", b:5, t:"tarjetas", nuc:false, nat:"derivada",
+ q:"¿Qué nombre breve y memorable darías a este escenario?",
+ cfg:{maximo_caracteres:60, votos:1}},
+{c:"P37", b:5, t:"abierta", nuc:false, nat:"escenario",
+ q:"¿Qué titular de prensa publicado en [HORIZONTE] capturaría la esencia de este escenario?",
+ cfg:{maximo_caracteres:160}},
+{c:"P38", b:5, t:"secuencia", nuc:true, nat:"escenario",
+ q:"¿Qué acontecimientos tendrían que suceder para llegar desde el presente hasta este escenario?",
+ cfg:{elementos:[]}},
+{c:"P39", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
+ q:"¿Cómo sería la experiencia cotidiana de los actores relevantes en este escenario?",
+ cfg:{campos:[{clave:"usuarios", etiqueta:"Clientes o usuarios"},
+              {clave:"personas", etiqueta:"Personas de la organización"},
+              {clave:"socios", etiqueta:"Socios y proveedores"},
+              {clave:"sociedad", etiqueta:"Sociedad y territorio"}]}},
+{c:"P40", b:5, t:"puntos100", nuc:false, nat:"escenario",
+ q:"Reparte 100 puntos según dónde se concentraría la creación de valor en este escenario.",
+ cfg:{total:100, paso:5, opciones:["Eficiencia","Innovación","Personalización","Escala",
+   "Confianza","Conocimiento","Sostenibilidad","Colaboración y ecosistema","Acceso e inclusión"]}},
+{c:"P41", b:5, t:"nube", nuc:false, nat:"escenario",
+ q:"¿Qué capacidades serían más escasas o decisivas en este escenario?", cfg:{maximo:3}},
+{c:"P42", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
+ q:"¿Quién ganaría y quién perdería poder o capacidad de decisión en este escenario?",
+ cfg:{campos:[{clave:"ganan", etiqueta:"Actores que ganan"},
+              {clave:"pierden", etiqueta:"Actores que pierden"},
+              {clave:"mecanismo", etiqueta:"Mecanismo que explica el cambio"}]}},
+{c:"P43", b:5, t:"abierta", nuc:false, nat:"escenario",
+ q:"¿Qué hecho haría que este escenario dejara de ser plausible?",
+ cfg:{maximo_caracteres:200}},
+
+/* ── Bloque 6 · Implicaciones y robustez ───────────────────────── */
+{c:"P44", b:6, t:"tarjetas", nuc:true, nat:"escenario",
+ q:"¿Qué oportunidades abriría este escenario para [ORGANIZACION]?",
+ cfg:{maximo_aportaciones:3, votos:2}},
+{c:"P45", b:6, t:"tarjetas", nuc:true, nat:"escenario",
+ q:"¿Qué amenazas o fragilidades revelaría este escenario?",
+ cfg:{maximo_aportaciones:3, votos:2}},
+{c:"P46", b:6, t:"clasificar", nuc:false, nat:"derivada",
+ q:"¿Sobre cuáles de estos factores puede influir realmente [ORGANIZACION]?",
+ cfg:{categorias:["Control directo","Influencia parcial","Solo adaptación o seguimiento"], elementos:[]}},
+{c:"P47", b:6, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué opciones estratégicas convendría considerar hoy sin comprometerse todavía con una sola predicción?",
+ ayuda:"Una opción por tarjeta: acciones, inversiones, experimentos o alianzas.",
+ cfg:{maximo_aportaciones:5, votos:3}},
+{c:"P48", b:6, t:"matriz_valoracion", nuc:true, nat:"derivada",
+ q:"Evalúa la robustez de cada opción estratégica en los cuatro escenarios.",
+ ayuda:"Wind tunneling. 1 = perjudicial o inviable · 3 = neutra o adaptable · 5 = muy valiosa.",
+ cfg:{min:1, max:5, filas:[], columnas:["Escenario 1","Escenario 2","Escenario 3","Escenario 4"]}},
+{c:"P49", b:6, t:"puntos100", nuc:false, nat:"derivada",
+ q:"¿Cómo repartirías 100 unidades de recursos entre las opciones estratégicas?",
+ ayuda:"Considera valor, robustez, coste de esperar y reversibilidad.",
+ cfg:{total:100, paso:5, opciones:[]}},
+{c:"P50", b:6, t:"ranking", nuc:false, nat:"derivada",
+ q:"Ordena las opciones según la prioridad para actuar en los próximos 12–24 meses.", cfg:{opciones:[]}},
+{c:"P51", b:6, t:"dos_ejes", nuc:false, nat:"derivada",
+ q:"Posiciona las iniciativas propuestas según su valor estratégico y la facilidad de ejecución.",
+ cfg:{eje_x:"Difícil de ejecutar → fácil de ejecutar", eje_y:"Bajo valor → alto valor", elementos:[]}},
+{c:"P52", b:6, t:"unica", nuc:false, nat:"derivada",
+ q:"¿Qué decisión sería más costosa de posponer?", cfg:{opciones:[]}},
+{c:"P53", b:6, t:"abierta_campos", nuc:false, nat:"fija",
+ q:"¿Qué deberíamos empezar, dejar de hacer y mantener?",
+ cfg:{campos:[{clave:"empezar", etiqueta:"Empezar"},{clave:"dejar", etiqueta:"Dejar"},
+              {clave:"mantener", etiqueta:"Mantener"}]}},
+
+/* ── Bloque 7 · Señales y cierre ───────────────────────────────── */
+{c:"P54", b:7, t:"abierta_campos", nuc:true, nat:"escenario",
+ q:"¿Qué señal observable indicaría que nos estamos acercando a este escenario?",
+ cfg:{campos:[{clave:"indicador", etiqueta:"Indicador"},{clave:"fuente", etiqueta:"Fuente"},
+              {clave:"frecuencia", etiqueta:"Frecuencia de observación"},
+              {clave:"umbral", etiqueta:"Umbral que activaría una revisión"}]}},
+{c:"P55", b:7, t:"multiple", nuc:false, nat:"derivada",
+ q:"¿Qué indicadores deberían formar el cuadro de vigilancia estratégica?",
+ cfg:{maximo:7, opciones:[]}},
+{c:"P56", b:7, t:"unica", nuc:false, nat:"derivada",
+ q:"¿Quién debería asumir la observación y la conversación periódica sobre estas señales?",
+ cfg:{opciones:["Dirección","Estrategia","Área responsable","Equipo transversal",
+   "Socio externo","Otra"]}},
+{c:"P57", b:7, t:"unica", nuc:false, nat:"fija",
+ q:"¿Con qué frecuencia debería revisarse la vigencia de los escenarios?",
+ cfg:{opciones:["Mensual","Trimestral","Semestral","Anual","Ante un evento gatillo",
+   "Revisión periódica y gatillos"]}},
+{c:"P58", b:7, t:"escala", nuc:false, nat:"fija", bench:true,
+ q:"Tras el ejercicio, ¿en qué medida ha cambiado tu visión sobre [TEMA FOCAL]?",
+ cfg:{...ESC_1a7, ancla_min:"Nada", ancla_max:"Profundamente"}},
+{c:"P59", b:7, t:"abierta", nuc:false, nat:"fija",
+ q:"¿Qué supuesto propio o de [ORGANIZACION] cuestionas ahora?",
+ cfg:{maximo_caracteres:200}},
+{c:"P60", b:7, t:"abierta_campos", nuc:true, nat:"fija",
+ q:"¿Qué conversación o acción concreta debería producirse en las próximas dos semanas?",
+ cfg:{campos:[{clave:"accion", etiqueta:"Acción o conversación"},
+              {clave:"responsable", etiqueta:"Responsable sugerido"},
+              {clave:"fecha", etiqueta:"Fecha objetivo"}]}}
+];
+
+/* Variables que hay que resolver antes de crear las preguntas. */
+const VARIABLES_ESC = [
+  {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización, unidad o sistema analizado."},
+  {clave:"TEMA FOCAL",   etiqueta:"Tema focal",   ayuda:"Reto, decisión o ámbito objeto del ejercicio."},
+  {clave:"TERRITORIO",   etiqueta:"Territorio",   ayuda:"Región, país o área de influencia relevante."},
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Año o intervalo futuro. Se recomienda 5–15 años según el sector."},
+  {clave:"GRUPOS",       etiqueta:"Grupos",       ayuda:"Colectivos internos o externos relevantes."}
+];
+
+function resolverTexto(txt, vars){
+  return String(txt||"").replace(/\[([A-ZÑ ]+)\]/g, (m, k) =>
+    (vars && vars[k]) ? vars[k] : m);
+}
+
 /* Registro único de instrumentos. `nombre` es como lo llamas tú en la consola;
    `publico` es como lo ve la sala —si falta, se usa `nombre`—. La cabecera del
    participante sale de aquí, así que añadir un instrumento no obliga a tocarla. */
@@ -1168,8 +1645,12 @@ const MODULOS = [
    publico:"Diagnóstico de cultura organizativa",
    desc:"Cuatro vectores, reparto de 100 puntos, doce pantallas. Directo y survey.",
    ruta:"#/admin/sesiones"},
-  {k:"escenarios", nombre:"Escenarios futuros", est:"pendiente",
-   desc:"Incertidumbres clave y construcción de escenarios. Sigue en Mentimeter."},
+  {k:"escenarios", nombre:"Escenarios futuros", est:"parcial",
+   publico:"Prospectiva y escenarios de futuro",
+   desc:"Banco de 60 preguntas. Construidas 38: opción única y múltiple, escalas, "
+      + "matriz de escalas, abiertas y reparto de 100 puntos. Faltan tarjetas, "
+      + "nubes, rankings, dos ejes, secuencia y matriz de robustez.",
+   ruta:"#/admin/sesiones"},
   {k:"reactor", nombre:"Reactor de innovación", est:"pendiente",
    desc:"Enunciados canónicos y valoración colectiva. Es tu activo más defendible."},
   {k:"liderazgo", nombre:"Modelo de liderazgo", est:"pendiente",
@@ -1199,8 +1680,9 @@ function hubPrivado(u){
         <div class="mini" style="padding:16px">
           <h4>${esc(m.nombre)}</h4>
           <p class="small" style="margin:6px 0 12px">${esc(m.desc)}</p>
-          ${m.est==="activo"
-            ? `<a class="btn sm" href="${m.ruta}">Abrir</a>`
+          ${m.est==="activo" ? `<a class="btn sm" href="${m.ruta}">Abrir</a>`
+            : m.est==="parcial" ? `<a class="btn ghost sm" href="${m.ruta}">Abrir</a>
+                <span class="estado" style="margin-left:8px">en construcción</span>`
             : `<span class="estado">por construir</span>`}
         </div>`).join("")}</div>
       <p class="note">Los cinco pendientes siguen en Mentimeter. El motor está diseñado para
@@ -1338,6 +1820,11 @@ async function panelAdmin(u){
       <form id="fs"><div class="grid2">
         <div class="field"><label for="s-org">Organización</label>
           <select id="s-org">${orgs.map(o=>`<option value="${o.id}">${esc(o.nombre)}</option>`).join("")}</select></div>
+        <div class="field"><label for="s-ins">Instrumento</label>
+          <select id="s-ins">
+            <option value="cultura-cvf">Cultura organizativa</option>
+            <option value="escenarios">Escenarios futuros · en construcción</option>
+          </select></div>
         <div class="field"><label for="s-tit">Título de la sesión</label>
           <input id="s-tit" required placeholder="Equipo directivo · febrero 2026"></div>
         <div class="field"><label for="s-col">Colectivo</label>
@@ -1391,6 +1878,7 @@ async function panelAdmin(u){
     const cod = ($("#s-cod").value.trim() || generarCodigo($("#s-tit").value)).toUpperCase();
     const s = {organizacion_id:$("#s-org").value, titulo:$("#s-tit").value.trim(),
       colectivo:$("#s-col").value.trim()||null, modo, codigo:cod,
+      instrumento: $("#s-ins") ? $("#s-ins").value : "cultura-cvf",
       n_convocados: $("#s-n").value ? parseInt($("#s-n").value,10) : null};
     if(modo === "survey"){
       s.ventana_inicio = $("#s-ini").value ? new Date($("#s-ini").value).toISOString() : null;
@@ -1415,6 +1903,10 @@ async function consolaSesion(id){
   const todas = await API.sesiones();
   const s = todas.find(x=>x.id === id);
   if(!s){ location.hash = "#/admin/sesiones"; return; }
+  // Cultura tiene su consola de siempre. Los instrumentos del motor tienen
+  // la suya, porque lo que hay que conducir es distinto: allí son doce
+  // pantallas fijas, aquí una lista de preguntas que tú compones.
+  if(String(s.instrumento||"").split("-")[0] !== "cultura") return consolaMotor(s);
   const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
   const urlProy = location.origin + location.pathname + "?proy=" + encodeURIComponent(s.codigo);
   let prog = await API.progreso(s.codigo) || {completos:0, en_curso:0};
