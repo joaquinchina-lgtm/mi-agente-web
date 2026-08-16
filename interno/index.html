@@ -516,9 +516,21 @@ function pintarQR(id, url, celda){
   }
 }
 
+/* La cabecera dice dos cosas distintas según quién mira.
+   En la sala —móvil del participante y proyector— tiene que decir qué está
+   respondiendo la gente: el nombre del instrumento y su versión. En tu lado
+   dice de quién es la casa. Poner «Consola de proyectos de joaquinromero.com»
+   en el móvil de cuarenta personas de un cliente sería enseñar tu cocina. */
+function enLaSala(){
+  const p = params();
+  return !!(p.get("s") || p.get("proy"));
+}
 function cabecera(extra){
+  const marca = enLaSala()
+    ? `<b>Diagnóstico de cultura organizativa</b> · v${VERSION}`
+    : `<b>Consola de proyectos</b> de joaquinromero.com`;
   return `<header class="top">
-    <div class="brand"><b>Diagnóstico de cultura organizativa</b> · v${VERSION}${
+    <div class="brand">${marca}${
       API.demo() ? ' · <span style="color:#d03b3b">modo demostración</span>' : ''}</div>
     <div style="display:flex;gap:8px">${extra||""}
       <button class="iconbtn" onclick="alternarTema()">Tema</button></div></header>`;
@@ -1562,6 +1574,12 @@ function descargarCSV(s, res){
   a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
   a.download = "cultura-" + s.codigo + ".csv"; a.click(); URL.revokeObjectURL(a.href);
 }
+
+// El título de la pestaña también: con diez pestañas abiertas, «Consola de
+// proyectos» se encuentra; «Diagnóstico de cultura organizativa» no distingue
+// tu consola de la pantalla que está mirando la sala.
+document.title = enLaSala() ? "Diagnóstico de cultura organizativa"
+                            : "Consola de proyectos · joaquinromero.com";
 
 let redib;
 window.addEventListener("resize", ()=>{ clearTimeout(redib);
