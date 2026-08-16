@@ -948,9 +948,38 @@ async function vistaAdmin(){
     }
     app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
       <h1>Entrando…</h1><p>Un momento, estamos canjeando el enlace.</p></div></div>`;
-    for(let i = 0; i < 25 && !(await API.usuario()); i++)
-      await new Promise(r => setTimeout(r, 200));
+    const urlOriginal = location.hash + location.search;
+    let dentro = null;
+    for(let i = 0; i < 30 && !dentro; i++){
+      dentro = await API.usuario();
+      if(!dentro) await new Promise(r => setTimeout(r, 200));
+    }
     history.replaceState(null, "", location.pathname + "#/admin");
+    if(!dentro){
+      // No callarse. Si el canje falla, decir por qué en vez de devolver al
+      // formulario como si el usuario hubiera hecho algo mal.
+      let detalle = "";
+      try{
+        const { data, error } = await sb.auth.getSession();
+        detalle = error ? error.message : (data && data.session ? "hay sesión pero sin usuario" : "el navegador no ha guardado ninguna sesión");
+      }catch(e){ detalle = String(e && e.message || e); }
+      const traza = urlOriginal.replace(/(access_token|refresh_token|code)=[^&]*/g, "$1=…");
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h1>El enlace no ha llegado a abrir sesión</h1>
+        <p>El enlace era válido, pero el navegador no ha conseguido canjearlo.</p>
+        <div class="aviso rojo"><b>Motivo:</b> ${esc(detalle)}</div>
+        <p class="small">Causas habituales: has abierto el enlace en un navegador
+          <b>distinto</b> del que lo pidió, o en una ventana de incógnito, o el
+          filtro antivirus de tu correo abrió el enlace antes que tú y lo gastó
+          (son de un solo uso).</p>
+        <p class="small">Ábrelo en el mismo navegador donde lo pediste. Si se repite,
+          usa la contraseña.</p>
+        <details><summary class="small">Detalle técnico</summary>
+          <p class="small"><code>${esc(traza.slice(0,300))}</code></p></details>
+        <div class="btnrow"><a class="btn" href="#/admin">Volver al acceso</a></div>
+      </div></div>`;
+      return;
+    }
   }
   const u = await API.usuario();
   if(!u) return vistaLogin();
