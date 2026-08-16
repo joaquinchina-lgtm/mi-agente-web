@@ -383,6 +383,20 @@ const API = {
     const { data, error } = await sb.rpc("preguntas_sesion", {p_codigo:codigo});
     if(error) throw error; return data || [];
   },
+  async resultadosPregunta(codigo, preguntaId){
+    if(this.demo()){
+      MEM.cargar();
+      const p = (MEM.preguntas||[]).find(x=>x.id===preguntaId);
+      if(!p) return {existe:false};
+      const items = (MEM.items||[]).filter(x=>x.pregunta_id===preguntaId);
+      return {existe:true, pregunta:preguntaId, tipo:p.tipo, estado:p.estado,
+        respondidos:items.length, minimo:3,
+        datos: (p.estado==="terminada" && items.length>=3) ? agregarDemo(p, items) : null};
+    }
+    const { data, error } = await sb.rpc("resultados_pregunta",
+      {p_codigo:codigo, p_pregunta:preguntaId});
+    if(error) throw error; return data;
+  },
   async guardarItem(envio, pregunta, valor){
     if(this.demo()){ MEM.cargar(); MEM.items = MEM.items || [];
       const i = MEM.items.findIndex(x=>x.envio_id===envio && x.pregunta_id===pregunta);
@@ -1254,7 +1268,9 @@ async function vistaProyeccion(codigo){
   let sub = null, timer = null;
   // Antes del primer pintado, para que el proyector no arranque con el nombre
   // equivocado delante de la sala.
-  await API.sesionPublica(codigo);
+  const s0 = await API.sesionPublica(codigo);
+  if(s0 && String(s0.instrumento||"").split("-")[0] !== "cultura")
+    return proyeccionMotor(codigo, s0);
   const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
   const pinta = async () => {
     const prog = await API.progreso(codigo);
@@ -1371,6 +1387,131 @@ async function vistaProyeccion(codigo){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   6 ter · PROYECCIÓN DEL MOTOR
+
+   Mientras la pregunta está abierta se proyecta el enunciado y cuánta
+   gente la ha contestado. El reparto solo aparece cuando la pregunta
+   está terminada: enseñar la media a quien todavía no ha respondido lo
+   arrima al grupo. Es la misma regla que en cultura.
+   ═══════════════════════════════════════════════════════════════════ */
+async function proyeccionMotor(codigo, s){
+  let timer = null;
+  const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
+
+  const barras = (datos, etiqueta, valor) => {
+    const max = Math.max(...datos.map(valor), 1);
+    return `<div style="margin-top:22px">${datos.map(d=>`
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+          <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
+          <b style="font-size:30px;white-space:nowrap">${valor(d)}</b></div>
+        <div class="barra" style="height:14px"><i style="width:${valor(d)/max*100}%"></i></div>
+      </div>`).join("")}</div>`;
+  };
+
+  const pinta = async () => {
+    const n = await API.sesionPublica(codigo).catch(()=>null);
+    if(!n){ app().innerHTML = `<div class="proy"><h1>Sesión no encontrada</h1></div>`; return; }
+    const va = n.vista_activa || "espera";
+    let cuerpo = "";
+
+    if(!va.startsWith("q:")){
+      const prog = await API.progreso(codigo).catch(()=>null);
+      cuerpo = `<h1>Entra desde tu móvil</h1>
+        <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:center">
+          <div><div class="small">Código</div><div class="codigo">${esc(codigo.toUpperCase())}</div>
+            <p style="margin-top:14px;font-size:18px">${esc(location.host + location.pathname)}</p></div>
+          <div class="qr" id="qr"></div></div>
+        ${prog ? `<div class="contador" style="margin-top:26px"><b>${prog.completos}</b>
+          <span style="font-size:20px">han terminado</span></div>` : ""}
+        <p class="small" style="margin-top:20px">Tus respuestas son anónimas. No se registra tu nombre
+          ni tu correo.</p>`;
+    } else {
+      const id = va.slice(2);
+      const r = await API.resultadosPregunta(codigo, id).catch(()=>null);
+      const ps = await API.preguntasPublicas(codigo).catch(()=>[]);
+      const p = (ps || []).find(x => x.id === id);
+      if(!p || !r || r.existe === false){
+        cuerpo = `<h1>Preparando…</h1>`;
+      } else {
+        const cfg = p.config || {};
+        const cab = `<div class="small">${esc(p.codigo||"")}</div><h1>${esc(p.titulo)}</h1>`;
+        if(r.datos){
+          if(p.tipo === "unica" || p.tipo === "multiple")
+            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n)
+              + `<p class="small" style="margin-top:18px">Número de respuestas por opción · ${r.respondidos} personas</p>`;
+          else if(p.tipo === "escala")
+            cuerpo = cab + `<div class="contador" style="margin-top:30px"><b>${r.datos.media}</b>
+              <span style="font-size:20px">de media · mediana ${r.datos.mediana}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;margin-top:16px">
+                <span class="small">${esc(cfg.ancla_min||"")}</span>
+                <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>
+              <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+          else if(p.tipo === "matriz_escala" || p.tipo === "puntos100")
+            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media)
+              + `<p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+          else
+            cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
+              `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
+              <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+        } else {
+          // Abierta: enunciado, opciones si las tiene, y cuánta gente lleva.
+          const ops = cfg.opciones || (Array.isArray(cfg.items) ? cfg.items : null);
+          cuerpo = cab
+            + (ops ? `<div style="margin-top:20px">${ops.map(o=>
+                `<div class="enun">${esc(o)}</div>`).join("")}</div>` : "")
+            + `<div class="contador" style="margin-top:24px"><b>${r.respondidos}</b>
+                <span style="font-size:20px">${r.respondidos===1 ? "persona ha respondido"
+                                                                 : "personas han respondido"}</span></div>`
+            + (r.estado === "terminada" && r.respondidos < r.minimo
+                ? `<p class="small" style="margin-top:14px">Con menos de ${r.minimo} respuestas no se
+                     muestra el resultado: sería la respuesta de una persona concreta.</p>` : "");
+        }
+      }
+    }
+    app().innerHTML = `<div class="proy">${cuerpo}</div>`;
+    if(!va.startsWith("q:")) pintarQR("qr", url, 8);
+  };
+
+  await pinta();
+  // Mismo mando invisible que en cultura: la sala no ve tus controles.
+  //   →  terminar la abierta y abrir la siguiente     ←  volver a la anterior
+  //   Inicio  proyectar el código y el QR
+  const mandar = async fn => {
+    try{
+      const ses = await API.sesiones();
+      const s2 = ses.find(x => x.codigo.toUpperCase() === codigo.toUpperCase());
+      if(!s2) return;
+      const ps = await API.preguntas(s2.id);
+      await fn(s2, ps);
+      pinta();
+    }catch(e){ /* sin sesión iniciada no se puede: es lo correcto */ }
+  };
+  window.addEventListener("keydown", ev => {
+    if(ev.key === "ArrowRight" || ev.key === " "){ ev.preventDefault(); mandar(async (s2, ps) => {
+      const ab = ps.find(p=>p.estado === "abierta");
+      if(ab) await API.actualizarPregunta(ab.id, {estado:"terminada"});
+      const i = ab ? ps.findIndex(p=>p.id===ab.id) : -1;
+      const sig = ps.slice(i+1).find(p=>p.estado === "cerrada");
+      if(sig) await API.actualizarPregunta(sig.id, {estado:"abierta"});
+      const foco = sig || ab;
+      if(foco) await API.actualizarSesion(s2.id, {vista_activa:"q:"+foco.id});
+    }); }
+    else if(ev.key === "ArrowLeft"){ ev.preventDefault(); mandar(async (s2, ps) => {
+      const act = (s2.vista_activa||"").startsWith("q:") ? s2.vista_activa.slice(2) : null;
+      const i = ps.findIndex(p=>p.id===act);
+      const ant = i > 0 ? ps[i-1] : null;
+      if(ant) await API.actualizarSesion(s2.id, {vista_activa:"q:"+ant.id});
+    }); }
+    else if(ev.key === "Home"){ mandar(async s2 =>
+      await API.actualizarSesion(s2.id, {vista_activa:"espera"})); }
+  });
+
+  timer = setInterval(pinta, 3000);
+  window.addEventListener("beforeunload", ()=>clearInterval(timer));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    6 bis · CONSTRUCTOR DE SESIÓN (motor de preguntas)
 
    Aquí compones la sesión: resuelves las variables del banco y eliges
@@ -1379,6 +1520,30 @@ async function vistaProyeccion(codigo){
    les falta, porque es peor descubrir el hueco preparando una sesión
    que verlo desde el principio.
    ═══════════════════════════════════════════════════════════════════ */
+/* Agregación en modo demostración. En modo real la hace `resultados_pregunta`
+   dentro de la base de datos, que es donde debe estar. Esto solo existe para
+   poder recorrer el circuito entero sin conexión. */
+function agregarDemo(p, items){
+  const cuenta = arr => { const m = {}; arr.forEach(k=>m[k]=(m[k]||0)+1);
+    return Object.keys(m).map(k=>({clave:k, n:m[k]})).sort((a,b)=>b.n-a.n); };
+  const medias = clave => { const acc = {};
+    items.forEach(i => Object.entries(i.valor[clave]||{}).forEach(([k,v])=>{
+      (acc[k] = acc[k] || []).push(Number(v)); }));
+    return Object.keys(acc).map(k=>({clave:k,
+      media: Math.round(acc[k].reduce((a,b)=>a+b,0)/acc[k].length*10)/10})); };
+  if(p.tipo === "unica")    return cuenta(items.map(i=>i.valor.opcion));
+  if(p.tipo === "multiple") return cuenta(items.flatMap(i=>i.valor.opciones||[]));
+  if(p.tipo === "escala"){
+    const ns = items.map(i=>Number(i.valor.n)).sort((a,b)=>a-b);
+    return {media: Math.round(ns.reduce((a,b)=>a+b,0)/ns.length*100)/100,
+            mediana: ns[Math.floor(ns.length/2)],
+            reparto: cuenta(ns.map(String)).reduce((o,x)=>(o[x.clave]=x.n,o),{})};
+  }
+  if(p.tipo === "matriz_escala") return medias("items").sort((a,b)=>a.clave.localeCompare(b.clave));
+  if(p.tipo === "puntos100")     return medias("reparto").sort((a,b)=>b.media-a.media);
+  return items.map(i=>i.valor);
+}
+
 // «TEMA FOCAL» lleva un espacio, y un id con espacio rompe querySelector.
 // Costó un «Cannot read properties of null» en la primera prueba.
 const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
@@ -1397,17 +1562,36 @@ async function consolaMotor(s){
   const pinta = async () => {
     const usados = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
     const faltanVars = VARIABLES_ESC.filter(v => !vars[v.clave]);
+    // Solo se pide el recuento de lo que no está cerrado: con veinte preguntas,
+    // sondear todas cada tres segundos es castigar la base de datos por nada.
+    const cuentas = {};
+    await Promise.all(preguntas.filter(p=>p.estado!=="cerrada").map(async p => {
+      try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+           if(r && r.existe !== false) cuentas[p.id] = r.respondidos; }catch(e){}
+    }));
+    const prog = await API.progreso(s.codigo).catch(()=>null);
+    const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
 
     app().innerHTML = `<div class="wrap ancho">${cabecera(
       `<a class="iconbtn" href="#/admin/sesiones">Sesiones</a>`)}
       <div class="card">
-        <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · escenarios futuros</span>
-        <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1>
-        <p class="small" style="margin-top:8px">Código <code>${esc(s.codigo)}</code> ·
-          ${esc(s.estado)} · ${esc(s.modo)}</p>
-        <div class="aviso"><b>Instrumento en construcción.</b> El constructor y la base de datos
-          están listos; el móvil del participante y la proyección todavía no. Puedes componer la
-          sesión y guardarla, pero aún no pasarla.</div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+          <div><span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · escenarios futuros</span>
+            <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1></div>
+          <span class="estado ${s.estado==="abierta"?"viva":""}">${esc(s.estado)} · ${esc(s.modo)}</span>
+        </div>
+        <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:20px;align-items:flex-start">
+          <div><div class="small">Código</div><div class="codigo">${esc(s.codigo)}</div>
+            <p class="small" style="margin-top:10px"><code style="word-break:break-all">${esc(urlPart)}</code></p>
+            <div class="btnrow" style="margin-top:8px">
+              <button class="btn ghost sm" onclick="copiar('${esc(urlPart)}')">Copiar enlace</button>
+              ${s.estado!=="abierta" ? `<button class="btn sm" id="abrirSesion">Abrir sesión</button>`
+                                     : `<button class="btn ghost sm" id="cerrarSesion">Cerrar sesión</button>`}
+            </div></div>
+          <div class="qr" id="qr"></div>
+        </div>
+        ${prog ? `<p class="small" style="margin-top:16px"><b>${prog.completos}</b> han terminado ·
+          <b>${prog.en_curso}</b> en curso</p>` : ""}
       </div>
 
       <div class="card">
@@ -1425,17 +1609,30 @@ async function consolaMotor(s){
 
       <div class="card">
         <h2>Preguntas de esta sesión <span class="estado">${preguntas.length}</span></h2>
-        ${preguntas.length ? `<div class="lista">${preguntas.map((p,i)=>`
+        ${preguntas.length ? `<p class="small">Cerrada = el móvil no la ve · Abierta = se puede
+          responder · Terminada = ya no admite respuestas y su resultado se puede proyectar.</p>
+          <div class="lista">${preguntas.map((p,i)=>`
           <div class="it">
             <div><b>${i+1}. ${esc(p.titulo)}</b>
               <div class="small"><code>${esc(p.codigo||"propia")}</code> ·
-                ${esc(TIPOS_NOMBRE[p.tipo]||p.tipo)} · ${esc(p.estado)}</div></div>
+                ${esc(TIPOS_NOMBRE[p.tipo]||p.tipo)} ·
+                <b>${esc(p.estado)}</b>${cuentas[p.id]!=null ? " · "+cuentas[p.id]+" respuestas" : ""}
+                ${s.vista_activa === "q:"+p.id ? " · <b>en el proyector</b>" : ""}</div></div>
             <div class="btnrow" style="margin:0">
+              ${p.estado==="cerrada"   ? `<button class="btn sm" data-abrir="${p.id}">Abrir</button>` : ""}
+              ${p.estado==="abierta"   ? `<button class="btn ghost sm" data-fin="${p.id}">Terminar</button>` : ""}
+              ${p.estado==="terminada" ? `<button class="btn ghost sm" data-reabrir="${p.id}">Reabrir</button>` : ""}
+              <button class="btn ghost sm" data-proy="${p.id}">Proyectar</button>
               <button class="btn ghost sm" data-sube="${p.id}" ${i===0?"disabled":""}>↑</button>
               <button class="btn ghost sm" data-baja="${p.id}" ${i===preguntas.length-1?"disabled":""}>↓</button>
               <button class="btn ghost sm" data-quita="${p.id}">Quitar</button>
             </div>
-          </div>`).join("")}</div>`
+          </div>`).join("")}</div>
+          <div class="btnrow">
+            <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
+            <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
+            <button class="btn ghost" id="espera">Proyectar la espera</button>
+          </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
           <button class="btn ghost" id="nucleo">Añadir el itinerario núcleo</button>
@@ -1465,6 +1662,41 @@ async function consolaMotor(s){
             </div>`;}).join("")}</div>
         </div>`;}).join("")}
       </div>`;
+
+    if(preguntas.length) pintarQR("qr", urlPart, 5);
+    const bt = id => document.getElementById(id);
+    const cambiarSesion = async c => { Object.assign(s, await API.actualizarSesion(s.id, c)); pinta(); };
+    if(bt("abrirSesion"))  bt("abrirSesion").onclick  = () =>
+      cambiarSesion({estado:"abierta", abierta_en:new Date().toISOString()});
+    if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
+      cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
+    if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
+
+    const tocar = async (id, cambios, proyectar) => {
+      await API.actualizarPregunta(id, cambios);
+      if(proyectar) Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"q:"+id}));
+      preguntas = await API.preguntas(s.id); pinta();
+    };
+    app().querySelectorAll("[data-abrir]").forEach(b => b.onclick = () =>
+      tocar(b.dataset.abrir, {estado:"abierta"}, true));
+    app().querySelectorAll("[data-fin]").forEach(b => b.onclick = () =>
+      tocar(b.dataset.fin, {estado:"terminada"}, true));
+    app().querySelectorAll("[data-reabrir]").forEach(b => b.onclick = () =>
+      tocar(b.dataset.reabrir, {estado:"abierta"}, true));
+    app().querySelectorAll("[data-proy]").forEach(b => b.onclick = async () => {
+      Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"q:"+b.dataset.proy})); pinta(); });
+
+    // El gesto de conducir: cierro la que está abierta y abro la siguiente.
+    if(bt("avanzar")) bt("avanzar").onclick = async () => {
+      const abierta = preguntas.find(p=>p.estado === "abierta");
+      if(abierta) await API.actualizarPregunta(abierta.id, {estado:"terminada"});
+      const i = abierta ? preguntas.findIndex(p=>p.id===abierta.id) : -1;
+      const sig = preguntas.slice(i+1).find(p=>p.estado === "cerrada");
+      if(sig) await API.actualizarPregunta(sig.id, {estado:"abierta"});
+      const foco = sig || abierta;
+      if(foco) Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"q:"+foco.id}));
+      preguntas = await API.preguntas(s.id); pinta();
+    };
 
     $("#gv").onclick = async () => {
       const nv = {}; VARIABLES_ESC.forEach(v=>{
@@ -1893,9 +2125,9 @@ const MODULOS = [
    ruta:"#/admin/sesiones"},
   {k:"escenarios", nombre:"Escenarios futuros", est:"parcial",
    publico:"Prospectiva y escenarios de futuro",
-   desc:"Banco de 60 preguntas. Construidas 38: opción única y múltiple, escalas, "
-      + "matriz de escalas, abiertas y reparto de 100 puntos. Faltan tarjetas, "
-      + "nubes, rankings, dos ejes, secuencia y matriz de robustez.",
+   desc:"Banco de 60 preguntas, 38 construidas: opción única y múltiple, escalas, "
+      + "matriz de escalas, abiertas y reparto de 100 puntos. Ya se puede pasar. "
+      + "Faltan tarjetas, nubes, rankings, dos ejes, secuencia y matriz de robustez.",
    ruta:"#/admin/sesiones"},
   {k:"reactor", nombre:"Reactor de innovación", est:"pendiente",
    desc:"Enunciados canónicos y valoración colectiva. Es tu activo más defendible."},
