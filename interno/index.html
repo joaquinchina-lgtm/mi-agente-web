@@ -546,7 +546,13 @@ function recordarInstrumento(s){
   }
 }
 function nombreInstrumento(clave){
-  const m = (typeof MODULOS !== "undefined") ? MODULOS.find(x => x.k === clave) : null;
+  if(!clave) return "Diagnóstico";
+  // La base de datos guarda variantes con sufijo —«cultura-cvf» es la del
+  // marco de valores en competencia—, así que se compara también por la
+  // raíz. Sin esto, la sala veía «Diagnóstico» a secas.
+  const raiz = String(clave).split("-")[0];
+  const m = (typeof MODULOS !== "undefined")
+    ? MODULOS.find(x => x.k === clave) || MODULOS.find(x => x.k === raiz) : null;
   // `publico` es el nombre que ve la sala; `nombre` el de tu consola.
   return m ? (m.publico || m.nombre) : "Diagnóstico";
 }
