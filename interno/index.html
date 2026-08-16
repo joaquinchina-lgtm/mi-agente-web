@@ -270,11 +270,26 @@ window.borrarDemo = () => { localStorage.removeItem("demo-cultura"); location.hr
 const API = {
   demo(){ return !sb; },
 
+  // Enlace por correo. Es el respaldo, no la vía principal: el servicio de correo
+  // tiene un tope de envíos por hora y no queremos que tu acceso dependa de eso.
   async login(email){
     if(this.demo()){ MEM.usuario = {id:"demo-user", email}; MEM.guardar(); return {demo:true}; }
     const { error } = await sb.auth.signInWithOtp({ email,
-      options:{ emailRedirectTo: location.origin + location.pathname + "#/admin" }});
+      options:{ emailRedirectTo: location.origin + location.pathname + "#/admin",
+                shouldCreateUser:false }});
     if(error) throw error; return {enviado:true};
+  },
+  // Contraseña. No viaja por correo, no tiene límite de intentos por hora y no
+  // aparece en ninguna parte de este archivo: la guarda cifrada Supabase.
+  async loginClave(email, clave){
+    if(this.demo()){ MEM.usuario = {id:"demo-user", email}; MEM.guardar(); return {demo:true}; }
+    const { error } = await sb.auth.signInWithPassword({ email, password:clave });
+    if(error) throw error; return {dentro:true};
+  },
+  async fijarClave(clave){
+    if(this.demo()) return {demo:true};
+    const { error } = await sb.auth.updateUser({ password:clave });
+    if(error) throw error; return {ok:true};
   },
   async usuario(){
     if(this.demo()){ MEM.cargar(); return MEM.usuario; }
@@ -958,27 +973,103 @@ function hubPrivado(u){
       <p class="note">Los cinco pendientes siguen en Mentimeter. El motor está diseñado para
         que añadir uno sea rellenar una tabla de ítems, no encargar un desarrollo nuevo, pero
         todavía no está hecho: decirlo aquí evita que lo des por hecho en una propuesta.</p>
-    </div></div>`;
+    </div>
+    ${API.demo() ? "" : `<div class="card">
+      <h2>Contraseña de acceso</h2>
+      <p class="small">Fíjala una vez y deja de depender de que llegue un correo para abrir esta
+        consola. El enlace por correo sigue funcionando como respaldo.</p>
+      <form id="cf">
+        <div class="grid2">
+          <div class="field"><label for="c1">Nueva contraseña</label>
+            <input id="c1" type="password" autocomplete="new-password" minlength="10" required></div>
+          <div class="field"><label for="c2">Repítela</label>
+            <input id="c2" type="password" autocomplete="new-password" minlength="10" required></div>
+        </div>
+        <div class="btnrow"><button class="btn" type="submit">Guardar contraseña</button></div>
+      </form>
+      <p class="note">Mínimo diez caracteres. Úsala desde un gestor de contraseñas y no la
+        reutilices: es la llave de los datos de tus clientes.</p>
+      <div id="cmsg"></div>
+    </div>`}
+    </div>`;
+
+  const fc = $("#cf");
+  if(fc) fc.onsubmit = async ev => {
+    ev.preventDefault();
+    const a = $("#c1").value, b = $("#c2").value;
+    const di = (html, rojo) => $("#cmsg").innerHTML = `<div class="aviso${rojo?" rojo":""}">${html}</div>`;
+    if(a !== b) return di("Las dos no coinciden.", true);
+    if(a.length < 10) return di("Mínimo diez caracteres.", true);
+    try{
+      await API.fijarClave(a);
+      $("#c1").value = ""; $("#c2").value = "";
+      di("Contraseña guardada. A partir de ahora puedes entrar con ella.");
+    }catch(e){ di(esc(mensajeAuth(e)), true); }
+  };
+}
+
+/* Traduce los errores de Supabase, que vienen en inglés y en jerga.
+   Delante de un cliente, «Invalid login credentials» no ayuda a nadie. */
+function mensajeAuth(e){
+  const t = String((e && (e.message || e.error_description)) || e || "");
+  if(/invalid login credentials/i.test(t))
+    return "Correo o contraseña incorrectos.";
+  if(/email.*rate limit|over_email_send_rate_limit|too many requests/i.test(t))
+    return "Has agotado los envíos de correo de esta hora. Entra con la contraseña; "
+         + "si aún no la has fijado, tendrás que esperar.";
+  if(/signups not allowed|signup.*disabled|user not found/i.test(t))
+    return "Ese correo no tiene cuenta aquí. El registro está cerrado a propósito.";
+  if(/password should be at least|weak.?password/i.test(t))
+    return "Contraseña demasiado corta o demasiado débil.";
+  if(/same.*password|different from the old/i.test(t))
+    return "Esa es la contraseña que ya tenías.";
+  if(/email not confirmed/i.test(t))
+    return "Ese correo aún no está confirmado.";
+  return t || "No se ha podido completar la operación.";
 }
 
 function vistaLogin(){
   app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
     <h1>Acceso de administrador</h1>
     <p>${API.demo() ? "En modo demostración entras sin verificar nada."
-      : "Te enviamos un enlace de acceso al correo. Sin contraseñas: no hay contraseña que se pueda filtrar."}</p>
-    <form id="lf"><div class="field"><label for="em">Correo electrónico</label>
-      <input id="em" type="email" required placeholder="tu@correo.com" autocomplete="email"></div>
+      : "Entra con tu contraseña. Si todavía no la has fijado, pide el enlace por correo "
+      + "y la estableces una vez dentro."}</p>
+    <form id="lf">
+      <div class="field"><label for="em">Correo electrónico</label>
+        <input id="em" type="email" required placeholder="tu@correo.com" autocomplete="email"></div>
+      ${API.demo() ? "" : `<div class="field"><label for="cl">Contraseña</label>
+        <input id="cl" type="password" placeholder="••••••••" autocomplete="current-password"></div>`}
       <div class="btnrow"><button class="btn" type="submit">Entrar</button>
-      <a class="btn ghost" href="?">Volver</a></div></form>
+        ${API.demo() ? "" : `<button class="btn ghost" type="button" id="enlace">Enviarme un enlace</button>`}
+        <a class="btn ghost" href="?">Volver</a></div></form>
+    ${API.demo() ? "" : `<p class="note">El enlace por correo está limitado a unos pocos envíos por
+      hora y depende de que el correo llegue. La contraseña no tiene ese límite: es la vía fiable
+      cuando estás delante de un cliente y no puedes esperar.</p>`}
     <div id="msg"></div></div></div>`;
+
+  const aviso = (html, rojo) =>
+    $("#msg").innerHTML = `<div class="aviso${rojo?" rojo":""}">${html}</div>`;
+
   $("#lf").onsubmit = async ev => {
     ev.preventDefault();
+    const email = $("#em").value.trim();
+    const clave = $("#cl") ? $("#cl").value : "";
     try{
-      const r = await API.login($("#em").value.trim());
-      if(r.demo) render();
-      else $("#msg").innerHTML = `<div class="aviso">Te hemos enviado un enlace de acceso.
-        Ábrelo en este mismo dispositivo.</div>`;
-    }catch(e){ $("#msg").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
+      if(API.demo()){ await API.login(email); return render(); }
+      if(!clave) return aviso("Escribe la contraseña, o pulsa <b>Enviarme un enlace</b> "
+        + "si todavía no has fijado ninguna.", true);
+      await API.loginClave(email, clave);
+      location.hash = "#/admin"; render();
+    }catch(e){ aviso(esc(mensajeAuth(e)), true); }
+  };
+
+  if($("#enlace")) $("#enlace").onclick = async () => {
+    const email = $("#em").value.trim();
+    if(!email) return aviso("Escribe primero tu correo.", true);
+    try{
+      await API.login(email);
+      aviso("Te hemos enviado un enlace de acceso. Ábrelo en <b>este mismo dispositivo</b>.");
+    }catch(e){ aviso(esc(mensajeAuth(e)), true); }
   };
 }
 
