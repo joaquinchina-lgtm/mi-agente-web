@@ -346,6 +346,30 @@ const API = {
     const { data, error } = await sb.from("sesion").update(cambios).eq("id",id).select().single();
     if(error) throw error; return data;
   },
+  // Qué puede enseñar el proyector de una pantalla concreta. El recuento va
+  // siempre; el reparto medio solo cuando esa pantalla ya está cerrada.
+  async pantallaPublica(codigo, n){
+    if(this.demo()){
+      MEM.cargar();
+      const s = MEM.sesiones.find(x=>x.codigo.toUpperCase()===codigo.toUpperCase());
+      if(!s) return {existe:false};
+      const envios = MEM.envios.filter(e=>e.sesion_id===s.id).map(e=>e.id);
+      const rs = MEM.respuestas.filter(r=>envios.includes(r.envio_id) && r.pantalla===n);
+      const resp = new Set(rs.map(r=>r.envio_id)).size;
+      const cerrada = s.estado!=="abierta"
+        || (s.modo==="directo" && s.pantalla_max != null && s.pantalla_max > n);
+      let datos = null;
+      if(cerrada && resp >= 3){
+        const acc = {};
+        rs.forEach(r=>{ (acc[r.vector] = acc[r.vector] || []).push(r.puntos); });
+        datos = Object.keys(acc).sort().map(v=>({vector:v,
+          media: Math.round(acc[v].reduce((a,b)=>a+b,0)/acc[v].length*10)/10}));
+      }
+      return {existe:true, pantalla:n, respondidos:resp, cerrada, minimo:3, datos};
+    }
+    const { data, error } = await sb.rpc("pantalla_publica", {p_codigo:codigo, p_pantalla:n});
+    if(error) throw error; return data;
+  },
   async sesionPublica(codigo){
     if(this.demo()){
       MEM.cargar();
@@ -996,12 +1020,37 @@ async function vistaProyeccion(codigo){
       const n = parseInt(vista.slice(1),10);
       const p = PANTALLAS.find(x=>x.n===n);
       if(p){
-        cuerpo = `<div class="small">${p.pasada===0?"CULTURA ACTUAL":"CULTURA DESEADA"} ·
+        let pp = {respondidos:0, cerrada:false, datos:null, minimo:3};
+        try{ pp = await API.pantallaPublica(codigo, n) || pp; }catch(e){}
+        const cab = `<div class="small">${p.pasada===0?"CULTURA ACTUAL":"CULTURA DESEADA"} ·
             pantalla ${p.pasada===0?p.n:p.n-6} de 6</div>
-          <h1>${p.pasada===0?"ACTUAL: ":"DESEADA: "}${SUBS[p.sub]}</h1>
-          ${p.orden.map(v=>`<div class="enun">${esc(TXT[p.sub][v])}</div>`).join("")}
-          <div class="contador" style="margin-top:24px"><b>${prog.completos}</b>
-            <span style="font-size:20px">han terminado el cuestionario completo</span></div>`;
+          <h1>${p.pasada===0?"ACTUAL: ":"DESEADA: "}${SUBS[p.sub]}</h1>`;
+        if(pp.datos && pp.datos.length){
+          // Pantalla ya cerrada: se puede enseñar el reparto sin anclar a nadie.
+          const max = Math.max(...pp.datos.map(x=>x.media), 1);
+          const orden = p.orden.filter(v => pp.datos.some(x=>x.vector===v));
+          cuerpo = cab + `<div style="margin-top:22px">${orden.map(v=>{
+            const m = pp.datos.find(x=>x.vector===v).media;
+            return `<div style="margin-bottom:16px">
+              <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+                <span class="enun" style="margin:0;border:0;padding:0">${esc(TXT[p.sub][v])}</span>
+                <b style="font-size:30px;white-space:nowrap">${m.toFixed(1)}</b></div>
+              <div class="barra" style="height:14px"><i style="width:${m/max*100}%"></i></div>
+            </div>`; }).join("")}</div>
+            <p class="small" style="margin-top:18px">Media de ${pp.respondidos} respuestas ·
+              reparto de 100 puntos</p>`;
+        } else {
+          // Pantalla abierta: los enunciados y cuánta gente la ha contestado.
+          // El reparto NO se enseña todavía a propósito: ver la media del
+          // grupo antes de contestar arrima a quien queda por contestar.
+          cuerpo = cab + p.orden.map(v=>`<div class="enun">${esc(TXT[p.sub][v])}</div>`).join("")
+            + `<div class="contador" style="margin-top:24px"><b>${pp.respondidos}</b>
+                <span style="font-size:20px">${pp.respondidos===1 ? "persona ha respondido esta pantalla"
+                                                                  : "personas han respondido esta pantalla"}</span></div>`
+            + (pp.cerrada && pp.respondidos < pp.minimo
+                ? `<p class="small" style="margin-top:14px">Con menos de ${pp.minimo} respuestas no se
+                     muestra el reparto: sería la respuesta de una persona concreta.</p>` : "");
+        }
       }
     }
     app().innerHTML = `<div class="proy">${cuerpo}</div>`;
@@ -1011,6 +1060,36 @@ async function vistaProyeccion(codigo){
   };
   window._repinta = () => pinta();
   await pinta();
+
+  /* Mando por teclado desde la propia proyección.
+     Deliberadamente sin botones en pantalla: si pintara flechas, la sala
+     vería tus controles, que es justo lo que evitamos al separar consola y
+     proyección. Las teclas no se ven.
+       →  o  Espacio   abrir la siguiente pantalla
+       ←               cerrar una
+       Inicio / Fin    volver a la espera / ir al perfil general
+     Solo funciona si estás identificado: para cualquier otro, la base de
+     datos rechaza el cambio por RLS. La sala no puede tocar nada. */
+  const mandar = async cambios => {
+    try{
+      const ses = await API.sesiones();
+      const s2 = ses.find(x => x.codigo.toUpperCase() === codigo.toUpperCase());
+      if(!s2) return;
+      await API.actualizarSesion(s2.id, typeof cambios === "function" ? cambios(s2) : cambios);
+      pinta();
+    }catch(e){ /* sin sesión iniciada no se puede: es lo correcto */ }
+  };
+  window.addEventListener("keydown", ev => {
+    if(ev.key === "ArrowRight" || ev.key === " "){ ev.preventDefault();
+      mandar(s2 => { const n = Math.min(12, (s2.pantalla_max ?? 0) + 1);
+                     return {pantalla_max:n, vista_activa:"p"+n}; }); }
+    else if(ev.key === "ArrowLeft"){ ev.preventDefault();
+      mandar(s2 => { const n = Math.max(0, (s2.pantalla_max ?? 1) - 1);
+                     return {pantalla_max:n, vista_activa: n ? "p"+n : "espera"}; }); }
+    else if(ev.key === "Home"){ mandar({vista_activa:"espera"}); }
+    else if(ev.key === "End"){  mandar({vista_activa:"resultados"}); }
+  });
+
   // Tiempo real para el cambio de vista; sondeo para contadores y resultados.
   // Si el tiempo real se cae, el sondeo sigue: la sesión no se detiene.
   const s = await API.sesionPublica(codigo);
