@@ -664,11 +664,20 @@ function datosAMapa(datos){
 /* ═══════════════════════════════════════════════════════════════════
    4 · ENRUTADOR
    ═══════════════════════════════════════════════════════════════════ */
+/* ¿Venimos de pulsar el enlace del correo? Supabase devuelve la sesión en el
+   fragmento (#access_token=...) o, en flujo PKCE, en la query (?code=...).
+   Sin esto, el enlace del correo te dejaba en la portada pública y parecía
+   que no habías entrado. */
+function vueltaDeCorreo(){
+  return /access_token=|refresh_token=|[#&]type=(magiclink|recovery|invite|signup)|error_code=/.test(location.hash)
+      || /[?&]code=/.test(location.search);
+}
 function ruta(){
   const p = params();
   if(p.get("proy")) return {vista:"proyeccion", codigo:p.get("proy")};
   if(p.get("s"))    return {vista:"participante", codigo:p.get("s")};
   if(location.hash.startsWith("#/admin")) return {vista:"admin"};
+  if(vueltaDeCorreo())                    return {vista:"admin"};
   return {vista:"portada"};
 }
 async function render(){
@@ -922,6 +931,27 @@ async function vistaProyeccion(codigo){
    7 · ADMINISTRADOR
    ═══════════════════════════════════════════════════════════════════ */
 async function vistaAdmin(){
+  // Si venimos del enlace del correo, Supabase tarda unas décimas en canjear el
+  // token de la URL. Sin esta espera, la primera comprobación decía «no hay
+  // usuario» y te devolvía a la pantalla de acceso justo después de haber entrado.
+  if(vueltaDeCorreo() && !API.demo()){
+    const fallo = (location.hash.match(/error_description=([^&]*)/) || [])[1];
+    if(fallo){
+      history.replaceState(null, "", location.pathname + "#/admin");
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h1>Ese enlace ya no vale</h1>
+        <p>${esc(decodeURIComponent(fallo.replace(/\+/g," ")))}</p>
+        <p class="small">Los enlaces caducan y son de un solo uso. Pide otro, o entra con tu contraseña.</p>
+        <div class="btnrow"><a class="btn" href="#/admin">Volver al acceso</a></div>
+      </div></div>`;
+      return;
+    }
+    app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+      <h1>Entrando…</h1><p>Un momento, estamos canjeando el enlace.</p></div></div>`;
+    for(let i = 0; i < 25 && !(await API.usuario()); i++)
+      await new Promise(r => setTimeout(r, 200));
+    history.replaceState(null, "", location.pathname + "#/admin");
+  }
   const u = await API.usuario();
   if(!u) return vistaLogin();
   const m = location.hash.match(/^#\/admin\/sesion\/(.+)$/);
@@ -976,8 +1006,12 @@ function hubPrivado(u){
     </div>
     ${API.demo() ? "" : `<div class="card">
       <h2>Contraseña de acceso</h2>
-      <p class="small">Fíjala una vez y deja de depender de que llegue un correo para abrir esta
-        consola. El enlace por correo sigue funcionando como respaldo.</p>
+      ${localStorage.getItem("clave-fijada")
+        ? `<p class="small">Ya tienes una contraseña puesta. Puedes cambiarla aquí cuando quieras.</p>`
+        : `<div class="aviso"><b>Todavía no tienes contraseña.</b> Cuando Supabase crea tu usuario
+            a partir de un enlace de correo, le pone una contraseña aleatoria que no conoce nadie:
+            por eso ninguna que pruebes funciona. Fíjala aquí y ya no dependerás del correo.</div>`}
+      <p class="small">El enlace por correo sigue funcionando como respaldo.</p>
       <form id="cf">
         <div class="grid2">
           <div class="field"><label for="c1">Nueva contraseña</label>
@@ -1003,6 +1037,7 @@ function hubPrivado(u){
     try{
       await API.fijarClave(a);
       $("#c1").value = ""; $("#c2").value = "";
+      try{ localStorage.setItem("clave-fijada","1"); }catch(e){}
       di("Contraseña guardada. A partir de ahora puedes entrar con ella.");
     }catch(e){ di(esc(mensajeAuth(e)), true); }
   };
@@ -1058,6 +1093,9 @@ function vistaLogin(){
       if(API.demo()){ await API.login(email); return render(); }
       if(!clave) return aviso("Escribe la contraseña, o pulsa <b>Enviarme un enlace</b> "
         + "si todavía no has fijado ninguna.", true);
+      if(!localStorage.getItem("clave-fijada"))
+        aviso("Comprobando… si nunca has fijado una contraseña desde la consola, "
+          + "ninguna funcionará: usa <b>Enviarme un enlace</b>.");
       await API.loginClave(email, clave);
       location.hash = "#/admin"; render();
     }catch(e){ aviso(esc(mensajeAuth(e)), true); }
