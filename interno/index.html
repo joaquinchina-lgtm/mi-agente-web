@@ -25,8 +25,11 @@
      dos grados de lo mismo: el 3 es el cero de esa escala. */
   --div-neg:#d03b3b; --div-neg-suave:#ec835a; --div-medio:#f0efec;
   --div-pos-suave:#86b6ef; --div-pos:#1c5cab;
-  /* Tres tonos categóricos, en orden fijo y nunca reciclados. */
-  --cat-1:#1c5cab; --cat-2:#c26a1b; --cat-3:#3f7a52;
+  /* Ocho tonos categóricos, en orden fijo. El orden no es decorativo: está
+     elegido para que dos tonos consecutivos se distingan también con
+     daltonismo. Ver la nota junto a `tonoDe()` en el código. */
+  --tono-1:#1c5cab; --tono-2:#c26a1b; --tono-3:#2e8f6b; --tono-4:#b23a8c;
+  --tono-5:#94861a; --tono-6:#7b52c8; --tono-7:#c0392b; --tono-8:#0d8ba6;
 }
 @media (prefers-color-scheme: dark){:root:where(:not([data-theme="light"])){
   color-scheme:dark; --surface-1:#1a1a19; --plane:#0d0d0d;
@@ -35,14 +38,16 @@
   --actual:#6da7ec; --deseada:#256abf;
   --div-neg:#e8695c; --div-neg-suave:#a8543f; --div-medio:#2c2c2a;
   --div-pos-suave:#2f5f96; --div-pos:#6da7ec;
-  --cat-1:#4d93e4; --cat-2:#c97f2e; --cat-3:#37a478;}}
+  --tono-1:#4d93e4; --tono-2:#c97f2e; --tono-3:#37a478; --tono-4:#c258a0;
+  --tono-5:#95891f; --tono-6:#8f72d4; --tono-7:#d05740; --tono-8:#1a97b2;}}
 :root[data-theme="dark"]{color-scheme:dark; --surface-1:#1a1a19; --plane:#0d0d0d;
   --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
   --actual:#6da7ec; --deseada:#256abf;
   --div-neg:#e8695c; --div-neg-suave:#a8543f; --div-medio:#2c2c2a;
   --div-pos-suave:#2f5f96; --div-pos:#6da7ec;
-  --cat-1:#4d93e4; --cat-2:#c97f2e; --cat-3:#37a478;}
+  --tono-1:#4d93e4; --tono-2:#c97f2e; --tono-3:#37a478; --tono-4:#c258a0;
+  --tono-5:#95891f; --tono-6:#8f72d4; --tono-7:#d05740; --tono-8:#1a97b2;}
 *{box-sizing:border-box} html,body{margin:0;padding:0}
 body{background:var(--plane);color:var(--text-primary);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
@@ -2209,14 +2214,17 @@ async function proyeccionMotor(codigo, s){
   let timer = null;
   const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
 
-  const barras = (datos, etiqueta, valor) => {
+  const barras = (datos, etiqueta, valor, cfgOp) => {
     const max = Math.max(...datos.map(valor), 1);
+    const k = d => tonoCfg(cfgOp,
+      d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)));
     return `<div style="margin-top:22px">${datos.map(d=>`
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
           <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
           <b style="font-size:30px;white-space:nowrap">${valor(d)}</b></div>
-        <div class="barra" style="height:14px"><i style="width:${valor(d)/max*100}%"></i></div>
+        <div class="barra" style="height:14px"><i style="width:${valor(d)/max*100}%;
+          background:${k(d)}"></i></div>
       </div>`).join("")}</div>`;
   };
 
@@ -2224,14 +2232,16 @@ async function proyeccionMotor(codigo, s){
   // número honesto es la posición media (1,4) y la barra tiene que ser más
   // larga cuanto MENOR es esa cifra; dibujar la posición tal cual daría la
   // barra más larga a lo último de la lista.
-  const barrasV = (datos, etiqueta, largo, texto) => {
+  const barrasV = (datos, etiqueta, largo, texto, cfgOp) => {
     const max = Math.max(...datos.map(largo), 0.0001);
     return `<div style="margin-top:22px">${datos.map(d=>`
       <div style="margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
           <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
           <b style="font-size:30px;white-space:nowrap">${esc(texto(d))}</b></div>
-        <div class="barra" style="height:14px"><i style="width:${largo(d)/max*100}%"></i></div>
+        <div class="barra" style="height:14px"><i style="width:${largo(d)/max*100}%;
+          background:${tonoCfg(cfgOp,
+            d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)))}"></i></div>
       </div>`).join("")}</div>`;
   };
 
@@ -2252,12 +2262,13 @@ async function proyeccionMotor(codigo, s){
     // tapa el punto del anterior.
     const halos = datos.map(d => `<ellipse class="halo" cx="${px(d.x)}" cy="${py(d.y)}"
         rx="${Math.max((d.dx||0)/100*(W-L-R), 4)}"
-        ry="${Math.max((d.dy||0)/100*(H-T-B), 4)}"></ellipse>`).join("");
+        ry="${Math.max((d.dy||0)/100*(H-T-B), 4)}"
+        style="fill:${tonoCfg(cfg, d.clave)};opacity:.2"></ellipse>`).join("");
     const pts = datos.map(d => {
       const x = px(d.x), y = py(d.y);
       // La etiqueta va a la derecha salvo en la banda derecha, donde se saldría.
       const der = d.x <= 72;
-      return `<circle class="pt" cx="${x}" cy="${y}" r="10"></circle>
+      return `<circle class="pt" cx="${x}" cy="${y}" r="10" style="fill:${tonoCfg(cfg, d.clave)}"></circle>
         <text class="rot" x="${x + (der?18:-18)}" y="${y+7}"
               text-anchor="${der?"start":"end"}">${esc(d.clave)}</text>`;
     }).join("");
@@ -2319,8 +2330,8 @@ async function proyeccionMotor(codigo, s){
     return `<div class="nube">${puestos.map(d=>{
       const rel = max === min ? 1 : (d.n - min) / (max - min);
       const t = Math.round(22 + Math.pow(rel, 0.7) * 68);
-      return `<span class="${rel < 0.25 ? "flojo" : ""}"
-        style="font-size:${t}px;font-weight:${rel > 0.5 ? 650 : 500}">${
+      return `<span style="font-size:${t}px;font-weight:${rel > 0.5 ? 650 : 500};
+        color:${tonoDe(d.clave)};opacity:${rel < 0.25 ? ".72" : "1"}">${
         esc(d.clave)}${d.n > 1 ? `<i>${d.n}</i>` : ""}</span>`;}).join("")}</div>`;
   };
 
@@ -2342,11 +2353,11 @@ async function proyeccionMotor(codigo, s){
     const claves = (cfg.opciones && cfg.opciones.length)
       ? cfg.opciones.slice() : datos.map(d=>d.clave);
     datos.forEach(d => { if(!claves.includes(d.clave)) claves.push(d.clave); });
-    return `<div class="rejilla-op">${claves.map(k=>{
+    return `<div class="rejilla-op">${claves.map((k, ix)=>{
       const n = mapa[k] || 0;
       return `<div class="op-celda">
         <div class="op-puntos">${Array.from({length:n}, () =>
-          `<i style="width:${tam}px;height:${tam}px"></i>`).join("")}</div>
+          `<i style="width:${tam}px;height:${tam}px;background:${tonoN(ix)}"></i>`).join("")}</div>
         <div class="op-pie"><b>${n}</b><span>${esc(k)}</span></div></div>`;
     }).join("")}</div>`;
   };
@@ -2384,10 +2395,11 @@ async function proyeccionMotor(codigo, s){
         <div class="esc-caja">
           ${hay ? `<svg class="esc-den" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
                      aria-hidden="true"><path d="${silueta(cuentas, W, H)}"
-                     fill="var(--actual)" opacity=".28"></path></svg>`
+                     fill="${tonoCfg(cfg, f.clave)}" opacity=".3"></path></svg>`
                 : `<div style="height:70px"></div>`}
-          <div class="esc-via"><i style="width:${sitio(f.media)}%"></i>
-            <div class="esc-bola" style="left:${sitio(f.media)}%">${esc(num(f.media))}</div></div>
+          <div class="esc-via"><i style="width:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}"></i>
+            <div class="esc-bola" style="left:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}">${
+              esc(num(f.media))}</div></div>
           ${filas.length > 1 ? `<div class="esc-media" style="left:${sitio(global)}%"></div>` : ""}
         </div></div>`;
     }).join("")}
@@ -2403,7 +2415,7 @@ async function proyeccionMotor(codigo, s){
   const barrasClasif = (datos, cfg) => {
     const cats = cfg.categorias && cfg.categorias.length ? cfg.categorias
       : [...new Set(datos.map(d=>d.categoria))];
-    const tono = i => ["var(--cat-1)","var(--cat-2)","var(--cat-3)"][i % 3];
+    const tono = i => tonoN(i);
     const els = cfg.elementos && cfg.elementos.length ? cfg.elementos
       : [...new Set(datos.map(d=>d.clave))];
     const de = {}; datos.forEach(d => (de[d.clave] = de[d.clave] || {})[d.categoria] = d.n);
@@ -2482,7 +2494,7 @@ async function proyeccionMotor(codigo, s){
               + pie(`${r.respondidos} ${r.respondidos===1?"persona ha respondido":"personas han respondido"}`);
           }
           else if(p.tipo === "multiple")
-            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n)
+            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n, cfg)
               + pie(`Número de respuestas por opción · ${r.respondidos} personas`);
           else if(p.tipo === "escala")
             cuerpo = cab + filasEscala([{clave: cfg.etiqueta || "Valoración del grupo",
@@ -2491,10 +2503,10 @@ async function proyeccionMotor(codigo, s){
           else if(p.tipo === "matriz_escala")
             cuerpo = cab + (r.datos.some(d=>d.reparto)
                 ? filasEscala(r.datos, cfg)
-                : barras(r.datos, d=>d.clave, d=>d.media))
+                : barras(r.datos, d=>d.clave, d=>d.media, cfg))
               + pie(`${r.respondidos} respuestas`);
           else if(p.tipo === "puntos100")
-            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media)
+            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media, cfg)
               + pie(`${r.respondidos} respuestas`);
           else if(p.tipo === "nube")
             cuerpo = cab + nubePalabras(r.datos)
@@ -2502,7 +2514,7 @@ async function proyeccionMotor(codigo, s){
           else if(p.tipo === "ranking"){
             const n = r.datos.length;
             cuerpo = cab + barrasV(r.datos, d=>d.clave,
-                d => n + 1 - d.posicion, d => num(d.posicion, 2))
+                d => n + 1 - d.posicion, d => num(d.posicion, 2), cfg)
               + pie(`Posición media de ${r.respondidos} ordenaciones · 1 es lo más `
                     + `prioritario · la lista se presentó barajada a cada persona`);
           }
@@ -2659,6 +2671,39 @@ function agregarDemo(p, items){
   }
   return items.map(i=>i.valor);
 }
+
+/* El color de una categoría sale de SU NOMBRE, no de su posición en la
+   lista. Es lo que impide que, al proyectar en vivo, «ODS 3» cambie de
+   color cada vez que adelanta a otro en el recuento: el color acompaña a
+   la cosa, no al puesto que ocupa.
+
+   Ocho tonos, y se repiten a partir del noveno. Dos advertencias honestas:
+   con ocho colores hay parejas que un daltónico no distingue, y a diez
+   metros tampoco las distingue nadie. Por eso el nombre va SIEMPRE pegado
+   al dato —debajo de cada grupo de puntos, dentro de cada palabra— y el
+   color no es la única pista de qué es cada cosa: es decoración útil, no
+   información. Si alguna vez hay que elegir, manda la etiqueta. */
+const tonoN = i => "var(--tono-" + (((i % 8) + 8) % 8 + 1) + ")";
+
+const tonoDe = clave => {
+  const t = String(clave || "");
+  let h = 0;
+  for(let i=0;i<t.length;i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return tonoN(h);
+};
+
+// Cuando la pregunta trae su lista de opciones —que es casi siempre—, el
+// tono sale de la POSICIÓN en esa lista y no del hash del nombre: la lista
+// no cambia durante la sesión, así que el color sigue siendo estable, y
+// además las ocho primeras opciones salen con ocho tonos distintos en vez
+// de repetirse por casualidad.
+const listaCfg = cfg => (cfg && (cfg.opciones || cfg.elementos
+  || (Array.isArray(cfg.items) ? cfg.items : null) || cfg.filas || cfg.categorias)) || [];
+
+const tonoCfg = (cfg, clave) => {
+  const i = listaCfg(cfg).indexOf(clave);
+  return i >= 0 ? tonoN(i) : tonoDe(clave);
+};
 
 // «TEMA FOCAL» lleva un espacio, y un id con espacio rompe querySelector.
 // Costó un «Cannot read properties of null» en la primera prueba.
