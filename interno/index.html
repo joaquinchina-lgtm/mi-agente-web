@@ -2549,9 +2549,11 @@ async function proyeccionMotor(codigo, s){
             + `<div class="contador" style="margin-top:24px"><b>${r.respondidos}</b>
                 <span style="font-size:20px">${r.respondidos===1 ? "persona ha respondido"
                                                                  : "personas han respondido"}</span></div>`
-            + (r.estado === "terminada" && r.respondidos < r.minimo
+            + ((r.estado === "terminada" || r.en_vivo) && r.respondidos < r.minimo
                 ? `<p class="small" style="margin-top:14px">Con menos de ${r.minimo} respuestas no se
-                     muestra el resultado: sería la respuesta de una persona concreta.</p>` : "");
+                     muestra el resultado: sería la respuesta de una persona concreta.${
+                     r.en_vivo ? " El directo está encendido, pero el mínimo no se salta." : ""}</p>`
+                : "");
         }
       }
     }
@@ -2794,15 +2796,28 @@ async function consolaMotor(s){
              ve el gráfico creciendo en directo, al estilo Mentimeter — a cambio de que las
              respuestas tardías se acomoden a las primeras.`}
           El mínimo de tres respuestas se mantiene en los dos casos.</p>
-        ${!API.demo() && preguntas.length && s.estado === "abierta"
-            && (!prog || prog.completos === 0 || s.es_prueba)
-          ? `<div class="btnrow"><button class="btn ghost" id="ensayoMotor">
-               Rellenar con 12 respuestas de ensayo</button></div>
-             <p class="note">Contesta por ti las preguntas que tengan contenido, las deja
-               terminadas y agrupa y vota las de tarjetas, para que puedas ver cómo queda cada
-               proyección. Los textos libres se rellenan con números en letra —uno, dos, tres…—
-               para que se distinga de un vistazo qué es ensayo. Con muchas preguntas tarda un
-               par de minutos.</p>` : ""}
+        ${!API.demo() && preguntas.length ? (() => {
+          // Antes este botón desaparecía si la sesión estaba cerrada o si ya
+          // había una sola respuesta. Desaparecer es la peor forma de decir
+          // que no: parece que el programa ha perdido una función. Ahora se
+          // ve siempre y explica por qué no se puede, cuando no se puede.
+          const reales = prog ? prog.completos : 0;
+          const cerrada = s.estado !== "abierta";
+          const mezcla  = reales > 0 && !s.es_prueba;
+          return `<div class="btnrow"><button class="btn ghost" id="ensayoMotor"
+              ${cerrada ? "disabled" : ""}>Rellenar con 12 respuestas de ensayo</button></div>
+            ${cerrada ? `<div class="aviso"><b>Abre la sesión primero.</b> Las respuestas
+              simuladas entran por la misma puerta que las de verdad, y esa puerta solo está
+              abierta cuando la sesión lo está.</div>` : ""}
+            ${!cerrada && mezcla ? `<div class="aviso rojo"><b>Ojo: esta sesión ya tiene
+              ${reales} ${reales === 1 ? "respuesta real" : "respuestas reales"}.</b> Si
+              continúas, las simuladas se mezclarán con ellas y no habrá forma de separarlas
+              después. La sesión quedará marcada como ensayo y no entrará en el benchmark.</div>` : ""}
+            <p class="note">Contesta por ti las preguntas que tengan contenido, las deja
+              terminadas y agrupa y vota las de tarjetas, para que puedas ver cómo queda cada
+              proyección. Los textos libres se rellenan con números en letra —uno, dos, tres…—
+              para que se distinga de un vistazo qué es ensayo. Con muchas preguntas tarda un
+              par de minutos.</p>`; })() : ""}
         <div id="avisoEnsayo"></div>
       </div>
 
@@ -2900,9 +2915,14 @@ async function consolaMotor(s){
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
 
     if(bt("ensayoMotor")) bt("ensayoMotor").onclick = async () => {
+      const reales = prog ? prog.completos : 0;
       if(!confirm("Se van a crear 12 respuestas simuladas y todas las preguntas con contenido "
         + "quedarán TERMINADAS.\n\nLa sesión quedará marcada como ENSAYO para siempre y no "
-        + "entrará nunca en el benchmark. No uses esto en una sesión con un cliente delante.")) return;
+        + "entrará nunca en el benchmark. No uses esto en una sesión con un cliente delante."
+        + (reales > 0 && !s.es_prueba
+            ? "\n\nADEMÁS: esta sesión ya tiene " + reales + " respuesta(s) de verdad. "
+              + "Las simuladas se mezclarán con ellas y no se podrán separar."
+            : ""))) return;
       const b = bt("ensayoMotor"); b.disabled = true;
       const avisar = t => { b.textContent = t;
         const c = document.getElementById("avisoEnsayo");
