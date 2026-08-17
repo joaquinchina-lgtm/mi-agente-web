@@ -2595,6 +2595,18 @@ async function consolaMotor(s){
         </div>
         ${prog ? `<p class="small" style="margin-top:16px"><b>${prog.completos}</b> han terminado ·
           <b>${prog.en_curso}</b> en curso</p>` : ""}
+        ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas
+          simuladas y nunca entrará en el benchmark entre clientes. La marca no se puede quitar.</div>` : ""}
+        ${!API.demo() && preguntas.length && s.estado === "abierta"
+            && (!prog || prog.completos === 0 || s.es_prueba)
+          ? `<div class="btnrow"><button class="btn ghost" id="ensayoMotor">
+               Rellenar con 12 respuestas de ensayo</button></div>
+             <p class="note">Contesta por ti las preguntas que tengan contenido, las deja
+               terminadas y agrupa y vota las de tarjetas, para que puedas ver cómo queda cada
+               proyección. Los textos libres se rellenan con números en letra —uno, dos, tres…—
+               para que se distinga de un vistazo qué es ensayo. Con muchas preguntas tarda un
+               par de minutos.</p>` : ""}
+        <div id="avisoEnsayo"></div>
       </div>
 
       <div class="card">
@@ -2686,6 +2698,29 @@ async function consolaMotor(s){
     if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
       cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
+
+    if(bt("ensayoMotor")) bt("ensayoMotor").onclick = async () => {
+      if(!confirm("Se van a crear 12 respuestas simuladas y todas las preguntas con contenido "
+        + "quedarán TERMINADAS.\n\nLa sesión quedará marcada como ENSAYO para siempre y no "
+        + "entrará nunca en el benchmark. No uses esto en una sesión con un cliente delante.")) return;
+      const b = bt("ensayoMotor"); b.disabled = true;
+      const avisar = t => { b.textContent = t;
+        const c = document.getElementById("avisoEnsayo");
+        if(c) c.innerHTML = `<div class="aviso">${esc(t)}</div>`; };
+      try{
+        // La marca antes que los datos: si se cae la conexión a medias,
+        // prefiero una sesión marcada de ensayo sin datos que una sesión
+        // con datos falsos sin marcar.
+        Object.assign(s, await API.actualizarSesion(s.id, {es_prueba:true}));
+        const r = await respuestasEnsayoMotor(s, preguntas, 12, avisar);
+        preguntas = await API.preguntas(s.id);
+        alert(`Listo: ${r.hechas} preguntas rellenadas.` + (r.saltadas.length
+          ? `\n\nSe han saltado ${r.saltadas.length} por no tener contenido todavía:\n`
+            + r.saltadas.join(", ")
+          : ""));
+      }catch(e){ alert("No se han podido generar: " + (e.message||e)); }
+      pinta();
+    };
 
     const tocar = async (id, cambios, proyectar) => {
       await API.actualizarPregunta(id, cambios);
@@ -3931,6 +3966,179 @@ async function descargarSeleccion(tipo){
 /* Solo en modo demostración: rellena la sesión con un perfil sintético de
    organización pública consolidada —mucha Jerárquica, poca Innovadora— para
    poder ver funcionando la consola, la proyección y los radares. */
+/* ═══════════════════════════════════════════════════════════════════
+   RESPUESTAS DE ENSAYO DEL MOTOR
+
+   Lo mismo que hace cultura con sus 24 envíos simulados, pero para los
+   catorce tipos. Sirve para una cosa muy concreta: ver cómo queda cada
+   proyección con datos dentro, antes de tenerlos delante de un cliente.
+
+   En todo lo que es texto libre se escriben números en letra —uno, dos,
+   tres…— y no frases inventadas. Un texto reconocible de un vistazo hace
+   evidente qué es ensayo y qué no, y en la nube de palabras produce
+   tamaños distintos, que es justo lo que hay que mirar.
+   ═══════════════════════════════════════════════════════════════════ */
+const NUMEROS = ["uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez",
+  "once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve",
+  "veinte","veintiuno","veintidós","veintitrés","veinticuatro"];
+
+async function respuestasEnsayoMotor(s, preguntas, n, avisar){
+  let sem = 20260817;
+  const rnd = () => (sem = (sem*1664525 + 1013904223) % 4294967296) / 4294967296;
+  const entre = (a,b) => a + Math.floor(rnd()*(b-a+1));
+  const elige = a => a[Math.floor(rnd()*a.length)];
+  const revolver = a => { const c = a.slice();
+    for(let i=c.length-1;i>0;i--){ const j = Math.floor(rnd()*(i+1)); [c[i],c[j]]=[c[j],c[i]]; }
+    return c; };
+  const lista = p => { const c = p.config||{};
+    return c.elementos && c.elementos.length ? c.elementos
+         : c.opciones  && c.opciones.length  ? c.opciones
+         : Array.isArray(c.items) ? c.items : []; };
+
+  // Un valor plausible para cada tipo. Devuelve null si a la pregunta le
+  // falta el contenido: no se inventa lo que el grupo tendría que producir.
+  const valorDe = (p, i) => {
+    const c = p.config||{}, els = lista(p);
+    const min = c.min ?? 1, max = c.max ?? (p.tipo === "matriz_valoracion" ? 5 : 7);
+    switch(p.tipo){
+      case "unica":    return els.length ? {opcion: els[Math.min(els.length-1,
+                          Math.floor(Math.abs(rnd()+rnd()-1) * els.length))]} : null;
+      case "multiple": return els.length ? {opciones: revolver(els)
+                          .slice(0, Math.min(c.maximo || 2, els.length))} : null;
+      case "escala":   return {n: Math.max(min, Math.min(max,
+                          Math.round((min+max)/2 + (rnd()+rnd()-1)*2)))};
+      case "matriz_escala": {
+        if(!els.length) return null; const o = {};
+        els.forEach((it,k) => o[it] = Math.max(min, Math.min(max,
+          Math.round(min + ((k+1)/(els.length+1))*(max-min) + (rnd()-0.5)*2))));
+        return {items:o};
+      }
+      case "puntos100": {
+        if(!els.length) return null;
+        const total = c.total || 100, paso = c.paso || 5, cuantos = Math.round(total/paso);
+        const r = {}; els.forEach(o => r[o] = 0);
+        for(let k=0;k<cuantos;k++) r[els[Math.min(els.length-1,
+          Math.floor(Math.abs(rnd()+rnd()-1)*els.length))]] += paso;
+        return {reparto:r};
+      }
+      case "abierta":  return {texto: "Respuesta de ensayo " + NUMEROS[i % NUMEROS.length]};
+      case "abierta_campos": {
+        const cs = c.campos || []; if(!cs.length) return null;
+        const o = {}; cs.forEach((f,k) => o[f.clave] =
+          "Ensayo " + NUMEROS[(i+k) % NUMEROS.length]);
+        return {campos:o};
+      }
+      // La nube se carga con pocos términos y muy repetidos: así se ve la
+      // diferencia de tamaño, que es lo que hay que comprobar.
+      case "nube": {
+        const pozo = NUMEROS.slice(0, 8), cuantos = Math.min(c.maximo || 3, 3), t = [];
+        while(t.length < cuantos){
+          const w = pozo[Math.min(pozo.length-1, Math.floor(Math.abs(rnd()+rnd()-1)*pozo.length))];
+          if(!t.includes(w)) t.push(w);
+        }
+        return {terminos:t};
+      }
+      case "ranking": case "secuencia": {
+        if(!els.length) return null;
+        // Se parte del orden del banco y se intercambian vecinos: así la
+        // posición media sale ordenada pero no idéntica en todos.
+        const o = els.slice();
+        for(let k=0;k<o.length-1;k++) if(rnd() < 0.35) [o[k],o[k+1]] = [o[k+1],o[k]];
+        return {orden:o};
+      }
+      case "dos_ejes": {
+        if(!els.length) return null; const pos = {};
+        els.forEach((e,k) => {
+          const cx = 18 + ((k*37) % 65), cy = 22 + ((k*53) % 60);
+          const disp = k === 0 ? 18 : 7;          // uno con mucha discrepancia
+          pos[e] = {x: Math.max(0, Math.min(100, Math.round(cx + (rnd()+rnd()-1)*disp))),
+                    y: Math.max(0, Math.min(100, Math.round(cy + (rnd()+rnd()-1)*disp)))};
+        });
+        return {pos};
+      }
+      case "clasificar": {
+        const cats = c.categorias || []; if(!els.length || !cats.length) return null;
+        const a = {}; els.forEach((e,k) => a[e] = cats[Math.min(cats.length-1,
+          Math.floor(Math.abs((k/els.length) + (rnd()-0.5)*0.6) * cats.length))]);
+        return {asignacion:a};
+      }
+      case "matriz_valoracion": {
+        const filas = (c.filas||[]).length ? c.filas : els, cols = c.columnas||[];
+        if(!filas.length || !cols.length) return null;
+        const celdas = {};
+        filas.forEach((f,a) => { celdas[f] = {};
+          // Las medias recorren toda la escala para que la matriz enseñe
+          // sus cinco pasos: el rojo, el gris del medio y el azul.
+          cols.forEach((co,bq) => celdas[f][co] = Math.max(min, Math.min(max,
+            Math.round(min + ((a+bq) % (max-min+1)) + (rnd()-0.5)*1.4))));
+        });
+        return {celdas};
+      }
+      default: return null;
+    }
+  };
+
+  const AMB = ["Dirección o gobierno","Gestión y administración","Actividad principal","Apoyo técnico"];
+  const RES = ["Sí, dirijo un equipo","No dirijo equipo"];
+  const ANT = ["Menos de 3 años","Entre 3 y 10 años","Más de 10 años"];
+
+  const tarjeteras = preguntas.filter(p => p.tipo === "tarjetas");
+  const normales   = preguntas.filter(p => p.tipo !== "tarjetas" && valorDe(p,0) !== null);
+  const saltadas   = preguntas.filter(p => p.tipo !== "tarjetas" && valorDe(p,0) === null);
+
+  // Para escribir hay que abrirlas. Se guarda el estado de cada una y al
+  // final se dejan terminadas, que es como se proyectan los resultados.
+  for(const p of [...normales, ...tarjeteras])
+    await API.actualizarPregunta(p.id, p.tipo === "tarjetas"
+      ? {estado:"abierta", fase:"recogida"} : {estado:"abierta"});
+
+  const envios = [];
+  for(let i=0;i<n;i++){
+    avisar(`Participante ${i+1} de ${n}…`);
+    const envio = await API.abrirEnvio(s.codigo,
+      {ambito:elige(AMB), responsable:elige(RES), antiguedad:elige(ANT)});
+    envios.push(envio);
+    for(const p of normales){
+      const v = valorDe(p, i);
+      if(v) try{ await API.guardarItem(envio, p.id, v); }catch(e){}
+    }
+    for(const p of tarjeteras){
+      const textos = [0,1].map(k => "Tema " + NUMEROS[(i+k*7) % 10]);
+      try{ await API.guardarTarjetas(envio, p.id, textos); }catch(e){}
+    }
+  }
+
+  // El ciclo entero de las tarjetas: agrupar y votar. Sin esto, la
+  // proyección de una pregunta de tarjetas se queda en el recuento.
+  for(const p of tarjeteras){
+    avisar("Agrupando tarjetas…");
+    await API.actualizarPregunta(p.id, {fase:"agrupando"});
+    const tarjetas = await API.tarjetasAdmin(p.id);
+    const nombres = [...new Set(tarjetas.map(t=>t.texto))].slice(0,4);
+    const grupos = [];
+    for(const [k, etiqueta] of nombres.entries())
+      grupos.push(await API.crearGrupo(p.id, etiqueta, k+1));
+    for(const t of tarjetas){
+      const g = grupos.find(x => x.etiqueta === t.texto) || grupos[0];
+      if(g) try{ await API.tocarTarjeta(t.id, {grupo_id:g.id}); }catch(e){}
+    }
+    await API.actualizarPregunta(p.id, {fase:"votacion"});
+    for(const envio of envios){
+      const cuantos = Math.min(grupos.length, entre(1, 3));
+      const elegidos = revolver(grupos).slice(0, cuantos).map(g=>g.id);
+      try{ await API.guardarVotos(envio, p.id, elegidos); }catch(e){}
+    }
+  }
+
+  avisar("Cerrando…");
+  for(const envio of envios) try{ await API.cerrarEnvio(envio); }catch(e){}
+  for(const p of normales)   await API.actualizarPregunta(p.id, {estado:"terminada"});
+  for(const p of tarjeteras) await API.actualizarPregunta(p.id,
+    {estado:"terminada", fase:"resultados"});
+
+  return {hechas: normales.length + tarjeteras.length, saltadas: saltadas.map(p=>p.codigo||p.titulo)};
+}
+
 async function respuestasDeEjemplo(codigo, n){
   const base = {CD:{FAM:28,INN:12,RES:20,JER:40}, LO:{FAM:24,INN:10,RES:22,JER:44},
                 GP:{FAM:30,INN:14,RES:18,JER:38}, CO:{FAM:32,INN:12,RES:18,JER:38},
