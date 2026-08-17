@@ -626,6 +626,55 @@ const API = {
     const { error } = await sb.from("pregunta").delete().eq("id",id);
     if(error) throw error;
   },
+  // Borrar la sesión arrastra en cascada envíos, respuestas, preguntas,
+  // tarjetas, grupos y votos. No hay papelera en ninguna parte.
+  async borrarSesion(id){
+    if(this.demo()){ MEM.cargar();
+      const envios = MEM.envios.filter(e=>e.sesion_id===id).map(e=>e.id);
+      MEM.respuestas = MEM.respuestas.filter(r=>!envios.includes(r.envio_id));
+      MEM.items = (MEM.items||[]).filter(r=>!envios.includes(r.envio_id));
+      MEM.envios = MEM.envios.filter(e=>e.sesion_id!==id);
+      MEM.preguntas = (MEM.preguntas||[]).filter(p=>p.sesion_id!==id);
+      MEM.sesiones = MEM.sesiones.filter(s=>s.id!==id);
+      MEM.guardar(); return; }
+    const { error } = await sb.from("sesion").delete().eq("id",id);
+    if(error) throw error;
+  },
+  // Una fila por respuesta de las preguntas del motor. Es lo que se lleva
+  // el CSV de una sesión de escenarios.
+  async detalleItems(ids){
+    if(!ids.length) return [];
+    if(this.demo()){
+      MEM.cargar(); const out = [];
+      ids.forEach(id=>{
+        const ses = MEM.sesiones.find(x=>x.id===id); if(!ses) return;
+        const o = MEM.orgs.find(o=>o.id===ses.organizacion_id) || {};
+        (MEM.preguntas||[]).filter(p=>p.sesion_id===id).forEach(p=>{
+          (MEM.items||[]).filter(r=>r.pregunta_id===p.id).forEach(r=>{
+            const e = MEM.envios.find(x=>x.id===r.envio_id) || {};
+            out.push({organizacion:o.nombre, sector:o.sector_clave, sesion_id:id,
+              codigo:ses.codigo, sesion:ses.titulo, modo:ses.modo, estado:ses.estado,
+              es_prueba:ses.es_prueba, instrumento:ses.instrumento,
+              variables:JSON.stringify(ses.variables||{}), fecha:(ses.creado_en||"").slice(0,10),
+              orden:p.orden, pregunta_codigo:p.codigo, tipo:p.tipo, pregunta:p.titulo,
+              envio_id:r.envio_id, ambito:(e.segmentos||{}).ambito||null,
+              responsable:(e.segmentos||{}).responsable||null,
+              antiguedad:(e.segmentos||{}).antiguedad||null,
+              valor:JSON.stringify(r.valor), creado_en:r.creado_en});
+          });
+        });
+      });
+      return out;
+    }
+    const { data, error } = await sb.from("v_detalle_items").select("*").in("sesion_id", ids);
+    if(error) throw error; return data;
+  },
+  async detalleTarjetas(ids){
+    if(!ids.length) return [];
+    if(this.demo()) return [];
+    const { data, error } = await sb.from("v_tarjetas").select("*").in("sesion_id", ids);
+    if(error) throw error; return data;
+  },
   async sesionPublica(codigo){
     if(this.demo()){
       MEM.cargar();
@@ -3301,8 +3350,12 @@ async function panelAdmin(u){
         <div class="it">
           <div><b>${esc(s.titulo)}</b> · <span class="small">${esc((s.organizacion||{}).nombre||"")}</span>
             <div class="small"><code>${esc(s.codigo)}</code> · ${s.modo==="survey"?"survey":"directo"} ·
-              ${esc(s.estado)}${s.colectivo?" · "+esc(s.colectivo):""}</div></div>
-          <a class="btn ghost sm" href="#/admin/sesion/${encodeURIComponent(s.id)}">Abrir consola</a>
+              ${esc(s.estado)}${s.colectivo?" · "+esc(s.colectivo):""}${
+              copiaHecha(s.id) ? " · copia descargada el "
+                + new Date(copiaHecha(s.id)).toLocaleDateString("es-ES") : ""}</div></div>
+          <div class="btnrow" style="margin:0">
+            <a class="btn ghost sm" href="#/admin/sesion/${encodeURIComponent(s.id)}">Abrir consola</a>
+            <button class="btn ghost sm" data-borra="${esc(s.id)}">Eliminar…</button></div>
         </div>`).join("")}</div>`
         : `<p class="small">Todavía no hay ninguna sesión.</p>`}
     </div>
@@ -3357,6 +3410,8 @@ async function panelAdmin(u){
       </form>
     </div></div>`;
 
+  app().querySelectorAll("[data-borra]").forEach(b => b.onclick = () =>
+    pantallaBorrado(sesiones.find(x => x.id === b.dataset.borra), () => panelAdmin(u)));
   $("#s-modo").onchange = e => $("#ventana").classList.toggle("hide", e.target.value !== "survey");
   $("#fo").onsubmit = async ev => {
     ev.preventDefault();
@@ -3720,6 +3775,143 @@ async function compararSeleccion(){
     radarSVG(document.getElementById("cs-"+i), document.getElementById("cb-"+i), vals, max, true);
   });
   document.getElementById("comp").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COPIA Y BORRADO DE UNA SESIÓN
+
+   Borrar es la única operación de este sistema que no se puede deshacer
+   desde ningún sitio: se lleva por delante los envíos, las respuestas,
+   las preguntas y las tarjetas. Por eso el botón no está en la lista sin
+   más, sino detrás de una pantalla que obliga a bajarse los datos antes.
+   ═══════════════════════════════════════════════════════════════════ */
+const aCSV = filas => {
+  const cols = [...new Set(filas.flatMap(f => Object.keys(f)))];
+  return [cols.join(","), ...filas.map(r => cols.map(c => {
+    const v = r[c] == null ? "" : (typeof r[c] === "object" ? JSON.stringify(r[c]) : String(r[c]));
+    return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v;
+  }).join(","))].join("\n");
+};
+
+const bajarArchivo = (nombre, texto) => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿"+texto], {type:"text/csv;charset=utf-8"}));
+  a.download = nombre; a.click(); URL.revokeObjectURL(a.href);
+};
+
+// La marca de «ya me lo he descargado» vive en este navegador. Es una
+// barandilla contra el descuido, no una cerradura: desde el panel de
+// Supabase se puede borrar sin pasar por aquí.
+const claveCopia = id => "copia-sesion:" + id;
+const copiaHecha = id => localStorage.getItem(claveCopia(id));
+
+// Los datos de una sesión, sea del instrumento que sea. Devuelve los tres
+// bloques por separado porque son tres tablas distintas y mezclarlas en un
+// solo CSV daría un archivo que no se puede leer con nada.
+async function datosDeSesion(s){
+  const esCultura = String(s.instrumento||"").split("-")[0] === "cultura";
+  // Si una de las consultas falla, NO se puede decir «no hay datos»: un
+  // error de red o una vista que falta darían cero filas, y el borrado se
+  // abriría de par en par sobre datos que sí existen. Se devuelve el fallo
+  // y la pantalla se bloquea.
+  try{
+    const [detalle, items, tarjetas] = await Promise.all([
+      esCultura ? API.detalleSesiones([s.id]) : Promise.resolve([]),
+      esCultura ? Promise.resolve([]) : API.detalleItems([s.id]),
+      esCultura ? Promise.resolve([]) : API.detalleTarjetas([s.id])
+    ]);
+    return {detalle, items, tarjetas, fallo:null,
+            total: detalle.length + items.length + tarjetas.length};
+  }catch(e){
+    return {detalle:[], items:[], tarjetas:[], total:0,
+            fallo: String(e && e.message || e)};
+  }
+}
+
+function descargarSesionCompleta(s, d){
+  const base = (s.codigo || "sesion") + "-" + (new Date().toISOString().slice(0,10));
+  if(d.detalle.length) bajarArchivo(base + "-respuestas.csv", aCSV(d.detalle));
+  if(d.items.length)   bajarArchivo(base + "-respuestas.csv", aCSV(d.items));
+  if(d.tarjetas.length)bajarArchivo(base + "-tarjetas.csv",   aCSV(d.tarjetas));
+  localStorage.setItem(claveCopia(s.id), new Date().toISOString());
+}
+
+async function pantallaBorrado(s, volver){
+  const d = await datosDeSesion(s);
+  const envios = new Set([...d.detalle, ...d.items].map(r=>r.envio_id).filter(Boolean)).size;
+
+  const pinta = () => {
+    const copia = copiaHecha(s.id);
+    const puede = !d.fallo && (d.total === 0 || !!copia);
+    app().innerHTML = `<div class="wrap">${cabecera(
+      `<button class="iconbtn" id="atras">Volver</button>`)}
+      <div class="card">
+        <span class="phasetag">Eliminar sesión</span>
+        <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1>
+        <p class="small"><code>${esc(s.codigo)}</code> ·
+          ${esc((s.organizacion||{}).nombre||"")} · ${esc(s.estado)}</p>
+
+        <h3>Qué se va a borrar</h3>
+        ${d.fallo ? `<div class="aviso rojo"><b>No se ha podido leer lo que hay dentro
+            de esta sesión</b>, así que no se puede borrar: cero filas leídas no significa
+            cero datos guardados.<br><code>${esc(d.fallo)}</code><br>
+            Si el mensaje habla de una vista que no existe, falta por ejecutar el guion
+            <code>esquema-app-v8.sql</code> en Supabase.</div>`
+          : d.total === 0
+          ? `<p class="lead">Esta sesión <b>no tiene ninguna respuesta</b>. Solo se borra
+               ella y sus preguntas: no hay datos que perder.</p>`
+          : `<div class="lista"><div class="it"><div><b>${envios}</b>
+                <div class="small">personas han contestado algo</div></div></div>
+              ${d.detalle.length ? `<div class="it"><div><b>${d.detalle.length}</b>
+                <div class="small">filas de respuesta</div></div></div>` : ""}
+              ${d.items.length ? `<div class="it"><div><b>${d.items.length}</b>
+                <div class="small">respuestas a preguntas del motor</div></div></div>` : ""}
+              ${d.tarjetas.length ? `<div class="it"><div><b>${d.tarjetas.length}</b>
+                <div class="small">tarjetas escritas por el grupo</div></div></div>` : ""}
+             </div>
+             <p class="note">Se borran también las preguntas de la sesión, los grupos y los
+               votos. <b>No hay papelera</b>: ni en la aplicación ni en la base de datos.
+               Lo único que quedará de esta sesión es el CSV que te bajes ahora.</p>`}
+
+        ${d.total && !d.fallo ? `<h3>Primero, la copia</h3>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn ${copia?"ghost":""}" id="baja">${
+              copia ? "Volver a descargar" : "Descargar CSV"}</button></div>
+          ${copia ? `<div class="aviso">Copia descargada el ${
+              new Date(copia).toLocaleString("es-ES")}. Ábrela y compruébala antes de
+              seguir: una vez borres, es lo único que queda.</div>`
+            : `<div class="aviso rojo">Hasta que no descargues la copia, el botón de
+                eliminar no se activa.</div>`}` : ""}
+
+        <h3>Confirmar</h3>
+        <div class="field"><label for="cod">Escribe el código de la sesión
+          (<code>${esc(s.codigo)}</code>) para confirmar</label>
+          <input id="cod" autocomplete="off" placeholder="${esc(s.codigo)}"></div>
+        <div id="aviso"></div>
+        <div class="btnrow">
+          <button class="btn" id="borrar" disabled style="background:#d03b3b">
+            Eliminar definitivamente</button>
+          <button class="btn ghost" id="cancelar">Cancelar</button></div>
+        ${puede || d.fallo ? "" : `<p class="small">Descarga la copia para poder continuar.</p>`}
+      </div></div>`;
+
+    $("#atras").onclick = $("#cancelar").onclick = volver;
+    if($("#baja")) $("#baja").onclick = () => { descargarSesionCompleta(s, d); pinta(); };
+
+    const revisar = () => { $("#borrar").disabled =
+      !(puede && $("#cod").value.trim().toUpperCase() === String(s.codigo).toUpperCase()); };
+    $("#cod").oninput = revisar; revisar();
+
+    $("#borrar").onclick = async () => {
+      $("#borrar").disabled = true; $("#borrar").textContent = "Eliminando…";
+      try{ await API.borrarSesion(s.id); }
+      catch(e){ $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`;
+        $("#borrar").textContent = "Eliminar definitivamente"; revisar(); return; }
+      localStorage.removeItem(claveCopia(s.id));
+      volver();
+    };
+  };
+  pinta();
 }
 
 async function descargarSeleccion(tipo){
