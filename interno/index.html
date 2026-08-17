@@ -1244,25 +1244,52 @@ async function vistaParticipante(codigo){
    respondido no se pierde.
    ═══════════════════════════════════════════════════════════════════ */
 async function participanteMotor(codigo, s){
-  const estado = {paso:"segmentos", envio:null, hechas:{}, actual:null};
-  let reloj = null;
-  const parar = () => clearTimeout(reloj);
+  const estado = {paso:"segmentos", envio:null, hechas:{}, actual:null,
+                  abiertas:[], proyectada:null, forzada:null};
+  let reloj = null, vigia = null;
+  const parar = () => { clearTimeout(reloj); clearInterval(vigia); vigia = null; };
   window.addEventListener("beforeunload", parar);
 
-  const siguiente = async () => {
-    const todas = await API.preguntasPublicas(codigo);
-    // Una de tarjetas se ve dos veces: para escribir y, más tarde, para
-    // votar. Por eso la marca de «hecha» lleva la fase pegada.
-    return todas.find(p => {
-      if(p.estado !== "abierta") return false;
-      if(p.tipo === "tarjetas"){
-        const f = p.fase || "recogida";
-        if(f !== "recogida" && f !== "votacion") return false;
-        return !estado.hechas[p.id + ":" + f];
-      }
-      return !estado.hechas[p.id];
-    }) || null;
+  // Una de tarjetas se ve dos veces: para escribir y, más tarde, para votar.
+  // Por eso la marca de «hecha» lleva la fase pegada.
+  const clave = p => p.id + (p.tipo === "tarjetas" ? ":" + (p.fase || "recogida") : "");
+  const hecha = p => !!estado.hechas[clave(p)];
+  const respondible = p => {
+    if(p.estado !== "abierta") return false;
+    if(p.tipo !== "tarjetas") return true;
+    const f = p.fase || "recogida";
+    return f === "recogida" || f === "votacion";
   };
+
+  // Una sola llamada trae las dos cosas que necesita el móvil: qué preguntas
+  // están abiertas y cuál está en el proyector.
+  const refrescar = async () => {
+    const [todas, ses] = await Promise.all([
+      API.preguntasPublicas(codigo).catch(()=>null),
+      API.sesionPublica(codigo).catch(()=>null)]);
+    if(todas) estado.abiertas = todas.filter(respondible);
+    const va = ses && ses.vista_activa;
+    estado.proyectada = va && String(va).startsWith("q:") ? String(va).slice(2) : null;
+    return ses;
+  };
+
+  // Qué pregunta toca. El orden de preferencia importa: manda lo que el
+  // facilitador está proyectando. Sin esto, con varias preguntas abiertas a la
+  // vez, el móvil enseña la primera de la lista mientras la sala mira otra.
+  const siguiente = async () => {
+    await refrescar();
+    const c = estado.abiertas;
+    if(estado.forzada){                        // la ha elegido el participante
+      const f = c.find(p => p.id === estado.forzada);
+      estado.forzada = null;
+      if(f) return f;
+    }
+    const proy = estado.proyectada && c.find(p => p.id === estado.proyectada && !hecha(p));
+    if(proy) return proy;
+    return c.find(p => !hecha(p)) || null;
+  };
+
+  const pendientes = () => estado.abiertas.filter(p => !hecha(p)).length;
 
   const esperar = () => { parar(); reloj = setTimeout(async () => {
     const n = await API.sesionPublica(codigo).catch(()=>null);
@@ -1272,8 +1299,72 @@ async function participanteMotor(codigo, s){
     }
     const p = await siguiente();
     if(p){ estado.actual = p; estado.paso = "pregunta"; return pintar(); }
+    if(estado.paso === "espera") pintarEspera();   // refresca el recuento
     esperar();
   }, 3000); };
+
+  // Vigilante de la pantalla de pregunta. NO repinta: si el facilitador cambia
+  // de pantalla mientras alguien está a medio responder, borrarle lo escrito
+  // sería peor que el problema que resuelve. Solo enciende un aviso arriba.
+  const vigilar = () => {
+    clearInterval(vigia);
+    vigia = setInterval(async () => {
+      const ses = await refrescar();
+      const caja = document.getElementById("saltar");
+      if(!caja) return;                        // ya no estamos en la pregunta
+      const act = estado.actual;
+      if(ses && !ses.admite_respuestas){
+        caja.innerHTML = `<div class="aviso rojo">La sesión se ha cerrado.
+          <button class="btn sm" id="irfin" style="margin-left:8px">Terminar</button></div>`;
+        $("#irfin").onclick = async () => {
+          try{ await API.cerrarEnvio(estado.envio); }catch(e){}
+          estado.paso = "fin"; parar(); pintar(); };
+        return;
+      }
+      if(act && !estado.abiertas.some(p => p.id === act.id)){
+        caja.innerHTML = `<div class="aviso rojo">El facilitador ha cerrado esta pregunta:
+          ya no admite respuestas.
+          <button class="btn sm" id="irsig" style="margin-left:8px">Continuar</button></div>`;
+        $("#irsig").onclick = () => avanzar();
+        return;
+      }
+      const pr = estado.proyectada && estado.abiertas.find(
+        p => p.id === estado.proyectada && p.id !== (act && act.id) && !hecha(p));
+      caja.innerHTML = pr
+        ? `<div class="aviso">En la sala se está proyectando otra pregunta.
+             <button class="btn sm" id="irproy" style="margin-left:8px">Ir a ella</button></div>`
+        : "";
+      if(pr) $("#irproy").onclick = () => { estado.forzada = pr.id; avanzar(); };
+    }, 3000);
+  };
+
+  const avanzar = async () => {
+    const sig = await siguiente();
+    if(sig){ estado.actual = sig; estado.paso = "pregunta"; }
+    else estado.paso = "espera";
+    pintar(); window.scrollTo({top:0});
+  };
+
+  // La espera se repinta sola cada tres segundos para que el recuento no
+  // mienta. Antes decía «has respondido todo lo que está abierto» sin decir
+  // cuánto era todo, y parecía que el cuestionario se había atascado.
+  const pintarEspera = () => {
+    const n = estado.abiertas.length, hs = estado.abiertas.filter(hecha).length;
+    app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+      <h2>${n && hs === n ? "Estás al día" : "Espera un momento"}</h2>
+      <p class="lead">${n
+        ? `Has respondido las <b>${hs} preguntas</b> que están abiertas ahora mismo.`
+        : "Todavía no hay ninguna pregunta abierta."}
+        La siguiente aparecerá sola en cuanto el facilitador la abra.</p>
+      <p class="small">No cierres esta página ni recargues: lo respondido está guardado.
+        Cuando el facilitador cierre la sesión, verás la pantalla de despedida.</p>
+      <div class="btnrow">
+        ${n ? `<button class="btn ghost" id="rev">Revisar mis respuestas</button>` : ""}
+        <button class="btn ghost" id="ahora">Comprobar ahora</button></div>
+    </div></div>`;
+    if($("#rev")) $("#rev").onclick = () => { estado.paso = "lista"; pintar(); };
+    $("#ahora").onclick = () => avanzar();
+  };
 
   const pintar = async () => {
     if(estado.paso === "segmentos"){
@@ -1316,25 +1407,33 @@ async function participanteMotor(codigo, s){
       return;
     }
 
-    if(estado.paso === "espera"){
+    if(estado.paso === "espera"){ pintarEspera(); esperar(); return; }
+
+    if(estado.paso === "lista"){
+      parar();
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
-        <h2>Espera un momento</h2>
-        <p class="lead">Has respondido todo lo que está abierto. La siguiente pregunta
-          aparecerá sola en cuanto se abra.</p>
-        <p class="small">No cierres esta página ni recargues: lo respondido está guardado.</p>
-        <div class="btnrow"><button class="btn ghost" id="rev">Comprobar ahora</button></div>
+        <h2>Tus preguntas</h2>
+        <p class="small">Aquí están las que el facilitador tiene abiertas ahora mismo.
+          Puedes volver a cualquiera. Si respondes otra vez, tu respuesta anterior
+          se sustituye por la nueva.</p>
+        <div class="lista">${estado.abiertas.length ? estado.abiertas.map((p,i)=>`
+          <div class="it"><div><b>${i+1}. ${esc(p.titulo)}</b>
+            <div class="small">${hecha(p) ? "respondida" : "<b>pendiente</b>"}${
+              p.id === estado.proyectada ? " · en la pantalla de la sala" : ""}</div></div>
+            <button class="btn ${hecha(p) ? "ghost " : ""}sm" data-ir="${esc(p.id)}">${
+              hecha(p) ? "Revisar" : "Responder"}</button></div>`).join("")
+          : `<div class="it"><div class="small">Ahora mismo no hay ninguna abierta.</div></div>`}</div>
+        <div class="btnrow"><button class="btn ghost" id="volver">Volver</button></div>
       </div></div>`;
-      $("#rev").onclick = async () => {
-        const p = await siguiente();
-        if(p){ estado.actual = p; estado.paso = "pregunta"; pintar(); }
-      };
-      esperar();
+      app().querySelectorAll("[data-ir]").forEach(b => b.onclick = () => {
+        estado.forzada = b.dataset.ir; avanzar(); });
+      $("#volver").onclick = () => avanzar();
+      window.scrollTo({top:0});
       return;
     }
 
     parar();
     const p = estado.actual, cfg = p.config || {};
-    const hechas = Object.keys(estado.hechas).length;
 
     // ── Tarjetas: escribir o votar, según la fase ──────────────────
     if(p.tipo === "tarjetas"){
@@ -1342,6 +1441,7 @@ async function participanteMotor(codigo, s){
       if(fase === "recogida"){
         const maxA = cfg.maximo_aportaciones || 5, lim = cfg.maximo_caracteres || 200;
         app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+          <div id="saltar"></div>
           <span class="phasetag">${esc(p.codigo||"")} · escribir</span>
           <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
           ${p.ayuda ? `<p class="small">${esc(p.ayuda)}</p>` : ""}
@@ -1361,11 +1461,9 @@ async function participanteMotor(codigo, s){
           catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar";
             $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
           estado.hechas[p.id + ":recogida"] = true;
-          const sig = await siguiente();
-          if(sig) estado.actual = sig; else estado.paso = "espera";
-          pintar(); window.scrollTo({top:0});
+          avanzar();
         };
-        window.scrollTo({top:0});
+        vigilar(); window.scrollTo({top:0});
         return;
       }
       // votación
@@ -1373,6 +1471,7 @@ async function participanteMotor(codigo, s){
       try{ g = await API.gruposParaVotar(codigo, p.id) || g; }catch(e){}
       const maxV = g.votos || 3, sel = new Set();
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <div id="saltar"></div>
         <span class="phasetag">${esc(p.codigo||"")} · votar</span>
         <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
         <p class="small">Elige hasta ${maxV} de los temas en que se han agrupado las respuestas.</p>
@@ -1396,22 +1495,29 @@ async function participanteMotor(codigo, s){
         catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar votos";
           $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
         estado.hechas[p.id + ":votacion"] = true;
-        const sig = await siguiente();
-        if(sig) estado.actual = sig; else estado.paso = "espera";
-        pintar(); window.scrollTo({top:0});
+        avanzar();
       };
-      window.scrollTo({top:0});
+      vigilar(); window.scrollTo({top:0});
       return;
     }
 
+    const ix = estado.abiertas.findIndex(x => x.id === p.id);
     app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
-      <span class="phasetag">${esc(p.codigo||"")}${hechas ? " · llevas "+hechas+" respondidas" : ""}</span>
+      <div id="saltar"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span class="phasetag">${esc(p.codigo||"")}${
+          ix >= 0 ? " · " + (ix+1) + " de " + estado.abiertas.length + " abiertas" : ""}</span>
+        <button class="btn ghost sm" id="todas">Ver todas</button></div>
       <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
       ${p.ayuda ? `<p class="small">${esc(p.ayuda)}</p>` : ""}
+      ${hecha(p) ? `<div class="aviso">Ya respondiste a esta. Si vuelves a enviar,
+        tu respuesta anterior se sustituye.</div>` : ""}
       <div id="campo"></div>
       <div id="aviso"></div>
       <div class="btnrow"><button class="btn" id="env">Enviar respuesta</button></div>
     </div></div>`;
+    $("#todas").onclick = () => { estado.paso = "lista"; pintar(); };
+    vigilar();
 
     const campo = $("#campo");
     let leer = () => null;              // devuelve el valor jsonb o null si falta algo
@@ -1645,9 +1751,7 @@ async function participanteMotor(codigo, s){
       catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar respuesta";
         $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
       estado.hechas[p.id] = true;
-      const sig = await siguiente();
-      if(sig){ estado.actual = sig; } else { estado.paso = "espera"; }
-      pintar(); window.scrollTo({top:0});
+      avanzar();
     };
     window.scrollTo({top:0});
   };
@@ -1804,10 +1908,17 @@ async function editorListas(s, pregunta, preguntas, volver){
   const ejes  = EJES_TIPO[pregunta.tipo] || [];
   const cfg   = JSON.parse(JSON.stringify(pregunta.config || {}));
 
-  // Solo de las terminadas: traer de una pregunta que sigue abierta es
-  // congelar un resultado a medias y no enterarse.
-  const fuentes = preguntas.filter(p => p.id !== pregunta.id && p.estado === "terminada"
-    && ["tarjetas","nube","ranking","unica","multiple","secuencia"].includes(p.tipo));
+  // Todas las que podrían dar una lista de etiquetas, y no solo las que ya
+  // están listas: si aquí solo aparecen las terminadas, la lista sale corta y
+  // parece que la aplicación se ha dejado preguntas. Las que aún no valen
+  // salen igualmente, en gris y con el motivo escrito.
+  const DAN_LISTA = ["tarjetas","nube","ranking","secuencia","unica","multiple",
+                     "puntos100","matriz_escala","clasificar","dos_ejes"];
+  const fuentes = preguntas.filter(p => p.id !== pregunta.id && DAN_LISTA.includes(p.tipo));
+  const usable = p => p.estado === "terminada";
+  const rotulo = (p, i) => `${i+1}. ${p.codigo ? p.codigo + " · " : ""}` +
+    `${p.titulo.length > 52 ? p.titulo.slice(0,52) + "…" : p.titulo}` +
+    (usable(p) ? "" : `  — ${p.estado}, todavía no se puede traer`);
 
   const etiquetasDe = async p => {
     if(p.tipo === "tarjetas"){
@@ -1838,10 +1949,15 @@ async function editorListas(s, pregunta, preguntas, volver){
             <span class="small">(${(cfg[sl.k]||[]).length})</span></label>
           <textarea id="ls-${sl.k}" rows="7">${esc((cfg[sl.k]||[]).join("\n"))}</textarea></div>`).join("")}
         ${fuentes.length ? `<h3>Traer de una pregunta anterior</h3>
+          <p class="small">Solo se puede traer de una pregunta <b>terminada</b>: de una que
+            sigue abierta traerías un resultado a medias sin enterarte. Las demás salen
+            en la lista para que veas dónde están, pero no se pueden elegir.</p>
           <div class="grid2">
-            <div class="field"><label for="fu">Pregunta</label><select id="fu">${
-              fuentes.map(p=>`<option value="${esc(p.id)}">${esc(p.codigo||"")} ·
-                ${esc(p.titulo.slice(0,60))}</option>`).join("")}</select></div>
+            <div class="field"><label for="fu">Pregunta (${fuentes.filter(usable).length}
+              de ${fuentes.length} disponibles)</label><select id="fu">${
+              fuentes.map((p,i)=>`<option value="${esc(p.id)}"${usable(p)?"":" disabled"}${
+                p === fuentes.find(usable) ? " selected" : ""}>${
+                esc(rotulo(p,i))}</option>`).join("")}</select></div>
             <div class="field"><label for="cu">Cuántas, de más a menos votada</label>
               <select id="cu">${[3,4,5,6,8,10,99].map(n=>
                 `<option value="${n}"${n===6?" selected":""}>${n===99?"todas":n}</option>`).join("")}</select></div>
@@ -1859,8 +1975,16 @@ async function editorListas(s, pregunta, preguntas, volver){
 
     $("#atras").onclick = $("#cancelar").onclick = volver;
 
+    if($("#traer") && !fuentes.some(usable)){
+      $("#traer").disabled = true;
+      $("#aviso").innerHTML = `<div class="aviso">Ninguna de las preguntas anteriores está
+        terminada todavía, así que no hay de dónde traer. Escríbelo a mano, o termina antes
+        la pregunta que produce este material.</div>`;
+    }
     if($("#traer")) $("#traer").onclick = async () => {
       const p = fuentes.find(x=>x.id === $("#fu").value);
+      if(!p || !usable(p)){ $("#aviso").innerHTML =
+        `<div class="aviso rojo">Esa pregunta no está terminada.</div>`; return; }
       const cuantas = +$("#cu").value, destino = $("#de").value;
       $("#traer").disabled = true; $("#traer").textContent = "Trayendo…";
       const lista = (await etiquetasDe(p)).slice(0, cuantas);
@@ -2283,10 +2407,9 @@ async function proyeccionMotor(codigo, s){
    6 bis · CONSTRUCTOR DE SESIÓN (motor de preguntas)
 
    Aquí compones la sesión: resuelves las variables del banco y eliges
-   qué preguntas entran. El banco tiene 60; de momento solo 38 se pueden
-   añadir. Las otras 22 aparecen igualmente, en gris y con el tipo que
-   les falta, porque es peor descubrir el hueco preparando una sesión
-   que verlo desde el principio.
+   qué preguntas entran. Las 60 del banco se pueden añadir. La mitad son
+   «derivadas»: entran con las listas vacías y se rellenan en directo con
+   lo que produzca el grupo, y hasta entonces la consola las marca en rojo.
    ═══════════════════════════════════════════════════════════════════ */
 /* Agregación en modo demostración. En modo real la hace `resultados_pregunta`
    dentro de la base de datos, que es donde debe estar. Esto solo existe para
@@ -2479,9 +2602,11 @@ async function consolaMotor(s){
           <button class="btn ghost" id="nucleo">Añadir el itinerario núcleo</button>
           <button class="btn ghost" id="bench">Añadir solo las comparables</button>
         </div>
-        <p class="note">El itinerario núcleo son 21 preguntas; de esas, ${
-          BANCO_ESC.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)).length} son de tipos ya
-          construidos. Las comparables son las nueve que sí acumulan conocimiento entre clientes.</p>
+        <p class="note">El itinerario núcleo son ${BANCO_ESC.filter(p=>p.nuc).length} preguntas:
+          el recorrido completo del método. Las comparables son las ${
+          BANCO_ESC.filter(p=>p.bench).length} que acumulan conocimiento entre clientes, y
+          conviene que estén en todas tus sesiones con el mismo texto. Añadir el banco entero
+          —las 60— es un catálogo, no una sesión.</p>
       </div>
 
       ${BLOQUES_ESC.map((nb, bi) => {
@@ -2697,9 +2822,9 @@ const BLOQUES_ESC = [
   "Señales tempranas, aprendizaje y cierre"
 ];
 
-/* Tipos ya construidos (fase 1). El resto aparece en el banco pero no se
-   puede añadir todavía: es mejor que veas el mapa entero y sepas qué
-   falta, a que descubras el hueco preparando una sesión. */
+/* Los catorce tipos de pantalla, todos construidos. La lista se queda aquí
+   porque el constructor la usa para decidir qué se puede añadir: si algún día
+   se inventa un tipo nuevo, aparecerá en el banco en gris hasta que exista. */
 const TIPOS_LISTOS = ["unica","multiple","escala","matriz_escala",
                       "abierta","abierta_campos","puntos100","tarjetas",
                       "nube","ranking","dos_ejes","clasificar","secuencia",
@@ -3012,12 +3137,11 @@ const MODULOS = [
    publico:"Diagnóstico de cultura organizativa",
    desc:"Cuatro vectores, reparto de 100 puntos, doce pantallas. Directo y survey.",
    ruta:"#/admin/sesiones"},
-  {k:"escenarios", nombre:"Escenarios futuros", est:"parcial",
+  {k:"escenarios", nombre:"Escenarios futuros", est:"activo",
    publico:"Prospectiva y escenarios de futuro",
-   desc:"Banco de 60 preguntas, 47 construidas y 16 de las 21 del itinerario núcleo: "
-      + "opción única y múltiple, escalas, matriz, abiertas, reparto de 100 puntos y "
-      + "tarjetas con agrupación y votación. Faltan nubes, rankings, dos ejes, "
-      + "secuencia, clasificación y matriz de robustez.",
+   desc:"Banco de 60 preguntas, las 60 construidas, con los catorce tipos de pantalla: "
+      + "desde la opción única hasta el mapa de dos ejes, la matriz de robustez y las "
+      + "tarjetas con agrupación y votación. Eliges cuáles entran en cada sesión.",
    ruta:"#/admin/sesiones"},
   {k:"reactor", nombre:"Reactor de innovación", est:"pendiente",
    desc:"Enunciados canónicos y valoración colectiva. Es tu activo más defendible."},
@@ -3053,9 +3177,10 @@ function hubPrivado(u){
                 <span class="estado" style="margin-left:8px">en construcción</span>`
             : `<span class="estado">por construir</span>`}
         </div>`).join("")}</div>
-      <p class="note">Los cinco pendientes siguen en Mentimeter. El motor está diseñado para
-        que añadir uno sea rellenar una tabla de ítems, no encargar un desarrollo nuevo, pero
-        todavía no está hecho: decirlo aquí evita que lo des por hecho en una propuesta.</p>
+      <p class="note">Los cuatro pendientes siguen en Mentimeter. Los tipos de pantalla ya
+        están todos construidos, así que un instrumento nuevo es sobre todo redactar su banco
+        de preguntas — pero sigue siendo trabajo, no un interruptor: decirlo aquí evita que lo
+        des por hecho en una propuesta.</p>
     </div>
     ${API.demo() ? "" : `<div class="card">
       <h2>Contraseña de acceso</h2>
@@ -3191,7 +3316,7 @@ async function panelAdmin(u){
         <div class="field"><label for="s-ins">Instrumento</label>
           <select id="s-ins">
             <option value="cultura-cvf">Cultura organizativa</option>
-            <option value="escenarios">Escenarios futuros · en construcción</option>
+            <option value="escenarios">Escenarios futuros</option>
           </select></div>
         <div class="field"><label for="s-tit">Título de la sesión</label>
           <input id="s-tit" required placeholder="Equipo directivo · febrero 2026"></div>
