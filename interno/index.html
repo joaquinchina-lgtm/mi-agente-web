@@ -214,6 +214,22 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .cel-col .nums button.on{background:var(--deseada);border-color:var(--deseada);
   color:#fff;font-weight:650}
 
+/* informe */
+.informe-bloque{padding:26px 22px}
+.informe-bloque h2{line-height:1.25}
+.informe-bloque .enun{font-size:18px;padding:11px 0}
+.informe-bloque .barra{height:12px}
+.informe-bloque .mapa{max-height:none}
+@media print{
+  @page{margin:14mm}
+  body{background:#fff}
+  .no-imprimir, header.top, .vistas{display:none !important}
+  .card{border:none;padding:0 0 6mm;margin:0 0 8mm;break-inside:avoid;background:none}
+  .informe-bloque{break-inside:avoid}
+  .wrap{max-width:none;padding:0}
+  .esc-den, .mapa{max-height:none}
+}
+
 /* proyección */
 .proy{max-width:1200px;margin:0 auto;padding:34px 30px}
 .proy .leyenda{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:18px}
@@ -2210,228 +2226,405 @@ async function mesaAgrupacion(s, pregunta, volver){
    está terminada: enseñar la media a quien todavía no ha respondido lo
    arrima al grupo. Es la misma regla que en cultura.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   GRÁFICOS
+
+   Viven aquí, fuera de la proyección, porque los usan dos pantallas:
+   el proyector de la sala y el informe completo de la consola. Antes
+   estaban dentro de `proyeccionMotor` y habría habido que duplicarlos.
+   ═══════════════════════════════════════════════════════════════════ */
+const barras = (datos, etiqueta, valor, cfgOp) => {
+  const max = Math.max(...datos.map(valor), 1);
+  const k = d => tonoCfg(cfgOp,
+    d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)));
+  return `<div style="margin-top:22px">${datos.map(d=>`
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+        <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
+        <b style="font-size:30px;white-space:nowrap">${valor(d)}</b></div>
+      <div class="barra" style="height:14px"><i style="width:${valor(d)/max*100}%;
+        background:${k(d)}"></i></div>
+    </div>`).join("")}</div>`;
+};
+
+// Barra cuyo largo y cuyo número no son la misma cifra. En un ranking, el
+// número honesto es la posición media (1,4) y la barra tiene que ser más
+// larga cuanto MENOR es esa cifra; dibujar la posición tal cual daría la
+// barra más larga a lo último de la lista.
+const barrasV = (datos, etiqueta, largo, texto, cfgOp) => {
+  const max = Math.max(...datos.map(largo), 0.0001);
+  return `<div style="margin-top:22px">${datos.map(d=>`
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+        <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
+        <b style="font-size:30px;white-space:nowrap">${esc(texto(d))}</b></div>
+      <div class="barra" style="height:14px"><i style="width:${largo(d)/max*100}%;
+        background:${tonoCfg(cfgOp,
+          d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)))}"></i></div>
+    </div>`).join("")}</div>`;
+};
+
+// Decimales fijos y coma decimal. «4» junto a «4,6» en la misma matriz
+// se lee como si fueran cifras de distinta precisión.
+const num = (v, d = 1) => Number(v).toFixed(d).replace(".", ",");
+
+// Mapa de dos ejes. Un solo tono para todos los puntos y el nombre pegado
+// a cada uno: colorear por elemento gastaría ocho tonos categóricos en
+// una identidad que la etiqueta ya da mejor.
+const mapaEjes = (datos, cfg) => {
+  const L = 130, R = 60, T = 34, B = 66, W = 1000, H = 520;
+  const px = x => L + (x/100) * (W - L - R);
+  const py = y => T + (1 - y/100) * (H - T - B);
+  const [exMin, exMax] = partirEje(cfg.eje_x), [eyMin, eyMax] = partirEje(cfg.eje_y);
+  // Las manchas van todas debajo de todos los puntos: si cada elemento
+  // pinta su mancha justo antes de su punto, la mancha del siguiente
+  // tapa el punto del anterior.
+  const halos = datos.map(d => `<ellipse class="halo" cx="${px(d.x)}" cy="${py(d.y)}"
+      rx="${Math.max((d.dx||0)/100*(W-L-R), 4)}"
+      ry="${Math.max((d.dy||0)/100*(H-T-B), 4)}"
+      style="fill:${tonoCfg(cfg, d.clave)};opacity:.2"></ellipse>`).join("");
+  const pts = datos.map(d => {
+    const x = px(d.x), y = py(d.y);
+    // La etiqueta va a la derecha salvo en la banda derecha, donde se saldría.
+    const der = d.x <= 72;
+    return `<circle class="pt" cx="${x}" cy="${y}" r="10" style="fill:${tonoCfg(cfg, d.clave)}"></circle>
+      <text class="rot" x="${x + (der?18:-18)}" y="${y+7}"
+            text-anchor="${der?"start":"end"}">${esc(d.clave)}</text>`;
+  }).join("");
+  return `<svg class="mapa" viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="Mapa de posicionamiento en dos ejes">
+    <defs><clipPath id="cp-mapa"><rect x="${L}" y="${T}"
+      width="${W-L-R}" height="${H-T-B}"></rect></clipPath></defs>
+    <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" class="rejilla"></rect>
+    <line class="eje" x1="${px(50)}" y1="${T}" x2="${px(50)}" y2="${H-B}"></line>
+    <line class="eje" x1="${L}" y1="${py(50)}" x2="${W-R}" y2="${py(50)}"></line>
+    <g clip-path="url(#cp-mapa)">${halos}</g>
+    ${pts}
+    <text class="ejetxt" x="${L}" y="${H-26}">← ${esc(exMin)}</text>
+    <text class="ejetxt" x="${W-R}" y="${H-26}" text-anchor="end">${esc(exMax)} →</text>
+    <text class="ejetxt" x="${L-14}" y="${T+14}" text-anchor="end"
+          transform="rotate(-90 ${L-14} ${T+14})">${esc(eyMax)} ↑</text>
+    <text class="ejetxt" x="${L-14}" y="${H-B}" text-anchor="start"
+          transform="rotate(-90 ${L-14} ${H-B})">↓ ${esc(eyMin)}</text>
+  </svg>`;
+};
+
+// Matriz de robustez. Escala divergente, no secuencial: 1 perjudica,
+// 3 es neutro y 5 es valioso, así que hay dos polos y un cero, y el
+// número va escrito en cada casilla para no depender del color.
+const matrizRobustez = (datos, cfg) => {
+  const min = cfg.min ?? 1, max = cfg.max ?? 5, medio = (min + max) / 2;
+  const filas = cfg.filas && cfg.filas.length ? cfg.filas
+    : [...new Set(datos.map(d=>d.fila))];
+  const cols = cfg.columnas && cfg.columnas.length ? cfg.columnas
+    : [...new Set(datos.map(d=>d.columna))];
+  const mapa = {}; datos.forEach(d => mapa[d.fila + "\u0000" + d.columna] = d);
+  const paso = v => { const d = (v - medio) / ((max - min) / 2 || 1);
+    return d <= -0.6 ? "c-nn" : d <= -0.2 ? "c-n" : d < 0.2 ? "c-0" : d < 0.6 ? "c-p" : "c-pp"; };
+  return `<table class="matriz"><thead><tr><th></th>${cols.map(c=>
+      `<th style="text-align:center">${esc(c)}</th>`).join("")}</tr></thead>
+    <tbody>${filas.map(f=>`<tr><td class="et">${esc(f)}</td>${cols.map(c=>{
+      const d = mapa[f + "\u0000" + c];
+      return d ? `<td class="${paso(d.media)}">${esc(num(d.media))}</td>`
+               : `<td class="c-0">·</td>`;
+    }).join("")}</tr>`).join("")}</tbody></table>
+    <div class="leyenda"><span><i class="c-nn"></i>${min} perjudicial</span>
+      <span><i class="c-0"></i>${Math.round(medio)} neutra</span>
+      <span><i class="c-pp"></i>${max} muy valiosa</span></div>`;
+};
+
+// Nube: el tamaño lleva el recuento, pero el recuento va también escrito
+// en pequeño. Una nube sin cifras es un adorno; con ellas se puede leer.
+//
+// El reparto no es aleatorio: se ordena de más a menos y después se
+// intercalan a izquierda y derecha, de modo que lo más repetido queda en
+// el centro y lo demás alrededor. Sin eso, con `flex-wrap`, la palabra
+// más grande caería siempre arriba a la izquierda.
+const nubePalabras = datos => {
+  const top = datos.slice(0, 34);
+  const max = Math.max(...top.map(d=>d.n), 1), min = Math.min(...top.map(d=>d.n));
+  const izq = [], der = [];
+  top.forEach((d,i) => (i % 2 ? izq : der).push(d));   // 0,2,4… a la derecha
+  const puestos = izq.reverse().concat(der);
+  return `<div class="nube">${puestos.map(d=>{
+    const rel = max === min ? 1 : (d.n - min) / (max - min);
+    const t = Math.round(22 + Math.pow(rel, 0.7) * 68);
+    return `<span style="font-size:${t}px;font-weight:${rel > 0.5 ? 650 : 500};
+      color:${tonoDe(d.clave)};opacity:${rel < 0.25 ? ".72" : "1"}">${
+      esc(d.clave)}${d.n > 1 ? `<i>${d.n}</i>` : ""}</span>`;}).join("")}</div>`;
+};
+
+// Una persona, un punto. Es la forma honesta de enseñar un recuento
+// pequeño: se ve el número sin tener que leerlo, y se distingue de un
+// vistazo «tres personas» de «veintiséis».
+//
+// Un solo tono para todos los puntos: el color aquí no diría nada que la
+// etiqueta no diga mejor, y con doce opciones no hay ocho tonos que
+// repartir sin que dos se confundan.
+const puntosPorOpcion = (datos, cfg, respondidos) => {
+  const total = datos.reduce((a,d)=>a+d.n, 0);
+  // Con mucha gente los puntos se vuelven confeti: a partir de ahí, barras.
+  if(total > 150) return null;
+  const tam = total > 90 ? 12 : total > 45 ? 16 : 20;
+  // Las opciones que nadie ha elegido también salen, con un cero: saber
+  // qué no ha votado nadie suele ser la mitad de la conversación.
+  const mapa = {}; datos.forEach(d => mapa[d.clave] = d.n);
+  const claves = (cfg.opciones && cfg.opciones.length)
+    ? cfg.opciones.slice() : datos.map(d=>d.clave);
+  datos.forEach(d => { if(!claves.includes(d.clave)) claves.push(d.clave); });
+  return `<div class="rejilla-op">${claves.map((k, ix)=>{
+    const n = mapa[k] || 0;
+    return `<div class="op-celda">
+      <div class="op-puntos">${Array.from({length:n}, () =>
+        `<i style="width:${tam}px;height:${tam}px;background:${tonoN(ix)}"></i>`).join("")}</div>
+      <div class="op-pie"><b>${n}</b><span>${esc(k)}</span></div></div>`;
+  }).join("")}</div>`;
+};
+
+// Curva suave a partir de un histograma. No es una densidad estadística:
+// es la silueta del reparto, redondeada para que se lea de lejos. El dato
+// exacto lo lleva el número de la bola, no la curva.
+const silueta = (cuentas, ancho, alto) => {
+  const max = Math.max(...cuentas, 1), n = cuentas.length;
+  const px = i => (n === 1 ? ancho/2 : (i/(n-1)) * ancho);
+  const py = v => alto - (v/max) * (alto - 6) - 2;
+  let d = `M 0 ${alto} L ${px(0)} ${py(cuentas[0])}`;
+  for(let i=0;i<n-1;i++){
+    const x1 = px(i), y1 = py(cuentas[i]), x2 = px(i+1), y2 = py(cuentas[i+1]);
+    const cx = (x1 + x2) / 2;
+    d += ` C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+  }
+  return d + ` L ${ancho} ${alto} Z`;
+};
+
+// Una fila por cosa valorada: la silueta del reparto arriba, la vía con
+// la media abajo, y una línea vertical con la media de todas las filas
+// para que se vea de un golpe qué está por encima y qué por debajo.
+const filasEscala = (filas, cfg) => {
+  const min = cfg.min ?? 1, max = cfg.max ?? 7;
+  const sitio = v => ((v - min) / (max - min || 1)) * 100;
+  const global = filas.reduce((a,f)=>a+Number(f.media), 0) / (filas.length || 1);
+  const W = 1000, H = 70;
+  return `<div style="margin-top:26px">${filas.map(f=>{
+    const rep = f.reparto || {};
+    const cuentas = Array.from({length: max-min+1}, (_,k) => Number(rep[String(min+k)] || 0));
+    const hay = cuentas.some(c=>c>0);
+    return `<div class="esc-fila">
+      <h4>${esc(f.clave)}</h4>
+      <div class="esc-caja">
+        ${hay ? `<svg class="esc-den" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+                   aria-hidden="true"><path d="${silueta(cuentas, W, H)}"
+                   fill="${tonoCfg(cfg, f.clave)}" opacity=".3"></path></svg>`
+              : `<div style="height:70px"></div>`}
+        <div class="esc-via"><i style="width:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}"></i>
+          <div class="esc-bola" style="left:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}">${
+            esc(num(f.media))}</div></div>
+        ${filas.length > 1 ? `<div class="esc-media" style="left:${sitio(global)}%"></div>` : ""}
+      </div></div>`;
+  }).join("")}
+    <div class="esc-anclas">
+      <span>${esc(cfg.ancla_min || min)}</span>
+      <span style="text-align:right">${esc(cfg.ancla_max || max)}</span>
+      ${filas.length > 1 ? `<span class="esc-chip" style="left:${sitio(global)}%">media ${
+        esc(num(global))}</span>` : ""}</div></div>`;
+};
+
+// Clasificación: una barra por elemento, partida en las categorías, con
+// 2px de hueco entre tramos para que se distingan sin depender del tono.
+const barrasClasif = (datos, cfg) => {
+  const cats = cfg.categorias && cfg.categorias.length ? cfg.categorias
+    : [...new Set(datos.map(d=>d.categoria))];
+  const tono = i => tonoN(i);
+  const els = cfg.elementos && cfg.elementos.length ? cfg.elementos
+    : [...new Set(datos.map(d=>d.clave))];
+  const de = {}; datos.forEach(d => (de[d.clave] = de[d.clave] || {})[d.categoria] = d.n);
+  return `<div style="margin-top:20px">${els.map(e=>{
+    const fila = de[e] || {}, tot = Object.values(fila).reduce((a,b)=>a+b,0) || 1;
+    return `<div style="margin-bottom:15px">
+      <div class="enun" style="margin:0;border:0;padding:0 0 6px">${esc(e)}</div>
+      <div style="display:flex;gap:2px;height:26px">${cats.map((c,i)=>{
+        const n = fila[c] || 0; if(!n) return "";
+        return `<div title="${esc(c)}" style="width:${n/tot*100}%;background:${tono(i)};
+          border-radius:3px;color:#fff;font-size:14px;font-weight:600;
+          display:flex;align-items:center;justify-content:center">${
+            n/tot > .12 ? n : ""}</div>`;}).join("")}</div></div>`;}).join("")}
+    <div class="leyenda">${cats.map((c,i)=>
+      `<span><i style="background:${tono(i)}"></i>${esc(c)}</span>`).join("")}</div>`;
+};
+
+/* Dibuja el resultado de UNA pregunta. Lo comparten el proyector y el
+   informe de la consola: si el gráfico de la sala cambia, cambia el del
+   informe, y nunca se separan. `cab` es la cabecera —cada pantalla pone la
+   suya— y `pie` el texto de debajo. */
+function cuerpoResultado(p, r, cab, pie){
+  let cuerpo = "";
+  const cfg = p.config || {};
+  if(r.datos){
+    if(p.tipo === "unica"){
+      const puntos = puntosPorOpcion(r.datos, cfg, r.respondidos);
+      cuerpo = cab + (puntos || barras(r.datos, d=>d.clave, d=>d.n))
+        + pie(`${r.respondidos} ${r.respondidos===1?"persona ha respondido":"personas han respondido"}`);
+    }
+    else if(p.tipo === "multiple")
+      cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n, cfg)
+        + pie(`Número de respuestas por opción · ${r.respondidos} personas`);
+    else if(p.tipo === "escala")
+      cuerpo = cab + filasEscala([{clave: cfg.etiqueta || "Valoración del grupo",
+    media: r.datos.media, reparto: r.datos.reparto}], cfg)
+        + pie(`${r.respondidos} respuestas · mediana ${r.datos.mediana}`);
+    else if(p.tipo === "matriz_escala")
+      cuerpo = cab + (r.datos.some(d=>d.reparto)
+    ? filasEscala(r.datos, cfg)
+    : barras(r.datos, d=>d.clave, d=>d.media, cfg))
+        + pie(`${r.respondidos} respuestas`);
+    else if(p.tipo === "puntos100")
+      cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media, cfg)
+        + pie(`${r.respondidos} respuestas`);
+    else if(p.tipo === "nube")
+      cuerpo = cab + nubePalabras(r.datos)
+        + pie(`${r.respondidos} personas · el número pequeño es cuántas lo han escrito`);
+    else if(p.tipo === "ranking"){
+      const n = r.datos.length;
+      cuerpo = cab + barrasV(r.datos, d=>d.clave,
+    d => n + 1 - d.posicion, d => num(d.posicion, 2), cfg)
+        + pie(`Posición media de ${r.respondidos} ordenaciones · 1 es lo más `
+        + `prioritario · la lista se presentó barajada a cada persona`);
+    }
+    else if(p.tipo === "secuencia")
+      cuerpo = cab + `<div style="margin-top:22px">${r.datos.map((d,i)=>`
+        <div class="enun" style="display:flex;gap:18px;align-items:baseline">
+    <b style="font-size:30px;min-width:44px">${i+1}</b>
+    <span style="flex:1">${esc(d.clave)}</span>
+    <span class="small">posición media ${esc(num(d.posicion, 2))}</span></div>`).join("")}</div>
+        ` + pie(`${r.respondidos} secuencias`);
+    else if(p.tipo === "dos_ejes")
+      cuerpo = cab + mapaEjes(r.datos, cfg)
+        + pie(`${r.respondidos} personas · el punto es la posición media y la mancha, `
+        + `lo que discrepan: cuanto más grande, menos acuerdo sobre dónde va`);
+    else if(p.tipo === "matriz_valoracion")
+      cuerpo = cab + matrizRobustez(r.datos, cfg)
+        + pie(`Valoración media de ${r.respondidos} personas`);
+    else if(p.tipo === "clasificar")
+      cuerpo = cab + barrasClasif(r.datos, cfg)
+        + pie(`${r.respondidos} respuestas`);
+    else
+      cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
+        `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
+        <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+  } else {
+    // Abierta: enunciado, opciones si las tiene, y cuánta gente lleva.
+    const ops = cfg.opciones || cfg.elementos || cfg.filas
+      || (Array.isArray(cfg.items) ? cfg.items : null);
+    cuerpo = cab
+      + (ops ? `<div style="margin-top:20px">${ops.map(o=>
+    `<div class="enun">${esc(o)}</div>`).join("")}</div>` : "")
+      + `<div class="contador" style="margin-top:24px"><b>${r.respondidos}</b>
+    <span style="font-size:20px">${r.respondidos===1 ? "persona ha respondido"
+                             : "personas han respondido"}</span></div>`
+      + ((r.estado === "terminada" || r.en_vivo) && r.respondidos < r.minimo
+    ? `<p class="small" style="margin-top:14px">Con menos de ${r.minimo} respuestas no se
+         muestra el resultado: sería la respuesta de una persona concreta.${
+         r.en_vivo ? " El directo está encendido, pero el mínimo no se salta." : ""}</p>`
+    : "");
+  }
+  return cuerpo;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INFORME DE LA SESIÓN
+
+   Todas las preguntas, una detrás de otra, con el mismo gráfico que vio
+   la sala. Sirve para tres cosas distintas: repasar antes de escribir el
+   informe de verdad, proyectarlo entero al cerrar la sesión, y guardarlo
+   en PDF desde el propio navegador.
+
+   Lo que NO hace: interpretar. Esto son los datos ordenados; el informe
+   del cliente lo escribes tú.
+   ═══════════════════════════════════════════════════════════════════ */
+async function informeSesion(s, preguntas, volver){
+  app().innerHTML = `<div class="wrap ancho">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card"><h1>Reuniendo los resultados…</h1>
+    <p class="small">Una consulta por pregunta: con muchas, tarda unos segundos.</p></div></div>`;
+  if($("#atras")) $("#atras").onclick = volver;
+
+  // Secuencial y no en paralelo: sesenta consultas a la vez contra el
+  // mismo proyecto es la mejor forma de que te corten por exceso.
+  const partes = [];
+  for(const p of preguntas){
+    if(p.tipo === "tarjetas"){
+      const rt = await API.resultadosTarjetas(s.codigo, p.id).catch(()=>null);
+      partes.push({p, rt});
+    } else {
+      const r = await API.resultadosPregunta(s.codigo, p.id).catch(()=>null);
+      partes.push({p, r});
+    }
+  }
+
+  const conDatos = partes.filter(x => (x.r && x.r.datos)
+    || (x.rt && ((x.rt.grupos||[]).length || (x.rt.tarjetas||[]).length))).length;
+
+  const bloque = ({p, r, rt}) => {
+    const cab = `<div class="small">${esc(p.codigo || "propia")} ·
+      ${esc(TIPOS_NOMBRE[p.tipo] || p.tipo)} · ${esc(p.estado)}</div>
+      <h2 style="font-size:26px;margin:6px 0 0">${esc(p.titulo)}</h2>`;
+    const pie = txt => `<p class="small" style="margin-top:16px">${esc(txt)}</p>`;
+
+    if(p.tipo === "tarjetas"){
+      if(!rt || rt.existe === false) return cab + pie("Sin datos.");
+      if(rt.grupos && rt.grupos.length)
+        return cab + barras(rt.grupos, d=>d.etiqueta + " (" + d.tarjetas + ")", d=>d.votos)
+          + pie(`Votos de ${rt.n_votantes} personas · entre paréntesis, cuántas aportaciones agrupa cada tema`);
+      if(rt.tarjetas && rt.tarjetas.length)
+        return cab + `<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px">${
+          rt.tarjetas.map(t=>`<div class="enun" style="flex:1 1 280px;margin:0;font-size:17px">${
+            esc(t.texto)}</div>`).join("")}</div>`
+          + pie(`${rt.n_tarjetas} aportaciones, todavía sin agrupar`);
+      return cab + pie(`${rt.n_tarjetas} aportaciones · sin agrupar ni votar`);
+    }
+    if(!r || r.existe === false) return cab + pie("Sin datos.");
+    if(!r.datos)
+      return cab + `<div class="aviso" style="margin-top:12px">${
+        r.respondidos === 0 ? "Nadie la ha respondido."
+        : r.respondidos < r.minimo
+          ? `Solo ${r.respondidos} ${r.respondidos===1?"respuesta":"respuestas"}: por debajo de
+             ${r.minimo} no se muestra el resultado, para no señalar a nadie.`
+          : `La pregunta sigue ${esc(r.estado)}: los resultados aparecen al terminarla.`}</div>`;
+    return cuerpoResultado(p, r, cab, pie);
+  };
+
+  app().innerHTML = `<div class="wrap ancho">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card informe-cab">
+      <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · resultados</span>
+      <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1>
+      <p class="small" style="margin-top:8px"><code>${esc(s.codigo)}</code> ·
+        ${preguntas.length} preguntas · <b>${conDatos}</b> con resultado ·
+        ${esc(s.estado)}${s.es_prueba ? " · <b>sesión de ensayo</b>" : ""}</p>
+      ${s.es_prueba ? `<div class="aviso"><b>Ojo:</b> estos datos son simulados.
+        No los uses en un informe de cliente.</div>` : ""}
+      <div class="btnrow no-imprimir">
+        <button class="btn ghost" id="imprimir">Imprimir o guardar en PDF</button>
+        <button class="btn ghost" id="recargar">Actualizar</button></div>
+      <p class="note no-imprimir">Al imprimir se quitan los botones y cada pregunta procura
+        no partirse entre dos páginas. Para guardarlo en PDF, elige «Guardar como PDF»
+        en el destino de la impresora.</p>
+    </div>
+    ${partes.map(x => `<div class="card informe-bloque">${bloque(x)}</div>`).join("")}
+    <div class="card no-imprimir"><p class="small">Esto son los datos, no el informe.
+      Lo que significan lo escribes tú.</p></div>
+    </div>`;
+
+  $("#atras").onclick = volver;
+  $("#imprimir").onclick = () => window.print();
+  $("#recargar").onclick = () => informeSesion(s, preguntas, volver);
+  window.scrollTo({top:0});
+}
+
 async function proyeccionMotor(codigo, s){
   let timer = null;
   const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
 
-  const barras = (datos, etiqueta, valor, cfgOp) => {
-    const max = Math.max(...datos.map(valor), 1);
-    const k = d => tonoCfg(cfgOp,
-      d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)));
-    return `<div style="margin-top:22px">${datos.map(d=>`
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
-          <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
-          <b style="font-size:30px;white-space:nowrap">${valor(d)}</b></div>
-        <div class="barra" style="height:14px"><i style="width:${valor(d)/max*100}%;
-          background:${k(d)}"></i></div>
-      </div>`).join("")}</div>`;
-  };
-
-  // Barra cuyo largo y cuyo número no son la misma cifra. En un ranking, el
-  // número honesto es la posición media (1,4) y la barra tiene que ser más
-  // larga cuanto MENOR es esa cifra; dibujar la posición tal cual daría la
-  // barra más larga a lo último de la lista.
-  const barrasV = (datos, etiqueta, largo, texto, cfgOp) => {
-    const max = Math.max(...datos.map(largo), 0.0001);
-    return `<div style="margin-top:22px">${datos.map(d=>`
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
-          <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
-          <b style="font-size:30px;white-space:nowrap">${esc(texto(d))}</b></div>
-        <div class="barra" style="height:14px"><i style="width:${largo(d)/max*100}%;
-          background:${tonoCfg(cfgOp,
-            d.clave != null ? d.clave : (d.etiqueta != null ? d.etiqueta : etiqueta(d)))}"></i></div>
-      </div>`).join("")}</div>`;
-  };
-
-  // Decimales fijos y coma decimal. «4» junto a «4,6» en la misma matriz
-  // se lee como si fueran cifras de distinta precisión.
-  const num = (v, d = 1) => Number(v).toFixed(d).replace(".", ",");
-
-  // Mapa de dos ejes. Un solo tono para todos los puntos y el nombre pegado
-  // a cada uno: colorear por elemento gastaría ocho tonos categóricos en
-  // una identidad que la etiqueta ya da mejor.
-  const mapaEjes = (datos, cfg) => {
-    const L = 130, R = 60, T = 34, B = 66, W = 1000, H = 520;
-    const px = x => L + (x/100) * (W - L - R);
-    const py = y => T + (1 - y/100) * (H - T - B);
-    const [exMin, exMax] = partirEje(cfg.eje_x), [eyMin, eyMax] = partirEje(cfg.eje_y);
-    // Las manchas van todas debajo de todos los puntos: si cada elemento
-    // pinta su mancha justo antes de su punto, la mancha del siguiente
-    // tapa el punto del anterior.
-    const halos = datos.map(d => `<ellipse class="halo" cx="${px(d.x)}" cy="${py(d.y)}"
-        rx="${Math.max((d.dx||0)/100*(W-L-R), 4)}"
-        ry="${Math.max((d.dy||0)/100*(H-T-B), 4)}"
-        style="fill:${tonoCfg(cfg, d.clave)};opacity:.2"></ellipse>`).join("");
-    const pts = datos.map(d => {
-      const x = px(d.x), y = py(d.y);
-      // La etiqueta va a la derecha salvo en la banda derecha, donde se saldría.
-      const der = d.x <= 72;
-      return `<circle class="pt" cx="${x}" cy="${y}" r="10" style="fill:${tonoCfg(cfg, d.clave)}"></circle>
-        <text class="rot" x="${x + (der?18:-18)}" y="${y+7}"
-              text-anchor="${der?"start":"end"}">${esc(d.clave)}</text>`;
-    }).join("");
-    return `<svg class="mapa" viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Mapa de posicionamiento en dos ejes">
-      <defs><clipPath id="cp-mapa"><rect x="${L}" y="${T}"
-        width="${W-L-R}" height="${H-T-B}"></rect></clipPath></defs>
-      <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" class="rejilla"></rect>
-      <line class="eje" x1="${px(50)}" y1="${T}" x2="${px(50)}" y2="${H-B}"></line>
-      <line class="eje" x1="${L}" y1="${py(50)}" x2="${W-R}" y2="${py(50)}"></line>
-      <g clip-path="url(#cp-mapa)">${halos}</g>
-      ${pts}
-      <text class="ejetxt" x="${L}" y="${H-26}">← ${esc(exMin)}</text>
-      <text class="ejetxt" x="${W-R}" y="${H-26}" text-anchor="end">${esc(exMax)} →</text>
-      <text class="ejetxt" x="${L-14}" y="${T+14}" text-anchor="end"
-            transform="rotate(-90 ${L-14} ${T+14})">${esc(eyMax)} ↑</text>
-      <text class="ejetxt" x="${L-14}" y="${H-B}" text-anchor="start"
-            transform="rotate(-90 ${L-14} ${H-B})">↓ ${esc(eyMin)}</text>
-    </svg>`;
-  };
-
-  // Matriz de robustez. Escala divergente, no secuencial: 1 perjudica,
-  // 3 es neutro y 5 es valioso, así que hay dos polos y un cero, y el
-  // número va escrito en cada casilla para no depender del color.
-  const matrizRobustez = (datos, cfg) => {
-    const min = cfg.min ?? 1, max = cfg.max ?? 5, medio = (min + max) / 2;
-    const filas = cfg.filas && cfg.filas.length ? cfg.filas
-      : [...new Set(datos.map(d=>d.fila))];
-    const cols = cfg.columnas && cfg.columnas.length ? cfg.columnas
-      : [...new Set(datos.map(d=>d.columna))];
-    const mapa = {}; datos.forEach(d => mapa[d.fila + "\u0000" + d.columna] = d);
-    const paso = v => { const d = (v - medio) / ((max - min) / 2 || 1);
-      return d <= -0.6 ? "c-nn" : d <= -0.2 ? "c-n" : d < 0.2 ? "c-0" : d < 0.6 ? "c-p" : "c-pp"; };
-    return `<table class="matriz"><thead><tr><th></th>${cols.map(c=>
-        `<th style="text-align:center">${esc(c)}</th>`).join("")}</tr></thead>
-      <tbody>${filas.map(f=>`<tr><td class="et">${esc(f)}</td>${cols.map(c=>{
-        const d = mapa[f + "\u0000" + c];
-        return d ? `<td class="${paso(d.media)}">${esc(num(d.media))}</td>`
-                 : `<td class="c-0">·</td>`;
-      }).join("")}</tr>`).join("")}</tbody></table>
-      <div class="leyenda"><span><i class="c-nn"></i>${min} perjudicial</span>
-        <span><i class="c-0"></i>${Math.round(medio)} neutra</span>
-        <span><i class="c-pp"></i>${max} muy valiosa</span></div>`;
-  };
-
-  // Nube: el tamaño lleva el recuento, pero el recuento va también escrito
-  // en pequeño. Una nube sin cifras es un adorno; con ellas se puede leer.
-  //
-  // El reparto no es aleatorio: se ordena de más a menos y después se
-  // intercalan a izquierda y derecha, de modo que lo más repetido queda en
-  // el centro y lo demás alrededor. Sin eso, con `flex-wrap`, la palabra
-  // más grande caería siempre arriba a la izquierda.
-  const nubePalabras = datos => {
-    const top = datos.slice(0, 34);
-    const max = Math.max(...top.map(d=>d.n), 1), min = Math.min(...top.map(d=>d.n));
-    const izq = [], der = [];
-    top.forEach((d,i) => (i % 2 ? izq : der).push(d));   // 0,2,4… a la derecha
-    const puestos = izq.reverse().concat(der);
-    return `<div class="nube">${puestos.map(d=>{
-      const rel = max === min ? 1 : (d.n - min) / (max - min);
-      const t = Math.round(22 + Math.pow(rel, 0.7) * 68);
-      return `<span style="font-size:${t}px;font-weight:${rel > 0.5 ? 650 : 500};
-        color:${tonoDe(d.clave)};opacity:${rel < 0.25 ? ".72" : "1"}">${
-        esc(d.clave)}${d.n > 1 ? `<i>${d.n}</i>` : ""}</span>`;}).join("")}</div>`;
-  };
-
-  // Una persona, un punto. Es la forma honesta de enseñar un recuento
-  // pequeño: se ve el número sin tener que leerlo, y se distingue de un
-  // vistazo «tres personas» de «veintiséis».
-  //
-  // Un solo tono para todos los puntos: el color aquí no diría nada que la
-  // etiqueta no diga mejor, y con doce opciones no hay ocho tonos que
-  // repartir sin que dos se confundan.
-  const puntosPorOpcion = (datos, cfg, respondidos) => {
-    const total = datos.reduce((a,d)=>a+d.n, 0);
-    // Con mucha gente los puntos se vuelven confeti: a partir de ahí, barras.
-    if(total > 150) return null;
-    const tam = total > 90 ? 12 : total > 45 ? 16 : 20;
-    // Las opciones que nadie ha elegido también salen, con un cero: saber
-    // qué no ha votado nadie suele ser la mitad de la conversación.
-    const mapa = {}; datos.forEach(d => mapa[d.clave] = d.n);
-    const claves = (cfg.opciones && cfg.opciones.length)
-      ? cfg.opciones.slice() : datos.map(d=>d.clave);
-    datos.forEach(d => { if(!claves.includes(d.clave)) claves.push(d.clave); });
-    return `<div class="rejilla-op">${claves.map((k, ix)=>{
-      const n = mapa[k] || 0;
-      return `<div class="op-celda">
-        <div class="op-puntos">${Array.from({length:n}, () =>
-          `<i style="width:${tam}px;height:${tam}px;background:${tonoN(ix)}"></i>`).join("")}</div>
-        <div class="op-pie"><b>${n}</b><span>${esc(k)}</span></div></div>`;
-    }).join("")}</div>`;
-  };
-
-  // Curva suave a partir de un histograma. No es una densidad estadística:
-  // es la silueta del reparto, redondeada para que se lea de lejos. El dato
-  // exacto lo lleva el número de la bola, no la curva.
-  const silueta = (cuentas, ancho, alto) => {
-    const max = Math.max(...cuentas, 1), n = cuentas.length;
-    const px = i => (n === 1 ? ancho/2 : (i/(n-1)) * ancho);
-    const py = v => alto - (v/max) * (alto - 6) - 2;
-    let d = `M 0 ${alto} L ${px(0)} ${py(cuentas[0])}`;
-    for(let i=0;i<n-1;i++){
-      const x1 = px(i), y1 = py(cuentas[i]), x2 = px(i+1), y2 = py(cuentas[i+1]);
-      const cx = (x1 + x2) / 2;
-      d += ` C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
-    }
-    return d + ` L ${ancho} ${alto} Z`;
-  };
-
-  // Una fila por cosa valorada: la silueta del reparto arriba, la vía con
-  // la media abajo, y una línea vertical con la media de todas las filas
-  // para que se vea de un golpe qué está por encima y qué por debajo.
-  const filasEscala = (filas, cfg) => {
-    const min = cfg.min ?? 1, max = cfg.max ?? 7;
-    const sitio = v => ((v - min) / (max - min || 1)) * 100;
-    const global = filas.reduce((a,f)=>a+Number(f.media), 0) / (filas.length || 1);
-    const W = 1000, H = 70;
-    return `<div style="margin-top:26px">${filas.map(f=>{
-      const rep = f.reparto || {};
-      const cuentas = Array.from({length: max-min+1}, (_,k) => Number(rep[String(min+k)] || 0));
-      const hay = cuentas.some(c=>c>0);
-      return `<div class="esc-fila">
-        <h4>${esc(f.clave)}</h4>
-        <div class="esc-caja">
-          ${hay ? `<svg class="esc-den" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
-                     aria-hidden="true"><path d="${silueta(cuentas, W, H)}"
-                     fill="${tonoCfg(cfg, f.clave)}" opacity=".3"></path></svg>`
-                : `<div style="height:70px"></div>`}
-          <div class="esc-via"><i style="width:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}"></i>
-            <div class="esc-bola" style="left:${sitio(f.media)}%;background:${tonoCfg(cfg, f.clave)}">${
-              esc(num(f.media))}</div></div>
-          ${filas.length > 1 ? `<div class="esc-media" style="left:${sitio(global)}%"></div>` : ""}
-        </div></div>`;
-    }).join("")}
-      <div class="esc-anclas">
-        <span>${esc(cfg.ancla_min || min)}</span>
-        <span style="text-align:right">${esc(cfg.ancla_max || max)}</span>
-        ${filas.length > 1 ? `<span class="esc-chip" style="left:${sitio(global)}%">media ${
-          esc(num(global))}</span>` : ""}</div></div>`;
-  };
-
-  // Clasificación: una barra por elemento, partida en las categorías, con
-  // 2px de hueco entre tramos para que se distingan sin depender del tono.
-  const barrasClasif = (datos, cfg) => {
-    const cats = cfg.categorias && cfg.categorias.length ? cfg.categorias
-      : [...new Set(datos.map(d=>d.categoria))];
-    const tono = i => tonoN(i);
-    const els = cfg.elementos && cfg.elementos.length ? cfg.elementos
-      : [...new Set(datos.map(d=>d.clave))];
-    const de = {}; datos.forEach(d => (de[d.clave] = de[d.clave] || {})[d.categoria] = d.n);
-    return `<div style="margin-top:20px">${els.map(e=>{
-      const fila = de[e] || {}, tot = Object.values(fila).reduce((a,b)=>a+b,0) || 1;
-      return `<div style="margin-bottom:15px">
-        <div class="enun" style="margin:0;border:0;padding:0 0 6px">${esc(e)}</div>
-        <div style="display:flex;gap:2px;height:26px">${cats.map((c,i)=>{
-          const n = fila[c] || 0; if(!n) return "";
-          return `<div title="${esc(c)}" style="width:${n/tot*100}%;background:${tono(i)};
-            border-radius:3px;color:#fff;font-size:14px;font-weight:600;
-            display:flex;align-items:center;justify-content:center">${
-              n/tot > .12 ? n : ""}</div>`;}).join("")}</div></div>`;}).join("")}
-      <div class="leyenda">${cats.map((c,i)=>
-        `<span><i style="background:${tono(i)}"></i>${esc(c)}</span>`).join("")}</div>`;
-  };
 
   const pinta = async () => {
     const n = await API.sesionPublica(codigo).catch(()=>null);
@@ -2481,80 +2674,12 @@ async function proyeccionMotor(codigo, s){
       if(!p || !r || r.existe === false){
         cuerpo = `<h1>Preparando…</h1>`;
       } else {
-        const cfg = p.config || {};
         const cab = `<div class="small">${esc(p.codigo||"")}</div><h1>${esc(p.titulo)}</h1>`;
         // El pie dice siempre de cuánta gente hablamos, y avisa cuando el
         // resultado se está moviendo mientras la sala responde.
         const pie = txt => `<p class="small" style="margin-top:18px">${txt}${
           r.en_vivo ? ` · <span class="envivo"><b></b>en vivo, sigue abierta</span>` : ""}</p>`;
-        if(r.datos){
-          if(p.tipo === "unica"){
-            const puntos = puntosPorOpcion(r.datos, cfg, r.respondidos);
-            cuerpo = cab + (puntos || barras(r.datos, d=>d.clave, d=>d.n))
-              + pie(`${r.respondidos} ${r.respondidos===1?"persona ha respondido":"personas han respondido"}`);
-          }
-          else if(p.tipo === "multiple")
-            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n, cfg)
-              + pie(`Número de respuestas por opción · ${r.respondidos} personas`);
-          else if(p.tipo === "escala")
-            cuerpo = cab + filasEscala([{clave: cfg.etiqueta || "Valoración del grupo",
-                media: r.datos.media, reparto: r.datos.reparto}], cfg)
-              + pie(`${r.respondidos} respuestas · mediana ${r.datos.mediana}`);
-          else if(p.tipo === "matriz_escala")
-            cuerpo = cab + (r.datos.some(d=>d.reparto)
-                ? filasEscala(r.datos, cfg)
-                : barras(r.datos, d=>d.clave, d=>d.media, cfg))
-              + pie(`${r.respondidos} respuestas`);
-          else if(p.tipo === "puntos100")
-            cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media, cfg)
-              + pie(`${r.respondidos} respuestas`);
-          else if(p.tipo === "nube")
-            cuerpo = cab + nubePalabras(r.datos)
-              + pie(`${r.respondidos} personas · el número pequeño es cuántas lo han escrito`);
-          else if(p.tipo === "ranking"){
-            const n = r.datos.length;
-            cuerpo = cab + barrasV(r.datos, d=>d.clave,
-                d => n + 1 - d.posicion, d => num(d.posicion, 2), cfg)
-              + pie(`Posición media de ${r.respondidos} ordenaciones · 1 es lo más `
-                    + `prioritario · la lista se presentó barajada a cada persona`);
-          }
-          else if(p.tipo === "secuencia")
-            cuerpo = cab + `<div style="margin-top:22px">${r.datos.map((d,i)=>`
-              <div class="enun" style="display:flex;gap:18px;align-items:baseline">
-                <b style="font-size:30px;min-width:44px">${i+1}</b>
-                <span style="flex:1">${esc(d.clave)}</span>
-                <span class="small">posición media ${esc(num(d.posicion, 2))}</span></div>`).join("")}</div>
-              ` + pie(`${r.respondidos} secuencias`);
-          else if(p.tipo === "dos_ejes")
-            cuerpo = cab + mapaEjes(r.datos, cfg)
-              + pie(`${r.respondidos} personas · el punto es la posición media y la mancha, `
-                    + `lo que discrepan: cuanto más grande, menos acuerdo sobre dónde va`);
-          else if(p.tipo === "matriz_valoracion")
-            cuerpo = cab + matrizRobustez(r.datos, cfg)
-              + pie(`Valoración media de ${r.respondidos} personas`);
-          else if(p.tipo === "clasificar")
-            cuerpo = cab + barrasClasif(r.datos, cfg)
-              + pie(`${r.respondidos} respuestas`);
-          else
-            cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
-              `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
-              <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
-        } else {
-          // Abierta: enunciado, opciones si las tiene, y cuánta gente lleva.
-          const ops = cfg.opciones || cfg.elementos || cfg.filas
-            || (Array.isArray(cfg.items) ? cfg.items : null);
-          cuerpo = cab
-            + (ops ? `<div style="margin-top:20px">${ops.map(o=>
-                `<div class="enun">${esc(o)}</div>`).join("")}</div>` : "")
-            + `<div class="contador" style="margin-top:24px"><b>${r.respondidos}</b>
-                <span style="font-size:20px">${r.respondidos===1 ? "persona ha respondido"
-                                                                 : "personas han respondido"}</span></div>`
-            + ((r.estado === "terminada" || r.en_vivo) && r.respondidos < r.minimo
-                ? `<p class="small" style="margin-top:14px">Con menos de ${r.minimo} respuestas no se
-                     muestra el resultado: sería la respuesta de una persona concreta.${
-                     r.en_vivo ? " El directo está encendido, pero el mínimo no se salta." : ""}</p>`
-                : "");
-        }
+        cuerpo = cuerpoResultado(p, r, cab, pie);
       }
     }
     app().innerHTML = `<div class="proy">${cuerpo}</div>`;
@@ -2869,6 +2994,7 @@ async function consolaMotor(s){
             <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
             <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
             <button class="btn ghost" id="espera">Proyectar la espera</button>
+            <button class="btn ghost" id="informe">Ver todos los resultados</button>
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
@@ -2910,6 +3036,8 @@ async function consolaMotor(s){
     if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
       cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
+    if(bt("informe")) bt("informe").onclick = () =>
+      informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
 
     if(bt("vivo")) bt("vivo").onclick = () =>
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
