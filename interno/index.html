@@ -249,10 +249,51 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 :root[data-theme="dark"] .c-p {background:#2f5f96;color:#fff}
 :root[data-theme="dark"] .c-pp{background:#6da7ec;color:#0b0b0b}
 .proy .leyenda i.c-0{border:1px solid var(--axis)}
-.nube{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;margin-top:20px}
-.nube span{color:var(--text-primary);line-height:1.15}
-.nube span i{font-style:normal;font-size:15px;color:var(--text-muted);margin-left:5px;
-  vertical-align:baseline}
+.nube{display:flex;flex-wrap:wrap;gap:12px 26px;align-items:center;justify-content:center;
+  margin-top:26px;max-width:1000px;margin-left:auto;margin-right:auto}
+.nube span{color:var(--text-primary);line-height:1.05;white-space:nowrap}
+.nube span.flojo{color:var(--text-secondary)}
+.nube span i{font-style:normal;font-size:14px;color:var(--text-muted);margin-left:5px;
+  vertical-align:super}
+
+/* nube de puntos: una persona, un punto */
+.rejilla-op{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:26px 30px;margin-top:24px}
+.op-celda{display:flex;flex-direction:column;justify-content:flex-end;min-height:150px}
+.op-puntos{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-end;margin-bottom:12px;
+  max-width:210px}
+.op-puntos i{display:block;border-radius:50%;background:var(--deseada)}
+.op-pie{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--grid);
+  padding-top:9px}
+.op-pie b{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;min-width:44px}
+.op-pie span{font-size:15px;color:var(--text-secondary);line-height:1.25}
+
+/* escalas con dispersión */
+.esc-fila{margin:0 0 30px}
+.esc-fila h4{margin:0 0 4px;font-size:22px;font-weight:600;color:var(--text-primary)}
+.esc-caja{position:relative}
+.esc-den{display:block;width:100%;height:70px}
+.esc-via{position:relative;height:12px;border-radius:6px;background:var(--grid)}
+.esc-via i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--deseada);
+  transition:width .5s}
+.esc-bola{position:absolute;top:50%;transform:translate(-50%,-50%);min-width:52px;height:38px;
+  border-radius:19px;background:var(--deseada);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:19px;font-weight:650;font-variant-numeric:tabular-nums;
+  box-shadow:0 0 0 3px var(--plane);transition:left .5s}
+.esc-media{position:absolute;top:0;bottom:0;width:1px;background:var(--axis);pointer-events:none}
+.esc-anclas{position:relative;display:flex;justify-content:space-between;gap:16px;
+  margin-top:14px;padding-bottom:30px}
+.esc-anclas .esc-chip{position:absolute;top:32px;transform:translateX(-50%)}
+.esc-anclas span{font-size:17px;color:var(--text-muted)}
+.esc-chip{display:inline-flex;align-items:center;justify-content:center;padding:3px 11px;
+  border-radius:12px;background:var(--surface-1);border:1px solid var(--border);
+  font-size:14px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.envivo{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--text-muted)}
+.envivo b{width:9px;height:9px;border-radius:5px;background:#2e8f6b;display:inline-block;
+  animation:latido 1.6s ease-in-out infinite}
+@keyframes latido{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){
+  .envivo b{animation:none} .esc-via i,.esc-bola{transition:none}}
 .proy h1{font-size:40px;margin-bottom:18px}
 .proy .codigo{font-size:64px}
 .proy .contador b{font-size:64px}
@@ -2262,14 +2303,99 @@ async function proyeccionMotor(codigo, s){
         <span><i class="c-pp"></i>${max} muy valiosa</span></div>`;
   };
 
-  // Nube: el tamaño lleva el recuento, pero el recuento va también escrito.
-  // Una nube sin cifras es un adorno; con ellas, al menos, se puede leer.
+  // Nube: el tamaño lleva el recuento, pero el recuento va también escrito
+  // en pequeño. Una nube sin cifras es un adorno; con ellas se puede leer.
+  //
+  // El reparto no es aleatorio: se ordena de más a menos y después se
+  // intercalan a izquierda y derecha, de modo que lo más repetido queda en
+  // el centro y lo demás alrededor. Sin eso, con `flex-wrap`, la palabra
+  // más grande caería siempre arriba a la izquierda.
   const nubePalabras = datos => {
-    const max = Math.max(...datos.map(d=>d.n), 1);
-    return `<div class="nube">${datos.slice(0,28).map(d=>{
-      const t = 24 + Math.round(Math.sqrt(d.n/max) * 46);
-      return `<span style="font-size:${t}px;font-weight:${d.n/max>.55?650:500}">${
-        esc(d.clave)}<i>${d.n}</i></span>`;}).join("")}</div>`;
+    const top = datos.slice(0, 34);
+    const max = Math.max(...top.map(d=>d.n), 1), min = Math.min(...top.map(d=>d.n));
+    const izq = [], der = [];
+    top.forEach((d,i) => (i % 2 ? izq : der).push(d));   // 0,2,4… a la derecha
+    const puestos = izq.reverse().concat(der);
+    return `<div class="nube">${puestos.map(d=>{
+      const rel = max === min ? 1 : (d.n - min) / (max - min);
+      const t = Math.round(22 + Math.pow(rel, 0.7) * 68);
+      return `<span class="${rel < 0.25 ? "flojo" : ""}"
+        style="font-size:${t}px;font-weight:${rel > 0.5 ? 650 : 500}">${
+        esc(d.clave)}${d.n > 1 ? `<i>${d.n}</i>` : ""}</span>`;}).join("")}</div>`;
+  };
+
+  // Una persona, un punto. Es la forma honesta de enseñar un recuento
+  // pequeño: se ve el número sin tener que leerlo, y se distingue de un
+  // vistazo «tres personas» de «veintiséis».
+  //
+  // Un solo tono para todos los puntos: el color aquí no diría nada que la
+  // etiqueta no diga mejor, y con doce opciones no hay ocho tonos que
+  // repartir sin que dos se confundan.
+  const puntosPorOpcion = (datos, cfg, respondidos) => {
+    const total = datos.reduce((a,d)=>a+d.n, 0);
+    // Con mucha gente los puntos se vuelven confeti: a partir de ahí, barras.
+    if(total > 150) return null;
+    const tam = total > 90 ? 12 : total > 45 ? 16 : 20;
+    // Las opciones que nadie ha elegido también salen, con un cero: saber
+    // qué no ha votado nadie suele ser la mitad de la conversación.
+    const mapa = {}; datos.forEach(d => mapa[d.clave] = d.n);
+    const claves = (cfg.opciones && cfg.opciones.length)
+      ? cfg.opciones.slice() : datos.map(d=>d.clave);
+    datos.forEach(d => { if(!claves.includes(d.clave)) claves.push(d.clave); });
+    return `<div class="rejilla-op">${claves.map(k=>{
+      const n = mapa[k] || 0;
+      return `<div class="op-celda">
+        <div class="op-puntos">${Array.from({length:n}, () =>
+          `<i style="width:${tam}px;height:${tam}px"></i>`).join("")}</div>
+        <div class="op-pie"><b>${n}</b><span>${esc(k)}</span></div></div>`;
+    }).join("")}</div>`;
+  };
+
+  // Curva suave a partir de un histograma. No es una densidad estadística:
+  // es la silueta del reparto, redondeada para que se lea de lejos. El dato
+  // exacto lo lleva el número de la bola, no la curva.
+  const silueta = (cuentas, ancho, alto) => {
+    const max = Math.max(...cuentas, 1), n = cuentas.length;
+    const px = i => (n === 1 ? ancho/2 : (i/(n-1)) * ancho);
+    const py = v => alto - (v/max) * (alto - 6) - 2;
+    let d = `M 0 ${alto} L ${px(0)} ${py(cuentas[0])}`;
+    for(let i=0;i<n-1;i++){
+      const x1 = px(i), y1 = py(cuentas[i]), x2 = px(i+1), y2 = py(cuentas[i+1]);
+      const cx = (x1 + x2) / 2;
+      d += ` C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+    }
+    return d + ` L ${ancho} ${alto} Z`;
+  };
+
+  // Una fila por cosa valorada: la silueta del reparto arriba, la vía con
+  // la media abajo, y una línea vertical con la media de todas las filas
+  // para que se vea de un golpe qué está por encima y qué por debajo.
+  const filasEscala = (filas, cfg) => {
+    const min = cfg.min ?? 1, max = cfg.max ?? 7;
+    const sitio = v => ((v - min) / (max - min || 1)) * 100;
+    const global = filas.reduce((a,f)=>a+Number(f.media), 0) / (filas.length || 1);
+    const W = 1000, H = 70;
+    return `<div style="margin-top:26px">${filas.map(f=>{
+      const rep = f.reparto || {};
+      const cuentas = Array.from({length: max-min+1}, (_,k) => Number(rep[String(min+k)] || 0));
+      const hay = cuentas.some(c=>c>0);
+      return `<div class="esc-fila">
+        <h4>${esc(f.clave)}</h4>
+        <div class="esc-caja">
+          ${hay ? `<svg class="esc-den" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+                     aria-hidden="true"><path d="${silueta(cuentas, W, H)}"
+                     fill="var(--actual)" opacity=".28"></path></svg>`
+                : `<div style="height:70px"></div>`}
+          <div class="esc-via"><i style="width:${sitio(f.media)}%"></i>
+            <div class="esc-bola" style="left:${sitio(f.media)}%">${esc(num(f.media))}</div></div>
+          ${filas.length > 1 ? `<div class="esc-media" style="left:${sitio(global)}%"></div>` : ""}
+        </div></div>`;
+    }).join("")}
+      <div class="esc-anclas">
+        <span>${esc(cfg.ancla_min || min)}</span>
+        <span style="text-align:right">${esc(cfg.ancla_max || max)}</span>
+        ${filas.length > 1 ? `<span class="esc-chip" style="left:${sitio(global)}%">media ${
+          esc(num(global))}</span>` : ""}</div></div>`;
   };
 
   // Clasificación: una barra por elemento, partida en las categorías, con
@@ -2345,31 +2471,40 @@ async function proyeccionMotor(codigo, s){
       } else {
         const cfg = p.config || {};
         const cab = `<div class="small">${esc(p.codigo||"")}</div><h1>${esc(p.titulo)}</h1>`;
+        // El pie dice siempre de cuánta gente hablamos, y avisa cuando el
+        // resultado se está moviendo mientras la sala responde.
+        const pie = txt => `<p class="small" style="margin-top:18px">${txt}${
+          r.en_vivo ? ` · <span class="envivo"><b></b>en vivo, sigue abierta</span>` : ""}</p>`;
         if(r.datos){
-          if(p.tipo === "unica" || p.tipo === "multiple")
+          if(p.tipo === "unica"){
+            const puntos = puntosPorOpcion(r.datos, cfg, r.respondidos);
+            cuerpo = cab + (puntos || barras(r.datos, d=>d.clave, d=>d.n))
+              + pie(`${r.respondidos} ${r.respondidos===1?"persona ha respondido":"personas han respondido"}`);
+          }
+          else if(p.tipo === "multiple")
             cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.n)
-              + `<p class="small" style="margin-top:18px">Número de respuestas por opción · ${r.respondidos} personas</p>`;
+              + pie(`Número de respuestas por opción · ${r.respondidos} personas`);
           else if(p.tipo === "escala")
-            cuerpo = cab + `<div class="contador" style="margin-top:30px"><b>${r.datos.media}</b>
-              <span style="font-size:20px">de media · mediana ${r.datos.mediana}</span></div>
-              <div style="display:flex;justify-content:space-between;gap:10px;margin-top:16px">
-                <span class="small">${esc(cfg.ancla_min||"")}</span>
-                <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>
-              <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
-          else if(p.tipo === "matriz_escala" || p.tipo === "puntos100")
+            cuerpo = cab + filasEscala([{clave: cfg.etiqueta || "Valoración del grupo",
+                media: r.datos.media, reparto: r.datos.reparto}], cfg)
+              + pie(`${r.respondidos} respuestas · mediana ${r.datos.mediana}`);
+          else if(p.tipo === "matriz_escala")
+            cuerpo = cab + (r.datos.some(d=>d.reparto)
+                ? filasEscala(r.datos, cfg)
+                : barras(r.datos, d=>d.clave, d=>d.media))
+              + pie(`${r.respondidos} respuestas`);
+          else if(p.tipo === "puntos100")
             cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media)
-              + `<p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+              + pie(`${r.respondidos} respuestas`);
           else if(p.tipo === "nube")
             cuerpo = cab + nubePalabras(r.datos)
-              + `<p class="small" style="margin-top:22px">${r.respondidos} personas ·
-                   junto a cada término, cuántas lo han escrito</p>`;
+              + pie(`${r.respondidos} personas · el número pequeño es cuántas lo han escrito`);
           else if(p.tipo === "ranking"){
             const n = r.datos.length;
             cuerpo = cab + barrasV(r.datos, d=>d.clave,
                 d => n + 1 - d.posicion, d => num(d.posicion, 2))
-              + `<p class="small" style="margin-top:18px">Posición media de ${r.respondidos}
-                   ordenaciones · 1 es lo más prioritario · la lista se presentó
-                   barajada a cada persona</p>`;
+              + pie(`Posición media de ${r.respondidos} ordenaciones · 1 es lo más `
+                    + `prioritario · la lista se presentó barajada a cada persona`);
           }
           else if(p.tipo === "secuencia")
             cuerpo = cab + `<div style="margin-top:22px">${r.datos.map((d,i)=>`
@@ -2377,19 +2512,17 @@ async function proyeccionMotor(codigo, s){
                 <b style="font-size:30px;min-width:44px">${i+1}</b>
                 <span style="flex:1">${esc(d.clave)}</span>
                 <span class="small">posición media ${esc(num(d.posicion, 2))}</span></div>`).join("")}</div>
-              <p class="small" style="margin-top:18px">${r.respondidos} secuencias</p>`;
+              ` + pie(`${r.respondidos} secuencias`);
           else if(p.tipo === "dos_ejes")
             cuerpo = cab + mapaEjes(r.datos, cfg)
-              + `<p class="small" style="margin-top:10px">${r.respondidos} personas ·
-                   el punto es la posición media y la mancha, lo que discrepan:
-                   cuanto más grande, menos acuerdo sobre dónde va</p>`;
+              + pie(`${r.respondidos} personas · el punto es la posición media y la mancha, `
+                    + `lo que discrepan: cuanto más grande, menos acuerdo sobre dónde va`);
           else if(p.tipo === "matriz_valoracion")
             cuerpo = cab + matrizRobustez(r.datos, cfg)
-              + `<p class="small" style="margin-top:16px">Valoración media de
-                   ${r.respondidos} personas</p>`;
+              + pie(`Valoración media de ${r.respondidos} personas`);
           else if(p.tipo === "clasificar")
             cuerpo = cab + barrasClasif(r.datos, cfg)
-              + `<p class="small" style="margin-top:16px">${r.respondidos} respuestas</p>`;
+              + pie(`${r.respondidos} respuestas`);
           else
             cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
               `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
@@ -2479,7 +2612,14 @@ function agregarDemo(p, items){
             mediana: ns[Math.floor(ns.length/2)],
             reparto: cuenta(ns.map(String)).reduce((o,x)=>(o[x.clave]=x.n,o),{})};
   }
-  if(p.tipo === "matriz_escala") return medias("items").sort((a,b)=>a.clave.localeCompare(b.clave));
+  if(p.tipo === "matriz_escala"){
+    const rep = {};
+    items.forEach(i => Object.entries(i.valor.items||{}).forEach(([k,v])=>{
+      (rep[k] = rep[k] || {})[String(v)] = ((rep[k]||{})[String(v)] || 0) + 1; }));
+    return medias("items").map(x => ({...x, reparto: rep[x.clave] || {},
+      n: Object.values(rep[x.clave]||{}).reduce((a,b)=>a+b,0)}))
+      .sort((a,b)=>a.clave.localeCompare(b.clave));
+  }
   if(p.tipo === "puntos100")     return medias("reparto").sort((a,b)=>b.media-a.media);
   if(p.tipo === "nube")
     return cuenta(items.flatMap(i=>(i.valor.terminos||[]).map(t=>String(t).trim().toLowerCase())));
@@ -2597,6 +2737,18 @@ async function consolaMotor(s){
           <b>${prog.en_curso}</b> en curso</p>` : ""}
         ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas
           simuladas y nunca entrará en el benchmark entre clientes. La marca no se puede quitar.</div>` : ""}
+        <div class="btnrow" style="margin-top:14px">
+          <button class="btn ${s.resultados_en_vivo ? "" : "ghost "}sm" id="vivo">
+            Resultados en vivo: ${s.resultados_en_vivo ? "encendidos" : "apagados"}</button></div>
+        <p class="note">${s.resultados_en_vivo
+          ? `El proyector enseña el resultado <b>mientras la pregunta sigue abierta</b> y se
+             actualiza solo cada tres segundos. Recuerda lo que compras con eso: quien responde
+             el último ve lo que han votado los primeros. Apágalo en las nueve preguntas
+             comparables, que son las que acumulan conocimiento entre clientes.`
+          : `El resultado solo se proyecta cuando terminas la pregunta. Si lo enciendes, la sala
+             ve el gráfico creciendo en directo, al estilo Mentimeter — a cambio de que las
+             respuestas tardías se acomoden a las primeras.`}
+          El mínimo de tres respuestas se mantiene en los dos casos.</p>
         ${!API.demo() && preguntas.length && s.estado === "abierta"
             && (!prog || prog.completos === 0 || s.es_prueba)
           ? `<div class="btnrow"><button class="btn ghost" id="ensayoMotor">
@@ -2698,6 +2850,9 @@ async function consolaMotor(s){
     if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
       cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
+
+    if(bt("vivo")) bt("vivo").onclick = () =>
+      cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
 
     if(bt("ensayoMotor")) bt("ensayoMotor").onclick = async () => {
       if(!confirm("Se van a crear 12 respuestas simuladas y todas las preguntas con contenido "
