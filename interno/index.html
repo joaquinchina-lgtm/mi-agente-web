@@ -20,16 +20,29 @@
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
   --actual:#5598e7; --deseada:#1c5cab;
   --radius:10px;
+  /* Escala divergente de la matriz de robustez. Dos tonos y un gris neutro
+     en el centro, porque 1 = perjudicial y 5 = muy valiosa son polos, no
+     dos grados de lo mismo: el 3 es el cero de esa escala. */
+  --div-neg:#d03b3b; --div-neg-suave:#ec835a; --div-medio:#f0efec;
+  --div-pos-suave:#86b6ef; --div-pos:#1c5cab;
+  /* Tres tonos categóricos, en orden fijo y nunca reciclados. */
+  --cat-1:#1c5cab; --cat-2:#c26a1b; --cat-3:#3f7a52;
 }
 @media (prefers-color-scheme: dark){:root:where(:not([data-theme="light"])){
   color-scheme:dark; --surface-1:#1a1a19; --plane:#0d0d0d;
   --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
-  --actual:#6da7ec; --deseada:#256abf;}}
+  --actual:#6da7ec; --deseada:#256abf;
+  --div-neg:#e8695c; --div-neg-suave:#a8543f; --div-medio:#2c2c2a;
+  --div-pos-suave:#2f5f96; --div-pos:#6da7ec;
+  --cat-1:#4d93e4; --cat-2:#c97f2e; --cat-3:#37a478;}}
 :root[data-theme="dark"]{color-scheme:dark; --surface-1:#1a1a19; --plane:#0d0d0d;
   --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
-  --actual:#6da7ec; --deseada:#256abf;}
+  --actual:#6da7ec; --deseada:#256abf;
+  --div-neg:#e8695c; --div-neg-suave:#a8543f; --div-medio:#2c2c2a;
+  --div-pos-suave:#2f5f96; --div-pos:#6da7ec;
+  --cat-1:#4d93e4; --cat-2:#c97f2e; --cat-3:#37a478;}
 *{box-sizing:border-box} html,body{margin:0;padding:0}
 body{background:var(--plane);color:var(--text-primary);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;
@@ -147,8 +160,99 @@ td.ten i{font-style:normal;color:var(--text-muted);margin-left:6px;font-weight:5
 code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--plane);
   padding:1px 5px;border-radius:4px;border:1px solid var(--border)}
 
+/* ── widgets del móvil: orden, ejes, matriz ─────────────────────── */
+.fila-orden{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--grid)}
+.fila-orden:last-child{border-bottom:none}
+.fila-orden .pos{min-width:30px;height:30px;border-radius:15px;background:var(--plane);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-weight:650;font-size:13px;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.fila-orden .txt{flex:1;font-size:15px;line-height:1.35;color:var(--text-primary)}
+.fila-orden .mueve{display:flex;gap:6px;flex:0 0 auto}
+.fila-orden .mueve button{width:44px;height:44px;border:1px solid var(--border);
+  border-radius:8px;background:var(--plane);color:var(--text-secondary);
+  font-size:17px;cursor:pointer;font-family:inherit}
+.fila-orden .mueve button:disabled{opacity:.3;cursor:not-allowed}
+
+.tablero{position:relative;width:100%;aspect-ratio:1;background:var(--surface-1);
+  border:1px solid var(--axis);border-radius:var(--radius);margin:10px 0;
+  touch-action:manipulation;overflow:hidden}
+.tablero .cruz{position:absolute;background:var(--grid)}
+.tablero .cruz.h{left:0;right:0;top:50%;height:1px}
+.tablero .cruz.v{top:0;bottom:0;left:50%;width:1px}
+.tablero .punto{position:absolute;width:16px;height:16px;border-radius:8px;
+  background:var(--deseada);box-shadow:0 0 0 2px var(--surface-1);
+  transform:translate(-50%,-50%);pointer-events:none}
+.tablero .punto.otro{background:var(--axis);width:11px;height:11px;border-radius:6px}
+.tablero .marca{position:absolute;transform:translate(-50%,-50%);pointer-events:none;
+  font-size:12px;font-weight:600;color:var(--text-primary);
+  background:var(--surface-1);border:1px solid var(--border);border-radius:5px;
+  padding:1px 5px;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+.ejes-x{display:flex;justify-content:space-between;gap:10px}
+.ejes-y{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.chips button{font-family:inherit;font-size:13.5px;padding:9px 12px;min-height:40px;
+  border:1px solid var(--border);border-radius:8px;background:var(--plane);
+  color:var(--text-secondary);cursor:pointer}
+.chips button.foco{background:var(--deseada);border-color:var(--deseada);color:#fff;font-weight:600}
+.chips button.puesto{color:var(--text-primary);border-color:var(--axis)}
+
+.cel-fila{padding:14px 0;border-bottom:1px solid var(--grid)}
+.cel-fila:last-child{border-bottom:none}
+.cel-fila > b{display:block;font-size:15.5px;margin-bottom:8px;color:var(--text-primary)}
+.cel-col{margin:9px 0}
+.cel-col .small{margin-bottom:4px;display:block}
+.cel-col .nums{display:flex;gap:5px}
+.cel-col .nums button{flex:1;min-height:44px;font-family:inherit;font-size:14px;
+  border:1px solid var(--border);border-radius:8px;background:var(--plane);
+  color:var(--text-secondary);cursor:pointer}
+.cel-col .nums button.on{background:var(--deseada);border-color:var(--deseada);
+  color:#fff;font-weight:650}
+
 /* proyección */
 .proy{max-width:1200px;margin:0 auto;padding:34px 30px}
+.proy .leyenda{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:18px}
+.proy .leyenda span{display:inline-flex;align-items:center;gap:7px;font-size:16px;
+  color:var(--text-secondary)}
+.proy .leyenda i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.mapa{width:100%;height:auto;max-height:64vh;display:block;margin:14px auto 0}
+.mapa .rejilla{stroke:var(--grid);stroke-width:1}
+.mapa .eje{stroke:var(--axis);stroke-width:1.5}
+.mapa .halo{fill:var(--actual);opacity:.16}
+.mapa .pt{fill:var(--deseada);stroke:var(--surface-1);stroke-width:2}
+.mapa .rot{font-size:21px;fill:var(--text-primary);font-weight:600}
+.mapa .ejetxt{font-size:18px;fill:var(--text-muted)}
+.matriz{width:100%;border-collapse:separate;border-spacing:2px;margin-top:18px}
+.matriz th{font-size:16px;font-weight:600;color:var(--text-secondary);text-align:left;
+  padding:6px 8px;vertical-align:bottom}
+.matriz td{padding:14px 10px;border-radius:6px;font-size:24px;font-weight:650;
+  text-align:center;font-variant-numeric:tabular-nums}
+.matriz td.et{background:none;font-size:17px;font-weight:600;text-align:left;
+  color:var(--text-primary);padding-left:0}
+/* Los cinco pasos de la escala divergente llevan su color de texto escrito
+   a mano, y no un token: el mismo fondo pide tinta blanca en claro y negra
+   en oscuro, porque la rampa se invierte entre los dos modos. */
+.c-nn{background:#d03b3b;color:#fff}
+.c-n {background:#ec835a;color:#0b0b0b}
+.c-0 {background:#f0efec;color:#52514e}
+.c-p {background:#86b6ef;color:#0b0b0b}
+.c-pp{background:#1c5cab;color:#fff}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])) .c-nn{background:#e8695c;color:#0b0b0b}
+  :root:where(:not([data-theme="light"])) .c-n {background:#a8543f;color:#fff}
+  :root:where(:not([data-theme="light"])) .c-0 {background:#2c2c2a;color:#c3c2b7}
+  :root:where(:not([data-theme="light"])) .c-p {background:#2f5f96;color:#fff}
+  :root:where(:not([data-theme="light"])) .c-pp{background:#6da7ec;color:#0b0b0b}}
+:root[data-theme="dark"] .c-nn{background:#e8695c;color:#0b0b0b}
+:root[data-theme="dark"] .c-n {background:#a8543f;color:#fff}
+:root[data-theme="dark"] .c-0 {background:#2c2c2a;color:#c3c2b7}
+:root[data-theme="dark"] .c-p {background:#2f5f96;color:#fff}
+:root[data-theme="dark"] .c-pp{background:#6da7ec;color:#0b0b0b}
+.proy .leyenda i.c-0{border:1px solid var(--axis)}
+.nube{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;margin-top:20px}
+.nube span{color:var(--text-primary);line-height:1.15}
+.nube span i{font-style:normal;font-size:15px;color:var(--text-muted);margin-left:5px;
+  vertical-align:baseline}
 .proy h1{font-size:40px;margin-bottom:18px}
 .proy .codigo{font-size:64px}
 .proy .contador b{font-size:64px}
@@ -1407,13 +1511,134 @@ async function participanteMotor(codigo, s){
         [...cont.children].forEach(d=>d._ref()); };
       act();
       leer = () => suma() === total ? {reparto: r} : null;
+
+    } else if(p.tipo === "nube"){
+      // Varias casillas cortas y no un campo libre: lo que se agrega es el
+      // término, y un término por casilla evita tener que trocear frases.
+      const max = cfg.maximo || 3, lim = cfg.maximo_caracteres || 30;
+      campo.innerHTML = `<p class="small">Una palabra o expresión corta por casilla,
+          hasta ${max}. No hace falta rellenarlas todas.</p>${
+        Array.from({length:max},(_,i)=>`<div class="field"><input id="nb${i}"
+          maxlength="${lim}" autocomplete="off" placeholder="${
+            i===0?"Escribe aquí":"Otra (opcional)"}"></div>`).join("")}`;
+      leer = () => { const t = Array.from({length:max},(_,i)=>$("#nb"+i).value.trim())
+          .filter(Boolean); return t.length ? {terminos:t} : null; };
+
+    } else if(p.tipo === "ranking" || p.tipo === "secuencia"){
+      // Subir y bajar, no arrastrar. Arrastrar en un móvil, de pie, con
+      // diez elementos y el dedo gordo, falla más de lo que funciona.
+      // Se baraja para cada persona. Si todos vieran la misma lista de
+      // partida, la posición media mediría el orden en que yo escribí los
+      // elementos tanto como la prioridad del grupo.
+      const orden = barajar((cfg.elementos || cfg.opciones || []).slice());
+      const cuantos = cfg.maximo_posiciones || orden.length;
+      const dibuja = () => {
+        campo.innerHTML = `<p class="small">${p.tipo==="ranking"
+            ? "Coloca arriba lo más prioritario."
+            : "Coloca arriba lo que sucedería antes en el tiempo."}${
+            cuantos < orden.length ? " Solo cuentan los "+cuantos+" primeros." : ""}</p>
+          <div>${orden.map((o,i)=>`
+            <div class="fila-orden${cuantos<orden.length && i>=cuantos ? " ".trim() : ""}"
+                 style="${cuantos<orden.length && i>=cuantos ? "opacity:.45" : ""}">
+              <div class="pos">${i+1}</div><div class="txt">${esc(o)}</div>
+              <div class="mueve">
+                <button type="button" data-sb="${i}" ${i===0?"disabled":""}
+                  aria-label="Subir">▲</button>
+                <button type="button" data-bj="${i}" ${i===orden.length-1?"disabled":""}
+                  aria-label="Bajar">▼</button></div></div>`).join("")}</div>`;
+        campo.querySelectorAll("[data-sb]").forEach(b => b.onclick = () => {
+          const i = +b.dataset.sb; [orden[i-1], orden[i]] = [orden[i], orden[i-1]]; dibuja(); });
+        campo.querySelectorAll("[data-bj]").forEach(b => b.onclick = () => {
+          const i = +b.dataset.bj; [orden[i+1], orden[i]] = [orden[i], orden[i+1]]; dibuja(); });
+      };
+      dibuja();
+      leer = () => orden.length ? {orden} : null;
+
+    } else if(p.tipo === "dos_ejes"){
+      const els = cfg.elementos || cfg.opciones || [];
+      const pos = {}; let foco = 0;
+      const [exMin, exMax] = partirEje(cfg.eje_x);
+      const [eyMin, eyMax] = partirEje(cfg.eje_y);
+      campo.innerHTML = `<p class="small">Toca el cuadro para colocar el elemento
+          seleccionado. Puedes volver a tocarlo para moverlo.</p>
+        <div class="chips" id="chips"></div>
+        <div class="ejes-y"><span class="small">↑ ${esc(eyMax)}</span></div>
+        <div class="tablero" id="tab"><div class="cruz h"></div><div class="cruz v"></div></div>
+        <div class="ejes-x"><span class="small">← ${esc(exMin)}</span>
+          <span class="small" style="text-align:right">${esc(exMax)} →</span></div>
+        <div class="ejes-y" style="margin-top:4px"><span class="small">↓ ${esc(eyMin)}</span></div>`;
+      const tab = $("#tab"), chips = $("#chips");
+      const dibuja = () => {
+        chips.innerHTML = els.map((e,i)=>`<button type="button" data-e="${i}"
+          class="${i===foco?"foco":(pos[e]?"puesto":"")}">${pos[e]?"● ":""}${esc(e)}</button>`).join("");
+        chips.querySelectorAll("[data-e]").forEach(b => b.onclick = () => { foco = +b.dataset.e; dibuja(); });
+        tab.querySelectorAll(".punto,.marca").forEach(x=>x.remove());
+        els.forEach((e,i)=>{ const q = pos[e]; if(!q) return;
+          const d = document.createElement("div");
+          d.className = "punto" + (i===foco ? "" : " otro");
+          d.style.left = q.x + "%"; d.style.top = (100-q.y) + "%"; tab.appendChild(d);
+          const m = document.createElement("div"); m.className = "marca"; m.textContent = e;
+          m.style.left = Math.min(Math.max(q.x, 12), 88) + "%";
+          m.style.top = Math.min(Math.max(100-q.y, 6), 94) + "%";
+          m.style.marginTop = "-16px"; tab.appendChild(m); });
+      };
+      tab.onclick = ev => {
+        const r = tab.getBoundingClientRect();
+        const x = Math.round(Math.min(Math.max((ev.clientX - r.left) / r.width, 0), 1) * 100);
+        const y = Math.round((1 - Math.min(Math.max((ev.clientY - r.top) / r.height, 0), 1)) * 100);
+        pos[els[foco]] = {x, y};
+        const sig = els.findIndex(e => !pos[e]);
+        if(sig >= 0) foco = sig;
+        dibuja();
+      };
+      dibuja();
+      leer = () => els.length && els.every(e=>pos[e]) ? {pos} : null;
+
+    } else if(p.tipo === "clasificar"){
+      const els = cfg.elementos || cfg.opciones || [], cats = cfg.categorias || [];
+      const asig = {};
+      campo.innerHTML = els.map((e,i)=>`<div class="cel-fila"><b>${esc(e)}</b>
+        <div class="chips" data-f="${i}">${cats.map((c,j)=>
+          `<button type="button" data-c="${j}">${esc(c)}</button>`).join("")}</div></div>`).join("");
+      campo.querySelectorAll("[data-f]").forEach(f => f.onclick = ev => {
+        const b = ev.target.closest("[data-c]"); if(!b) return;
+        asig[els[+f.dataset.f]] = cats[+b.dataset.c];
+        f.querySelectorAll("[data-c]").forEach(x => x.classList.toggle("foco", x === b));
+      });
+      leer = () => els.length && Object.keys(asig).length === els.length ? {asignacion:asig} : null;
+
+    } else if(p.tipo === "matriz_valoracion"){
+      const filas = cfg.filas || cfg.elementos || [], cols = cfg.columnas || [];
+      const min = cfg.min ?? 1, max = cfg.max ?? 5;
+      const celdas = {};
+      campo.innerHTML = (p.ayuda ? "" : `<p class="small">${min} = perjudicial ·
+          ${Math.round((min+max)/2)} = neutra · ${max} = muy valiosa</p>`)
+        + filas.map((f,i)=>`<div class="cel-fila"><b>${esc(f)}</b>${cols.map((c,j)=>
+          `<div class="cel-col"><span class="small">${esc(c)}</span>
+             <div class="nums" data-f="${i}" data-c="${j}">${
+               Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
+                 `<button type="button" data-n="${n}">${n}</button>`).join("")}</div></div>`).join("")}</div>`).join("");
+      campo.querySelectorAll("[data-f][data-c]").forEach(g => g.onclick = ev => {
+        const b = ev.target.closest("[data-n]"); if(!b) return;
+        const f = filas[+g.dataset.f], c = cols[+g.dataset.c];
+        (celdas[f] = celdas[f] || {})[c] = +b.dataset.n;
+        g.querySelectorAll("[data-n]").forEach(x => x.classList.toggle("on", x === b));
+      });
+      leer = () => filas.length && cols.length
+        && filas.every(f => celdas[f] && cols.every(c => celdas[f][c] != null))
+        ? {celdas} : null;
     }
 
     $("#env").onclick = async () => {
       const valor = leer();
       if(!valor){ $("#aviso").innerHTML =
-        `<div class="aviso rojo">${p.tipo==="puntos100" ? "Tienes que repartir los "+(cfg.total||100)+" puntos."
+        `<div class="aviso rojo">${
+            p.tipo==="puntos100" ? "Tienes que repartir los "+(cfg.total||100)+" puntos."
           : p.tipo==="matriz_escala" ? "Falta valorar alguna fila."
+          : p.tipo==="dos_ejes" ? "Falta colocar algún elemento en el cuadro."
+          : p.tipo==="clasificar" ? "Falta clasificar algún elemento."
+          : p.tipo==="matriz_valoracion" ? "Falta valorar alguna casilla."
+          : p.tipo==="nube" ? "Escribe al menos una palabra."
           : "Responde antes de enviar."}</div>`; return; }
       $("#env").disabled = true; $("#env").textContent = "Guardando…";
       try{ await API.guardarItem(estado.envio, p.id, valor); }
@@ -1565,6 +1790,107 @@ async function vistaProyeccion(codigo){
    la plantilla» y «falta de relevo generacional» son lo mismo exige
    criterio, y ese criterio es parte de lo que cobras.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   6 ter · EDITOR DE LISTAS
+
+   La mitad del banco de escenarios es «derivada»: la pregunta existe
+   antes de la sesión, pero su contenido no. Las incertidumbres que hay
+   que colocar en el mapa salen de lo que el grupo acaba de escribir, y
+   eso pasa con la sala mirando. Aquí se teclean, o se traen de una
+   pregunta anterior ya terminada.
+   ═══════════════════════════════════════════════════════════════════ */
+async function editorListas(s, pregunta, preguntas, volver){
+  const slots = LISTAS_TIPO[pregunta.tipo] || [];
+  const ejes  = EJES_TIPO[pregunta.tipo] || [];
+  const cfg   = JSON.parse(JSON.stringify(pregunta.config || {}));
+
+  // Solo de las terminadas: traer de una pregunta que sigue abierta es
+  // congelar un resultado a medias y no enterarse.
+  const fuentes = preguntas.filter(p => p.id !== pregunta.id && p.estado === "terminada"
+    && ["tarjetas","nube","ranking","unica","multiple","secuencia"].includes(p.tipo));
+
+  const etiquetasDe = async p => {
+    if(p.tipo === "tarjetas"){
+      const r = await API.resultadosTarjetas(s.codigo, p.id).catch(()=>null);
+      if(!r) return [];
+      if(r.grupos && r.grupos.length) return r.grupos.map(g=>g.etiqueta);
+      return (r.tarjetas || []).map(t=>t.texto);
+    }
+    const r = await API.resultadosPregunta(s.codigo, p.id).catch(()=>null);
+    if(!r || !r.datos) return [];
+    return r.datos.map(d=>d.clave).filter(Boolean);
+  };
+
+  const pinta = () => {
+    app().innerHTML = `<div class="wrap">${cabecera(
+      `<button class="iconbtn" id="atras">Volver</button>`)}
+      <div class="card">
+        <span class="phasetag">${esc(pregunta.codigo||"propia")} · contenido</span>
+        <h1 style="margin:6px 0 0">${esc(pregunta.titulo)}</h1>
+        <p class="small" style="margin-top:8px">${esc(TIPOS_NOMBRE[pregunta.tipo]||pregunta.tipo)}
+          · una línea por elemento · el orden que pongas aquí es el que verá la sala
+          ${pregunta.tipo==="ranking"||pregunta.tipo==="secuencia"
+            ? " (salvo en el móvil, donde se baraja para cada persona)" : ""}.</p>
+        ${ejes.map(e=>`<div class="field"><label for="ej-${e.k}">${e.t}</label>
+          <input id="ej-${e.k}" value="${esc(cfg[e.k]||"")}"
+            placeholder="Poco de esto → mucho de esto"></div>`).join("")}
+        ${slots.map(sl=>`<div class="field"><label for="ls-${sl.k}">${sl.t}
+            <span class="small">(${(cfg[sl.k]||[]).length})</span></label>
+          <textarea id="ls-${sl.k}" rows="7">${esc((cfg[sl.k]||[]).join("\n"))}</textarea></div>`).join("")}
+        ${fuentes.length ? `<h3>Traer de una pregunta anterior</h3>
+          <div class="grid2">
+            <div class="field"><label for="fu">Pregunta</label><select id="fu">${
+              fuentes.map(p=>`<option value="${esc(p.id)}">${esc(p.codigo||"")} ·
+                ${esc(p.titulo.slice(0,60))}</option>`).join("")}</select></div>
+            <div class="field"><label for="cu">Cuántas, de más a menos votada</label>
+              <select id="cu">${[3,4,5,6,8,10,99].map(n=>
+                `<option value="${n}"${n===6?" selected":""}>${n===99?"todas":n}</option>`).join("")}</select></div>
+          </div>
+          <div class="field"><label for="de">Dónde ponerlas</label><select id="de">${
+            slots.map(sl=>`<option value="${sl.k}">${sl.t}</option>`).join("")}</select></div>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn ghost" id="traer">Traer</button></div>`
+          : `<p class="note">Todavía no hay ninguna pregunta terminada de la que traer
+              elementos. Se pueden escribir a mano igualmente.</p>`}
+        <div id="aviso"></div>
+        <div class="btnrow"><button class="btn" id="guardar">Guardar</button>
+          <button class="btn ghost" id="cancelar">Cancelar</button></div>
+      </div></div>`;
+
+    $("#atras").onclick = $("#cancelar").onclick = volver;
+
+    if($("#traer")) $("#traer").onclick = async () => {
+      const p = fuentes.find(x=>x.id === $("#fu").value);
+      const cuantas = +$("#cu").value, destino = $("#de").value;
+      $("#traer").disabled = true; $("#traer").textContent = "Trayendo…";
+      const lista = (await etiquetasDe(p)).slice(0, cuantas);
+      $("#traer").disabled = false; $("#traer").textContent = "Traer";
+      if(!lista.length){ $("#aviso").innerHTML = `<div class="aviso rojo">Esa pregunta
+        no devuelve elementos: puede que aún no llegue al mínimo de tres respuestas.</div>`; return; }
+      // Se añade a lo que ya haya escrito, sin duplicar: normalmente traes
+      // seis temas y añades a mano el que la sala ha reclamado a voces.
+      const ya = $("#ls-"+destino).value.split("\n").map(x=>x.trim()).filter(Boolean);
+      const set = new Set(ya.map(x=>x.toLowerCase()));
+      lista.forEach(x => { if(!set.has(String(x).toLowerCase())){ ya.push(x); set.add(String(x).toLowerCase()); } });
+      $("#ls-"+destino).value = ya.join("\n");
+      $("#aviso").innerHTML = `<div class="aviso">Traídos ${lista.length}. Revísalos antes de guardar.</div>`;
+    };
+
+    $("#guardar").onclick = async () => {
+      const nuevo = Object.assign({}, cfg);
+      slots.forEach(sl => nuevo[sl.k] = $("#ls-"+sl.k).value.split("\n")
+        .map(x=>x.trim()).filter(Boolean));
+      ejes.forEach(e => nuevo[e.k] = $("#ej-"+e.k).value.trim());
+      $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
+      try{ await API.actualizarPregunta(pregunta.id, {config: nuevo}); }
+      catch(e){ $("#guardar").disabled = false; $("#guardar").textContent = "Guardar";
+        $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
+      volver();
+    };
+  };
+  pinta();
+}
+
 async function mesaAgrupacion(s, pregunta, volver){
   let tarjetas = [], grupos = [], activo = null;
 
@@ -1680,6 +2006,122 @@ async function proyeccionMotor(codigo, s){
       </div>`).join("")}</div>`;
   };
 
+  // Barra cuyo largo y cuyo número no son la misma cifra. En un ranking, el
+  // número honesto es la posición media (1,4) y la barra tiene que ser más
+  // larga cuanto MENOR es esa cifra; dibujar la posición tal cual daría la
+  // barra más larga a lo último de la lista.
+  const barrasV = (datos, etiqueta, largo, texto) => {
+    const max = Math.max(...datos.map(largo), 0.0001);
+    return `<div style="margin-top:22px">${datos.map(d=>`
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+          <span class="enun" style="margin:0;border:0;padding:0">${esc(etiqueta(d))}</span>
+          <b style="font-size:30px;white-space:nowrap">${esc(texto(d))}</b></div>
+        <div class="barra" style="height:14px"><i style="width:${largo(d)/max*100}%"></i></div>
+      </div>`).join("")}</div>`;
+  };
+
+  // Decimales fijos y coma decimal. «4» junto a «4,6» en la misma matriz
+  // se lee como si fueran cifras de distinta precisión.
+  const num = (v, d = 1) => Number(v).toFixed(d).replace(".", ",");
+
+  // Mapa de dos ejes. Un solo tono para todos los puntos y el nombre pegado
+  // a cada uno: colorear por elemento gastaría ocho tonos categóricos en
+  // una identidad que la etiqueta ya da mejor.
+  const mapaEjes = (datos, cfg) => {
+    const L = 130, R = 60, T = 34, B = 66, W = 1000, H = 520;
+    const px = x => L + (x/100) * (W - L - R);
+    const py = y => T + (1 - y/100) * (H - T - B);
+    const [exMin, exMax] = partirEje(cfg.eje_x), [eyMin, eyMax] = partirEje(cfg.eje_y);
+    // Las manchas van todas debajo de todos los puntos: si cada elemento
+    // pinta su mancha justo antes de su punto, la mancha del siguiente
+    // tapa el punto del anterior.
+    const halos = datos.map(d => `<ellipse class="halo" cx="${px(d.x)}" cy="${py(d.y)}"
+        rx="${Math.max((d.dx||0)/100*(W-L-R), 4)}"
+        ry="${Math.max((d.dy||0)/100*(H-T-B), 4)}"></ellipse>`).join("");
+    const pts = datos.map(d => {
+      const x = px(d.x), y = py(d.y);
+      // La etiqueta va a la derecha salvo en la banda derecha, donde se saldría.
+      const der = d.x <= 72;
+      return `<circle class="pt" cx="${x}" cy="${y}" r="10"></circle>
+        <text class="rot" x="${x + (der?18:-18)}" y="${y+7}"
+              text-anchor="${der?"start":"end"}">${esc(d.clave)}</text>`;
+    }).join("");
+    return `<svg class="mapa" viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Mapa de posicionamiento en dos ejes">
+      <defs><clipPath id="cp-mapa"><rect x="${L}" y="${T}"
+        width="${W-L-R}" height="${H-T-B}"></rect></clipPath></defs>
+      <rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" class="rejilla"></rect>
+      <line class="eje" x1="${px(50)}" y1="${T}" x2="${px(50)}" y2="${H-B}"></line>
+      <line class="eje" x1="${L}" y1="${py(50)}" x2="${W-R}" y2="${py(50)}"></line>
+      <g clip-path="url(#cp-mapa)">${halos}</g>
+      ${pts}
+      <text class="ejetxt" x="${L}" y="${H-26}">← ${esc(exMin)}</text>
+      <text class="ejetxt" x="${W-R}" y="${H-26}" text-anchor="end">${esc(exMax)} →</text>
+      <text class="ejetxt" x="${L-14}" y="${T+14}" text-anchor="end"
+            transform="rotate(-90 ${L-14} ${T+14})">${esc(eyMax)} ↑</text>
+      <text class="ejetxt" x="${L-14}" y="${H-B}" text-anchor="start"
+            transform="rotate(-90 ${L-14} ${H-B})">↓ ${esc(eyMin)}</text>
+    </svg>`;
+  };
+
+  // Matriz de robustez. Escala divergente, no secuencial: 1 perjudica,
+  // 3 es neutro y 5 es valioso, así que hay dos polos y un cero, y el
+  // número va escrito en cada casilla para no depender del color.
+  const matrizRobustez = (datos, cfg) => {
+    const min = cfg.min ?? 1, max = cfg.max ?? 5, medio = (min + max) / 2;
+    const filas = cfg.filas && cfg.filas.length ? cfg.filas
+      : [...new Set(datos.map(d=>d.fila))];
+    const cols = cfg.columnas && cfg.columnas.length ? cfg.columnas
+      : [...new Set(datos.map(d=>d.columna))];
+    const mapa = {}; datos.forEach(d => mapa[d.fila + "\u0000" + d.columna] = d);
+    const paso = v => { const d = (v - medio) / ((max - min) / 2 || 1);
+      return d <= -0.6 ? "c-nn" : d <= -0.2 ? "c-n" : d < 0.2 ? "c-0" : d < 0.6 ? "c-p" : "c-pp"; };
+    return `<table class="matriz"><thead><tr><th></th>${cols.map(c=>
+        `<th style="text-align:center">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${filas.map(f=>`<tr><td class="et">${esc(f)}</td>${cols.map(c=>{
+        const d = mapa[f + "\u0000" + c];
+        return d ? `<td class="${paso(d.media)}">${esc(num(d.media))}</td>`
+                 : `<td class="c-0">·</td>`;
+      }).join("")}</tr>`).join("")}</tbody></table>
+      <div class="leyenda"><span><i class="c-nn"></i>${min} perjudicial</span>
+        <span><i class="c-0"></i>${Math.round(medio)} neutra</span>
+        <span><i class="c-pp"></i>${max} muy valiosa</span></div>`;
+  };
+
+  // Nube: el tamaño lleva el recuento, pero el recuento va también escrito.
+  // Una nube sin cifras es un adorno; con ellas, al menos, se puede leer.
+  const nubePalabras = datos => {
+    const max = Math.max(...datos.map(d=>d.n), 1);
+    return `<div class="nube">${datos.slice(0,28).map(d=>{
+      const t = 24 + Math.round(Math.sqrt(d.n/max) * 46);
+      return `<span style="font-size:${t}px;font-weight:${d.n/max>.55?650:500}">${
+        esc(d.clave)}<i>${d.n}</i></span>`;}).join("")}</div>`;
+  };
+
+  // Clasificación: una barra por elemento, partida en las categorías, con
+  // 2px de hueco entre tramos para que se distingan sin depender del tono.
+  const barrasClasif = (datos, cfg) => {
+    const cats = cfg.categorias && cfg.categorias.length ? cfg.categorias
+      : [...new Set(datos.map(d=>d.categoria))];
+    const tono = i => ["var(--cat-1)","var(--cat-2)","var(--cat-3)"][i % 3];
+    const els = cfg.elementos && cfg.elementos.length ? cfg.elementos
+      : [...new Set(datos.map(d=>d.clave))];
+    const de = {}; datos.forEach(d => (de[d.clave] = de[d.clave] || {})[d.categoria] = d.n);
+    return `<div style="margin-top:20px">${els.map(e=>{
+      const fila = de[e] || {}, tot = Object.values(fila).reduce((a,b)=>a+b,0) || 1;
+      return `<div style="margin-bottom:15px">
+        <div class="enun" style="margin:0;border:0;padding:0 0 6px">${esc(e)}</div>
+        <div style="display:flex;gap:2px;height:26px">${cats.map((c,i)=>{
+          const n = fila[c] || 0; if(!n) return "";
+          return `<div title="${esc(c)}" style="width:${n/tot*100}%;background:${tono(i)};
+            border-radius:3px;color:#fff;font-size:14px;font-weight:600;
+            display:flex;align-items:center;justify-content:center">${
+              n/tot > .12 ? n : ""}</div>`;}).join("")}</div></div>`;}).join("")}
+      <div class="leyenda">${cats.map((c,i)=>
+        `<span><i style="background:${tono(i)}"></i>${esc(c)}</span>`).join("")}</div>`;
+  };
+
   const pinta = async () => {
     const n = await API.sesionPublica(codigo).catch(()=>null);
     if(!n){ app().innerHTML = `<div class="proy"><h1>Sesión no encontrada</h1></div>`; return; }
@@ -1744,13 +2186,45 @@ async function proyeccionMotor(codigo, s){
           else if(p.tipo === "matriz_escala" || p.tipo === "puntos100")
             cuerpo = cab + barras(r.datos, d=>d.clave, d=>d.media)
               + `<p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
+          else if(p.tipo === "nube")
+            cuerpo = cab + nubePalabras(r.datos)
+              + `<p class="small" style="margin-top:22px">${r.respondidos} personas ·
+                   junto a cada término, cuántas lo han escrito</p>`;
+          else if(p.tipo === "ranking"){
+            const n = r.datos.length;
+            cuerpo = cab + barrasV(r.datos, d=>d.clave,
+                d => n + 1 - d.posicion, d => num(d.posicion, 2))
+              + `<p class="small" style="margin-top:18px">Posición media de ${r.respondidos}
+                   ordenaciones · 1 es lo más prioritario · la lista se presentó
+                   barajada a cada persona</p>`;
+          }
+          else if(p.tipo === "secuencia")
+            cuerpo = cab + `<div style="margin-top:22px">${r.datos.map((d,i)=>`
+              <div class="enun" style="display:flex;gap:18px;align-items:baseline">
+                <b style="font-size:30px;min-width:44px">${i+1}</b>
+                <span style="flex:1">${esc(d.clave)}</span>
+                <span class="small">posición media ${esc(num(d.posicion, 2))}</span></div>`).join("")}</div>
+              <p class="small" style="margin-top:18px">${r.respondidos} secuencias</p>`;
+          else if(p.tipo === "dos_ejes")
+            cuerpo = cab + mapaEjes(r.datos, cfg)
+              + `<p class="small" style="margin-top:10px">${r.respondidos} personas ·
+                   el punto es la posición media y la mancha, lo que discrepan:
+                   cuanto más grande, menos acuerdo sobre dónde va</p>`;
+          else if(p.tipo === "matriz_valoracion")
+            cuerpo = cab + matrizRobustez(r.datos, cfg)
+              + `<p class="small" style="margin-top:16px">Valoración media de
+                   ${r.respondidos} personas</p>`;
+          else if(p.tipo === "clasificar")
+            cuerpo = cab + barrasClasif(r.datos, cfg)
+              + `<p class="small" style="margin-top:16px">${r.respondidos} respuestas</p>`;
           else
             cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
               `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
               <p class="small" style="margin-top:18px">${r.respondidos} respuestas</p>`;
         } else {
           // Abierta: enunciado, opciones si las tiene, y cuánta gente lleva.
-          const ops = cfg.opciones || (Array.isArray(cfg.items) ? cfg.items : null);
+          const ops = cfg.opciones || cfg.elementos || cfg.filas
+            || (Array.isArray(cfg.items) ? cfg.items : null);
           cuerpo = cab
             + (ops ? `<div style="margin-top:20px">${ops.map(o=>
                 `<div class="enun">${esc(o)}</div>`).join("")}</div>` : "")
@@ -1835,12 +2309,67 @@ function agregarDemo(p, items){
   }
   if(p.tipo === "matriz_escala") return medias("items").sort((a,b)=>a.clave.localeCompare(b.clave));
   if(p.tipo === "puntos100")     return medias("reparto").sort((a,b)=>b.media-a.media);
+  if(p.tipo === "nube")
+    return cuenta(items.flatMap(i=>(i.valor.terminos||[]).map(t=>String(t).trim().toLowerCase())));
+  if(p.tipo === "ranking" || p.tipo === "secuencia"){
+    const acc = {};
+    items.forEach(i => (i.valor.orden||[]).forEach((k,ix)=>{ (acc[k]=acc[k]||[]).push(ix+1); }));
+    return Object.keys(acc).map(k=>({clave:k, n:acc[k].length,
+      posicion: Math.round(acc[k].reduce((a,b)=>a+b,0)/acc[k].length*100)/100}))
+      .sort((a,b)=>a.posicion-b.posicion);
+  }
+  if(p.tipo === "dos_ejes"){
+    const acc = {};
+    items.forEach(i => Object.entries(i.valor.pos||{}).forEach(([k,v])=>{
+      (acc[k]=acc[k]||[]).push(v); }));
+    const med = a => a.reduce((x,y)=>x+y,0)/a.length;
+    const desv = a => a.length<2 ? 0 : Math.sqrt(a.reduce((s,v)=>s+(v-med(a))**2,0)/(a.length-1));
+    return Object.keys(acc).sort().map(k=>{
+      const xs = acc[k].map(v=>Number(v.x)), ys = acc[k].map(v=>Number(v.y));
+      const r3 = v => Math.round(v*1000)/1000;
+      return {clave:k, x:r3(med(xs)), y:r3(med(ys)), dx:r3(desv(xs)), dy:r3(desv(ys)), n:acc[k].length};
+    });
+  }
+  if(p.tipo === "matriz_valoracion"){
+    const acc = {};
+    items.forEach(i => Object.entries(i.valor.celdas||{}).forEach(([f,cols])=>
+      Object.entries(cols||{}).forEach(([c,v])=>{ (acc[f+"\u0000"+c]=acc[f+"\u0000"+c]||[]).push(Number(v)); })));
+    return Object.keys(acc).sort().map(k=>{ const [f,c] = k.split("\u0000");
+      return {fila:f, columna:c, n:acc[k].length,
+        media: Math.round(acc[k].reduce((a,b)=>a+b,0)/acc[k].length*100)/100}; });
+  }
+  if(p.tipo === "clasificar"){
+    const acc = {};
+    items.forEach(i => Object.entries(i.valor.asignacion||{}).forEach(([k,c])=>{
+      acc[k+"\u0000"+c] = (acc[k+"\u0000"+c]||0)+1; }));
+    return Object.keys(acc).sort().map(k=>{ const [clave,categoria] = k.split("\u0000");
+      return {clave, categoria, n:acc[k]}; });
+  }
   return items.map(i=>i.valor);
 }
 
 // «TEMA FOCAL» lleva un espacio, y un id con espacio rompe querySelector.
 // Costó un «Cannot read properties of null» en la primera prueba.
 const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
+
+// Fisher-Yates. Se usa para que cada móvil reciba las listas ordenables en
+// un orden distinto.
+function barajar(a){
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// «Baja incertidumbre → alta incertidumbre» son dos anclas escritas en una
+// sola línea. Se parten por la flecha, o por el guion, o no se parten.
+function partirEje(txt){
+  const t = String(txt || "").trim();
+  if(!t) return ["", ""];
+  const p = t.split(/\s*(?:→|->|–|—|\|)\s*/);
+  return p.length >= 2 ? [p[0], p.slice(1).join(" ")] : ["", t];
+}
 
 const FASES_TARJ = [{k:"recogida",t:"Recoger"},{k:"agrupando",t:"Agrupando"},
                     {k:"votacion",t:"Votar"},{k:"resultados",t:"Resultados"}];
@@ -1920,8 +2449,13 @@ async function consolaMotor(s){
                 ${esc(TIPOS_NOMBRE[p.tipo]||p.tipo)} ·
                 <b>${esc(p.estado)}</b>${p.fase ? " · fase "+esc(p.fase) : ""}${
                   cuentas[p.id]!=null ? " · "+cuentas[p.id]+(p.tipo==="tarjetas"?" tarjetas":" respuestas") : ""}
-                ${s.vista_activa === "q:"+p.id ? " · <b>en el proyector</b>" : ""}</div></div>
+                ${s.vista_activa === "q:"+p.id ? " · <b>en el proyector</b>" : ""}</div>
+              ${faltaContenido(p) ? `<div class="small" style="color:#d03b3b">
+                Sin contenido: falta rellenar ${esc(faltaContenido(p))}. Tal como está,
+                el móvil la enseñaría vacía.</div>` : ""}</div>
             <div class="btnrow" style="margin:0">
+              ${LISTAS_TIPO[p.tipo] ? `<button class="btn ${faltaContenido(p)?"":"ghost"} sm"
+                data-listas="${p.id}">Contenido…</button>` : ""}
               ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? FASES_TARJ.map(f=>
                 `<button class="btn ${p.fase===f.k?"":"ghost"} sm" data-fase="${p.id}"
                    data-k="${f.k}">${esc(f.t)}</button>`).join("")
@@ -1992,6 +2526,9 @@ async function consolaMotor(s){
       tocar(b.dataset.reabrir, {estado:"abierta"}, true));
     app().querySelectorAll("[data-fase]").forEach(b => b.onclick = () =>
       tocar(b.dataset.fase, {fase: b.dataset.k, estado:"abierta"}, true));
+    app().querySelectorAll("[data-listas]").forEach(b => b.onclick = () =>
+      editorListas(s, preguntas.find(x=>x.id === b.dataset.listas), preguntas,
+        async () => { preguntas = await API.preguntas(s.id); pinta(); }));
     app().querySelectorAll("[data-mesa]").forEach(b => b.onclick = async () => {
       const p = preguntas.find(x=>x.id === b.dataset.mesa);
       // Al entrar a agrupar se cierra la recogida: si sigue abierta, el
@@ -2164,7 +2701,39 @@ const BLOQUES_ESC = [
    puede añadir todavía: es mejor que veas el mapa entero y sepas qué
    falta, a que descubras el hueco preparando una sesión. */
 const TIPOS_LISTOS = ["unica","multiple","escala","matriz_escala",
-                      "abierta","abierta_campos","puntos100","tarjetas"];
+                      "abierta","abierta_campos","puntos100","tarjetas",
+                      "nube","ranking","dos_ejes","clasificar","secuencia",
+                      "matriz_valoracion"];
+
+/* Qué listas necesita cada tipo para poder responderse. Las preguntas
+   «derivadas» entran con estas listas vacías: se rellenan en la sesión, con
+   lo que haya dicho el grupo. Sin este mapa, el constructor no sabría qué
+   pedirte, y la pregunta llegaría al móvil sin nada que ordenar. */
+const LISTAS_TIPO = {
+  unica:            [{k:"opciones",   t:"Opciones"}],
+  multiple:         [{k:"opciones",   t:"Opciones"}],
+  puntos100:        [{k:"opciones",   t:"Opciones a repartir"}],
+  ranking:          [{k:"opciones",   t:"Elementos a ordenar"}],
+  secuencia:        [{k:"elementos",  t:"Acontecimientos a secuenciar"}],
+  dos_ejes:         [{k:"elementos",  t:"Elementos a colocar"}],
+  clasificar:       [{k:"elementos",  t:"Elementos a clasificar"},
+                     {k:"categorias", t:"Categorías"}],
+  matriz_valoracion:[{k:"filas",      t:"Opciones estratégicas (filas)"},
+                     {k:"columnas",   t:"Escenarios (columnas)"}],
+  matriz_escala:    [{k:"items",      t:"Ítems"}]
+};
+const EJES_TIPO = {dos_ejes: [{k:"eje_x", t:"Eje horizontal"}, {k:"eje_y", t:"Eje vertical"}]};
+
+// Devuelve el nombre de lo que falta, o "" si la pregunta está lista. Se
+// mira en la consola antes de abrir: una derivada sin rellenar llega al
+// móvil como una pantalla en blanco con un botón de enviar.
+function faltaContenido(p){
+  const cfg = p.config || {};
+  const vacias = (LISTAS_TIPO[p.tipo] || [])
+    .filter(sl => !Array.isArray(cfg[sl.k]) || !cfg[sl.k].length)
+    .map(sl => sl.t.toLowerCase());
+  return vacias.join(" y ");
+}
 
 const TIPOS_NOMBRE = {
   unica:"Opción única", multiple:"Opción múltiple", escala:"Escala 1–7",
