@@ -224,6 +224,23 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .opcion details[open] summary::before{content:"▾ "}
 .opcion details p{margin:2px 0 8px;padding-left:12px;border-left:2px solid var(--grid)}
 
+/* taller proyectado */
+.taller2{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:26px}
+@media (max-width:900px){.taller2{grid-template-columns:1fr}}
+.taller2 h3{font-size:15px;margin:0 0 14px}
+.fila-taller{display:flex;align-items:baseline;gap:14px;padding:11px 0;
+  border-bottom:1px solid var(--grid)}
+.fila-taller i{width:13px;height:13px;border-radius:7px;flex:0 0 auto;align-self:center}
+.fila-taller span{flex:1;font-size:21px;line-height:1.3;color:var(--text-primary)}
+.fila-taller b{font-size:26px;font-variant-numeric:tabular-nums}
+.funciones{display:grid;grid-template-columns:1fr 1fr;gap:22px 40px;margin-top:24px}
+@media (max-width:1000px){.funciones{grid-template-columns:1fr}}
+.fun{display:flex;gap:16px;align-items:baseline}
+.fun > b{font-size:38px;font-weight:650;line-height:1;font-variant-numeric:tabular-nums}
+.fun h3{font-size:23px;margin:0 0 4px;color:var(--text-primary);text-transform:none;
+  letter-spacing:0}
+.fun p{font-size:17px;margin:0;line-height:1.4}
+
 /* informe */
 .informe-bloque{padding:26px 22px}
 .informe-bloque h2{line-height:1.25}
@@ -2711,6 +2728,15 @@ async function tallerFunciones(s, preguntas, volver){
           <button class="btn ghost" id="mas">Añadir otra</button>
           <button class="btn" id="guardar">Guardar funciones</button></div>
         <div id="aviso"></div>
+        <h3>Proyectar</h3>
+        <p class="small">Lo que ve la sala mientras trabajáis. Se actualiza sola cada tres
+          segundos, así que puedes escribir aquí y ver el cambio allí.</p>
+        <div class="btnrow" style="margin-top:0">
+          <button class="btn ghost" id="proyVotado">Proyectar lo votado</button>
+          <button class="btn ghost" id="proyFunciones">Proyectar las funciones</button>
+          <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}"
+             target="_blank">Abrir proyección</a></div>
+        <div id="aviso3"></div>
       </div>
 
       <div class="card">
@@ -2754,6 +2780,20 @@ async function tallerFunciones(s, preguntas, volver){
       const buenas = fs.filter(f => f.nombre);
       Object.assign(s, await API.actualizarSesion(s.id, {funciones: buenas}));
       return buenas;
+    };
+
+    const proyectar = async (vista, txt) => {
+      try{ Object.assign(s, await API.actualizarSesion(s.id, {vista_activa: vista}));
+        $("#aviso3").innerHTML = `<div class="aviso">${txt}</div>`;
+      }catch(e){ $("#aviso3").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
+    };
+    $("#proyVotado").onclick = () => proyectar("taller",
+      "En la sala: las responsabilidades y competencias más votadas.");
+    // Se guarda antes de proyectar: si no, la sala vería la versión anterior
+    // mientras tú miras la nueva en tu pantalla, y eso desconcierta a todos.
+    $("#proyFunciones").onclick = async () => {
+      await guardar().catch(()=>null);
+      await proyectar("funciones", "En la sala: las funciones tal como están ahora mismo.");
     };
 
     $("#guardar").onclick = async () => {
@@ -2890,6 +2930,46 @@ async function proyeccionMotor(codigo, s){
     if(!n){ app().innerHTML = `<div class="proy"><h1>Sesión no encontrada</h1></div>`; return; }
     const va = n.vista_activa || "espera";
     let cuerpo = "";
+
+    // El taller tiene dos pantallas: la evidencia que se mira mientras se
+    // redacta, y las funciones ya escritas. Son la misma conversación en
+    // dos momentos, y ninguna es una pregunta, así que no viajan por `q:`.
+    if(va === "taller" || va === "funciones"){
+      const fs = n.funciones || [];
+      if(va === "funciones"){
+        cuerpo = `<div class="small">${esc(n.titulo||"")}</div>
+          <h1>Funciones clave del liderazgo</h1>
+          ${fs.length ? `<div class="funciones">${fs.map((f,i)=>`
+            <div class="fun"><b style="color:${tonoN(i)}">${i+1}</b>
+              <div><h3>${esc(f.nombre)}</h3>${
+                f.definicion ? `<p>${esc(f.definicion)}</p>` : ""}</div></div>`).join("")}</div>`
+            : `<p style="font-size:22px">Todavía no hay funciones acordadas.</p>`}`;
+      } else {
+        // La evidencia se lee del mismo sitio que la consola: las preguntas
+        // públicas y sus resultados. Si no están terminadas, no hay nada.
+        const ps = await API.preguntasPublicas(codigo).catch(()=>[]);
+        const cols = [];
+        for(const cod of ["L11", "L13"]){
+          const p2 = (ps||[]).find(x => x.codigo === cod);
+          if(!p2) continue;
+          const r = await API.resultadosPregunta(codigo, p2.id).catch(()=>null);
+          if(r && Array.isArray(r.datos) && r.datos.length)
+            cols.push({t: cod === "L11" ? "Responsabilidades" : "Valores y competencias",
+                       filas: r.datos.slice(0, 8), n: r.respondidos});
+        }
+        cuerpo = `<div class="small">${esc(n.titulo||"")}</div>
+          <h1>Lo que hemos votado</h1>
+          ${cols.length ? `<div class="taller2">${cols.map(c=>`
+            <div><h3>${esc(c.t)}</h3>${c.filas.map((f,i)=>`
+              <div class="fila-taller"><i style="background:${tonoN(i)}"></i>
+                <span>${esc(f.clave)}</span><b>${f.n}</b></div>`).join("")}
+              <p class="small" style="margin-top:12px">${c.n} personas</p></div>`).join("")}</div>`
+            : `<p style="font-size:22px">Las votaciones de responsabilidades y competencias
+                 tienen que estar terminadas para que salgan aquí.</p>`}`;
+      }
+      app().innerHTML = `<div class="proy">${cuerpo}</div>`;
+      return;
+    }
 
     if(!va.startsWith("q:")){
       const prog = await API.progreso(codigo).catch(()=>null);
