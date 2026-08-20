@@ -2584,6 +2584,212 @@ function cuerpoResultado(p, r, cab, pie){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   TALLER DE FUNCIONES CLAVE
+
+   El paso que la aplicación NO puede dar sola: cruzar responsabilidades
+   y competencias para redactar cinco o diez funciones clave. Eso lo hace
+   una cabeza —la tuya, con o sin ayuda de una IA fuera de aquí—, porque
+   dentro de esta aplicación no hay ni puede haber un modelo: sería
+   poner una clave de API en el navegador de cada participante.
+
+   Lo que sí hace esta pantalla es quitarte todo lo demás: reúne la
+   evidencia, te la deja copiada y con formato, guarda las funciones en
+   la sesión, y las vuelca en las preguntas que las necesitan sin que
+   tengas que teclearlas tres veces.
+   ═══════════════════════════════════════════════════════════════════ */
+async function tallerFunciones(s, preguntas, volver){
+  app().innerHTML = `<div class="wrap ancho">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card"><h1>Reuniendo lo votado…</h1></div></div>`;
+  if($("#atras")) $("#atras").onclick = volver;
+
+  // De dónde sale la evidencia. Se busca por código del banco, no por
+  // posición: si reordenas las preguntas, esto sigue funcionando.
+  const FUENTES = [
+    {c:"L11", t:"Responsabilidades más importantes"},
+    {c:"L13", t:"Competencias más importantes"},
+    {c:"L12", t:"Responsabilidades que hoy peor se ejercen"},
+    {c:"L14", t:"Competencias hoy menos desarrolladas"},
+    {c:"L04", t:"Definiciones de «liderar aquí» más votadas", tarjetas:true},
+    {c:"L08", t:"A quién se considera líder", tarjetas:true}
+  ];
+  const bloques = [];
+  for(const f of FUENTES){
+    const p = preguntas.find(x => x.codigo === f.c);
+    if(!p) continue;
+    if(f.tarjetas){
+      const r = await API.resultadosTarjetas(s.codigo, p.id).catch(()=>null);
+      const g = (r && r.grupos) || [];
+      if(g.length) bloques.push({...f, filas: g.map(x=>({texto:x.etiqueta, n:x.votos}))});
+      else if(r && (r.tarjetas||[]).length)
+        bloques.push({...f, filas: r.tarjetas.slice(0,12).map(x=>({texto:x.texto, n:null})),
+                      nota:"sin agrupar todavía"});
+    } else {
+      const r = await API.resultadosPregunta(s.codigo, p.id).catch(()=>null);
+      if(r && Array.isArray(r.datos) && r.datos.length)
+        bloques.push({...f, filas: r.datos.map(x=>({texto:x.clave, n:x.n}))});
+    }
+  }
+
+  // Copia de trabajo: se guarda cuando lo pides, no mientras escribes.
+  let fs = JSON.parse(JSON.stringify(s.funciones || []));
+  if(!fs.length) fs = [{nombre:"", definicion:""}];
+  // El aviso sobrevive al repintado: si se escribe en el DOM y después se
+  // llama a pinta(), se borra sin que nadie lo haya leído.
+  let recado = "";
+
+  const paraLaIA = () => {
+    const t = ["Contexto: taller de modelo de liderazgo en " +
+      ((s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "la organización") + ".",
+      "", "Esto es lo que ha votado el equipo directivo:", ""];
+    bloques.forEach(b => {
+      t.push("## " + b.t + (b.nota ? " (" + b.nota + ")" : ""));
+      b.filas.forEach(f => t.push("- " + f.texto + (f.n != null ? "  [" + f.n + " votos]" : "")));
+      t.push("");
+    });
+    t.push("Tarea: propón entre 5 y 10 FUNCIONES CLAVE DEL LIDERAZGO para esta",
+      "organización. Cada función debe mezclar responsabilidades de gestión y",
+      "competencias cuyo contenido esté relacionado, y debe llevar un nombre corto",
+      "(3-5 palabras) y una definición de dos o tres frases en el lenguaje del",
+      "cliente. No inventes contenido que no esté en las listas de arriba, y di",
+      "explícitamente qué elementos de cada lista has metido en cada función.");
+    return t.join("\n");
+  };
+
+  const pinta = () => {
+    app().innerHTML = `<div class="wrap ancho">${cabecera(
+      `<button class="iconbtn" id="atras">Volver</button>`)}
+      <div class="card">
+        <span class="phasetag">${esc(s.titulo)} · taller</span>
+        <h1 style="margin:6px 0 0">Funciones clave del liderazgo</h1>
+        <p class="small" style="margin-top:8px">Cinco a diez bloques que mezclan lo que el
+          equipo ha votado. El cruce lo haces tú: aquí tienes la evidencia reunida y el sitio
+          donde dejarla escrita.</p>
+      </div>
+
+      <div class="card">
+        <h2>Lo que ha votado el equipo</h2>
+        ${bloques.length ? `<div class="grid2">${bloques.map(b=>`
+          <div><h3 style="margin-top:0">${esc(b.t)}${b.nota ? " · " + esc(b.nota) : ""}</h3>
+            <div class="lista">${b.filas.slice(0,12).map(f=>`
+              <div class="it"><div>${esc(f.texto)}</div>${
+                f.n != null ? `<b>${f.n}</b>` : ""}</div>`).join("")}</div></div>`).join("")}</div>
+          <div class="btnrow">
+            <button class="btn ghost" id="copiar">Copiar todo esto para tu IA</button>
+            <span class="small" id="copiado"></span></div>
+          <p class="note">El botón copia las listas con sus votos y una instrucción para que
+            la IA proponga las funciones. Léela antes de pegarla: le pide expresamente que no
+            invente nada que no esté votado y que diga qué ha metido en cada función. Después
+            revisas tú, que es donde está tu trabajo.</p>`
+        : `<div class="aviso rojo">Todavía no hay nada que cruzar. Las preguntas de
+            responsabilidades (L11) y competencias (L13) tienen que estar <b>terminadas</b> y
+            con al menos tres respuestas para que sus resultados salgan aquí.</div>`}
+      </div>
+
+      <div class="card">
+        <h2>Las funciones clave <span class="estado">${fs.filter(f=>f.nombre.trim()).length}</span></h2>
+        <p class="small">Nombre corto arriba, definición debajo. El nombre es lo que verá la
+          sala en los gráficos, así que que quepa en una línea.</p>
+        <div id="fs">${fs.map((f,i)=>`
+          <div class="cel-fila">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div class="pos" style="margin-top:9px">${i+1}</div>
+              <div style="flex:1">
+                <div class="field" style="margin-bottom:8px">
+                  <input id="fn${i}" value="${esc(f.nombre)}" placeholder="Nombre de la función"
+                    maxlength="60" autocomplete="off"></div>
+                <div class="field" style="margin-bottom:0">
+                  <textarea id="fd${i}" rows="3"
+                    placeholder="Qué significa, en el lenguaje del cliente">${esc(f.definicion)}</textarea></div>
+              </div>
+              <div class="mueve" style="margin-top:6px">
+                <button type="button" data-sb="${i}" ${i===0?"disabled":""}>▲</button>
+                <button type="button" data-bj="${i}" ${i===fs.length-1?"disabled":""}>▼</button>
+                <button type="button" data-qt="${i}">×</button></div>
+            </div></div>`).join("")}</div>
+        <div class="btnrow">
+          <button class="btn ghost" id="mas">Añadir otra</button>
+          <button class="btn" id="guardar">Guardar funciones</button></div>
+        <div id="aviso"></div>
+      </div>
+
+      <div class="card">
+        <h2>Volcar en las preguntas</h2>
+        <p class="small">Escribe los nombres de las funciones en las preguntas que las
+          necesitan, para que no tengas que teclearlas tres veces con la sala esperando.</p>
+        <div class="lista">${["L16","L17","L18"].map(c=>{
+          const p = preguntas.find(x=>x.codigo===c);
+          const nom = {L16:"Validación 1-4 de cada función", L17:"Qué cambiarías (tarjetas)",
+                       L18:"Ranking de prioridad"}[c];
+          return `<div class="it"><div><b>${c}</b> · ${nom}
+            <div class="small">${p ? (c === "L17" ? "no necesita lista"
+                : "hoy: " + (((p.config||{}).items || (p.config||{}).opciones || []).length) + " elementos")
+              : "<b>no está en esta sesión</b>"}</div></div></div>`;}).join("")}</div>
+        <div class="btnrow"><button class="btn" id="volcar">Volcar en L16 y L18</button></div>
+        <div id="aviso2">${recado}</div>
+        <p class="note">Sustituye la lista entera de esas dos preguntas. Hazlo <b>antes</b> de
+          abrirlas: si ya tienen respuestas, cambiar los elementos deja los resultados
+          anteriores colgando de nombres que ya no existen.</p>
+      </div></div>`;
+
+    $("#atras").onclick = volver;
+
+    const leer = () => fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
+                                         definicion: $("#fd"+i).value.trim()}));
+    if($("#copiar")) $("#copiar").onclick = () => { copiar(paraLaIA());
+      $("#copiado").textContent = "Copiado. Pégalo en tu conversación con la IA."; };
+
+    $("#mas").onclick = () => { fs = leer(); fs.push({nombre:"", definicion:""}); pinta(); };
+    app().querySelectorAll("[data-qt]").forEach(b => b.onclick = () => {
+      fs = leer(); fs.splice(+b.dataset.qt, 1);
+      if(!fs.length) fs = [{nombre:"", definicion:""}]; pinta(); });
+    app().querySelectorAll("[data-sb]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.sb; fs = leer(); [fs[i-1], fs[i]] = [fs[i], fs[i-1]]; pinta(); });
+    app().querySelectorAll("[data-bj]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.bj; fs = leer(); [fs[i+1], fs[i]] = [fs[i], fs[i+1]]; pinta(); });
+
+    const guardar = async () => {
+      fs = leer().filter(f => f.nombre || f.definicion);
+      if(!fs.length) fs = [{nombre:"", definicion:""}];
+      const buenas = fs.filter(f => f.nombre);
+      Object.assign(s, await API.actualizarSesion(s.id, {funciones: buenas}));
+      return buenas;
+    };
+
+    $("#guardar").onclick = async () => {
+      $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
+      try{ const b = await guardar();
+        $("#aviso").innerHTML = `<div class="aviso">Guardadas ${b.length} funciones en la sesión.
+          La encuesta de evaluación podrá heredarlas de aquí.</div>`;
+      }catch(e){ $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
+      $("#guardar").disabled = false; $("#guardar").textContent = "Guardar funciones";
+    };
+
+    $("#volcar").onclick = async () => {
+      const b = await guardar().catch(()=>null);
+      if(!b || !b.length){ $("#aviso").innerHTML =
+        `<div class="aviso rojo">Escribe al menos una función con nombre.</div>`; return; }
+      const nombres = b.map(f=>f.nombre);
+      const destinos = [{c:"L16", k:"items"}, {c:"L18", k:"opciones"}];
+      let hechas = 0;
+      for(const d of destinos){
+        const p = preguntas.find(x=>x.codigo===d.c); if(!p) continue;
+        const cfg = Object.assign({}, p.config||{}); cfg[d.k] = nombres;
+        try{ await API.actualizarPregunta(p.id, {config: cfg}); hechas++; }catch(e){}
+      }
+      preguntas = await API.preguntas(s.id);
+      recado = hechas
+        ? `<div class="aviso">Volcadas en ${hechas} ${hechas===1?"pregunta":"preguntas"}
+             las ${nombres.length} funciones. Ya puedes abrirlas.</div>`
+        : `<div class="aviso rojo">Ni L16 ni L18 están en esta sesión: añádelas desde el
+             constructor antes de volcar.</div>`;
+      pinta();
+    };
+  };
+  pinta();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    INFORME DE LA SESIÓN
 
    Todas las preguntas, una detrás de otra, con el mismo gráfico que vio
@@ -2965,6 +3171,9 @@ async function consolaMotor(s){
           <b>${prog.en_curso}</b> en curso</p>` : ""}
         ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas
           simuladas y nunca entrará en el benchmark entre clientes. La marca no se puede quitar.</div>` : ""}
+        ${(s.funciones||[]).length ? `<p class="small" style="margin-top:10px"><b>${
+          s.funciones.length} funciones clave</b> acordadas: ${
+          s.funciones.map(f=>esc(f.nombre)).join(" · ")}</p>` : ""}
         <div class="btnrow" style="margin-top:14px">
           <button class="btn ${s.resultados_en_vivo ? "" : "ghost "}sm" id="vivo">
             Resultados en vivo: ${s.resultados_en_vivo ? "encendidos" : "apagados"}</button></div>
@@ -3051,6 +3260,8 @@ async function consolaMotor(s){
             <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
             <button class="btn ghost" id="espera">Proyectar la espera</button>
             <button class="btn ghost" id="informe">Ver todos los resultados</button>
+            ${String(s.instrumento||"").split("-")[0] === "liderazgo"
+              ? `<button class="btn ghost" id="taller">Taller de funciones clave</button>` : ""}
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
@@ -3095,6 +3306,8 @@ async function consolaMotor(s){
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
     if(bt("informe")) bt("informe").onclick = () =>
       informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
+    if(bt("taller")) bt("taller").onclick = () =>
+      tallerFunciones(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
 
     if(bt("vivo")) bt("vivo").onclick = () =>
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
