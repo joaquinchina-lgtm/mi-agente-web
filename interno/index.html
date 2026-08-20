@@ -1136,9 +1136,43 @@ async function render(){
     else if(r.vista === "proyeccion") await vistaProyeccion(r.codigo);
     else if(r.vista === "admin")      await vistaAdmin();
     else vistaPortada();
+    // La marca de «ya he reintentado» se limpia AQUÍ, cuando algo ha salido
+    // bien. Limpiarla al empezar dejaba el reintento en bucle infinito: cada
+    // vuelta se creía la primera.
+    window.__reintentoReloj = false;
   }catch(e){
+    const msg = String((e && e.message) || e);
+
+    // «JWT issued at future» es un desajuste de relojes DENTRO de Supabase:
+    // el servidor que firma la credencial va unos segundos por delante del
+    // que la valida. No es culpa tuya ni de tu ordenador, y se pasa solo en
+    // menos de un minuto. Lo importante es que no salga en inglés y en
+    // crudo delante de un cliente: se reintenta solo y se explica.
+    if(/issued at future|JWSInvalidSignature|clock/i.test(msg)){
+      if(!window.__reintentoReloj){
+        window.__reintentoReloj = true;
+        app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+          <h2>Un momento</h2><p class="lead">El servidor está ajustando su reloj.
+          Reintentando solo…</p></div></div>`;
+        return setTimeout(render, 6000);
+      }
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h2>El servidor tiene el reloj desajustado</h2>
+        <p class="lead">Supabase ha firmado tu credencial con una hora ligeramente
+          adelantada respecto a la que usa para comprobarla, y por eso la rechaza.</p>
+        <p>No es tu ordenador ni tu conexión, y suele durar menos de un minuto.
+          Espera y vuelve a entrar. Si persiste más de cinco minutos, sal y entra de nuevo
+          para que te firme una credencial nueva.</p>
+        <div class="btnrow"><button class="btn" onclick="location.reload()">Reintentar</button>
+          <button class="btn ghost" onclick="cerrarSesionAdmin()">Salir y volver a entrar</button></div>
+        <details><summary class="small">Detalle técnico</summary>
+          <p class="small"><code>${esc(msg)}</code></p></details>
+      </div></div>`;
+      return;
+    }
+
     app().innerHTML = `<div class="wrap">${cabecera()}
-      <div class="card"><h2>Algo ha fallado</h2><p>${esc(e.message||e)}</p>
+      <div class="card"><h2>Algo ha fallado</h2><p>${esc(msg)}</p>
       <div class="btnrow"><button class="btn ghost" onclick="location.reload()">Reintentar</button></div></div></div>`;
   }
 }
