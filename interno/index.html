@@ -214,6 +214,16 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .cel-col .nums button.on{background:var(--deseada);border-color:var(--deseada);
   color:#fff;font-weight:650}
 
+/* opciones con definición */
+.opcion{margin:7px 0}
+.opcion details{margin:4px 0 0 2px}
+.opcion details summary{font-size:13px;color:var(--text-muted);cursor:pointer;
+  padding:5px 2px;list-style:none}
+.opcion details summary::-webkit-details-marker{display:none}
+.opcion details summary::before{content:"▸ ";font-size:11px}
+.opcion details[open] summary::before{content:"▾ "}
+.opcion details p{margin:2px 0 8px;padding-left:12px;border-left:2px solid var(--grid)}
+
 /* informe */
 .informe-bloque{padding:26px 22px}
 .informe-bloque h2{line-height:1.25}
@@ -1464,7 +1474,8 @@ async function participanteMotor(codigo, s){
     app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
       <h2>${n && hs === n ? "Estás al día" : "Espera un momento"}</h2>
       <p class="lead">${n
-        ? `Has respondido las <b>${hs} preguntas</b> que están abiertas ahora mismo.`
+        ? (hs === 1 ? `Has respondido <b>la única pregunta</b> que está abierta ahora mismo.`
+                    : `Has respondido las <b>${hs} preguntas</b> que están abiertas ahora mismo.`)
         : "Todavía no hay ninguna pregunta abierta."}
         La siguiente aparecerá sola en cuanto el facilitador la abra.</p>
       <p class="small">No cierres esta página ni recargues: lo respondido está guardado.
@@ -1634,12 +1645,20 @@ async function participanteMotor(codigo, s){
     let leer = () => null;              // devuelve el valor jsonb o null si falta algo
 
     if(p.tipo === "unica" || p.tipo === "multiple"){
-      const ops = cfg.opciones || [];
+      // Con dieciocho opciones, el orden de la lista pesa más que el
+      // contenido: los primeros se leen enteros y los últimos ni se miran.
+      // Por eso el banco puede pedir que se baraje para cada persona.
+      const ops = cfg.barajar ? barajar((cfg.opciones||[]).slice()) : (cfg.opciones || []);
+      const defs = cfg.definiciones || {};
       const max = p.tipo === "multiple" ? (cfg.maximo || ops.length) : 1;
       const sel = new Set();
-      campo.innerHTML = ops.map((o,i)=>
-        `<button type="button" class="btn ghost" data-o="${i}"
-           style="display:block;width:100%;text-align:left;margin:6px 0">${esc(o)}</button>`).join("")
+      campo.innerHTML = ops.map((o,i)=>{
+        const d = defs[o];
+        return `<div class="opcion${d ? " condef" : ""}">
+          <button type="button" class="btn ghost" data-o="${i}"
+             style="display:block;width:100%;text-align:left">${esc(o)}</button>
+          ${d ? `<details><summary>ver definición</summary>
+                   <p class="small">${esc(d)}</p></details>` : ""}</div>`;}).join("")
         + (p.tipo==="multiple" ? `<p class="small">Puedes elegir hasta ${max}.</p>` : "");
       campo.querySelectorAll("[data-o]").forEach(b => b.onclick = () => {
         const i = +b.dataset.o;
@@ -2866,12 +2885,14 @@ const NAT_ETIQ = {
 
 async function consolaMotor(s){
   const vars = s.variables || {};
+  const BAN = bancoDe(s.instrumento);
+  const BLOQUES = BAN.bloques, BANCO = BAN.banco, VARIABLES = BAN.variables;
   let preguntas = await API.preguntas(s.id);
   const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
 
   const pinta = async () => {
     const usados = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
-    const faltanVars = VARIABLES_ESC.filter(v => !vars[v.clave]);
+    const faltanVars = VARIABLES.filter(v => !vars[v.clave]);
     // Solo se pide el recuento de lo que no está cerrado: con veinte preguntas,
     // sondear todas cada tres segundos es castigar la base de datos por nada.
     const cuentas = {};
@@ -2891,7 +2912,8 @@ async function consolaMotor(s){
       `<a class="iconbtn" href="#/admin/sesiones">Sesiones</a>`)}
       <div class="card">
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between">
-          <div><span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · escenarios futuros</span>
+          <div><span class="phasetag">${esc((s.organizacion||{}).nombre||"")} ·
+            ${esc(nombreInstrumento(s.instrumento).toLowerCase())}</span>
             <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1></div>
           <span class="estado ${s.estado==="abierta"?"viva":""}">${esc(s.estado)} · ${esc(s.modo)}</span>
         </div>
@@ -2950,7 +2972,7 @@ async function consolaMotor(s){
         <h2>Variables del ejercicio</h2>
         <p class="small">Se sustituyen en el enunciado <b>al añadir la pregunta</b>, no al mostrarla:
           así el texto que leyó la gente queda congelado aunque después cambies una variable.</p>
-        <div class="grid2">${VARIABLES_ESC.map(v=>`
+        <div class="grid2">${VARIABLES.map(v=>`
           <div class="field"><label for="${idVar(v.clave)}">${esc(v.etiqueta)}</label>
             <input id="${idVar(v.clave)}" value="${esc(vars[v.clave]||"")}" placeholder="${esc(v.ayuda)}">
           </div>`).join("")}</div>
@@ -2998,18 +3020,19 @@ async function consolaMotor(s){
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
-          <button class="btn ghost" id="nucleo">Añadir el itinerario núcleo</button>
+          <button class="btn ghost" id="nucleo">Añadir ${esc(BAN.nucleo)}</button>
           <button class="btn ghost" id="bench">Añadir solo las comparables</button>
         </div>
-        <p class="note">El itinerario núcleo son ${BANCO_ESC.filter(p=>p.nuc).length} preguntas:
+        <p class="note">${esc(BAN.nucleo[0].toUpperCase()+BAN.nucleo.slice(1))} son ${
+          BANCO.filter(p=>p.nuc).length} preguntas:
           el recorrido completo del método. Las comparables son las ${
-          BANCO_ESC.filter(p=>p.bench).length} que acumulan conocimiento entre clientes, y
+          BANCO.filter(p=>p.bench).length} que acumulan conocimiento entre clientes, y
           conviene que estén en todas tus sesiones con el mismo texto. Añadir el banco entero
           —las 60— es un catálogo, no una sesión.</p>
       </div>
 
-      ${BLOQUES_ESC.map((nb, bi) => {
-        const ps = BANCO_ESC.filter(p=>p.b===bi);
+      ${BLOQUES.map((nb, bi) => {
+        const ps = BANCO.filter(p=>p.b===bi);
         return `<div class="card">
           <h3 style="margin-top:0">Bloque ${bi} · ${esc(nb)}</h3>
           <div class="lista">${ps.map(p=>{
@@ -3113,17 +3136,17 @@ async function consolaMotor(s){
     };
 
     $("#gv").onclick = async () => {
-      const nv = {}; VARIABLES_ESC.forEach(v=>{
+      const nv = {}; VARIABLES.forEach(v=>{
         const el = $("#" + idVar(v.clave)); const x = el ? el.value.trim() : "";
         if(x) nv[v.clave] = x; });
       Object.assign(s, await API.actualizarSesion(s.id, {variables:nv}));
       Object.keys(vars).forEach(k=>delete vars[k]); Object.assign(vars, nv);
       pinta();
     };
-    $("#nucleo").onclick = () => añadir(BANCO_ESC.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)));
-    $("#bench").onclick  = () => añadir(BANCO_ESC.filter(p=>p.bench));
+    $("#nucleo").onclick = () => añadir(BANCO.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)));
+    $("#bench").onclick  = () => añadir(BANCO.filter(p=>p.bench));
     app().querySelectorAll("[data-add]").forEach(b => b.onclick = () =>
-      añadir([BANCO_ESC.find(p=>p.c===b.dataset.add)]));
+      añadir([BANCO.find(p=>p.c===b.dataset.add)]));
     app().querySelectorAll("[data-quita]").forEach(b => b.onclick = async () => {
       await API.borrarPregunta(b.dataset.quita);
       preguntas = await API.preguntas(s.id); pinta(); });
@@ -3548,6 +3571,187 @@ const BANCO_ESC = [
 ];
 
 /* Variables que hay que resolver antes de crear las preguntas. */
+/* ═══════════════════════════════════════════════════════════════════
+   BANCO DE PREGUNTAS · Modelo de liderazgo
+
+   El recorrido define el liderazgo con el propio equipo directivo, en vez
+   de traerle un modelo de catálogo: qué se entiende aquí por liderar, a
+   quién se considera líder, y qué responsabilidades y competencias son
+   las que de verdad importan en esta casa.
+
+   Las dos listas —doce responsabilidades y dieciocho competencias— son de
+   Joaquín Romero. Van literales: cambiar una palabra rompe la
+   comparabilidad entre clientes.
+
+   La evaluación de las funciones clave NO está aquí: es un survey
+   posterior, con su propio banco, porque se abre a un colectivo mucho más
+   amplio que el comité.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const BLOQUES_LID = [
+  "Perfil y posición",
+  "Qué entendemos por liderar",
+  "A quién consideramos líder",
+  "Responsabilidades de gestión",
+  "Valores y competencias",
+  "Funciones clave del liderazgo"
+];
+
+/* Las dieciocho competencias, con etiqueta corta y definición completa.
+   La etiqueta es lo que se vota y lo que sale en los gráficos; la
+   definición se despliega en el móvil bajo cada opción. Sin esa
+   separación, elegir tres entre dieciocho párrafos es imposible en un
+   teléfono, y lo que acabas midiendo es quién llegó a leer más abajo. */
+const COMPETENCIAS_LID = [
+["Generosidad / trabajo en equipo",
+ "Capacidad de impulsar el trabajo coordinado de las personas del equipo u otros equipos dentro de la organización para la consecución de los objetivos comunes. Implica fomentar la colaboración y el apoyo mutuo y promover que se comparta información y conocimiento."],
+["Comunicación",
+ "Capacidad para asegurar una comunicación clara y efectiva tanto oral como escrita en sentido ascendente, descendente y horizontal. Implica identificar la información a comunicar, valorar los canales y medios más idóneos para cada mensaje y asegurarse de que se ha comprendido obteniendo el feedback de las personas receptoras."],
+["Planificación / organización",
+ "Capacidad para planificar y organizar las tareas, funciones y proyectos (ordinarios y extraordinarios) estableciendo prioridades claras, adaptándose a las circunstancias cambiantes y logrando objetivos de eficiencia y eficacia."],
+["Negociación / mediación",
+ "Capacidad para dirigir o controlar una discusión utilizando técnicas ganar-ganar, planificando alternativas para alcanzar los mejores acuerdos. Crear un ambiente de colaboración y compromiso duradero que fortalezca las relaciones. Capacidad de intermediar para encontrar soluciones satisfactorias."],
+["Iniciativa",
+ "Capacidad de actuar de manera proactiva proponiendo soluciones y acciones de mejora a situaciones complicadas del día a día. Implica también marcar el rumbo estableciendo y comunicando acciones concretas."],
+["Toma de decisiones (flema)",
+ "Capacidad de analizar diferentes alternativas y optar por la más conveniente para el equipo y la institución en cada momento, sabiendo que muchas decisiones podrán tener reacciones al cambio, y ser capaces de priorizar el bien producido sobre las resistencias obtenidas. Implica marcar el rumbo estableciendo y comunicando acciones concretas."],
+["Gestión del cambio",
+ "Capacidad de conducir a su equipo de colaboradores y colaboradoras en la implantación de los cambios acordados para dar respuesta a la estrategia de la organización. Implica gestionar las inercias y resistencias de un equipo para poder alcanzar determinados objetivos cuando surgen dificultades, nuevos escenarios o datos que permiten definir nuevas situaciones."],
+["Lealtad institucional",
+ "Capacidad para respaldar en todo momento, ante grupos de interés internos y externos, la visión, estrategia y decisiones adoptadas por la organización aunque internamente pueda existir algún punto de desacuerdo. Significa adoptar el compromiso de representar los valores de la organización, siendo modelo de referencia para otras personas."],
+["Pensamiento estratégico",
+ "Capacidad para comprender rápidamente los cambios del entorno, las oportunidades, amenazas, fortalezas y debilidades de la propia organización, a la hora de definir su estrategia. Implica la capacidad de establecer relaciones con grupos de interés externos para el desarrollo de alianzas."],
+["Empatía",
+ "Capacidad de escuchar de manera activa, comprender y dar respuesta a pensamientos, sentimientos, intereses, problemas y preocupaciones de los demás. Empatizar no significa perderse en lo que la otra persona esté sintiendo: es sentir apertura para poder entender qué está viviendo esa persona, equipo u organización."],
+["Gestión emocional",
+ "Capacidad de quien lidera para reconocer sus propias emociones y las de los demás, discernir entre diferentes sentimientos y etiquetarlos apropiadamente, utilizar información emocional para guiar el pensamiento y la conducta, y administrar o ajustar las emociones para adaptarse al ambiente o conseguir objetivos. Gestión emocional no es control emocional."],
+["Ambición",
+ "Capacidad de una persona para perseguir persistente y consistentemente un objetivo establecido, incluso si hay reveses o dificultades en el camino. La voluntad de lograr ese objetivo para el equipo o para la institución se llama ambición, y describe el impulso por el rendimiento, el éxito y el conocimiento del equipo."],
+["Humildad",
+ "Capacidad para reconocer las propias capacidades y limitaciones que tenemos como líderes y actuar en consecuencia. Orientarse al servicio de los demás, del equipo y de la organización más que al servicio de uno mismo, fomentando la capacidad de las personas de nuestros equipos y por tanto su empoderamiento."],
+["Pasión",
+ "Sentimiento relacionado con la satisfacción y el placer por ejercer un puesto de responsabilidad dentro de la organización, buscando de manera activa la mejora en cada tarea que se realiza y el desarrollo del propio equipo, y buscando aprendizajes de las situaciones difíciles e incluso de los errores."],
+["Creatividad",
+ "Habilidad para generar ideas originales que aporten valor al equipo y a la organización. Capacidad de transformar ideas originales en proyectos de éxito dentro de la institución."],
+["Agilidad",
+ "Capacidad para dar respuesta rápida y adaptada al cambio. Supone la capacidad de tomar decisiones meditadas y fluidas ante situaciones complejas. En ocasiones requiere que la organización cuente con estructuras flexibles."],
+["Flexibilidad",
+ "Capacidad por parte de quien lidera de generar conexiones entre ideas, pensamientos, formas de hacer y personas, mostrando orientación a las personas, retos y equipos para adaptarse y dar solución a las situaciones complejas y difíciles. Supone el desarrollo de habilidades como la escucha activa, la empatía y la humildad."],
+["Gestión de la incertidumbre",
+ "Habilidad para enfrentarse a situaciones muy complejas en las que la solución no es evidente y no podemos gestionar las respuestas de una manera lógica o a través de la probabilidad. Es la habilidad de no sobreactuar y gestionar desde la templanza y la serenidad el hoy, creando el futuro a cada paso que se da, sabiendo que ese paso es incierto."]
+];
+
+const RESPONSABILIDADES_LID = [
+  "Desarrollar y desplegar la visión, valores y estrategia",
+  "Planificar y organizar las tareas de las personas de su equipo",
+  "Comunicar decisiones, objetivos e información importante para su equipo",
+  "Fomentar el trabajo en equipo",
+  "Fomentar la proactividad y la autonomía de las personas del equipo",
+  "Favorecer en el equipo la gestión del cambio",
+  "Adoptar las decisiones que correspondan a su ámbito de gestión",
+  "Alinear a su equipo con los objetivos de la organización",
+  "Representar a la organización ante grupos de interés internos y externos",
+  "Realizar feedback de mejora a las personas del equipo",
+  "Definir las expectativas para cada puesto del equipo",
+  "Favorecer la relación entre departamentos o unidades"
+];
+
+const BANCO_LID = [
+/* ── Bloque 0 · Perfil ──────────────────────────────────────────── */
+{c:"L01", b:0, t:"unica", nuc:true, nat:"fija",
+ q:"¿Desde qué posición respondes en [ORGANIZACION]?",
+ cfg:{opciones:["Dirección o gobierno","Mando intermedio con equipo",
+   "Responsable de proyecto o proceso","Referente técnico sin equipo a cargo",
+   "Personas y cultura / RRHH","Otra"]}},
+{c:"L02", b:0, t:"unica", nuc:true, nat:"fija", bench:true,
+ q:"¿Cuánto tiempo llevas ejerciendo responsabilidad sobre personas o equipos?",
+ cfg:{opciones:["No la ejerzo","Menos de 2 años","2–5 años","6–10 años","Más de 10 años"]}},
+{c:"L03", b:0, t:"unica", nuc:false, nat:"fija",
+ q:"¿Sobre cuántas personas tienes responsabilidad directa?",
+ cfg:{opciones:["Ninguna","1–5","6–15","16–50","Más de 50"]}},
+
+/* ── Bloque 1 · Definición ──────────────────────────────────────── */
+{c:"L04", b:1, t:"tarjetas", nuc:true, nat:"fija", bench:true,
+ q:"Completa la frase: «En [ORGANIZACION], liderar es…»",
+ ayuda:"Una idea por casilla. Escribe como hablarías, no como se escribe en un plan estratégico.",
+ cfg:{maximo_aportaciones:3, maximo_caracteres:160, votos:3}},
+{c:"L05", b:1, t:"nube", nuc:false, nat:"fija", bench:true,
+ q:"En una palabra: ¿qué es lo primero que asocias con liderazgo en [ORGANIZACION]?",
+ ayuda:"Se proyecta como nube: lo más repetido se ve más grande.",
+ cfg:{maximo:2, maximo_caracteres:24}},
+{c:"L06", b:1, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Hasta qué punto crees que hoy existe una idea compartida de lo que significa liderar en [ORGANIZACION]?",
+ cfg:{min:1, max:7, ancla_min:"Cada uno entiende una cosa", ancla_max:"Está claro para todos"}},
+{c:"L07", b:1, t:"unica", nuc:false, nat:"derivada",
+ q:"De las definiciones que han salido, ¿cuál se acerca más a la que deberíamos adoptar?",
+ ayuda:"Se rellena en la sesión con los temas más votados de L04.",
+ cfg:{opciones:[]}},
+
+/* ── Bloque 2 · Alcance ─────────────────────────────────────────── */
+{c:"L08", b:2, t:"tarjetas", nuc:true, nat:"fija", bench:true,
+ q:"¿A quién consideras que hay que llamar «líder» en [ORGANIZACION]?",
+ ayuda:"Puestos, roles o colectivos concretos. Una idea por casilla.",
+ cfg:{maximo_aportaciones:3, maximo_caracteres:120, votos:3}},
+{c:"L09", b:2, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué niveles de liderazgo reconocerías en [ORGANIZACION]?",
+ ayuda:"Por ejemplo, por alcance de la decisión, por tamaño del equipo o por horizonte temporal.",
+ cfg:{maximo_aportaciones:3, maximo_caracteres:120, votos:2}},
+{c:"L10", b:2, t:"escala", nuc:false, nat:"fija", bench:true,
+ q:"¿En qué medida las personas que hoy ejercen liderazgo en [ORGANIZACION] son reconocidas como tales?",
+ cfg:{min:1, max:7, ancla_min:"Nada reconocidas", ancla_max:"Plenamente reconocidas"}},
+
+/* ── Bloque 3 · Responsabilidades ───────────────────────────────── */
+{c:"L11", b:3, t:"multiple", nuc:true, nat:"fija", bench:true,
+ q:"De estas responsabilidades de gestión, ¿cuáles son las tres más importantes en [ORGANIZACION]?",
+ ayuda:"Elige exactamente tres, teniendo en cuenta la definición y el alcance que acabáis de acordar.",
+ cfg:{maximo:3, barajar:true, opciones:RESPONSABILIDADES_LID}},
+{c:"L12", b:3, t:"multiple", nuc:false, nat:"fija",
+ q:"Y de esas mismas responsabilidades, ¿cuáles son las tres que hoy peor se ejercen en [ORGANIZACION]?",
+ ayuda:"No es lo mismo lo importante que lo que funciona. El contraste entre las dos listas es media conversación.",
+ cfg:{maximo:3, barajar:true, opciones:RESPONSABILIDADES_LID}},
+
+/* ── Bloque 4 · Competencias ────────────────────────────────────── */
+{c:"L13", b:4, t:"multiple", nuc:true, nat:"fija", bench:true,
+ q:"De estos valores y competencias, ¿cuáles son los tres más importantes para liderar en [ORGANIZACION]?",
+ ayuda:"Elige exactamente tres. Toca «ver definición» si necesitas el detalle de alguno.",
+ cfg:{maximo:3, barajar:true,
+   opciones: COMPETENCIAS_LID.map(x=>x[0]),
+   definiciones: COMPETENCIAS_LID.reduce((o,x)=>(o[x[0]]=x[1], o), {})}},
+{c:"L14", b:4, t:"multiple", nuc:false, nat:"fija",
+ q:"¿Y cuáles son los tres que hoy están menos desarrollados en [ORGANIZACION]?",
+ cfg:{maximo:3, barajar:true,
+   opciones: COMPETENCIAS_LID.map(x=>x[0]),
+   definiciones: COMPETENCIAS_LID.reduce((o,x)=>(o[x[0]]=x[1], o), {})}},
+{c:"L15", b:4, t:"abierta", nuc:false, nat:"fija",
+ q:"¿Echas en falta algún valor o competencia que no esté en la lista?",
+ cfg:{maximo_caracteres:200}},
+
+/* ── Bloque 5 · Funciones clave ─────────────────────────────────── */
+{c:"L16", b:5, t:"matriz_escala", nuc:true, nat:"derivada",
+ q:"¿Hasta qué punto cada una de estas funciones clave describe bien el liderazgo que [ORGANIZACION] necesita?",
+ ayuda:"Se rellena en la sesión con las funciones que hayas redactado a partir de L11 y L13.",
+ cfg:{min:1, max:4, items:[], ancla_min:"No la describe", ancla_max:"La describe muy bien"}},
+{c:"L17", b:5, t:"tarjetas", nuc:true, nat:"derivada",
+ q:"¿Qué cambiarías en la formulación de alguna de las funciones clave?",
+ ayuda:"Aquí se recogen los matices que después incorporas al texto definitivo.",
+ cfg:{maximo_aportaciones:3, maximo_caracteres:200, votos:3}},
+{c:"L18", b:5, t:"ranking", nuc:true, nat:"derivada",
+ q:"Ordena las funciones clave por prioridad de desarrollo en [ORGANIZACION].",
+ ayuda:"Se rellena con las funciones validadas. Arriba, lo que hay que trabajar antes.",
+ cfg:{opciones:[]}},
+{c:"L19", b:5, t:"abierta_campos", nuc:true, nat:"fija",
+ q:"Para terminar: un compromiso concreto en las próximas cuatro semanas.",
+ cfg:{campos:[{clave:"accion", etiqueta:"Qué vas a hacer"},
+              {clave:"con_quien", etiqueta:"Con quién"},
+              {clave:"cuando", etiqueta:"Cuándo"}]}}
+];
+
+const VARIABLES_LID = [
+  {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización objeto del servicio."},
+  {clave:"COLECTIVO",    etiqueta:"Colectivo",    ayuda:"Equipo directivo, comité de dirección, mandos…"},
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Periodo al que se refiere el modelo. Por ejemplo, 2026-2029."}
+];
+
 const VARIABLES_ESC = [
   {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización, unidad o sistema analizado."},
   {clave:"TEMA FOCAL",   etiqueta:"Tema focal",   ayuda:"Reto, decisión o ámbito objeto del ejercicio."},
@@ -3560,6 +3764,27 @@ function resolverTexto(txt, vars){
   return String(txt||"").replace(/\[([A-ZÑ ]+)\]/g, (m, k) =>
     (vars && vars[k]) ? vars[k] : m);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   REGISTRO DE BANCOS
+
+   El constructor de sesiones es el mismo para todos los instrumentos del
+   motor: lo único que cambia es el banco de preguntas, sus bloques y sus
+   variables. Esto es lo que hace que añadir un instrumento sea redactar
+   preguntas y no escribir una pantalla nueva.
+   ═══════════════════════════════════════════════════════════════════ */
+const BANCOS = {
+  escenarios: {bloques: BLOQUES_ESC, banco: BANCO_ESC, variables: VARIABLES_ESC,
+               nucleo: "el itinerario núcleo"},
+  liderazgo:  {bloques: BLOQUES_LID, banco: BANCO_LID, variables: VARIABLES_LID,
+               nucleo: "el recorrido completo"}
+};
+
+// La clave del instrumento puede venir con sufijo («cultura-cvf»), así que
+// se mira siempre la raíz. Si no se reconoce, escenarios: es el que había
+// antes y es preferible a una pantalla en blanco.
+const bancoDe = instrumento =>
+  BANCOS[String(instrumento||"").split("-")[0]] || BANCOS.escenarios;
 
 /* Registro único de instrumentos. `nombre` es como lo llamas tú en la consola;
    `publico` es como lo ve la sala —si falta, se usa `nombre`—. La cabecera del
@@ -3577,8 +3802,12 @@ const MODULOS = [
    ruta:"#/admin/sesiones"},
   {k:"reactor", nombre:"Reactor de innovación", est:"pendiente",
    desc:"Enunciados canónicos y valoración colectiva. Es tu activo más defendible."},
-  {k:"liderazgo", nombre:"Modelo de liderazgo", est:"pendiente",
-   desc:"Rúbrica por competencias propias de cada organización. Sin ambición de benchmark."},
+  {k:"liderazgo", nombre:"Modelo de liderazgo", est:"activo",
+   publico:"Modelo de liderazgo",
+   desc:"Define con el propio equipo directivo qué es liderar aquí, a quién se considera "
+      + "líder, y qué responsabilidades y competencias importan: doce responsabilidades y "
+      + "dieciocho competencias, con sus definiciones. La evaluación va aparte, como survey.",
+   ruta:"#/admin/sesiones"},
   {k:"contraste", nombre:"Contraste estratégico", est:"pendiente",
    desc:"Diagnóstico de estrategia con los miembros de la organización."},
   {k:"horizonte", nombre:"Bloque Horizonte", est:"pendiente",
@@ -3609,7 +3838,7 @@ function hubPrivado(u){
                 <span class="estado" style="margin-left:8px">en construcción</span>`
             : `<span class="estado">por construir</span>`}
         </div>`).join("")}</div>
-      <p class="note">Los cuatro pendientes siguen en Mentimeter. Los tipos de pantalla ya
+      <p class="note">Los tres pendientes siguen en Mentimeter. Los tipos de pantalla ya
         están todos construidos, así que un instrumento nuevo es sobre todo redactar su banco
         de preguntas — pero sigue siendo trabajo, no un interruptor: decirlo aquí evita que lo
         des por hecho en una propuesta.</p>
@@ -3753,6 +3982,7 @@ async function panelAdmin(u){
           <select id="s-ins">
             <option value="cultura-cvf">Cultura organizativa</option>
             <option value="escenarios">Escenarios futuros</option>
+            <option value="liderazgo">Modelo de liderazgo</option>
           </select></div>
         <div class="field"><label for="s-tit">Título de la sesión</label>
           <input id="s-tit" required placeholder="Equipo directivo · febrero 2026"></div>
