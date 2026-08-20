@@ -1416,9 +1416,22 @@ async function vistaParticipante(codigo){
    respondido no se pierde.
    ═══════════════════════════════════════════════════════════════════ */
 async function participanteMotor(codigo, s){
-  const estado = {paso:"segmentos", envio:null, hechas:{}, actual:null,
-                  abiertas:[], proyectada:null, forzada:null};
+  const estado = {paso:"segmentos", envio:null, hechas:{}, valores:{}, actual:null,
+                  abiertas:[], todas:[], proyectada:null, forzada:null};
   let reloj = null, vigia = null;
+
+  /* Memoria del móvil. Hasta ahora vivía solo en la variable: al recargar
+     la página, esa persona empezaba de cero y abría un envío nuevo, así
+     que contaba como participante distinto. De ahí salían los «3 en curso»
+     de una sala de dos. Ahora se guarda en el propio teléfono. */
+  const memoria = "sesion:" + String(codigo).toUpperCase();
+  const recordar = () => { try{ localStorage.setItem(memoria, JSON.stringify(
+      {envio: estado.envio, hechas: estado.hechas, valores: estado.valores})); }catch(e){} };
+  const recuperar = () => { try{
+      const v = JSON.parse(localStorage.getItem(memoria) || "null");
+      if(v && v.envio){ estado.envio = v.envio; estado.hechas = v.hechas || {};
+        estado.valores = v.valores || {}; return true; }
+    }catch(e){} return false; };
   const parar = () => { clearTimeout(reloj); clearInterval(vigia); vigia = null; };
   window.addEventListener("beforeunload", parar);
 
@@ -1439,7 +1452,7 @@ async function participanteMotor(codigo, s){
     const [todas, ses] = await Promise.all([
       API.preguntasPublicas(codigo).catch(()=>null),
       API.sesionPublica(codigo).catch(()=>null)]);
-    if(todas) estado.abiertas = todas.filter(respondible);
+    if(todas){ estado.todas = todas; estado.abiertas = todas.filter(respondible); }
     const va = ses && ses.vista_activa;
     estado.proyectada = va && String(va).startsWith("q:") ? String(va).slice(2) : null;
     return ses;
@@ -1469,7 +1482,10 @@ async function participanteMotor(codigo, s){
       try{ await API.cerrarEnvio(estado.envio); }catch(e){}
       estado.paso = "fin"; return pintar();
     }
-    const p = await siguiente();
+    // Mientras se repasan las respuestas anteriores no se salta a una
+    // pregunta nueva: sería arrancarle la pantalla de las manos a alguien
+    // que está leyendo. El aviso llega cuando vuelva.
+    const p = (estado.paso === "espera") ? await siguiente() : null;
     if(p){ estado.actual = p; estado.paso = "pregunta"; return pintar(); }
     if(estado.paso === "espera") pintarEspera();   // refresca el recuento
     esperar();
@@ -1510,6 +1526,37 @@ async function participanteMotor(codigo, s){
     }, 3000);
   };
 
+  /* Cómo se lee, en una línea, lo que esta persona respondió. Es lo que
+     ve al volver atrás: no el resultado del grupo —eso sigue estando
+     prohibido hasta que cierres la pregunta—, solo lo suyo. */
+  const resumenValor = (p, v) => {
+    if(!v) return null;
+    const cfg = p.config || {};
+    switch(p.tipo){
+      case "unica":      return v.opcion || null;
+      case "multiple":   return (v.opciones || []).join(" · ") || null;
+      case "nube":       return (v.terminos || []).join(" · ") || null;
+      case "escala":     return v.n == null ? null : v.n + " de " + (cfg.max ?? 7);
+      case "matriz_escala": return Object.entries(v.items || {})
+                          .map(([k, n]) => k + ": " + n).join(" · ") || null;
+      case "puntos100":  return Object.entries(v.reparto || {}).filter(([,n]) => n > 0)
+                          .sort((a,b) => b[1] - a[1])
+                          .map(([k, n]) => k + " " + n).join(" · ") || null;
+      case "abierta":    return v.texto || null;
+      case "abierta_campos": return Object.values(v.campos || {}).join(" · ") || null;
+      case "ranking": case "secuencia": return (v.orden || []).join(" › ") || null;
+      case "dos_ejes":   return Object.keys(v.pos || {}).length + " elementos colocados";
+      case "clasificar": return Object.entries(v.asignacion || {})
+                          .map(([k, c]) => k + " → " + c).join(" · ") || null;
+      case "matriz_valoracion": return Object.entries(v.celdas || {})
+                          .map(([f, cols]) => f + ": " + Object.values(cols).join("/"))
+                          .join(" · ") || null;
+      case "tarjetas":   return v.textos ? v.textos.join(" · ")
+                          : (v.votos != null ? v.votos + " votos emitidos" : null);
+      default: return null;
+    }
+  };
+
   const avanzar = async () => {
     const sig = await siguiente();
     if(sig){ estado.actual = sig; estado.paso = "pregunta"; }
@@ -1541,6 +1588,11 @@ async function participanteMotor(codigo, s){
 
   const pintar = async () => {
     if(estado.paso === "segmentos"){
+      // Si este teléfono ya estaba participando y la página se ha recargado
+      // —se apagó la pantalla, se cerró el navegador, se acabó la batería—,
+      // se recupera el envío en vez de abrir otro. Sin esto, cada recarga
+      // creaba un participante fantasma y el contador de la consola mentía.
+      if(recuperar()){ estado.paso = "espera"; avanzar(); return; }
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
         <span class="phasetag">${esc(s.organizacion||"")}</span>
         <h1 style="margin-top:10px">${esc(s.titulo)}</h1>
@@ -1564,6 +1616,7 @@ async function participanteMotor(codigo, s){
         try{
           estado.envio = await API.abrirEnvio(codigo, {ambito:$("#f1").value||null,
             responsable:$("#f2").value||null, antiguedad:$("#f3").value||null});
+          recordar();
           const p = await siguiente();
           if(p){ estado.actual = p; estado.paso = "pregunta"; } else estado.paso = "espera";
           pintar();
@@ -1574,6 +1627,9 @@ async function participanteMotor(codigo, s){
 
     if(estado.paso === "fin"){
       parar();
+      // Se borra la memoria local: la sesión ha terminado y el siguiente que
+      // abra ese enlace en el mismo teléfono no debe heredar este envío.
+      try{ localStorage.removeItem(memoria); }catch(e){}
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
         <h1>Gracias</h1><p class="lead">Tus respuestas se han guardado de forma anónima.</p>
         <p>Ya puedes dejar el móvil.</p></div></div>`;
@@ -1584,23 +1640,65 @@ async function participanteMotor(codigo, s){
 
     if(estado.paso === "lista"){
       parar();
+      // Se listan TODAS las que el móvil conoce: las abiertas y las que el
+      // facilitador ya ha cerrado. Las cerradas no se pueden cambiar, pero
+      // poder releer lo que uno votó hace media hora es lo que permite
+      // decir en voz alta «espera, yo esa la entendí de otra manera».
+      const lista = estado.todas;
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
-        <h2>Tus preguntas</h2>
-        <p class="small">Aquí están las que el facilitador tiene abiertas ahora mismo.
-          Puedes volver a cualquiera. Si respondes otra vez, tu respuesta anterior
-          se sustituye por la nueva.</p>
-        <div class="lista">${estado.abiertas.length ? estado.abiertas.map((p,i)=>`
-          <div class="it"><div><b>${i+1}. ${esc(p.titulo)}</b>
-            <div class="small">${hecha(p) ? "respondida" : "<b>pendiente</b>"}${
-              p.id === estado.proyectada ? " · en la pantalla de la sala" : ""}</div></div>
-            <button class="btn ${hecha(p) ? "ghost " : ""}sm" data-ir="${esc(p.id)}">${
-              hecha(p) ? "Revisar" : "Responder"}</button></div>`).join("")
-          : `<div class="it"><div class="small">Ahora mismo no hay ninguna abierta.</div></div>`}</div>
+        <h2>Tus respuestas</h2>
+        <p class="small">Todo lo que has respondido en esta sesión. Puedes volver a
+          cualquier pregunta que siga abierta y cambiar tu respuesta: la anterior se
+          sustituye por la nueva.</p>
+        <div class="lista">${lista.length ? lista.map((p,i)=>{
+          const v = estado.valores[clave(p)];
+          const txt = resumenValor(p, v);
+          const abierta = respondible(p);
+          return `<div class="it"><div style="flex:1">
+              <b>${i+1}. ${esc(p.titulo)}</b>
+              <div class="small">${abierta ? "abierta" : "<b>cerrada por el facilitador</b>"}${
+                p.id === estado.proyectada ? " · en la pantalla de la sala" : ""}</div>
+              ${txt ? `<div class="small" style="color:var(--text-primary);margin-top:4px">
+                  <b>Tu respuesta:</b> ${esc(txt.length > 90 ? txt.slice(0,90) + "…" : txt)}</div>`
+                : `<div class="small" style="margin-top:4px">${
+                    hecha(p) ? "respondida" : "<b>sin responder</b>"}</div>`}
+            </div>
+            <button class="btn ${abierta && !hecha(p) ? "" : "ghost "}sm" data-ir="${esc(p.id)}">${
+              !abierta ? "Ver" : hecha(p) ? "Cambiar" : "Responder"}</button></div>`;}).join("")
+          : `<div class="it"><div class="small">Todavía no hay ninguna pregunta.</div></div>`}</div>
         <div class="btnrow"><button class="btn ghost" id="volver">Volver</button></div>
       </div></div>`;
       app().querySelectorAll("[data-ir]").forEach(b => b.onclick = () => {
-        estado.forzada = b.dataset.ir; avanzar(); });
+        const p = lista.find(x => x.id === b.dataset.ir);
+        if(respondible(p)){ estado.forzada = b.dataset.ir; avanzar(); }
+        else { estado.mirando = p; estado.paso = "mirar"; pintar(); }
+      });
       $("#volver").onclick = () => avanzar();
+      esperar();
+      window.scrollTo({top:0});
+      return;
+    }
+
+    // Solo lectura: la pregunta ya está cerrada y no admite cambios. La
+    // aplicación no ofrece «pedir que la reabran» como botón a propósito:
+    // en una sala eso se pide levantando la mano, y el facilitador decide.
+    // Un botón convertiría una conversación de diez segundos en una cola
+    // de avisos que nadie mira mientras conduce.
+    if(estado.paso === "mirar"){
+      parar();
+      const p = estado.mirando, txt = resumenValor(p, estado.valores[clave(p)]);
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <span class="phasetag">${esc(p.codigo||"")} · cerrada</span>
+        <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
+        ${txt ? `<div class="aviso"><b>Tu respuesta:</b> ${esc(txt)}</div>`
+              : `<div class="aviso">No llegaste a responder esta pregunta.</div>`}
+        <p class="small">El facilitador ha cerrado esta pregunta, así que ya no admite
+          cambios. Si quieres cambiar tu respuesta, <b>pídeselo en voz alta</b>: puede
+          reabrirla desde su consola y volverá a aparecerte en el móvil.</p>
+        <div class="btnrow"><button class="btn ghost" id="volver">Volver a la lista</button></div>
+      </div></div>`;
+      $("#volver").onclick = () => { estado.paso = "lista"; pintar(); };
+      esperar();
       window.scrollTo({top:0});
       return;
     }
@@ -1634,6 +1732,8 @@ async function participanteMotor(codigo, s){
           catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar";
             $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
           estado.hechas[p.id + ":recogida"] = true;
+          estado.valores[p.id + ":recogida"] = {textos: txt};
+          recordar();
           avanzar();
         };
         vigilar(); window.scrollTo({top:0});
@@ -1668,6 +1768,8 @@ async function participanteMotor(codigo, s){
         catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar votos";
           $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
         estado.hechas[p.id + ":votacion"] = true;
+        estado.valores[p.id + ":votacion"] = {votos: sel.size};
+        recordar();
         avanzar();
       };
       vigilar(); window.scrollTo({top:0});
@@ -1683,8 +1785,11 @@ async function participanteMotor(codigo, s){
         <button class="btn ghost sm" id="todas">Ver todas</button></div>
       <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
       ${p.ayuda ? `<p class="small">${esc(p.ayuda)}</p>` : ""}
-      ${hecha(p) ? `<div class="aviso">Ya respondiste a esta. Si vuelves a enviar,
-        tu respuesta anterior se sustituye.</div>` : ""}
+      ${hecha(p) ? `<div class="aviso">${(() => {
+        const t = resumenValor(p, estado.valores[clave(p)]);
+        return t ? `<b>Tu respuesta actual:</b> ${esc(t)}<br>Si vuelves a enviar, se sustituye.`
+                 : "Ya respondiste a esta. Si vuelves a enviar, tu respuesta anterior se sustituye.";
+      })()}</div>` : ""}
       <div id="campo"></div>
       <div id="aviso"></div>
       <div class="btnrow"><button class="btn" id="env">Enviar respuesta</button></div>
@@ -1932,6 +2037,8 @@ async function participanteMotor(codigo, s){
       catch(e){ $("#env").disabled=false; $("#env").textContent="Enviar respuesta";
         $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; return; }
       estado.hechas[p.id] = true;
+      estado.valores[p.id] = valor;
+      recordar();
       avanzar();
     };
     window.scrollTo({top:0});
