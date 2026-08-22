@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /pruebas/
-Disallow: /dashboards/
 Disallow: /share/
 
 Sitemap: https://joaquinromero.com/sitemap.xml
