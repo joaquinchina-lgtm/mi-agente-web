@@ -2779,18 +2779,27 @@ function cuerpoResultado(p, r, cab, pie){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   TALLER DE FUNCIONES CLAVE
+   TALLER DEL MODELO · definición, alcance y funciones clave
 
-   El paso que la aplicación NO puede dar sola: cruzar responsabilidades
-   y competencias para redactar cinco o diez funciones clave. Eso lo hace
-   una cabeza —la tuya, con o sin ayuda de una IA fuera de aquí—, porque
-   dentro de esta aplicación no hay ni puede haber un modelo: sería
-   poner una clave de API en el navegador de cada participante.
+   Los tres pasos que la aplicación NO puede dar sola. Redactar la
+   definición de liderazgo, decidir a quién se llama líder y con qué
+   niveles, y cruzar responsabilidades con competencias para sacar cinco
+   o diez funciones clave: eso lo hace una cabeza —la tuya, con o sin
+   ayuda de una IA fuera de aquí—, porque dentro de esta aplicación no
+   hay ni puede haber un modelo de lenguaje: sería poner una clave de API
+   en el navegador de cada participante.
 
-   Lo que sí hace esta pantalla es quitarte todo lo demás: reúne la
-   evidencia, te la deja copiada y con formato, guarda las funciones en
-   la sesión, y las vuelca en las preguntas que las necesitan sin que
-   tengas que teclearlas tres veces.
+   Lo que sí hace esta pantalla es quitarte todo lo demás. Son tres
+   bloques y cada uno tiene su propia evidencia y su propio texto para
+   pegar en la IA, porque son tres encargos distintos: mezclarlos en un
+   solo prompt daba tres respuestas mediocres en vez de una buena.
+
+     1 · DEFINICIÓN   ← L04 («liderar aquí es…»), L05, L06
+     2 · ALCANCE      ← L08 (a quién se llama líder), L09 (niveles), L10
+     3 · FUNCIONES    ← L11/L12 responsabilidades, L13/L14 competencias
+
+   Al final, todo se guarda junto en la sesión: `modelo` y `funciones`.
+   De ahí lo hereda la encuesta de evaluación.
    ═══════════════════════════════════════════════════════════════════ */
 async function tallerFunciones(s, preguntas, volver){
   app().innerHTML = `<div class="wrap ancho">${cabecera(
@@ -2798,15 +2807,27 @@ async function tallerFunciones(s, preguntas, volver){
     <div class="card"><h1>Reuniendo lo votado…</h1></div></div>`;
   if($("#atras")) $("#atras").onclick = volver;
 
-  // De dónde sale la evidencia. Se busca por código del banco, no por
-  // posición: si reordenas las preguntas, esto sigue funcionando.
+  /* De dónde sale la evidencia. Se busca por código del banco, no por
+     posición: si reordenas las preguntas, esto sigue funcionando.
+
+     `fase` dice a cuál de los tres bloques pertenece cada fuente. Una
+     misma pregunta puede alimentar dos: L04 define, pero también da el
+     lenguaje con el que después se nombran las funciones. */
   const FUENTES = [
-    {c:"L11", t:"Responsabilidades más importantes"},
-    {c:"L13", t:"Competencias más importantes"},
-    {c:"L12", t:"Responsabilidades que hoy peor se ejercen"},
-    {c:"L14", t:"Competencias hoy menos desarrolladas"},
-    {c:"L04", t:"Definiciones de «liderar aquí» más votadas", tarjetas:true},
-    {c:"L08", t:"A quién se considera líder", tarjetas:true}
+    // 1 · Definición
+    {c:"L04", fase:"def", t:"Cómo ha completado el grupo «liderar aquí es…»", tarjetas:true},
+    {c:"L05", fase:"def", t:"La primera palabra que asocian con liderazgo"},
+    {c:"L06", fase:"def", t:"¿Hay hoy una idea compartida de lo que es liderar?", escala:true},
+    // 2 · Alcance
+    {c:"L08", fase:"alc", t:"A quién considera el grupo que hay que llamar «líder»", tarjetas:true},
+    {c:"L09", fase:"alc", t:"Qué niveles de liderazgo reconocen", tarjetas:true},
+    {c:"L10", fase:"alc", t:"¿Se reconoce hoy a quien ejerce liderazgo?", escala:true},
+    // 3 · Funciones clave
+    {c:"L11", fase:"fun", t:"Responsabilidades más importantes"},
+    {c:"L13", fase:"fun", t:"Competencias más importantes"},
+    {c:"L12", fase:"fun", t:"Responsabilidades que hoy peor se ejercen"},
+    {c:"L14", fase:"fun", t:"Competencias hoy menos desarrolladas"},
+    {c:"L15", fase:"fun", t:"Competencias que echan en falta en la lista", textos:true}
   ];
   const bloques = [];
   for(const f of FUENTES){
@@ -2821,10 +2842,22 @@ async function tallerFunciones(s, preguntas, volver){
                       nota:"sin agrupar todavía"});
     } else {
       const r = await API.resultadosPregunta(s.codigo, p.id).catch(()=>null);
-      if(r && Array.isArray(r.datos) && r.datos.length)
+      if(!r) continue;
+      // Una escala devuelve un objeto, no una lista: se resume en una línea.
+      if(f.escala && r.datos && r.datos.media != null)
+        bloques.push({...f, filas: [{texto: "media " + num(r.datos.media, 2)
+          + " sobre " + ((p.config||{}).max ?? 7)
+          + ((p.config||{}).ancla_min ? "  (" + p.config.ancla_min + " → "
+             + (p.config.ancla_max||"") + ")" : ""), n: null}]});
+      // Una abierta devuelve textos sueltos.
+      else if(f.textos && Array.isArray(r.datos) && r.datos.length)
+        bloques.push({...f, filas: r.datos.slice(0,15)
+          .map(x=>({texto: x.texto || String(x.clave||""), n:null}))});
+      else if(Array.isArray(r.datos) && r.datos.length)
         bloques.push({...f, filas: r.datos.map(x=>({texto:x.clave, n:x.n}))});
     }
   }
+  const deFase = f => bloques.filter(b => b.fase === f);
 
   // Copia de trabajo: se guarda cuando lo pides, no mientras escribes.
   let fs = JSON.parse(JSON.stringify(s.funciones || []));
@@ -2834,22 +2867,72 @@ async function tallerFunciones(s, preguntas, volver){
   // llama a pinta(), se borra sin que nadie lo haya leído.
   let recado = "";
 
-  const paraLaIA = () => {
-    const t = ["Contexto: taller de modelo de liderazgo en " +
-      ((s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "la organización") + ".",
-      "", "Esto es lo que ha votado el equipo directivo:", ""];
-    bloques.forEach(b => {
+  const org = () => (s.variables||{}).ORGANIZACION
+    || (s.organizacion||{}).nombre || "la organización";
+
+  // Cabecera común de los tres encargos: contexto, evidencia y la regla
+  // que evita el problema de siempre —que la IA rellene con lo que ella
+  // cree que dice un modelo de liderazgo y no con lo que ha dicho el grupo.
+  const evidenciaDe = (fase, intro) => {
+    const bs = deFase(fase);
+    const t = ["Contexto: taller de modelo de liderazgo en " + org() + ".", "", intro, ""];
+    bs.forEach(b => {
       t.push("## " + b.t + (b.nota ? " (" + b.nota + ")" : ""));
       b.filas.forEach(f => t.push("- " + f.texto + (f.n != null ? "  [" + f.n + " votos]" : "")));
       t.push("");
     });
-    t.push("Tarea: propón entre 5 y 10 FUNCIONES CLAVE DEL LIDERAZGO para esta",
-      "organización. Cada función debe mezclar responsabilidades de gestión y",
-      "competencias cuyo contenido esté relacionado, y debe llevar un nombre corto",
-      "(3-5 palabras) y una definición de dos o tres frases en el lenguaje del",
-      "cliente. No inventes contenido que no esté en las listas de arriba, y di",
-      "explícitamente qué elementos de cada lista has metido en cada función.");
-    return t.join("\n");
+    return t;
+  };
+
+  const PROMPT = {
+    def: () => evidenciaDe("def",
+        "Esto es lo que ha dicho y votado el grupo sobre qué significa liderar aquí:")
+      .concat([
+        "Tarea: redacta la DEFINICIÓN DE LIDERAZGO de " + org() + ".",
+        "",
+        "- Un párrafo de tres a cinco frases, en presente y en tercera persona:",
+        "  «La persona que lidera en " + org() + " …».",
+        "- Tiene que reconocerse en ella quien escribió lo de arriba: usa sus",
+        "  palabras, no el vocabulario estándar de los manuales de liderazgo.",
+        "- Que diga qué hace quien lidera, no qué cualidades tiene.",
+        "- No inventes contenido que no esté en las listas. Al final, indica de",
+        "  qué aportaciones concretas sale cada parte de la definición.",
+        "- Dame además dos variantes alternativas, una más corta y una más",
+        "  exigente, para que el grupo pueda elegir."]).join("\n"),
+
+    alc: () => evidenciaDe("alc",
+        "Esto es lo que ha dicho y votado el grupo sobre a quién considerar líder y con qué niveles:")
+      .concat([
+        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + ".",
+        "",
+        "1. Una lista de entre dos y cuatro GRUPOS DE LIDERAZGO, cada uno con:",
+        "   - un nombre corto,",
+        "   - qué puestos o roles concretos entran (de los que aparecen arriba),",
+        "   - el nivel que le corresponde y por qué: alcance de la decisión,",
+        "     horizonte temporal y si tiene o no personas a cargo.",
+        "2. Después, un párrafo de redacción final para el documento, que empiece",
+        "   por «A efectos de este modelo, en " + org() + " se consideran líderes…».",
+        "",
+        "- Trabaja solo con los puestos y niveles que aparecen arriba. Si detectas",
+        "  un colectivo que el grupo no ha nombrado y que probablemente falte,",
+        "  dilo aparte y marcado como duda, no lo metas en la lista.",
+        "- Señala explícitamente los casos frontera: quién queda justo fuera y",
+        "  por qué. Esa es la conversación que hay que tener en la sala."]).join("\n"),
+
+    fun: () => evidenciaDe("fun",
+        "Esto es lo que ha votado el grupo sobre responsabilidades y competencias:")
+      .concat([
+        (modelo.definicion || modelo.alcance)
+          ? "## El modelo ya acordado en esta misma sesión\n"
+            + (modelo.definicion ? "Definición: " + modelo.definicion + "\n" : "")
+            + (modelo.alcance ? "Alcance: " + modelo.alcance + "\n" : "")
+          : "",
+        "Tarea: propón entre 5 y 10 FUNCIONES CLAVE DEL LIDERAZGO para esta",
+        "organización. Cada función debe mezclar responsabilidades de gestión y",
+        "competencias cuyo contenido esté relacionado, y debe llevar un nombre corto",
+        "(3-5 palabras) y una definición de dos o tres frases en el lenguaje del",
+        "cliente. No inventes contenido que no esté en las listas de arriba, y di",
+        "explícitamente qué elementos de cada lista has metido en cada función."]).join("\n")
   };
 
   const pinta = () => {
@@ -2857,49 +2940,76 @@ async function tallerFunciones(s, preguntas, volver){
       `<button class="iconbtn" id="atras">Volver</button>`)}
       <div class="card">
         <span class="phasetag">${esc(s.titulo)} · taller</span>
-        <h1 style="margin:6px 0 0">Funciones clave del liderazgo</h1>
-        <p class="small" style="margin-top:8px">Cinco a diez bloques que mezclan lo que el
-          equipo ha votado. El cruce lo haces tú: aquí tienes la evidencia reunida y el sitio
-          donde dejarla escrita.</p>
+        <h1 style="margin:6px 0 0">Taller del modelo</h1>
+        <p class="lead" style="margin-top:8px">Definición, alcance y funciones clave.</p>
+        <p class="small">Los tres pasos que no puede dar la aplicación. En cada uno tienes la
+          evidencia que ha producido el grupo, un texto listo para pegar en tu IA, y el sitio
+          donde dejar la redacción final. El orden importa: el alcance se decide sobre una
+          definición ya escrita, y las funciones sobre las dos anteriores.</p>
+        ${bloques.length ? "" : `<div class="aviso rojo">Todavía no hay evidencia de ninguna
+          fase. Las preguntas tienen que estar <b>terminadas</b> y con al menos tres
+          respuestas para que sus resultados salgan aquí. Las de tarjetas —L04, L08, L09—
+          además tienen que haber pasado por la mesa de agrupación.</div>`}
       </div>
 
-      <div class="card">
-        <h2>Lo que ha votado el equipo</h2>
-        ${bloques.length ? `<div class="grid2">${bloques.map(b=>`
+      ${[{f:"def", n:"1", h:"La definición de liderazgo",
+          d:`Qué significa liderar en esta organización, dicho con las palabras del grupo.
+             Es lo primero que leerá quien responda la encuesta meses después.`,
+          vacio:`Sin evidencia todavía. Necesitas <b>L04</b> («liderar aquí es…») terminada y
+             agrupada en la mesa de tarjetas.`},
+         {f:"alc", n:"2", h:"El alcance: grupos y niveles",
+          d:`A quién se llama líder aquí y con qué niveles. La evidencia son las aportaciones
+             de L08 —qué puestos— y L09 —qué niveles—, ya agrupadas y votadas.`,
+          vacio:`Sin evidencia todavía. Necesitas <b>L08</b> y <b>L09</b> terminadas y
+             agrupadas en la mesa de tarjetas.`},
+         {f:"fun", n:"3", h:"Las funciones clave",
+          d:`El cruce entre responsabilidades de gestión y competencias. Cinco a diez bloques
+             que mezclan lo más votado de ambas listas.`,
+          vacio:`Sin evidencia todavía. Necesitas <b>L11</b> y <b>L13</b> terminadas y con al
+             menos tres respuestas.`}].map(fase => {
+        const bs = deFase(fase.f);
+        return `<div class="card">
+        <span class="phasetag">paso ${fase.n} de 3</span>
+        <h2 style="margin:6px 0 0">${fase.h}</h2>
+        <p class="small" style="margin-top:8px">${fase.d}</p>
+        ${bs.length ? `<div class="grid2" style="margin-top:16px">${bs.map(b=>`
           <div><h3 style="margin-top:0">${esc(b.t)}${b.nota ? " · " + esc(b.nota) : ""}</h3>
-            <div class="lista">${b.filas.slice(0,12).map(f=>`
+            <div class="lista">${b.filas.slice(0,15).map(f=>`
               <div class="it"><div>${esc(f.texto)}</div>${
                 f.n != null ? `<b>${f.n}</b>` : ""}</div>`).join("")}</div></div>`).join("")}</div>
           <div class="btnrow">
-            <button class="btn ghost" id="copiar">Copiar todo esto para tu IA</button>
-            <span class="small" id="copiado"></span></div>
-          <p class="note">El botón copia las listas con sus votos y una instrucción para que
-            la IA proponga las funciones. Léela antes de pegarla: le pide expresamente que no
-            invente nada que no esté votado y que diga qué ha metido en cada función. Después
-            revisas tú, que es donde está tu trabajo.</p>`
-        : `<div class="aviso rojo">Todavía no hay nada que cruzar. Las preguntas de
-            responsabilidades (L11) y competencias (L13) tienen que estar <b>terminadas</b> y
-            con al menos tres respuestas para que sus resultados salgan aquí.</div>`}
-      </div>
+            <button class="btn ghost" data-copia="${fase.f}">Copiar para tu IA</button>
+            <span class="small" id="copiado-${fase.f}"></span></div>
+          ${fase.f === "def" ? `<p class="note">Los tres pasos tienen su propio texto para la
+            IA: copian la evidencia de ese paso con sus votos y un encargo distinto. Léelos
+            antes de pegarlos —los tres le piden expresamente que no invente nada que no esté
+            votado y que diga de qué aportación sale cada cosa—. Después revisas tú, que es
+            donde está tu trabajo.</p>` : ""}`
+        : `<div class="aviso">${fase.vacio}</div>`}
+        ${fase.f === "def" ? `
+          <div class="field" style="margin-top:18px"><label for="mdef">Definición de liderazgo
+            · redacción final</label>
+            <textarea id="mdef" rows="4"
+              placeholder="La persona que lidera en esta organización…">${esc(modelo.definicion||"")}</textarea></div>`
+        : fase.f === "alc" ? `
+          <div class="field" style="margin-top:18px"><label for="malc">Alcance · redacción final</label>
+            <textarea id="malc" rows="5"
+              placeholder="A efectos de este modelo, se consideran líderes…">${esc(modelo.alcance||"")}</textarea></div>
+          <p class="note">Los grupos y sus niveles se redactan aquí, en un solo texto. No es
+            una lista con estructura en la base de datos a propósito: cada cliente los nombra
+            de una manera y en cuanto lo conviertes en campos fijos, empiezas a forzar la
+            realidad del cliente para que quepa en tu formulario.</p>`
+        : ""}
+      </div>`;}).join("")}
+
 
       <div class="card">
-        <h2>El texto del modelo</h2>
-        <p class="small">La redacción final: la que se publica y la que leerá, meses después,
-          quien responda la encuesta de evaluación sin haber estado en esta sala. Sale de lo
-          que ha dicho el grupo en L04 y L08, pero la escribes tú: una lluvia de ideas no se
-          enseña a quinientas personas.</p>
-        <div class="field"><label for="mdef">Definición de liderazgo</label>
-          <textarea id="mdef" rows="3"
-            placeholder="En [organización], liderar es…">${esc(modelo.definicion||"")}</textarea></div>
-        <div class="field"><label for="malc">Alcance · a quién llamamos líder aquí</label>
-          <textarea id="malc" rows="3"
-            placeholder="A efectos de este modelo, se consideran líderes…">${esc(modelo.alcance||"")}</textarea></div>
-      </div>
-
-      <div class="card">
-        <h2>Las funciones clave <span class="estado">${fs.filter(f=>f.nombre.trim()).length}</span></h2>
+        <h2>Redacción final de las funciones
+          <span class="estado">${fs.filter(f=>f.nombre.trim()).length}</span></h2>
         <p class="small">Nombre corto arriba, definición debajo. El nombre es lo que verá la
-          sala en los gráficos, así que que quepa en una línea.</p>
+          sala en los gráficos, así que que quepa en una línea. La definición es lo que leerá,
+          desplegándola, quien responda la encuesta de evaluación: si la dejas vacía, esa
+          persona puntúa un título de tres palabras.</p>
         <div id="fs">${fs.map((f,i)=>`
           <div class="cel-fila">
             <div style="display:flex;gap:10px;align-items:flex-start">
@@ -2962,8 +3072,16 @@ async function tallerFunciones(s, preguntas, volver){
       return fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
                                definicion: $("#fd"+i).value.trim()}));
     };
-    if($("#copiar")) $("#copiar").onclick = () => { copiar(paraLaIA());
-      $("#copiado").textContent = "Copiado. Pégalo en tu conversación con la IA."; };
+    // El prompt de las funciones incluye la definición y el alcance ya
+    // escritos, así que se lee lo tecleado antes de copiar: si no, se
+    // copiaría la versión guardada y no la que se está redactando ahora.
+    app().querySelectorAll("[data-copia]").forEach(bn => bn.onclick = () => {
+      const f = bn.dataset.copia;
+      if(f === "fun") leer();
+      copiar(PROMPT[f]());
+      const c = $("#copiado-" + f);
+      if(c) c.textContent = "Copiado. Pégalo en tu conversación con la IA.";
+    });
 
     $("#mas").onclick = () => { fs = leer(); fs.push({nombre:"", definicion:""}); pinta(); };
     app().querySelectorAll("[data-qt]").forEach(b => b.onclick = () => {
@@ -3524,9 +3642,13 @@ async function consolaMotor(s){
           <b>${prog.en_curso}</b> en curso</p>` : ""}
         ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas
           simuladas y nunca entrará en el benchmark entre clientes. La marca no se puede quitar.</div>` : ""}
-        ${(s.funciones||[]).length ? `<p class="small" style="margin-top:10px"><b>${
-          s.funciones.length} funciones clave</b> acordadas: ${
-          s.funciones.map(f=>esc(f.nombre)).join(" · ")}</p>` : ""}
+        ${((s.funciones||[]).length || (s.modelo||{}).definicion || (s.modelo||{}).alcance)
+          ? `<p class="small" style="margin-top:10px"><b>Modelo acordado:</b> ${
+            [(s.modelo||{}).definicion ? "definición" : null,
+             (s.modelo||{}).alcance ? "alcance" : null,
+             (s.funciones||[]).length ? (s.funciones.length + " funciones clave") : null
+            ].filter(Boolean).join(" · ")}${(s.funciones||[]).length
+              ? "<br>" + s.funciones.map(f=>esc(f.nombre)).join(" · ") : ""}</p>` : ""}
         <div class="btnrow" style="margin-top:14px">
           <button class="btn ${s.resultados_en_vivo ? "" : "ghost "}sm" id="vivo">
             Resultados en vivo: ${s.resultados_en_vivo ? "encendidos" : "apagados"}</button></div>
@@ -3591,22 +3713,31 @@ async function consolaMotor(s){
               : `<div class="small" style="color:#d03b3b">sin definición: en el móvil saldrá
                  solo el nombre</div>`}</div></div>`).join("")}</div>
           <div class="btnrow">
-            <button class="btn" id="volcarEva">Volcar en las preguntas</button>
-            <button class="btn ghost" id="abiertasUna">Generar 1 abierta por función</button>
-            <button class="btn ghost" id="abiertasTres">Generar 3 por función</button></div>
+            <button class="btn" id="volcarEva">Volcar en las preguntas</button></div>
+          <h3>Cobertura de la parte escrita</h3>
+          <p class="small">Las dos matrices ya obligan a puntuar <b>todas</b> las funciones:
+            el móvil no deja enviar con una fila sin valorar. Esto extiende la cobertura al
+            texto libre, para que ninguna función se quede sin comentarios.</p>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn" id="abiertasCampos">Una pantalla por función
+              · ${fs.length} pantallas</button>
+            <button class="btn ghost" id="abiertasAccion">Solo la acción
+              · ${fs.length}</button>
+            <button class="btn ghost" id="abiertasTres">Tres por función
+              · ${fs.length*3}</button></div>
           <div id="avisoEva"></div>
+          <p class="note"><b>Una pantalla por función</b> es la que recomiendo: los tres
+            campos —qué destaca, qué mejorar, qué acción— van juntos en la misma pantalla, así
+            que quien responde ve de un vistazo lo que ya ha dicho y no se repite. Cubre
+            exactamente lo mismo que la tercera opción en la tercera parte de pantallas.
+            <b>Tres por función</b> reproduce el formato literal del formulario de la UIB:
+            ${fs.length*3} pantallas de escribir. En aquel formulario esa batería llevó la
+            participación de 65 respuestas a 28 entre la primera pregunta y la última, y llenó
+            las finales de «ídem a las anteriores». Está ahí por si un cliente lo exige.</p>
           <p class="note"><b>Volcar</b> rellena E05, E06, E07 y E08 con estas funciones y sus
             definiciones. Sustituye la lista entera: hazlo antes de abrir la encuesta, porque
             cambiar los elementos con respuestas dentro deja los resultados colgando de
-            nombres que ya no existen.</p>
-          <p class="note"><b>Generar abiertas.</b> Añade preguntas de texto por cada función,
-            como el formulario original de la UIB. Con ${fs.length} funciones son
-            ${fs.length} o ${fs.length*3} pantallas de escribir <i>además</i> del resto.
-            Antes de pulsar: en aquel formulario, de 65 respuestas en la primera pregunta se
-            bajó a 28 en la última, y aparecieron decenas de «ídem a las anteriores» y
-            párrafos copiados de una pantalla a la siguiente. E08 + E09 hacen el mismo trabajo
-            en dos pantallas y con texto de quien eligió hablar de eso. Usa esto solo si el
-            cliente exige cobertura función por función.</p>`
+            nombres que ya no existen.</p>`
         : `<div class="aviso rojo">No hay funciones clave que volcar. ${origen
             ? "El taller enlazado no tiene ninguna guardada."
             : "Escríbelas en el contenido de cada pregunta, o crea la encuesta enlazada a un taller."}</div>`}
@@ -3671,7 +3802,7 @@ async function consolaMotor(s){
             <button class="btn ghost" id="espera">Proyectar la espera</button>
             <button class="btn ghost" id="informe">Ver todos los resultados</button>
             ${String(s.instrumento||"").split("-")[0] === "liderazgo"
-              ? `<button class="btn ghost" id="taller">Taller de funciones clave</button>` : ""}
+              ? `<button class="btn ghost" id="taller">Taller del modelo</button>` : ""}
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
@@ -3750,40 +3881,73 @@ async function consolaMotor(s){
         !hechas.length);
     };
 
-    const generarAbiertas = async cuantas => {
+    /* COBERTURA COMPLETA
+       Todo el mundo se pronuncia sobre TODAS las funciones clave. Las dos
+       matrices ya lo hacían —el móvil no deja enviar con una fila sin
+       valorar—; esto lo extiende a la parte escrita.
+
+       Tres formas de hacerlo, de menos a más carga:
+         "campos"  una pantalla por función con los tres campos dentro
+         "accion"  una pantalla por función, solo la propuesta de acción
+         "tres"    tres pantallas por función, como el formulario original
+
+       La primera es la buena y es la que va marcada como recomendada. Con
+       ocho funciones son ocho pantallas en vez de veinticuatro, y en cada
+       una los tres campos se ven juntos: quien responde ve de un vistazo
+       que ya ha dicho lo que iba a decir y no repite. La tercera existe
+       porque a veces el cliente exige literalmente ese formato. */
+    const generarAbiertas = async modo => {
       const fs = funcionesVigentes();
-      const plantillas = ABIERTAS_POR_FUNCION.slice(0, cuantas === 1 ? 0 : 3);
-      // Con una sola por función se pregunta por acciones: de las tres del
-      // formulario original es la única cuyas respuestas se pueden llevar a
-      // un plan. «Qué se hace bien» produce catálogos institucionales.
-      const lista = cuantas === 1 ? [ABIERTAS_POR_FUNCION[2]] : plantillas;
       const ya = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
       let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
       const filas = [];
-      fs.forEach((f, i) => lista.forEach(pl => {
-        const cod = "EX" + String(i+1).padStart(2,"0") + pl.suf;
-        if(ya.has(cod)) return;
-        filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta",
-          titulo: resolverTexto(pl.q.replace(/\[FUNCION\]/g, f.nombre), vars),
-          ayuda: f.definicion || null,
-          config: {maximo_caracteres: 300}, estado: "cerrada"});
-      }));
-      if(!filas.length){ decirEva("Ya estaban todas creadas.", true); return; }
+      fs.forEach((f, i) => {
+        const n = String(i+1).padStart(2,"0");
+        if(modo === "campos"){
+          const cod = "EX" + n + "C";
+          if(ya.has(cod)) return;
+          filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta_campos",
+            titulo: resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars),
+            ayuda: f.definicion || null,
+            config: {campos: ABIERTAS_POR_FUNCION.map(pl =>
+              ({clave: pl.campo, etiqueta: pl.etiqueta}))},
+            estado: "cerrada"});
+          return;
+        }
+        const lista = modo === "accion" ? [ABIERTAS_POR_FUNCION[2]] : ABIERTAS_POR_FUNCION;
+        lista.forEach(pl => {
+          const cod = "EX" + n + pl.suf;
+          if(ya.has(cod)) return;
+          filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta",
+            titulo: resolverTexto(pl.q.replace(/\[FUNCION\]/g, f.nombre), vars),
+            ayuda: f.definicion || null,
+            config: {maximo_caracteres: 300}, estado: "cerrada"});
+        });
+      });
+      if(!filas.length){ decirEva("Ya estaban creadas: no se ha añadido ninguna. Si quieres "
+        + "cambiar de formato, quita primero las que hay.", true); return; }
       await API.crearPreguntas(filas);
       preguntas = await API.preguntas(s.id);
       await pinta();
-      decirEva(`Añadidas ${filas.length} preguntas abiertas, una por cada función${
-        cuantas === 1 ? "" : " y cada uno de los tres enfoques"}. Quedan cerradas: ábrelas
-        cuando decidas. Puedes quitar las que no quieras una a una.`);
+      decirEva(`Añadidas ${filas.length} preguntas, ${
+        modo === "tres" ? "tres por cada función clave"
+        : "una por cada función clave"}. Todas las funciones quedan cubiertas y todo el
+        mundo se pronuncia sobre todas. Quedan <b>cerradas</b>: ábrelas con «Abrir todas»
+        cuando el cuestionario esté como lo quieres.`);
     };
-    if(bt("abiertasUna"))  bt("abiertasUna").onclick  = () => generarAbiertas(1);
+    if(bt("abiertasCampos")) bt("abiertasCampos").onclick = () => generarAbiertas("campos");
+    if(bt("abiertasAccion")) bt("abiertasAccion").onclick = () => generarAbiertas("accion");
     if(bt("abiertasTres")) bt("abiertasTres").onclick = () => {
-      const n = funcionesVigentes().length * 3;
-      if(!confirm("Se van a añadir " + n + " preguntas de texto libre.\n\n"
-        + "En el formulario del que sale este patrón, esa batería hizo caer la participación "
-        + "de 65 a 28 respuestas entre la primera pregunta y la última, y llenó las últimas "
-        + "de «ídem a las anteriores».\n\n¿Seguro?")) return;
-      generarAbiertas(3);
+      const n = funcionesVigentes().length;
+      if(!confirm("Se van a añadir " + (n*3) + " pantallas de texto libre: tres por cada una "
+        + "de las " + n + " funciones clave.\n\n"
+        + "Es exactamente el formato del formulario de la UIB. En aquel, esa batería hizo "
+        + "caer la participación de 65 respuestas en la primera pregunta a 28 en la última, "
+        + "y llenó las finales de «ídem a las anteriores» y de párrafos copiados de la "
+        + "pantalla anterior.\n\n"
+        + "«Una pantalla por función» cubre exactamente lo mismo en " + n + " pantallas.\n\n"
+        + "¿Aun así, las tres por función?")) return;
+      generarAbiertas("tres");
     };
 
     if(bt("abrirTodas")) bt("abrirTodas").onclick = async () => {
@@ -4578,13 +4742,15 @@ const BANCO_EVA = [
 /* ── Bloque 3 · Cualitativo ─────────────────────────────────────── */
 {c:"E08", b:3, t:"unica", nuc:true, nat:"derivada",
  q:"De todas ellas, ¿cuál crees que hay que trabajar antes en [ORGANIZACION]?",
- ayuda:"Se rellena con las funciones de origen. Es la que dirige las tres preguntas "
-     + "siguientes: cada texto queda etiquetado con la función que esa persona eligió.",
+ ayuda:"Se rellena con las funciones de origen. Una sola elección forzada: es la que "
+     + "obliga a priorizar de verdad, porque en las matrices se puede poner un 5 a "
+     + "todo y aquí no.",
  cfg:{opciones:[]}},
-{c:"E09", b:3, t:"abierta_campos", nuc:true, nat:"fija",
+{c:"E09", b:3, t:"abierta_campos", nuc:false, nat:"fija",
  q:"Sobre esa función clave que acabas de elegir:",
- ayuda:"La tríada del formulario original —fuerte hoy, a mejorar, acción— pero una "
-     + "sola vez y sobre algo que esta persona ha elegido.",
+ ayuda:"Fuera del núcleo: si generas las pantallas por función desde la consola —una "
+     + "por cada función clave—, esta sobra y pregunta dos veces lo mismo. Añádela "
+     + "solo si NO vas a generarlas.",
  cfg:{campos:[{clave:"fuerte", etiqueta:"¿Qué se hace bien hoy?"},
               {clave:"mejora", etiqueta:"¿Qué habría que mejorar?"},
               {clave:"accion", etiqueta:"¿Qué acción concreta propones?"}]}},
@@ -4615,9 +4781,12 @@ const VARIABLES_EVA = [
    batería completa —o la reducida— desde la consola. `[FUNCION]` se
    sustituye por el nombre de cada función clave. */
 const ABIERTAS_POR_FUNCION = [
-  {suf:"F", campo:"fuerte", q:"[FUNCION]: ¿en qué destaca hoy [ORGANIZACION]?"},
-  {suf:"M", campo:"mejora", q:"[FUNCION]: ¿qué debería mejorar [ORGANIZACION]?"},
-  {suf:"A", campo:"accion", q:"[FUNCION]: ¿qué acciones concretas propones?"}
+  {suf:"F", campo:"fuerte", etiqueta:"¿En qué destaca hoy?",
+   q:"[FUNCION]: ¿en qué destaca hoy [ORGANIZACION]?"},
+  {suf:"M", campo:"mejora", etiqueta:"¿Qué debería mejorar?",
+   q:"[FUNCION]: ¿qué debería mejorar [ORGANIZACION]?"},
+  {suf:"A", campo:"accion", etiqueta:"¿Qué acción concreta propones?",
+   q:"[FUNCION]: ¿qué acciones concretas propones?"}
 ];
 
 const VARIABLES_ESC = [
