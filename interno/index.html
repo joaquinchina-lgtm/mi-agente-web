@@ -769,10 +769,15 @@ const API = {
       MEM.cargar();
       const s = MEM.sesiones.find(x=>x.codigo.toUpperCase()===codigo.toUpperCase());
       if(!s) return null;
+      // Igual que la función de la base de datos: si esta sesión evalúa a
+      // otra, el modelo y las funciones salen de aquella.
+      const f = (s.origen_id && MEM.sesiones.find(x=>x.id===s.origen_id)) || s;
       const d = {existe:true, titulo:s.titulo, organizacion:(s.organizacion||{}).nombre,
         modo:s.modo, estado:s.estado, vista_activa:s.vista_activa,
         pantalla_max: s.modo === "directo" ? (s.pantalla_max ?? null) : null,
         instrumento:s.instrumento || "cultura", version:s.instrumento_version || VERSION,
+        origen: f !== s, origen_titulo: f !== s ? f.titulo : null,
+        funciones: f.funciones || [], modelo: f.modelo || {},
         resultados_publicos:s.resultados_publicos, admite_respuestas:s.estado==="abierta"};
       recordarInstrumento(d); return d;
     }
@@ -1420,6 +1425,16 @@ async function participanteMotor(codigo, s){
                   abiertas:[], todas:[], proyectada:null, forzada:null};
   let reloj = null, vigia = null;
 
+  /* Survey y directo son dos experiencias distintas y hasta ahora esta
+     pantalla solo sabía la segunda. En directo hay alguien conduciendo: se
+     espera a que abra la siguiente. En un survey no hay nadie, así que
+     «espera un momento» es mentira y la pantalla de espera se convierte en
+     un callejón sin salida: la persona no sabe que ha terminado. */
+  const esSurvey = s.modo === "survey";
+  // El modelo heredado de la sesión de origen. Solo la evaluación lo trae.
+  const modelo = s.modelo || {}, funciones = s.funciones || [];
+  const hayModelo = !!(modelo.definicion || modelo.alcance || funciones.length);
+
   /* Memoria del móvil. Hasta ahora vivía solo en la variable: al recargar
      la página, esa persona empezaba de cero y abría un envío nuevo, así
      que contaba como participante distinto. De ahí salían los «3 en curso»
@@ -1510,8 +1525,9 @@ async function participanteMotor(codigo, s){
         return;
       }
       if(act && !estado.abiertas.some(p => p.id === act.id)){
-        caja.innerHTML = `<div class="aviso rojo">El facilitador ha cerrado esta pregunta:
-          ya no admite respuestas.
+        caja.innerHTML = `<div class="aviso rojo">${esSurvey
+          ? "Esta pregunta se ha dado por terminada: ya no admite respuestas."
+          : "El facilitador ha cerrado esta pregunta: ya no admite respuestas."}
           <button class="btn sm" id="irsig" style="margin-left:8px">Continuar</button></div>`;
         $("#irsig").onclick = () => avanzar();
         return;
@@ -1569,6 +1585,34 @@ async function participanteMotor(codigo, s){
   // cuánto era todo, y parecía que el cuestionario se había atascado.
   const pintarEspera = () => {
     const n = estado.abiertas.length, hs = estado.abiertas.filter(hecha).length;
+    // En un survey, haber respondido todo lo abierto ES el final. Nadie va a
+    // abrir nada más.
+    if(esSurvey && n && hs === n){
+      parar();
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h2>Has terminado</h2>
+        <p class="lead">Has respondido las <b>${n} preguntas</b> del cuestionario.
+          Tus respuestas están guardadas de forma anónima.</p>
+        <p class="small">Puedes repasarlas y cambiar lo que quieras hasta que se cierre
+          el plazo. Cuando cierres esta página, tus respuestas siguen ahí.</p>
+        <div class="btnrow">
+          <button class="btn ghost" id="rev">Repasar mis respuestas</button>
+          <button class="btn" id="fin">Cerrar</button></div>
+      </div></div>`;
+      $("#rev").onclick = () => { estado.paso = "lista"; pintar(); };
+      $("#fin").onclick = async () => {
+        try{ await API.cerrarEnvio(estado.envio); }catch(e){}
+        estado.paso = "fin"; pintar(); };
+      return;
+    }
+    if(esSurvey && !n){
+      app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+        <h2>El cuestionario todavía no tiene preguntas</h2>
+        <p class="lead">No es cosa tuya: quien lo ha preparado aún no las ha abierto.
+          Vuelve a entrar con este mismo enlace dentro de un rato.</p>
+      </div></div>`;
+      esperar(); return;
+    }
     app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
       <h2>${n && hs === n ? "Estás al día" : "Espera un momento"}</h2>
       <p class="lead">${n
@@ -1596,9 +1640,26 @@ async function participanteMotor(codigo, s){
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
         <span class="phasetag">${esc(s.organizacion||"")}</span>
         <h1 style="margin-top:10px">${esc(s.titulo)}</h1>
-        <p class="lead">Iremos pregunta a pregunta. Cada una aparece cuando quien conduce la
-          sesión la abre; mientras tanto, verás una pantalla de espera.</p>
+        <p class="lead">${esSurvey
+          ? `Son unas pocas preguntas y puedes responderlas de una sentada. Si lo dejas a
+             medias, este mismo enlace en este mismo teléfono te devuelve donde estabas.`
+          : `Iremos pregunta a pregunta. Cada una aparece cuando quien conduce la
+             sesión la abre; mientras tanto, verás una pantalla de espera.`}</p>
         <p><b>Es anónimo</b>: no se registra tu nombre, tu correo ni ningún identificador.</p>
+        ${hayModelo ? `<div class="card" style="margin:16px 0;background:var(--plane)">
+          <h3 style="margin-top:0">Lo que se te pide valorar</h3>
+          ${modelo.definicion ? `<p><b>Qué entendemos por liderar aquí.</b><br>
+             ${esc(modelo.definicion)}</p>` : ""}
+          ${modelo.alcance ? `<p><b>A quién se considera líder.</b><br>
+             ${esc(modelo.alcance)}</p>` : ""}
+          ${funciones.length ? `<p><b>Las ${funciones.length} funciones clave:</b></p>
+            <div class="lista">${funciones.map(f=>`<div class="it"><div>
+              <b>${esc(f.nombre)}</b>${f.definicion
+                ? `<div class="small">${esc(f.definicion)}</div>` : ""}</div></div>`).join("")}</div>` : ""}
+          <p class="small">Este texto lo acordó ${s.origen_titulo
+            ? "el grupo que trabajó en «" + esc(s.origen_titulo) + "»" : "el grupo de trabajo"}.
+            Lo tendrás disponible en cada pregunta que lo necesite.</p>
+        </div>` : ""}
         <h3>Tres datos sobre tu posición</h3>
         <div class="field"><label for="f1">Ámbito en el que trabajas</label><select id="f1">
           <option value="">Prefiero no indicarlo</option><option>Dirección o gobierno</option>
@@ -1692,9 +1753,12 @@ async function participanteMotor(codigo, s){
         <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
         ${txt ? `<div class="aviso"><b>Tu respuesta:</b> ${esc(txt)}</div>`
               : `<div class="aviso">No llegaste a responder esta pregunta.</div>`}
-        <p class="small">El facilitador ha cerrado esta pregunta, así que ya no admite
-          cambios. Si quieres cambiar tu respuesta, <b>pídeselo en voz alta</b>: puede
-          reabrirla desde su consola y volverá a aparecerte en el móvil.</p>
+        <p class="small">${esSurvey
+          ? `Esta pregunta ya no admite cambios: se ha dado por terminada. Tu respuesta
+             sigue contando.`
+          : `El facilitador ha cerrado esta pregunta, así que ya no admite cambios. Si
+             quieres cambiar tu respuesta, <b>pídeselo en voz alta</b>: puede reabrirla
+             desde su consola y volverá a aparecerte en el móvil.`}</p>
         <div class="btnrow"><button class="btn ghost" id="volver">Volver a la lista</button></div>
       </div></div>`;
       $("#volver").onclick = () => { estado.paso = "lista"; pintar(); };
@@ -1844,8 +1908,15 @@ async function participanteMotor(codigo, s){
     } else if(p.tipo === "matriz_escala"){
       const min = cfg.min ?? 1, max = cfg.max ?? 7, items = cfg.items || {}, val = {};
       const lista = Array.isArray(items) ? items : Object.keys(items);
+      // Igual que en las de opción: si la fila trae definición, se puede
+      // desplegar. Sin esto, valorar diez funciones clave del liderazgo es
+      // puntuar diez etiquetas de tres palabras, que no significan nada
+      // para quien no estuvo en el taller donde se redactaron.
+      const defsM = cfg.definiciones || {};
       campo.innerHTML = lista.map((it,ix)=>`<div style="margin:16px 0">
         <div style="margin-bottom:6px">${esc(it)}</div>
+        ${defsM[it] ? `<details style="margin:-2px 0 8px"><summary>ver definición</summary>
+           <p class="small">${esc(defsM[it])}</p></details>` : ""}
         <div style="display:flex;gap:5px;flex-wrap:wrap" data-fila="${ix}">${
           Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
             `<button type="button" class="btn ghost" data-n="${n}"
@@ -2758,6 +2829,7 @@ async function tallerFunciones(s, preguntas, volver){
   // Copia de trabajo: se guarda cuando lo pides, no mientras escribes.
   let fs = JSON.parse(JSON.stringify(s.funciones || []));
   if(!fs.length) fs = [{nombre:"", definicion:""}];
+  let modelo = JSON.parse(JSON.stringify(s.modelo || {}));
   // El aviso sobrevive al repintado: si se escribe en el DOM y después se
   // llama a pinta(), se borra sin que nadie lo haya leído.
   let recado = "";
@@ -2808,6 +2880,20 @@ async function tallerFunciones(s, preguntas, volver){
         : `<div class="aviso rojo">Todavía no hay nada que cruzar. Las preguntas de
             responsabilidades (L11) y competencias (L13) tienen que estar <b>terminadas</b> y
             con al menos tres respuestas para que sus resultados salgan aquí.</div>`}
+      </div>
+
+      <div class="card">
+        <h2>El texto del modelo</h2>
+        <p class="small">La redacción final: la que se publica y la que leerá, meses después,
+          quien responda la encuesta de evaluación sin haber estado en esta sala. Sale de lo
+          que ha dicho el grupo en L04 y L08, pero la escribes tú: una lluvia de ideas no se
+          enseña a quinientas personas.</p>
+        <div class="field"><label for="mdef">Definición de liderazgo</label>
+          <textarea id="mdef" rows="3"
+            placeholder="En [organización], liderar es…">${esc(modelo.definicion||"")}</textarea></div>
+        <div class="field"><label for="malc">Alcance · a quién llamamos líder aquí</label>
+          <textarea id="malc" rows="3"
+            placeholder="A efectos de este modelo, se consideran líderes…">${esc(modelo.alcance||"")}</textarea></div>
       </div>
 
       <div class="card">
@@ -2867,8 +2953,15 @@ async function tallerFunciones(s, preguntas, volver){
 
     $("#atras").onclick = volver;
 
-    const leer = () => fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
-                                         definicion: $("#fd"+i).value.trim()}));
+    const leer = () => {
+      // Todo lo escrito se recoge junto, incluidos los dos textos del
+      // modelo: cualquier repintado —añadir una fila, subirla, borrarla—
+      // vuelve a dibujar la pantalla entera, y lo que no se haya leído
+      // antes se pierde sin que nadie lo note hasta el día siguiente.
+      modelo = {definicion: $("#mdef").value.trim(), alcance: $("#malc").value.trim()};
+      return fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
+                               definicion: $("#fd"+i).value.trim()}));
+    };
     if($("#copiar")) $("#copiar").onclick = () => { copiar(paraLaIA());
       $("#copiado").textContent = "Copiado. Pégalo en tu conversación con la IA."; };
 
@@ -2885,7 +2978,11 @@ async function tallerFunciones(s, preguntas, volver){
       fs = leer().filter(f => f.nombre || f.definicion);
       if(!fs.length) fs = [{nombre:"", definicion:""}];
       const buenas = fs.filter(f => f.nombre);
-      Object.assign(s, await API.actualizarSesion(s.id, {funciones: buenas}));
+      // El texto del modelo se guarda con las funciones y no en un botón
+      // aparte: son la misma cosa, y dos botones de guardar en una pantalla
+      // garantizan que alguna vez se pulse solo uno.
+      Object.assign(s, await API.actualizarSesion(s.id,
+        {funciones: buenas, modelo: modelo}));
       return buenas;
     };
 
@@ -2906,8 +3003,12 @@ async function tallerFunciones(s, preguntas, volver){
     $("#guardar").onclick = async () => {
       $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
       try{ const b = await guardar();
-        $("#aviso").innerHTML = `<div class="aviso">Guardadas ${b.length} funciones en la sesión.
-          La encuesta de evaluación podrá heredarlas de aquí.</div>`;
+        const faltan = [!modelo.definicion && "la definición",
+                        !modelo.alcance && "el alcance"].filter(Boolean);
+        $("#aviso").innerHTML = `<div class="aviso">Guardadas ${b.length} funciones y el
+          texto del modelo. La encuesta de evaluación podrá heredarlo de aquí.${
+          faltan.length ? ` <b>Falta ${faltan.join(" y ")}</b>: sin ese texto, quien responda
+            la encuesta estará valorando funciones sueltas sin saber de dónde salen.` : ""}</div>`;
       }catch(e){ $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
       $("#guardar").disabled = false; $("#guardar").textContent = "Guardar funciones";
     };
@@ -2970,6 +3071,55 @@ async function informeSesion(s, preguntas, volver){
   const conDatos = partes.filter(x => (x.r && x.r.datos)
     || (x.rt && ((x.rt.grupos||[]).length || (x.rt.tarjetas||[]).length))).length;
 
+  /* LA BRECHA
+     En una evaluación del liderazgo, ni la nota más baja ni la importancia
+     más alta dicen por dónde empezar. Lo dice la distancia entre las dos:
+     una función que todo el mundo considera imprescindible y ve poco
+     desarrollada es un problema; una que está floja y a nadie le importa
+     es una función que sobra del modelo, y eso también hay que saberlo.
+
+     Se calcula aquí, no en la base de datos, porque es aritmética sobre
+     dos resultados que ya están agregados y ya han pasado el mínimo de
+     tres respuestas. Nada de esto toca respuestas individuales. */
+  const brecha = () => {
+    const uno = c => (partes.find(x => x.p.codigo === c) || {}).r;
+    const des = uno("E05"), imp = uno("E06");
+    if(!des || !imp || !Array.isArray(des.datos) || !Array.isArray(imp.datos)) return "";
+    const m = {};
+    des.datos.forEach(d => m[d.clave] = {clave:d.clave, des:d.media});
+    imp.datos.forEach(d => { if(m[d.clave]) m[d.clave].imp = d.media; });
+    const filas = Object.values(m).filter(x => x.imp != null)
+      .map(x => ({...x, dif: Math.round((x.imp - x.des) * 100) / 100}))
+      .sort((a,b) => b.dif - a.dif);
+    if(!filas.length) return "";
+    const tope = Math.max(...filas.map(f => Math.abs(f.dif))) || 1;
+    return `<div class="card informe-bloque">
+      <div class="small">calculado · a partir de E05 y E06</div>
+      <h2 style="font-size:26px;margin:6px 0 0">Dónde está la brecha</h2>
+      <p class="small" style="margin-top:8px">Importancia menos desarrollo, función por
+        función. Arriba, lo que más importa y menos hay.</p>
+      <table class="matriz" style="margin-top:16px">
+        <tr><th class="et"></th><th>Desarrollo</th><th>Importancia</th><th>Brecha</th><th></th></tr>
+        ${filas.map(f=>`<tr>
+          <td class="et">${esc(f.clave)}</td>
+          <td>${f.des.toFixed(1)}</td>
+          <td>${f.imp.toFixed(1)}</td>
+          <td><b>${f.dif > 0 ? "+" : ""}${f.dif.toFixed(1)}</b></td>
+          <td style="width:38%"><div class="barmini" style="position:relative">
+            <i style="width:${Math.round(Math.abs(f.dif)/tope*100)}%;background:${
+              // Naranja y azul, no rojo y verde: el par rojo-verde es
+              // justo el que no distingue un daltónico, y aquí el color
+              // codifica el signo. El signo va además escrito al lado
+              // —«+2,2», «−0,2»—, así que el color es ayuda, no dato.
+              f.dif >= 0 ? "var(--tono-2)" : "var(--tono-1)"}"></i></div></td></tr>`).join("")}
+      </table>
+      <p class="small" style="margin-top:16px">Brecha positiva: importa más de lo que hay
+        —por ahí se empieza—. Brecha negativa o cerca de cero: o ya está resuelto, o esa
+        función pesa menos en el modelo de lo que pensaba el comité que la redactó. Las dos
+        lecturas son útiles y la segunda es la que nadie mira.</p>
+    </div>`;
+  };
+
   const bloque = ({p, r, rt}) => {
     const cab = `<div class="small">${esc(p.codigo || "propia")} ·
       ${esc(TIPOS_NOMBRE[p.tipo] || p.tipo)} · ${esc(p.estado)}</div>
@@ -3016,6 +3166,7 @@ async function informeSesion(s, preguntas, volver){
         no partirse entre dos páginas. Para guardarlo en PDF, elige «Guardar como PDF»
         en el destino de la impresora.</p>
     </div>
+    ${brecha()}
     ${partes.map(x => `<div class="card informe-bloque">${bloque(x)}</div>`).join("")}
     <div class="card no-imprimir"><p class="small">Esto son los datos, no el informe.
       Lo que significan lo escribes tú.</p></div>
@@ -3317,6 +3468,21 @@ async function consolaMotor(s){
   let preguntas = await API.preguntas(s.id);
   const urlPart = location.origin + location.pathname + "?s=" + encodeURIComponent(s.codigo);
 
+  /* La sesión de origen. Solo la evaluación la tiene, y se lee una vez al
+     entrar: es texto que tú escribiste en el taller y no cambia mientras
+     conduces la encuesta. Si el taller se borró, `origen_id` quedó a null
+     por el `on delete set null` de la v10 y esto simplemente no encuentra
+     nada, que es exactamente lo que hay que enseñar. */
+  let origen = null;
+  if(s.origen_id){
+    try{ origen = (await API.sesiones()).find(x => x.id === s.origen_id) || null; }
+    catch(e){ origen = null; }
+  }
+  // De dónde salen las funciones que se vuelcan: del taller si está
+  // enlazado, de la propia sesión si la escribiste a mano aquí.
+  const funcionesVigentes = () =>
+    ((origen && origen.funciones) || s.funciones || []).filter(f => f && f.nombre);
+
   const pinta = async () => {
     const usados = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
     const faltanVars = VARIABLES.filter(v => !vars[v.clave]);
@@ -3398,6 +3564,54 @@ async function consolaMotor(s){
         <div id="avisoEnsayo"></div>
       </div>
 
+      ${String(s.instrumento||"").split("-")[0] === "evaluacion" ? (() => {
+        const fs = funcionesVigentes();
+        const mod = (origen && origen.modelo) || s.modelo || {};
+        return `<div class="card">
+        <h2>El modelo que se evalúa</h2>
+        ${origen ? `<p class="small">Heredado de <b>${esc(origen.titulo)}</b>. Lo que hay aquí
+          es lo que verá la gente en la primera pantalla, antes de valorar nada.</p>`
+        : s.origen_id ? `<div class="aviso rojo"><b>La sesión de origen ya no existe.</b>
+          Se borró después de enlazarla. Las respuestas de esta encuesta siguen intactas,
+          pero las funciones clave ya no se heredan: tendrás que escribirlas a mano en el
+          contenido de cada pregunta.</div>`
+        : `<div class="aviso">Esta encuesta <b>no está enlazada</b> a ningún taller. Puedes
+          trabajar así, escribiendo las listas a mano en «Contenido…», pero entonces nada
+          garantiza que el texto sea el que acordó el comité. Enlazar solo se puede hacer al
+          crear la sesión.</div>`}
+        ${mod.definicion ? `<h3>Definición</h3><p>${esc(mod.definicion)}</p>` : ""}
+        ${mod.alcance ? `<h3>Alcance</h3><p>${esc(mod.alcance)}</p>` : ""}
+        ${(!mod.definicion && !mod.alcance && origen) ? `<div class="aviso">El taller no tiene
+          escrita ni la definición ni el alcance. Se pueden escribir en su pantalla de
+          «Taller de funciones clave»; sin ellos, quien responda valora las funciones sin
+          saber de dónde salen.</div>` : ""}
+        ${fs.length ? `<h3>Funciones clave <span class="estado">${fs.length}</span></h3>
+          <div class="lista">${fs.map(f=>`<div class="it"><div><b>${esc(f.nombre)}</b>
+            ${f.definicion ? `<div class="small">${esc(f.definicion)}</div>`
+              : `<div class="small" style="color:#d03b3b">sin definición: en el móvil saldrá
+                 solo el nombre</div>`}</div></div>`).join("")}</div>
+          <div class="btnrow">
+            <button class="btn" id="volcarEva">Volcar en las preguntas</button>
+            <button class="btn ghost" id="abiertasUna">Generar 1 abierta por función</button>
+            <button class="btn ghost" id="abiertasTres">Generar 3 por función</button></div>
+          <div id="avisoEva"></div>
+          <p class="note"><b>Volcar</b> rellena E05, E06, E07 y E08 con estas funciones y sus
+            definiciones. Sustituye la lista entera: hazlo antes de abrir la encuesta, porque
+            cambiar los elementos con respuestas dentro deja los resultados colgando de
+            nombres que ya no existen.</p>
+          <p class="note"><b>Generar abiertas.</b> Añade preguntas de texto por cada función,
+            como el formulario original de la UIB. Con ${fs.length} funciones son
+            ${fs.length} o ${fs.length*3} pantallas de escribir <i>además</i> del resto.
+            Antes de pulsar: en aquel formulario, de 65 respuestas en la primera pregunta se
+            bajó a 28 en la última, y aparecieron decenas de «ídem a las anteriores» y
+            párrafos copiados de una pantalla a la siguiente. E08 + E09 hacen el mismo trabajo
+            en dos pantallas y con texto de quien eligió hablar de eso. Usa esto solo si el
+            cliente exige cobertura función por función.</p>`
+        : `<div class="aviso rojo">No hay funciones clave que volcar. ${origen
+            ? "El taller enlazado no tiene ninguna guardada."
+            : "Escríbelas en el contenido de cada pregunta, o crea la encuesta enlazada a un taller."}</div>`}
+      </div>`;})() : ""}
+
       <div class="card">
         <h2>Variables del ejercicio</h2>
         <p class="small">Se sustituyen en el enunciado <b>al añadir la pregunta</b>, no al mostrarla:
@@ -3442,7 +3656,16 @@ async function consolaMotor(s){
               <button class="btn ghost sm" data-quita="${p.id}">Quitar</button>
             </div>
           </div>`).join("")}</div>
-          <div class="btnrow">
+          ${s.modo === "survey" ? `<div class="aviso"><b>Esto es un survey.</b> No hay nadie
+            conduciendo: quien entre verá, de una vez, todas las preguntas que estén
+            <b>abiertas</b>, y terminará cuando las responda. Las que dejes cerradas no
+            existen para él. Ábrelas antes de repartir el enlace.</div>
+            <div class="btnrow">
+              <button class="btn" id="abrirTodas">Abrir todas las preguntas</button>
+              <button class="btn ghost" id="terminarTodas">Dar por terminadas todas</button>
+              <button class="btn ghost" id="informeS">Ver todos los resultados</button>
+            </div>` : ""}
+          <div class="btnrow"${s.modo === "survey" ? ` style="display:none"` : ""}>
             <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
             <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
             <button class="btn ghost" id="espera">Proyectar la espera</button>
@@ -3491,10 +3714,96 @@ async function consolaMotor(s){
     if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
       cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
-    if(bt("informe")) bt("informe").onclick = () =>
+    const verInforme = () =>
       informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
+    if(bt("informe"))  bt("informe").onclick  = verInforme;
+    if(bt("informeS")) bt("informeS").onclick = verInforme;
     if(bt("taller")) bt("taller").onclick = () =>
       tallerFunciones(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
+
+    const decirEva = (t, mal) => { const c = bt("avisoEva");
+      if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
+
+    if(bt("volcarEva")) bt("volcarEva").onclick = async () => {
+      const fs = funcionesVigentes();
+      const nombres = fs.map(f=>f.nombre);
+      const defs = fs.reduce((o,f)=>(f.definicion ? (o[f.nombre]=f.definicion) : 0, o), {});
+      // Cada destino recibe la lista en la clave que su tipo sabe leer.
+      const destinos = [{c:"E05", k:"items", d:true}, {c:"E06", k:"items", d:true},
+                        {c:"E07", k:"opciones"},      {c:"E08", k:"opciones", d:true}];
+      const hechas = [], faltan = [];
+      for(const d of destinos){
+        const p = preguntas.find(x => x.codigo === d.c);
+        if(!p){ faltan.push(d.c); continue; }
+        const cfg = {...(p.config||{}), [d.k]: nombres};
+        if(d.d) cfg.definiciones = defs; else delete cfg.definiciones;
+        await API.actualizarPregunta(p.id, {config: cfg});
+        hechas.push(d.c);
+      }
+      preguntas = await API.preguntas(s.id);
+      // `await`: `pinta()` redibuja la pantalla entera. Si el aviso se
+      // escribe antes de que termine, se borra con el resto y nadie llega
+      // a leerlo. Es el mismo tropiezo que costó el «recado» del taller.
+      await pinta();
+      decirEva(`Volcadas ${nombres.length} funciones en ${hechas.join(", ") || "ninguna pregunta"}.`
+        + (faltan.length ? ` No están en esta sesión: <b>${faltan.join(", ")}</b>.` : ""),
+        !hechas.length);
+    };
+
+    const generarAbiertas = async cuantas => {
+      const fs = funcionesVigentes();
+      const plantillas = ABIERTAS_POR_FUNCION.slice(0, cuantas === 1 ? 0 : 3);
+      // Con una sola por función se pregunta por acciones: de las tres del
+      // formulario original es la única cuyas respuestas se pueden llevar a
+      // un plan. «Qué se hace bien» produce catálogos institucionales.
+      const lista = cuantas === 1 ? [ABIERTAS_POR_FUNCION[2]] : plantillas;
+      const ya = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
+      let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
+      const filas = [];
+      fs.forEach((f, i) => lista.forEach(pl => {
+        const cod = "EX" + String(i+1).padStart(2,"0") + pl.suf;
+        if(ya.has(cod)) return;
+        filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta",
+          titulo: resolverTexto(pl.q.replace(/\[FUNCION\]/g, f.nombre), vars),
+          ayuda: f.definicion || null,
+          config: {maximo_caracteres: 300}, estado: "cerrada"});
+      }));
+      if(!filas.length){ decirEva("Ya estaban todas creadas.", true); return; }
+      await API.crearPreguntas(filas);
+      preguntas = await API.preguntas(s.id);
+      await pinta();
+      decirEva(`Añadidas ${filas.length} preguntas abiertas, una por cada función${
+        cuantas === 1 ? "" : " y cada uno de los tres enfoques"}. Quedan cerradas: ábrelas
+        cuando decidas. Puedes quitar las que no quieras una a una.`);
+    };
+    if(bt("abiertasUna"))  bt("abiertasUna").onclick  = () => generarAbiertas(1);
+    if(bt("abiertasTres")) bt("abiertasTres").onclick = () => {
+      const n = funcionesVigentes().length * 3;
+      if(!confirm("Se van a añadir " + n + " preguntas de texto libre.\n\n"
+        + "En el formulario del que sale este patrón, esa batería hizo caer la participación "
+        + "de 65 a 28 respuestas entre la primera pregunta y la última, y llenó las últimas "
+        + "de «ídem a las anteriores».\n\n¿Seguro?")) return;
+      generarAbiertas(3);
+    };
+
+    if(bt("abrirTodas")) bt("abrirTodas").onclick = async () => {
+      const abribles = preguntas.filter(p => p.estado === "cerrada" && !faltaContenido(p));
+      const rotas = preguntas.filter(p => p.estado === "cerrada" && faltaContenido(p));
+      for(const p of abribles) await API.actualizarPregunta(p.id, {estado:"abierta"});
+      preguntas = await API.preguntas(s.id);
+      pinta();
+      if(rotas.length) alert("Se han abierto " + abribles.length + " preguntas.\n\n"
+        + "NO se han abierto estas, porque les falta contenido y en el móvil saldrían "
+        + "vacías:\n\n" + rotas.map(p=>(p.codigo||"") + " " + p.titulo).join("\n"));
+    };
+    if(bt("terminarTodas")) bt("terminarTodas").onclick = async () => {
+      if(!confirm("Se van a dar por terminadas todas las preguntas abiertas. "
+        + "Dejarán de admitir respuestas.")) return;
+      for(const p of preguntas.filter(p => p.estado === "abierta"))
+        await API.actualizarPregunta(p.id, {estado:"terminada"});
+      preguntas = await API.preguntas(s.id);
+      pinta();
+    };
 
     if(bt("vivo")) bt("vivo").onclick = () =>
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
@@ -4186,6 +4495,131 @@ const VARIABLES_LID = [
   {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Periodo al que se refiere el modelo. Por ejemplo, 2026-2029."}
 ];
 
+/* ═══════════════════════════════════════════════════════════════════
+   BANCO · EVALUACIÓN DEL LIDERAZGO
+
+   Es la segunda mitad del par. El taller de «Modelo de liderazgo» lo hace
+   un comité de quince personas en una sala; esto lo responden trescientas
+   a lo largo de tres semanas, desde el móvil, sin nadie conduciendo.
+
+   Hereda de la sesión del taller la definición, el alcance y las funciones
+   clave: quien responde no ha estado allí, así que lo primero que ve es el
+   modelo escrito, y solo después se le pide que lo valore.
+
+   POR QUÉ NO ES UNA COPIA DEL FORMULARIO DE LA UIB
+   Aquel preguntaba, por cada una de las siete funciones, tres abiertas:
+   puntos fuertes, áreas de mejora y propuestas de acción. Veintiuna
+   pantallas de escribir. Sus propios datos dicen lo que eso cuesta: de 65
+   respuestas en la primera pregunta a 28 en la última, y por el camino
+   decenas de «ídem a las anteriores», «ya contestada» y párrafos pegados
+   literalmente de una pantalla a la siguiente. Eso no es información: es
+   la misma persona defendiéndose del cansancio.
+
+   Aquí la parte cualitativa se pide UNA vez, sobre la función que esa
+   persona ha elegido como más urgente. Cuatro pantallas en lugar de
+   veintiuna, y cada texto viene de alguien que quiso hablar de eso. Si un
+   cliente exige la batería completa, la consola la genera con un botón,
+   con la advertencia delante.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const BLOQUES_EVA = [
+  "Perfil y posición",
+  "Conocimiento del modelo",
+  "Valoración de las funciones clave",
+  "Lo que funciona y lo que no",
+  "Cierre"
+];
+
+const BANCO_EVA = [
+/* ── Bloque 0 · Perfil ──────────────────────────────────────────── */
+{c:"E01", b:0, t:"unica", nuc:true, nat:"fija",
+ q:"¿Desde qué posición respondes en [ORGANIZACION]?",
+ cfg:{opciones:["Dirección o gobierno","Mando intermedio con equipo",
+   "Responsable de proyecto o proceso","Referente técnico sin equipo a cargo",
+   "Personas y cultura / RRHH","Otra"]}},
+{c:"E02", b:0, t:"unica", nuc:false, nat:"fija", bench:true,
+ q:"¿Cuánto tiempo llevas ejerciendo responsabilidad sobre personas o equipos?",
+ ayuda:"Fuera del núcleo a propósito: la pantalla de entrada ya pregunta si dirige "
+     + "equipo y cuánta antigüedad tiene, y eso viaja con cada envío como segmento. "
+     + "Añádela solo si necesitas el tramo fino de veteranía en el mando.",
+ cfg:{opciones:["No la ejerzo","Menos de 2 años","2–5 años","6–10 años","Más de 10 años"]}},
+{c:"E03", b:0, t:"unica", nuc:false, nat:"derivada",
+ q:"¿A qué colectivo perteneces en [ORGANIZACION]?",
+ ayuda:"Derivada: escribe aquí las categorías de ESTE cliente. Cuidado con dejar "
+     + "grupos de tres o cuatro personas: un texto libre firmado por un grupo así "
+     + "deja de ser anónimo aunque el recuento lo sea.",
+ cfg:{opciones:[]}},
+
+/* ── Bloque 1 · Conocimiento del modelo ─────────────────────────── */
+{c:"E04", b:1, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"Antes de esta encuesta, ¿hasta qué punto conocías este modelo de liderazgo?",
+ ayuda:"Sirve para leer todo lo demás: una valoración media hecha por gente que "
+     + "acaba de leer el modelo no significa lo mismo que la de quien lleva un año con él.",
+ cfg:{min:1, max:5, ancla_min:"No lo conocía", ancla_max:"Lo conocía bien"}},
+
+/* ── Bloque 2 · Valoración ──────────────────────────────────────── */
+{c:"E05", b:2, t:"matriz_escala", nuc:true, nat:"derivada", bench:true,
+ q:"¿Hasta qué punto está desarrollada hoy cada una de estas funciones clave en [ORGANIZACION]?",
+ ayuda:"Se rellena con las funciones de la sesión de origen. Toca el nombre de "
+     + "cada una para leer su definición.",
+ cfg:{min:1, max:5, items:[], ancla_min:"Poco desarrollada", ancla_max:"Muy desarrollada"}},
+{c:"E06", b:2, t:"matriz_escala", nuc:true, nat:"derivada", bench:true,
+ q:"¿Y qué importancia tiene cada una para el futuro de [ORGANIZACION]?",
+ ayuda:"Esta es la pregunta que faltaba en el formulario original. Sin ella tienes "
+     + "un ranking de lo flojo, pero no sabes qué de lo flojo importa: la prioridad "
+     + "es la distancia entre estas dos valoraciones, no la nota más baja.",
+ cfg:{min:1, max:5, items:[], ancla_min:"Poco importante", ancla_max:"Imprescindible"}},
+{c:"E07", b:2, t:"ranking", nuc:false, nat:"derivada",
+ q:"Ordena las funciones clave por prioridad de desarrollo en [ORGANIZACION].",
+ ayuda:"Alternativa a E06 si prefieres una sola pregunta de prioridad. Con más de "
+     + "siete elementos, ordenar en un móvil se hace pesado.",
+ cfg:{opciones:[]}},
+
+/* ── Bloque 3 · Cualitativo ─────────────────────────────────────── */
+{c:"E08", b:3, t:"unica", nuc:true, nat:"derivada",
+ q:"De todas ellas, ¿cuál crees que hay que trabajar antes en [ORGANIZACION]?",
+ ayuda:"Se rellena con las funciones de origen. Es la que dirige las tres preguntas "
+     + "siguientes: cada texto queda etiquetado con la función que esa persona eligió.",
+ cfg:{opciones:[]}},
+{c:"E09", b:3, t:"abierta_campos", nuc:true, nat:"fija",
+ q:"Sobre esa función clave que acabas de elegir:",
+ ayuda:"La tríada del formulario original —fuerte hoy, a mejorar, acción— pero una "
+     + "sola vez y sobre algo que esta persona ha elegido.",
+ cfg:{campos:[{clave:"fuerte", etiqueta:"¿Qué se hace bien hoy?"},
+              {clave:"mejora", etiqueta:"¿Qué habría que mejorar?"},
+              {clave:"accion", etiqueta:"¿Qué acción concreta propones?"}]}},
+{c:"E10", b:3, t:"abierta", nuc:false, nat:"fija",
+ q:"¿Echas en falta alguna función clave, o sobra alguna de las que hay?",
+ cfg:{maximo_caracteres:300}},
+{c:"E11", b:3, t:"nube", nuc:false, nat:"fija", bench:true,
+ q:"En una palabra: ¿cómo describirías hoy el liderazgo real en [ORGANIZACION]?",
+ ayuda:"Se proyecta como nube: lo más repetido se ve más grande.",
+ cfg:{maximo:2, maximo_caracteres:24}},
+
+/* ── Bloque 4 · Cierre ──────────────────────────────────────────── */
+{c:"E12", b:4, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"¿En qué medida el liderazgo que se ejerce hoy en [ORGANIZACION] se parece a este modelo?",
+ cfg:{min:1, max:7, ancla_min:"No se parece nada", ancla_max:"Se parece mucho"}},
+{c:"E13", b:4, t:"abierta", nuc:true, nat:"fija",
+ q:"¿Qué es lo primero que tendría que cambiar para acercarse?",
+ cfg:{maximo_caracteres:300}}
+];
+
+const VARIABLES_EVA = [
+  {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización objeto del servicio."},
+  {clave:"COLECTIVO",    etiqueta:"Colectivo",    ayuda:"A quién se abre la encuesta. Suele ser mucho más amplio que el taller."},
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Periodo al que se refiere el modelo. Por ejemplo, 2026-2029."}
+];
+
+/* Plantilla de las abiertas por función. Se usa cuando decides generar la
+   batería completa —o la reducida— desde la consola. `[FUNCION]` se
+   sustituye por el nombre de cada función clave. */
+const ABIERTAS_POR_FUNCION = [
+  {suf:"F", campo:"fuerte", q:"[FUNCION]: ¿en qué destaca hoy [ORGANIZACION]?"},
+  {suf:"M", campo:"mejora", q:"[FUNCION]: ¿qué debería mejorar [ORGANIZACION]?"},
+  {suf:"A", campo:"accion", q:"[FUNCION]: ¿qué acciones concretas propones?"}
+];
+
 const VARIABLES_ESC = [
   {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización, unidad o sistema analizado."},
   {clave:"TEMA FOCAL",   etiqueta:"Tema focal",   ayuda:"Reto, decisión o ámbito objeto del ejercicio."},
@@ -4211,7 +4645,9 @@ const BANCOS = {
   escenarios: {bloques: BLOQUES_ESC, banco: BANCO_ESC, variables: VARIABLES_ESC,
                nucleo: "el itinerario núcleo"},
   liderazgo:  {bloques: BLOQUES_LID, banco: BANCO_LID, variables: VARIABLES_LID,
-               nucleo: "el recorrido completo"}
+               nucleo: "el recorrido completo"},
+  evaluacion: {bloques: BLOQUES_EVA, banco: BANCO_EVA, variables: VARIABLES_EVA,
+               nucleo: "el cuestionario base"}
 };
 
 // La clave del instrumento puede venir con sufijo («cultura-cvf»), así que
@@ -4241,6 +4677,12 @@ const MODULOS = [
    desc:"Define con el propio equipo directivo qué es liderar aquí, a quién se considera "
       + "líder, y qué responsabilidades y competencias importan: doce responsabilidades y "
       + "dieciocho competencias, con sus definiciones. La evaluación va aparte, como survey.",
+   ruta:"#/admin/sesiones"},
+  {k:"evaluacion", nombre:"Evaluación del liderazgo", est:"activo",
+   publico:"Evaluación del modelo de liderazgo",
+   desc:"La segunda mitad del par. Encuesta al colectivo amplio sobre el modelo que "
+      + "acordó el comité: hereda su definición, su alcance y sus funciones clave, las "
+      + "enseña antes de preguntar y mide desarrollo e importancia por separado.",
    ruta:"#/admin/sesiones"},
   {k:"contraste", nombre:"Contraste estratégico", est:"pendiente",
    desc:"Diagnóstico de estrategia con los miembros de la organización."},
@@ -4386,6 +4828,12 @@ function vistaLogin(){
 
 async function panelAdmin(u){
   const [orgs, sesiones, sectores] = await Promise.all([API.orgs(), API.sesiones(), API.sectores()]);
+  // Candidatas a ser el origen de una encuesta de evaluación: sesiones de
+  // liderazgo que YA tienen funciones clave escritas. Una sin funciones no
+  // sirve de origen —no hay nada que heredar— y ofrecerla solo generaría
+  // encuestas vacías que se descubren el día que se abren.
+  const talleres = sesiones.filter(s =>
+    String(s.instrumento||"").split("-")[0] === "liderazgo" && (s.funciones||[]).length);
   app().innerHTML = `<div class="wrap ancho">${cabecera(
     `<button class="iconbtn" onclick="cerrarSesionAdmin()">Salir</button>`)}
     ${navPrivada("#/admin/sesiones")}
@@ -4417,6 +4865,7 @@ async function panelAdmin(u){
             <option value="cultura-cvf">Cultura organizativa</option>
             <option value="escenarios">Escenarios futuros</option>
             <option value="liderazgo">Modelo de liderazgo</option>
+            <option value="evaluacion">Evaluación del liderazgo</option>
           </select></div>
         <div class="field"><label for="s-tit">Título de la sesión</label>
           <input id="s-tit" required placeholder="Equipo directivo · febrero 2026"></div>
@@ -4429,6 +4878,21 @@ async function panelAdmin(u){
           <input id="s-n" type="number" min="1" placeholder="30"></div>
         <div class="field"><label for="s-cod">Código</label>
           <input id="s-cod" placeholder="se genera solo" autocomplete="off"></div>
+      </div>
+      <div id="origen" class="hide">
+        <div class="field"><label for="s-org-ses">Sesión de origen · de dónde salen las funciones clave</label>
+          <select id="s-org-ses">
+            <option value="">— sin enlazar —</option>
+            ${talleres.map(t=>`<option value="${esc(t.id)}">${esc(t.titulo)} · ${
+              esc((t.organizacion||{}).nombre||"")} · ${(t.funciones||[]).length} funciones</option>`).join("")}
+          </select></div>
+        ${talleres.length ? `<p class="note">La encuesta enseñará la definición, el alcance y
+          las funciones clave de esa sesión, y sus preguntas se rellenarán con ellas. Puedes
+          dejarla sin enlazar y escribir las funciones a mano, pero entonces nada garantiza
+          que el texto sea el mismo que acordó el comité.</p>`
+        : `<div class="aviso rojo">No tienes ninguna sesión de <b>Modelo de liderazgo</b> con
+          funciones clave guardadas. Haz primero el taller: esta encuesta evalúa lo que allí
+          se acuerde. Si la creas ahora, tendrás que escribir las funciones a mano.</div>`}
       </div>
       <div id="ventana" class="grid2 hide">
         <div class="field"><label for="s-ini">Apertura</label><input id="s-ini" type="datetime-local"></div>
@@ -4459,7 +4923,18 @@ async function panelAdmin(u){
 
   app().querySelectorAll("[data-borra]").forEach(b => b.onclick = () =>
     pantallaBorrado(sesiones.find(x => x.id === b.dataset.borra), () => panelAdmin(u)));
-  $("#s-modo").onchange = e => $("#ventana").classList.toggle("hide", e.target.value !== "survey");
+  const verVentana = () => $("#ventana").classList.toggle("hide", $("#s-modo").value !== "survey");
+  $("#s-modo").onchange = verVentana;
+  $("#s-ins").onchange = () => {
+    const ev = $("#s-ins").value === "evaluacion";
+    $("#origen").classList.toggle("hide", !ev);
+    // La evaluación nace como survey porque es lo que es: se abre semanas,
+    // no una tarde, y no hay nadie conduciendo. Se puede cambiar a directo
+    // —a veces se pasa en una jornada— pero el valor por defecto tiene que
+    // ser el uso normal, no el excepcional.
+    if(ev && $("#s-modo").value !== "survey"){ $("#s-modo").value = "survey"; }
+    verVentana();
+  };
   $("#fo").onsubmit = async ev => {
     ev.preventDefault();
     await API.crearOrg({nombre:$("#o-nom").value.trim(), sector_clave:$("#o-sec").value,
@@ -4475,6 +4950,8 @@ async function panelAdmin(u){
       colectivo:$("#s-col").value.trim()||null, modo, codigo:cod,
       instrumento: $("#s-ins") ? $("#s-ins").value : "cultura-cvf",
       n_convocados: $("#s-n").value ? parseInt($("#s-n").value,10) : null};
+    if(s.instrumento === "evaluacion" && $("#s-org-ses") && $("#s-org-ses").value)
+      s.origen_id = $("#s-org-ses").value;
     if(modo === "survey"){
       s.ventana_inicio = $("#s-ini").value ? new Date($("#s-ini").value).toISOString() : null;
       s.ventana_fin    = $("#s-fin").value ? new Date($("#s-fin").value).toISOString() : null;
