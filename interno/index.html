@@ -2801,6 +2801,79 @@ function cuerpoResultado(p, r, cab, pie){
    Al final, todo se guarda junto en la sesión: `modelo` y `funciones`.
    De ahí lo hereda la encuesta de evaluación.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   EL ACTA DEL MODELO
+
+   Una página y ya está: definición, alcance y funciones clave, con la
+   fecha de cierre y la organización. Es lo que se manda por correo al
+   día siguiente y lo que se pega en el informe.
+
+   No lleva ni un solo dato de respuesta —ni recuentos, ni medias, ni
+   votos—. Es la conclusión, no la evidencia; la evidencia está en «Ver
+   todos los resultados» y no tiene por qué circular con esto.
+   ═══════════════════════════════════════════════════════════════════ */
+function actaModelo(s, volver){
+  const m = s.modelo || {}, fs = (s.funciones || []).filter(f => f.nombre);
+  const org = (s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "";
+  const fecha = m.cerrado_en
+    ? new Date(m.cerrado_en).toLocaleDateString("es-ES",
+        {day:"numeric", month:"long", year:"numeric"})
+    : null;
+  app().innerHTML = `<div class="wrap ancho">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card informe-cab">
+      <span class="phasetag">${esc(org)}${
+        (s.variables||{}).HORIZONTE ? " · " + esc(s.variables.HORIZONTE) : ""}</span>
+      <h1 style="margin:6px 0 0">Modelo de liderazgo</h1>
+      <p class="small" style="margin-top:8px">${
+        fecha ? `Acordado el <b>${fecha}</b>` : `<b>Versión de trabajo, sin cerrar</b>`}
+        · ${esc(s.titulo)}</p>
+      ${fecha ? "" : `<div class="aviso no-imprimir">Este modelo todavía no está cerrado.
+        Puedes imprimirlo igual, pero saldrá marcado como versión de trabajo: es preferible
+        eso a que circule un PDF que parece definitivo y no lo es.</div>`}
+      <div class="btnrow no-imprimir">
+        <button class="btn ghost" id="imprimir">Imprimir o guardar en PDF</button></div>
+      <p class="note no-imprimir">Al imprimir se quitan los botones y cada función procura no
+        partirse entre dos páginas. Para guardarlo en PDF, elige «Guardar como PDF» en el
+        destino de la impresora.</p>
+    </div>
+
+    <div class="card informe-bloque">
+      <h2 style="font-size:26px;margin:0">Qué entendemos por liderazgo</h2>
+      ${m.definicion ? `<p class="lead" style="margin-top:14px">${esc(m.definicion)}</p>`
+        : `<div class="aviso rojo">Sin redactar.</div>`}
+    </div>
+
+    <div class="card informe-bloque">
+      <h2 style="font-size:26px;margin:0">A quién se considera líder</h2>
+      ${m.alcance ? `<p class="lead" style="margin-top:14px">${esc(m.alcance)}</p>`
+        : `<div class="aviso rojo">Sin redactar.</div>`}
+    </div>
+
+    <div class="card informe-bloque">
+      <h2 style="font-size:26px;margin:0">Las funciones clave
+        <span class="estado">${fs.length}</span></h2>
+      ${fs.length ? `<div style="margin-top:18px">${fs.map((f,i)=>`
+        <div class="enun" style="display:flex;gap:18px;align-items:baseline;
+             break-inside:avoid">
+          <b style="font-size:30px;min-width:44px;color:${tonoN(i)}">${i+1}</b>
+          <div style="flex:1">
+            <div style="font-size:20px;font-weight:650;margin-bottom:6px">${esc(f.nombre)}</div>
+            ${f.definicion ? `<p style="margin:0">${esc(f.definicion)}</p>`
+              : `<p class="small" style="margin:0">Sin definición.</p>`}</div>
+        </div>`).join("")}</div>`
+        : `<div class="aviso rojo">Ninguna.</div>`}
+    </div>
+
+    <div class="card no-imprimir"><p class="small">Esto es el acuerdo, no los datos. Lo que
+      votó cada quien está en «Ver todos los resultados», y ahí se queda: un acta que
+      circula por correo no tiene por qué llevar dentro las respuestas de la sala.</p>
+    </div></div>`;
+  $("#atras").onclick = volver;
+  $("#imprimir").onclick = () => window.print();
+  window.scrollTo({top:0});
+}
+
 async function tallerFunciones(s, preguntas, volver){
   app().innerHTML = `<div class="wrap ancho">${cabecera(
     `<button class="iconbtn" id="atras">Volver</button>`)}
@@ -2813,15 +2886,25 @@ async function tallerFunciones(s, preguntas, volver){
      `fase` dice a cuál de los tres bloques pertenece cada fuente. Una
      misma pregunta puede alimentar dos: L04 define, pero también da el
      lenguaje con el que después se nombran las funciones. */
+  /* `apoyo:true` es evidencia que viaja en el texto para la IA pero no
+     ocupa sitio en pantalla: son listas que ya se miran enteras en su
+     propio paso y que aquí solo sirven de contexto. Se enseñan en una
+     línea, para que sepas exactamente qué estás copiando —una caja negra
+     que manda cosas a una IA sin decir cuáles no es aceptable. */
   const FUENTES = [
-    // 1 · Definición
+    // 1 · Definición. La tarjeta grande es L04; L11 y L13 entran en el
+    // texto porque las frases 2 y 3 de la definición salen de ellas.
     {c:"L04", fase:"def", t:"Cómo ha completado el grupo «liderar aquí es…»", tarjetas:true},
-    {c:"L05", fase:"def", t:"La primera palabra que asocian con liderazgo"},
-    {c:"L06", fase:"def", t:"¿Hay hoy una idea compartida de lo que es liderar?", escala:true},
+    {c:"L11", fase:"def", t:"Responsabilidades más votadas", apoyo:true},
+    {c:"L13", fase:"def", t:"Competencias más votadas", apoyo:true},
+    {c:"L05", fase:"def", t:"La primera palabra que asocian con liderazgo", apoyo:true},
+    {c:"L06", fase:"def", t:"¿Hay hoy una idea compartida de lo que es liderar?",
+     escala:true, apoyo:true},
     // 2 · Alcance
     {c:"L08", fase:"alc", t:"A quién considera el grupo que hay que llamar «líder»", tarjetas:true},
     {c:"L09", fase:"alc", t:"Qué niveles de liderazgo reconocen", tarjetas:true},
-    {c:"L10", fase:"alc", t:"¿Se reconoce hoy a quien ejerce liderazgo?", escala:true},
+    {c:"L10", fase:"alc", t:"¿Se reconoce hoy a quien ejerce liderazgo?",
+     escala:true, apoyo:true},
     // 3 · Funciones clave
     {c:"L11", fase:"fun", t:"Responsabilidades más importantes"},
     {c:"L13", fase:"fun", t:"Competencias más importantes"},
@@ -2830,18 +2913,27 @@ async function tallerFunciones(s, preguntas, volver){
     {c:"L15", fase:"fun", t:"Competencias que echan en falta en la lista", textos:true}
   ];
   const bloques = [];
+  // L11 y L13 alimentan dos pasos. Sin esta caché se consultarían dos
+  // veces cada una, y son las dos consultas más caras de la pantalla.
+  const cache = {};
+  const traer = async (tipo, id) => {
+    const k = tipo + ":" + id;
+    if(!(k in cache)) cache[k] = await (tipo === "t"
+      ? API.resultadosTarjetas(s.codigo, id) : API.resultadosPregunta(s.codigo, id)).catch(()=>null);
+    return cache[k];
+  };
   for(const f of FUENTES){
     const p = preguntas.find(x => x.codigo === f.c);
     if(!p) continue;
     if(f.tarjetas){
-      const r = await API.resultadosTarjetas(s.codigo, p.id).catch(()=>null);
+      const r = await traer("t", p.id);
       const g = (r && r.grupos) || [];
       if(g.length) bloques.push({...f, filas: g.map(x=>({texto:x.etiqueta, n:x.votos}))});
       else if(r && (r.tarjetas||[]).length)
         bloques.push({...f, filas: r.tarjetas.slice(0,12).map(x=>({texto:x.texto, n:null})),
                       nota:"sin agrupar todavía"});
     } else {
-      const r = await API.resultadosPregunta(s.codigo, p.id).catch(()=>null);
+      const r = await traer("p", p.id);
       if(!r) continue;
       // Una escala devuelve un objeto, no una lista: se resume en una línea.
       if(f.escala && r.datos && r.datos.media != null)
@@ -2858,14 +2950,16 @@ async function tallerFunciones(s, preguntas, volver){
     }
   }
   const deFase = f => bloques.filter(b => b.fase === f);
+  const principales = f => deFase(f).filter(b => !b.apoyo);
+  const apoyos      = f => deFase(f).filter(b =>  b.apoyo);
 
   // Copia de trabajo: se guarda cuando lo pides, no mientras escribes.
   let fs = JSON.parse(JSON.stringify(s.funciones || []));
   if(!fs.length) fs = [{nombre:"", definicion:""}];
   let modelo = JSON.parse(JSON.stringify(s.modelo || {}));
-  // El aviso sobrevive al repintado: si se escribe en el DOM y después se
-  // llama a pinta(), se borra sin que nadie lo haya leído.
-  let recado = "";
+  // Los avisos sobreviven al repintado: si se escriben en el DOM y después
+  // se llama a pinta(), se borran sin que nadie los haya leído.
+  let recado = "", recado1 = "";
 
   const org = () => (s.variables||{}).ORGANIZACION
     || (s.organizacion||{}).nombre || "la organización";
@@ -2886,38 +2980,61 @@ async function tallerFunciones(s, preguntas, volver){
 
   const PROMPT = {
     def: () => evidenciaDe("def",
-        "Esto es lo que ha dicho y votado el grupo sobre qué significa liderar aquí:")
+        "Esto es lo que ha dicho y votado el grupo. La primera lista es la que manda: "
+        + "es cómo han completado ellos mismos la frase «liderar aquí es…».")
       .concat([
-        "Tarea: redacta la DEFINICIÓN DE LIDERAZGO de " + org() + ".",
+        "Tarea: redacta la DEFINICIÓN DEL MODELO DE LIDERAZGO de " + org() + ".",
         "",
-        "- Un párrafo de tres a cinco frases, en presente y en tercera persona:",
-        "  «La persona que lidera en " + org() + " …».",
-        "- Tiene que reconocerse en ella quien escribió lo de arriba: usa sus",
-        "  palabras, no el vocabulario estándar de los manuales de liderazgo.",
-        "- Que diga qué hace quien lidera, no qué cualidades tiene.",
-        "- No inventes contenido que no esté en las listas. Al final, indica de",
-        "  qué aportaciones concretas sale cada parte de la definición.",
-        "- Dame además dos variantes alternativas, una más corta y una más",
-        "  exigente, para que el grupo pueda elegir."]).join("\n"),
+        "Exactamente CUATRO frases, en este orden y una por cada cosa:",
+        "",
+        "1. QUÉ SE ENTIENDE POR LIDERAZGO aquí.",
+        "   Fuente: «Cómo ha completado el grupo “liderar aquí es…”».",
+        "2. QUÉ SE ESPERA DE LAS PERSONAS QUE LIDERAN.",
+        "   Fuente: esa misma lista más «Responsabilidades más votadas».",
+        "3. CÓMO OPERAN: la manera de hacer, no la tarea.",
+        "   Fuente: «Competencias más votadas».",
+        "4. QUÉ RESULTADOS SE PRETENDE QUE OBTENGAN.",
+        "   Esta es la única que no sale de una votación: dedúcela del propósito",
+        "   que asoma en las tres anteriores y márcala como propuesta, para que",
+        "   el grupo la discuta. Si no hay base para deducirla, dilo en vez de",
+        "   rellenarla con lugares comunes.",
+        "",
+        "Reglas:",
+        "- Presente y tercera persona. Frases de una sola idea, sin subordinadas",
+        "  encadenadas: esto se va a proyectar en una pared y a leer en un móvil.",
+        "- Usa las palabras del grupo, no el vocabulario de los manuales de",
+        "  liderazgo. Tiene que reconocerse en ella quien escribió lo de arriba.",
+        "- Di qué hace quien lidera, no qué cualidades tiene.",
+        "- No inventes contenido que no esté en las listas. Debajo de la",
+        "  definición, indica de qué aportaciones concretas sale cada frase.",
+        "- Dame después dos variantes completas del párrafo, una más corta y una",
+        "  más exigente, para que el grupo pueda elegir."]).join("\n"),
 
     alc: () => evidenciaDe("alc",
         "Esto es lo que ha dicho y votado el grupo sobre a quién considerar líder y con qué niveles:")
       .concat([
-        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + ".",
+        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + ", como una",
+        "tabla de PARES «grupo de líderes → nivel de responsabilidad».",
         "",
-        "1. Una lista de entre dos y cuatro GRUPOS DE LIDERAZGO, cada uno con:",
-        "   - un nombre corto,",
+        "1. Entre dos y cuatro GRUPOS DE LÍDERES. De cada uno:",
+        "   - nombre corto del grupo,",
         "   - qué puestos o roles concretos entran (de los que aparecen arriba),",
-        "   - el nivel que le corresponde y por qué: alcance de la decisión,",
-        "     horizonte temporal y si tiene o no personas a cargo.",
+        "   - el NIVEL DE RESPONSABILIDAD que le corresponde, con un nombre y no",
+        "     solo un número, y justificado por tres cosas: alcance de la",
+        "     decisión, horizonte temporal y si tiene o no personas a cargo.",
+        "   Preséntalo como tabla de dos columnas: grupo | nivel.",
         "2. Después, un párrafo de redacción final para el documento, que empiece",
-        "   por «A efectos de este modelo, en " + org() + " se consideran líderes…».",
+        "   por «A efectos de este modelo, en " + org() + " se consideran líderes…»",
+        "   y recorra los grupos en orden de nivel.",
         "",
-        "- Trabaja solo con los puestos y niveles que aparecen arriba. Si detectas",
-        "  un colectivo que el grupo no ha nombrado y que probablemente falte,",
-        "  dilo aparte y marcado como duda, no lo metas en la lista.",
-        "- Señala explícitamente los casos frontera: quién queda justo fuera y",
-        "  por qué. Esa es la conversación que hay que tener en la sala."]).join("\n"),
+        "- Los niveles salen de «Qué niveles de liderazgo reconocen»: usa los",
+        "  criterios que ha dado el grupo, no una escala tuya.",
+        "- Trabaja solo con los puestos que aparecen arriba. Si detectas un",
+        "  colectivo que el grupo no ha nombrado y que probablemente falte, dilo",
+        "  aparte y marcado como duda, no lo metas en la tabla.",
+        "- Señala explícitamente los casos frontera: quién queda justo fuera de",
+        "  cada grupo y por qué. Esa es la conversación que hay que tener en la",
+        "  sala, y es la que decide si el modelo se aplica a 30 personas o a 300."]).join("\n"),
 
     fun: () => evidenciaDe("fun",
         "Esto es lo que ha votado el grupo sobre responsabilidades y competencias:")
@@ -2939,8 +3056,8 @@ async function tallerFunciones(s, preguntas, volver){
     app().innerHTML = `<div class="wrap ancho">${cabecera(
       `<button class="iconbtn" id="atras">Volver</button>`)}
       <div class="card">
-        <span class="phasetag">${esc(s.titulo)} · taller</span>
-        <h1 style="margin:6px 0 0">Taller del modelo</h1>
+        <span class="phasetag">${esc(s.titulo)} · definición del modelo</span>
+        <h1 style="margin:6px 0 0">Definición del modelo</h1>
         <p class="lead" style="margin-top:8px">Definición, alcance y funciones clave.</p>
         <p class="small">Los tres pasos que no puede dar la aplicación. En cada uno tienes la
           evidencia que ha producido el grupo, un texto listo para pegar en tu IA, y el sitio
@@ -2952,14 +3069,17 @@ async function tallerFunciones(s, preguntas, volver){
           además tienen que haber pasado por la mesa de agrupación.</div>`}
       </div>
 
-      ${[{f:"def", n:"1", h:"La definición de liderazgo",
-          d:`Qué significa liderar en esta organización, dicho con las palabras del grupo.
-             Es lo primero que leerá quien responda la encuesta meses después.`,
+      ${[{f:"def", n:"1", h:"La definición del modelo",
+          d:`Cuatro frases, y cada una responde a una cosa: <b>qué se entiende por
+             liderazgo</b> aquí · <b>qué se espera</b> de quien lidera · <b>cómo operan</b> ·
+             <b>qué resultados</b> se pretende que obtengan. Es lo primero que leerá quien
+             responda la encuesta de evaluación, meses después y sin haber estado en la sala.`,
           vacio:`Sin evidencia todavía. Necesitas <b>L04</b> («liderar aquí es…») terminada y
              agrupada en la mesa de tarjetas.`},
-         {f:"alc", n:"2", h:"El alcance: grupos y niveles",
-          d:`A quién se llama líder aquí y con qué niveles. La evidencia son las aportaciones
-             de L08 —qué puestos— y L09 —qué niveles—, ya agrupadas y votadas.`,
+         {f:"alc", n:"2", h:"El alcance: grupos de líderes y niveles",
+          d:`Pares <b>grupo → nivel de responsabilidad</b>. La evidencia son las aportaciones
+             de L08 —qué puestos— y L09 —con qué criterios se distinguen los niveles—, ya
+             agrupadas y votadas.`,
           vacio:`Sin evidencia todavía. Necesitas <b>L08</b> y <b>L09</b> terminadas y
              agrupadas en la mesa de tarjetas.`},
          {f:"fun", n:"3", h:"Las funciones clave",
@@ -2967,7 +3087,7 @@ async function tallerFunciones(s, preguntas, volver){
              que mezclan lo más votado de ambas listas.`,
           vacio:`Sin evidencia todavía. Necesitas <b>L11</b> y <b>L13</b> terminadas y con al
              menos tres respuestas.`}].map(fase => {
-        const bs = deFase(fase.f);
+        const bs = principales(fase.f), ap = apoyos(fase.f);
         return `<div class="card">
         <span class="phasetag">paso ${fase.n} de 3</span>
         <h2 style="margin:6px 0 0">${fase.h}</h2>
@@ -2977,8 +3097,11 @@ async function tallerFunciones(s, preguntas, volver){
             <div class="lista">${b.filas.slice(0,15).map(f=>`
               <div class="it"><div>${esc(f.texto)}</div>${
                 f.n != null ? `<b>${f.n}</b>` : ""}</div>`).join("")}</div></div>`).join("")}</div>
+          ${ap.length ? `<p class="small" style="margin-top:14px">El texto para la IA lleva
+            además, como contexto: ${ap.map(b=>"<b>" + esc(b.c) + "</b> " + esc(b.t.toLowerCase())
+            ).join(" · ")}.</p>` : ""}
           <div class="btnrow">
-            <button class="btn ghost" data-copia="${fase.f}">Copiar para tu IA</button>
+            <button class="btn ghost" data-copia="${fase.f}">Copiar esto para tu IA</button>
             <span class="small" id="copiado-${fase.f}"></span></div>
           ${fase.f === "def" ? `<p class="note">Los tres pasos tienen su propio texto para la
             IA: copian la evidencia de ese paso con sus votos y un encargo distinto. Léelos
@@ -3030,7 +3153,7 @@ async function tallerFunciones(s, preguntas, volver){
         <div class="btnrow">
           <button class="btn ghost" id="mas">Añadir otra</button>
           <button class="btn" id="guardar">Guardar funciones</button></div>
-        <div id="aviso"></div>
+        <div id="aviso">${recado1}</div>
         <h3>Proyectar</h3>
         <p class="small">Lo que ve la sala mientras trabajáis. Se actualiza sola cada tres
           segundos, así que puedes escribir aquí y ver el cambio allí.</p>
@@ -3059,7 +3182,40 @@ async function tallerFunciones(s, preguntas, volver){
         <p class="note">Sustituye la lista entera de esas dos preguntas. Hazlo <b>antes</b> de
           abrirlas: si ya tienen respuestas, cambiar los elementos deja los resultados
           anteriores colgando de nombres que ya no existen.</p>
-      </div></div>`;
+      </div>
+
+      ${(() => {
+        // Qué falta para poder cerrar. Se comprueba sobre lo GUARDADO, no
+        // sobre lo que hay escrito en pantalla: cerrar un modelo que no
+        // está guardado dejaría un acta que no coincide con la sesión.
+        const g = s.modelo || {}, gf = (s.funciones||[]).filter(f=>f.nombre);
+        const pend = [!g.definicion && "la definición", !g.alcance && "el alcance",
+                      !gf.length && "al menos una función clave"].filter(Boolean);
+        const cerrado = g.cerrado_en;
+        return `<div class="card">
+        <h2>Cerrar el modelo</h2>
+        ${cerrado ? `<div class="aviso"><b>Modelo cerrado</b> el ${
+            new Date(cerrado).toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})
+          }. Puedes seguir editando y volver a cerrarlo: la fecha se actualiza.</div>`
+        : pend.length ? `<div class="aviso rojo">Todavía no se puede cerrar: falta
+            <b>${pend.join("</b>, <b>")}</b>. Y recuerda guardar, porque esto mira lo que hay
+            en la sesión, no lo que tienes escrito en pantalla sin guardar.</div>`
+        : `<p class="small">Ya está todo. Cerrar el modelo le pone fecha y lo deja disponible
+            como resultado definitivo: para proyectarlo en la sala y para el acta en PDF.</p>`}
+        <div class="btnrow">
+          <button class="btn" id="cerrarModelo" ${pend.length ? "disabled" : ""}>${
+            cerrado ? "Volver a cerrar con la versión de hoy" : "Cerrar el modelo"}</button>
+          <button class="btn ghost" id="proyModelo" ${pend.length ? "disabled" : ""}>Proyectar el modelo</button>
+          <button class="btn ghost" id="acta" ${pend.length ? "disabled" : ""}>Ver el acta · PDF</button></div>
+        <div id="aviso4"></div>
+        <p class="note">Cerrar no bloquea nada ni borra nada: no hay ninguna puerta que se
+          cierre de forma irreversible en este sistema, y esta tampoco. Lo que hace es poner
+          fecha a la versión acordada y dejar de tratar el modelo como un borrador. La
+          encuesta de evaluación hereda igualmente la última versión guardada, esté cerrada
+          o no; la fecha sirve para que dentro de un año sepas cuál era el texto que se
+          aprobó y cuándo.</p>
+      </div>`;})()}
+      </div>`;
 
     $("#atras").onclick = volver;
 
@@ -3068,7 +3224,11 @@ async function tallerFunciones(s, preguntas, volver){
       // modelo: cualquier repintado —añadir una fila, subirla, borrarla—
       // vuelve a dibujar la pantalla entera, y lo que no se haya leído
       // antes se pierde sin que nadie lo note hasta el día siguiente.
-      modelo = {definicion: $("#mdef").value.trim(), alcance: $("#malc").value.trim()};
+      // Se conserva lo que ya hubiera en `modelo` —hoy, la fecha de
+      // cierre—. Sobrescribir el objeto entero borraba esa fecha en el
+      // primer guardado posterior al cierre, y encima en silencio.
+      modelo = {...modelo, definicion: $("#mdef").value.trim(),
+                           alcance: $("#malc").value.trim()};
       return fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
                                definicion: $("#fd"+i).value.trim()}));
     };
@@ -3118,17 +3278,55 @@ async function tallerFunciones(s, preguntas, volver){
       await proyectar("funciones", "En la sala: las funciones tal como están ahora mismo.");
     };
 
+    const decir4 = (t, mal) => { const c = $("#aviso4");
+      if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
+
+    if($("#cerrarModelo")) $("#cerrarModelo").onclick = async () => {
+      const b = $("#cerrarModelo");
+      b.disabled = true; b.textContent = "Cerrando…";
+      try{
+        await guardar();
+        // La fecha la pone el navegador y no la base de datos porque es
+        // un dato de trabajo —«esta es la versión que aprobamos aquel
+        // día»—, no un sello de auditoría. Si algún día hace falta que
+        // sea infalsificable, se sube a un `default now()` en columna.
+        modelo = {...modelo, cerrado_en: new Date().toISOString()};
+        Object.assign(s, await API.actualizarSesion(s.id, {modelo}));
+        pinta();
+        decir4("Modelo cerrado. Ya puedes proyectarlo y sacar el acta.");
+      }catch(e){ b.disabled = false; decir4(esc(e.message||e), true); }
+    };
+
+    if($("#proyModelo")) $("#proyModelo").onclick = async () => {
+      await guardar().catch(()=>null);
+      try{ Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"modelo"}));
+        decir4("En la sala: el modelo completo —definición, alcance y funciones—. "
+          + "Se pasa de una parte a otra con las flechas del teclado o solo, cada 20 segundos.");
+      }catch(e){ decir4(esc(e.message||e), true); }
+    };
+
+    if($("#acta")) $("#acta").onclick = async () => {
+      await guardar().catch(()=>null);
+      actaModelo(s, () => tallerFunciones(s, preguntas, volver));
+    };
+
     $("#guardar").onclick = async () => {
       $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
       try{ const b = await guardar();
         const faltan = [!modelo.definicion && "la definición",
                         !modelo.alcance && "el alcance"].filter(Boolean);
-        $("#aviso").innerHTML = `<div class="aviso">Guardadas ${b.length} funciones y el
-          texto del modelo. La encuesta de evaluación podrá heredarlo de aquí.${
+        recado1 = `<div class="aviso">Guardadas ${b.length} funciones y el texto del modelo.
+          La encuesta de evaluación podrá heredarlo de aquí.${
           faltan.length ? ` <b>Falta ${faltan.join(" y ")}</b>: sin ese texto, quien responda
             la encuesta estará valorando funciones sueltas sin saber de dónde salen.` : ""}</div>`;
-      }catch(e){ $("#aviso").innerHTML = `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
-      $("#guardar").disabled = false; $("#guardar").textContent = "Guardar funciones";
+        // Se repinta porque «Cerrar el modelo» mira lo GUARDADO: sin esto,
+        // acabas de guardarlo todo y el botón sigue diciendo que falta.
+        pinta();
+      }catch(e){
+        recado1 = `<div class="aviso rojo">${esc(e.message||e)}</div>`;
+        $("#guardar").disabled = false; $("#guardar").textContent = "Guardar funciones";
+        if($("#aviso")) $("#aviso").innerHTML = recado1;
+      }
     };
 
     $("#volcar").onclick = async () => {
@@ -3296,8 +3494,17 @@ async function informeSesion(s, preguntas, volver){
   window.scrollTo({top:0});
 }
 
+/* Qué hoja del modelo cerrado está en la pared, cuándo giró por última vez
+   y si ya se ató el teclado. Fuera de `proyeccionMotor` porque su `pinta`
+   se rehace cada tres segundos y perdería el sitio en cada refresco. */
+const HOJA = {i:0, giro:0};
+
 async function proyeccionMotor(codigo, s){
   let timer = null;
+  // Qué está en la pared ahora mismo. Lo necesita el mando de teclado: si
+  // lo que se proyecta es el modelo cerrado, las flechas pasan sus hojas
+  // en vez de abrir y cerrar preguntas.
+  let vistaActual = "espera";
   const url = location.origin + location.pathname + "?s=" + encodeURIComponent(codigo);
 
 
@@ -3305,11 +3512,66 @@ async function proyeccionMotor(codigo, s){
     const n = await API.sesionPublica(codigo).catch(()=>null);
     if(!n){ app().innerHTML = `<div class="proy"><h1>Sesión no encontrada</h1></div>`; return; }
     const va = n.vista_activa || "espera";
+    vistaActual = va;
     let cuerpo = "";
 
     // El taller tiene dos pantallas: la evidencia que se mira mientras se
     // redacta, y las funciones ya escritas. Son la misma conversación en
     // dos momentos, y ninguna es una pregunta, así que no viajan por `q:`.
+    /* El modelo cerrado son tres pantallas —definición, alcance,
+       funciones— y no una sola: la definición son cuatro frases que hay
+       que poder leer desde el fondo de la sala, y si comparten pantalla
+       con diez funciones no se lee ninguna de las dos cosas.
+
+       Pasan solas cada veinte segundos, y con las flechas del teclado
+       cuando alguien quiere volver atrás para releer. El índice vive en
+       una variable del módulo porque este `pinta` se llama cada tres
+       segundos y perdería el sitio en cada refresco. */
+    if(va === "modelo"){
+      const m = n.modelo || {}, fs = n.funciones || [];
+      const hojas = [
+        {t:"Qué entendemos por liderazgo", p:m.definicion},
+        {t:"A quién consideramos líder",   p:m.alcance},
+        {t:"Las funciones clave",          fs}
+      ].filter(h => h.p || (h.fs && h.fs.length));
+      if(!hojas.length){
+        app().innerHTML = `<div class="proy"><h1>El modelo todavía no está escrito</h1></div>`;
+        return;
+      }
+      /* El paso del tiempo se resuelve ANTES de elegir la hoja. Hacerlo
+         después dejaba el índice una posición por delante de lo que se
+         estaba viendo, así que la primera flecha saltaba dos.
+         `giro` a cero es «acabo de llegar», no «hace 56 años». */
+      if(!HOJA.giro) HOJA.giro = Date.now();
+      if(Date.now() - HOJA.giro > 20000){ HOJA.giro = Date.now(); HOJA.i++; }
+      // Índice normalizado en los dos sentidos: con el ajuste solo por
+      // arriba, una flecha izquierda en la primera hoja dejaba el índice
+      // en -1 y el siguiente refresco reventaba en la pared de la sala.
+      HOJA.i = ((HOJA.i % hojas.length) + hojas.length) % hojas.length;
+      const h = hojas[HOJA.i];
+      // Las hojas de texto se centran en vertical: son cuatro frases en una
+      // pantalla de dos metros, y pegadas al borde de arriba parecen el
+      // encabezado de otra cosa que no llegó a cargar.
+      app().innerHTML = `<div class="proy"${h.fs ? "" :
+          ` style="min-height:78vh;display:flex;flex-direction:column;justify-content:center"`}>
+        <div class="small">${esc(n.titulo||"")}${m.cerrado_en
+          ? " · acordado el " + new Date(m.cerrado_en).toLocaleDateString("es-ES",
+              {day:"numeric", month:"long", year:"numeric"}) : ""}</div>
+        <h1>${esc(h.t)}</h1>
+        ${h.fs ? `<div class="funciones">${h.fs.map((f,i)=>`
+            <div class="fun"><b style="color:${tonoN(i)}">${i+1}</b>
+              <div><h3>${esc(f.nombre)}</h3>${
+                f.definicion ? `<p>${esc(f.definicion)}</p>` : ""}</div></div>`).join("")}</div>`
+          : `<p style="font-size:40px;line-height:1.4;max-width:20em">${esc(h.p)}</p>`}
+        <p class="small" style="margin-top:28px">${HOJA.i + 1} de ${hojas.length}
+          · las flechas ← → pasan de una a otra</p></div>`;
+      // Las flechas las gobierna el mando de teclado de más abajo, que ya
+      // existía para pasar de pregunta. Un segundo listener sobre las
+      // mismas teclas no «añade» nada: los dos se disparan y gana el que
+      // escribe último, que era el otro.
+      return;
+    }
+
     if(va === "taller" || va === "funciones"){
       const fs = n.funciones || [];
       if(va === "funciones"){
@@ -3402,6 +3664,17 @@ async function proyeccionMotor(codigo, s){
   };
 
   await pinta();
+
+  /* El refresco. Si esta función vuelve a entrar —un cambio de hash, un
+     reintento después de un corte de red—, el intervalo anterior seguiría
+     vivo repintando con el estado viejo. Se guarda en `window` para poder
+     apagarlo, que es lo único que sobrevive a la nueva llamada. */
+  const arrancar = () => {
+    clearInterval(window.__relojProy);
+    window.__relojProy = timer = setInterval(pinta, 3000);
+  };
+  window.addEventListener("beforeunload", () => clearInterval(window.__relojProy));
+
   // Mismo mando invisible que en cultura: la sala no ve tus controles.
   //   →  terminar la abierta y abrir la siguiente     ←  volver a la anterior
   //   Inicio  proyectar el código y el QR
@@ -3415,7 +3688,23 @@ async function proyeccionMotor(codigo, s){
       pinta();
     }catch(e){ /* sin sesión iniciada no se puede: es lo correcto */ }
   };
+  // Un solo mando por pestaña. `vistaProyeccion` puede volver a entrar aquí
+  // —un cambio de hash, un reintento tras un fallo de red— y cada entrada
+  // ataba otro listener: a la tercera, una flecha saltaba tres pantallas.
+  if(window.__mandoAtado) return arrancar();
+  window.__mandoAtado = true;
   window.addEventListener("keydown", ev => {
+    // Con el modelo cerrado en la pared, las flechas pasan sus tres hojas.
+    // Sin esta salida, una flecha aquí cerraría una pregunta de la sesión
+    // sin que nadie lo pidiera: el mando no distingue qué se está viendo.
+    if(vistaActual === "modelo" && (ev.key === "ArrowRight" || ev.key === "ArrowLeft"
+       || ev.key === " ")){
+      ev.preventDefault();
+      HOJA.i += ev.key === "ArrowLeft" ? -1 : 1;
+      HOJA.giro = Date.now();
+      pinta();
+      return;
+    }
     if(ev.key === "ArrowRight" || ev.key === " "){ ev.preventDefault(); mandar(async (s2, ps) => {
       const ab = ps.find(p=>p.estado === "abierta");
       if(ab) await API.actualizarPregunta(ab.id, {estado:"terminada"});
@@ -3435,8 +3724,7 @@ async function proyeccionMotor(codigo, s){
       await API.actualizarSesion(s2.id, {vista_activa:"espera"})); }
   });
 
-  timer = setInterval(pinta, 3000);
-  window.addEventListener("beforeunload", ()=>clearInterval(timer));
+  return arrancar();
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -3802,7 +4090,7 @@ async function consolaMotor(s){
             <button class="btn ghost" id="espera">Proyectar la espera</button>
             <button class="btn ghost" id="informe">Ver todos los resultados</button>
             ${String(s.instrumento||"").split("-")[0] === "liderazgo"
-              ? `<button class="btn ghost" id="taller">Taller del modelo</button>` : ""}
+              ? `<button class="btn ghost" id="taller">Definición del modelo</button>` : ""}
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
