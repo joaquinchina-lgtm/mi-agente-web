@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-menu="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -111,11 +111,6 @@ details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; 
 <style>
 :root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff}
 body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:18px;line-height:1.48;letter-spacing:-.008em}
-.rx-h{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
-.rx-h .in{max-width:1120px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
-.rx-h a.logo{font:700 18px/1 'Archivo',sans-serif;color:var(--ink);text-decoration:none;letter-spacing:-.03em}
-.rx-h nav a{color:var(--ink);text-decoration:none;font-size:15px;margin-left:18px}
-.rx-h nav a:hover{color:var(--brand)}
 .rx-s{max-width:820px;margin:0 auto;padding:0 24px}
 .rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
 .rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#5c6360;margin:0 0 18px}
@@ -225,18 +220,56 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 #agentes .app .matiz-wrap .out-label,#agentes .app .matiz-hint{color:#a8bab4}
 #agentes .app .matiz-wrap textarea{background:#080c0b;border-color:#2a3833}
 </style>
+  <link rel="stylesheet" href="/assets/nav.css">
 </head>
 <body>
 
-<header class="rx-h"><div class="in">
-  <a class="logo" href="https://joaquinromero.com/">JR</a>
-  <nav>
-    <a href="https://joaquinromero.com/#etapas">Trayectoria</a>
-    <a href="https://joaquinromero.com/#servicios">Servicios</a>
-    <a href="https://joaquinromero.com/#blog">Blog</a>
-    <a href="https://joaquinromero.com/">Inicio</a>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Blog</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+    </nav>
+
+    <button class="jr-burger" type="button"
+            aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <p class="jr-menu-kicker">Navegación</p>
+
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Blog</a>
   </nav>
-</div></header>
+
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/contacto/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
 
 <section class="rx-hero">
   <p class="kick">Reactor de Innovación</p>
@@ -775,5 +808,6 @@ document.querySelector('.stage') && document.querySelector('.stage').classList.a
   <span>&copy; Joaqu&iacute;n Romero Rold&aacute;n</span>
   <span><a href="https://joaquinromero.com/">Volver a joaquinromero.com</a></span>
 </footer>
+<script src="/assets/nav.js" defer></script>
 </body>
 </html>

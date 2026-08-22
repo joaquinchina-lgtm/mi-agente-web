@@ -1,0 +1,167 @@
+/* ===========================================================================
+   nav.css — navegación única de joaquinromero.com
+   Se enlaza desde TODAS las páginas:  <link rel="stylesheet" href="/assets/nav.css">
+   Todo va prefijado con .jr- para no chocar con el CSS existente.
+   =========================================================================== */
+
+:root{
+  --jr-brand:#32717E;
+  --jr-ink:#0e1326;
+  --jr-muted:#6b7280;
+  --jr-line:#e5e7eb;
+  --jr-h:64px;              /* altura de la cabecera */
+}
+
+/* --- cabecera ------------------------------------------------------------ */
+.jr-header{
+  position:sticky; top:0; z-index:50;
+  height:var(--jr-h); margin:0; padding:0;
+  background:rgba(255,255,255,.82);
+  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--jr-line);
+}
+.jr-nav{
+  max-width:1160px; margin:0 auto; padding:0 20px; height:100%;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.jr-brand{
+  font:700 17px/1 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.02em; color:var(--jr-ink); text-decoration:none;
+}
+.jr-links{display:flex; align-items:center; gap:22px}
+.jr-links a{
+  font:400 14px/1 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#374151; text-decoration:none; transition:color .15s ease;
+}
+.jr-links a:hover{color:var(--jr-ink)}
+.jr-links a[aria-current]{color:var(--jr-ink); font-weight:600}
+
+/* --- icono: dos trazos desnudos que mutan a X ---------------------------- */
+.jr-burger{
+  display:none; width:44px; height:44px; margin-right:-10px; padding:0;
+  border:0; background:none; cursor:pointer;
+  align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+/* reset defensivo: reactor.html trae un button:hover{background:#f2f4f7} que,
+   por especificidad, pintaría un recuadro gris detrás del icono */
+.jr-burger:hover,
+.jr-burger:focus,
+.jr-burger:active{background:none; border:0; box-shadow:none}
+.jr-burger:focus-visible{outline:2px solid var(--jr-brand); outline-offset:2px; border-radius:10px}
+.jr-burger span{position:relative; display:block; width:22px; height:14px}
+.jr-burger i{
+  position:absolute; left:0; width:22px; height:2px; border-radius:2px;
+  background:var(--jr-ink);
+  transition:transform .28s cubic-bezier(.4,0,.2,1),
+             width .28s cubic-bezier(.4,0,.2,1),
+             background .2s ease;
+}
+.jr-burger i:nth-child(1){top:0}
+.jr-burger i:nth-child(2){top:12px; width:15px}
+.jr-burger[aria-expanded="true"] i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.jr-burger[aria-expanded="true"] i:nth-child(2){transform:translateY(-6px) rotate(-45deg); width:22px}
+
+/* IMPRESCINDIBLE: .jr-menu declara display:flex, que gana a la regla [hidden]
+   del navegador. Sin esto el panel sigue ocupando la pantalla, invisible pero
+   interceptando todos los clics. */
+.jr-menu[hidden],
+.jr-scrim[hidden]{display:none !important}
+
+/* --- velo ---------------------------------------------------------------- */
+.jr-scrim{
+  position:fixed; inset:0; z-index:10000;  /* por encima del banner de cookies (9999) */
+  background:rgba(11,19,36,.42);
+  opacity:0; transition:opacity .24s ease;
+}
+.jr-scrim.is-open{opacity:1}
+
+/* --- panel a pantalla completa ------------------------------------------- */
+.jr-menu{
+  position:fixed; inset:0; z-index:10001;  /* por encima del banner de cookies (9999) */
+  display:flex; flex-direction:column;
+  background:#fff;
+  padding:0 20px calc(24px + env(safe-area-inset-bottom));
+  opacity:0; transform:translateY(-10px);
+  transition:opacity .24s ease, transform .28s cubic-bezier(.16,1,.3,1);
+  overscroll-behavior:contain;
+}
+.jr-menu.is-open{opacity:1; transform:none}
+
+.jr-menu-top{
+  flex:0 0 auto; height:var(--jr-h);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.jr-menu-top .jr-burger{display:inline-flex}
+
+.jr-menu-kicker{
+  margin:22px 0 6px;
+  font:600 11px/1 Inter,system-ui,sans-serif; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--jr-muted);
+}
+
+.jr-menu-list{flex:1 1 auto; display:flex; flex-direction:column; overflow-y:auto; min-height:0}
+.jr-menu-list a{
+  display:flex; align-items:baseline; gap:14px;
+  min-height:60px; padding:14px 2px;
+  font:600 22px/1.2 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:-.015em; color:var(--jr-ink); text-decoration:none;
+  border-bottom:1px solid var(--jr-line);
+  opacity:0; transform:translateY(10px);
+  transition:opacity .3s ease, transform .38s cubic-bezier(.16,1,.3,1);
+}
+.jr-menu.is-open .jr-menu-list a{
+  opacity:1; transform:none;
+  transition-delay:calc(60ms + var(--i,0) * 45ms);
+}
+.jr-menu-list a .num{
+  font:600 11px/1 Inter,system-ui,sans-serif; letter-spacing:.1em;
+  color:var(--jr-brand); min-width:20px; transform:translateY(-2px);
+}
+.jr-menu-list a[aria-current]{color:var(--jr-brand)}
+.jr-menu-list a:active{opacity:.6}
+
+.jr-menu-foot{flex:0 0 auto; padding-top:20px; display:flex; align-items:center; gap:16px}
+.jr-cta{
+  flex:1; text-align:center;
+  background:var(--jr-ink); color:#fff; text-decoration:none;
+  font:600 15px/1 Inter,system-ui,sans-serif;
+  padding:16px 18px; border-radius:12px;
+  opacity:0; transform:translateY(10px);
+  transition:opacity .3s ease, transform .38s cubic-bezier(.16,1,.3,1);
+}
+.jr-quiet{
+  font-size:13px; color:var(--jr-muted); text-decoration:none; white-space:nowrap;
+  opacity:0; transition:opacity .3s ease;
+}
+.jr-menu.is-open .jr-cta{opacity:1; transform:none; transition-delay:.32s}
+.jr-menu.is-open .jr-quiet{opacity:1; transition-delay:.36s}
+
+/* --- variante oscura: basta con <html data-menu="dark"> ------------------- */
+html[data-menu="dark"] .jr-menu{background:var(--jr-ink)}
+html[data-menu="dark"] .jr-menu .jr-brand,
+html[data-menu="dark"] .jr-menu-list a{color:#fff}
+html[data-menu="dark"] .jr-menu-list a{border-bottom-color:rgba(255,255,255,.13)}
+html[data-menu="dark"] .jr-menu-list a[aria-current],
+html[data-menu="dark"] .jr-menu-list a .num{color:#7fd4e2}
+html[data-menu="dark"] .jr-menu-kicker{color:rgba(255,255,255,.5)}
+html[data-menu="dark"] .jr-menu .jr-burger i{background:#fff}
+html[data-menu="dark"] .jr-cta{background:#fff; color:var(--jr-ink)}
+html[data-menu="dark"] .jr-quiet{color:rgba(255,255,255,.6)}
+
+/* --- móvil --------------------------------------------------------------- */
+@media (max-width:767px){
+  .jr-links{display:none}
+  .jr-burger{display:inline-flex}
+}
+
+/* --- accesibilidad ------------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  .jr-menu,.jr-menu-list a,.jr-cta,.jr-quiet,.jr-scrim,.jr-burger i{
+    transition-duration:.01ms !important;
+    transition-delay:0ms !important;
+  }
+}
+body.jr-locked{overflow:hidden}
+.jr-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}

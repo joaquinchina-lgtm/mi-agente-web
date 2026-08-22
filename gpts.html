@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-menu="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -185,25 +185,61 @@
     }
 
   </style>
+  <link rel="stylesheet" href="/assets/nav.css">
 </head>
 
 
 <body>
 
   <!-- HEADER -->
-  <header>
-    <div class="container nav">
-      <a class="brand" href="index.html#home">JR</a>
-      <nav class="links">
-        <a href="#innovacion-ai">Innovación IA</a>
-        <a href="#estrategia-ai">Estrategia IA</a>
-        <a href="#liderazgo-ai">Liderazgo IA</a>
-        <a href="index.html#home">Volver</a>
-      </nav>
-    </div>
-  </header>
 
-  <div class="container">
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Blog</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+    </nav>
+
+    <button class="jr-burger" type="button"
+            aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <p class="jr-menu-kicker">Navegación</p>
+
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Blog</a>
+  </nav>
+
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/contacto/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+<div class="container">
 
     <div class="hero" style="background: linear-gradient(135deg, var(--brand) 0%, #0b3a44 100%);">
       <h1>AGENTES IA</h1>
@@ -648,6 +684,7 @@
 
   </div>
 
+<script src="/assets/nav.js" defer></script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head>
+<html lang="es" data-menu="dark"><head>
   <!-- ====== Config global ====== -->
   <script>
     window.BACKEND = "https://jr-gpt-backend-1.onrender.com";  /* pon tu URL real si cambia */
@@ -206,79 +206,7 @@
     /* Oculta el botón que dispara /api/ask si existiera */
     #jr-agent-send { display: none!important; }
 
-    /* ====== Hamburguesa + menú móvil ====== */
-    .nav-toggle{
-      display:none;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      border-radius:12px;
-      width:44px;
-      height:44px;
-      padding:10px;
-      cursor:pointer;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      box-shadow: 0 10px 18px rgba(2,6,23,.04);
-    }
-
-    .nav-toggle:focus{
-      outline:none;
-      box-shadow:0 0 0 3px rgba(14,165,233,.15);
-      border-color: var(--brand);
-    }
-
-    .nav-toggle-bar{
-      display:block;
-      width:18px;
-      height:2px;
-      background:#0b1324;
-      border-radius:2px;
-    }
-
-    /* Móvil: oculto links desktop y muestro hamburguesa */
-    @media (max-width: 767px){
-      .nav .links{ display:none; }
-      .nav-toggle{ display:inline-flex; }
-    }
-
-    /* Panel móvil (debajo del header sticky) */
-    .mobile-menu{
-      position: fixed;
-      top: 64px;              /* tu header mide 64px */
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,.98);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid #e5e7eb;
-      z-index: 49;            /* header está en 50 */
-    }
-
-    .mobile-menu-inner{
-      max-width: 1160px;
-      margin: 0 auto;
-      padding: 14px 20px 18px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .mobile-menu a{
-      padding: 10px 12px;
-      border-radius: 12px;
-      color:#111827;
-      font-weight:600;
-      text-decoration:none;
-    }
-
-    .mobile-menu a:hover{
-      background:#f3f4f6;
-    }
-
-    /* (Opcional) Bloqueo de scroll cuando el menú está abierto */
-    body.menu-open{
-      overflow:hidden;
-    }
+    /* CSS de la hamburguesa retirado: ahora en /assets/nav.css */
 
   /* 1) Que la caja NO se estire a todo el ancho */
   .hero-overlay-box{
@@ -704,89 +632,11 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 
 
 <style id="fix-responsive-nav">
-/* =========================================================
-   FIX DEFINITIVO NAV + HEADER (desktop vs móvil)
-   ========================================================= */
-
-/* Desktop (por defecto) */
-.nav .links{ display:flex; }
-.nav-toggle{ display:none !important; }      /* nunca en desktop */
-.mobile-menu{ display:none; }               /* solo cuando se abre */
-
-/* Móvil */
+/* El CSS de navegación vive ahora en /assets/nav.css.
+   Aquí solo queda lo que no era navegación. */
 @media (max-width: 767px){
-  .nav .links{ display:none !important; }   /* en móvil: NO links */
-  .nav-toggle{ display:flex !important; }  /* en móvil: SÍ hamburguesa */
-
-  /* Header SEMITRANSPARENTE sobre el vídeo */
-  header{
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    background:  rgba(0,0,0,0.25) !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    z-index: 60;
-  }
-  header .nav,
-  header .container,
-  header .nav-inner{
-    background:  rgba(0,0,0,0.25);   /* negro semitransparente */
- !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  /* Botón hamburguesa (3 barras redondeadas) */
-  .nav-toggle{
-    width: 46px;
-    height: 46px;
-    padding: 0;
-    background: transparent !important;
-    border: 1px solid rgba(229,231,235,.70) !important;
-    border-radius: 12px;
-    box-shadow: none !important;
-
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-toggle-bar{
-    width: 26px;
-    height: 2px;
-    background: rgba(229,231,235,.95) !important;
-    border-radius: 999px;
-    display:block;
-  }
-
-  /* JR recuadrado igual que hamburguesa */
-  a.brand, .nav a.brand{
-    width: 46px;
-    height: 46px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    background: transparent !important;
-    border: 1px solid rgba(229,231,235,.70) !important;
-    border-radius: 12px;
-
-    color: rgba(229,231,235,.95) !important;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: none !important;
-  }
-
-  /* Para que anchors no queden tapados por el header fijo */
   section{ scroll-margin-top: 80px; }
 }
-
-/* Menú móvil: solo visible cuando se abre (tu JS añade body.menu-open) */
-body.menu-open .mobile-menu{ display:block; }
 </style>
 
 <style>
@@ -839,50 +689,56 @@ body.menu-open .mobile-menu{ display:block; }
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..800;1,300..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/nav.css">
 </head>
 
 <body>
-<header>
-  <div class="container nav">
-    <a class="brand" href="#home" aria-label="Ir al inicio">JR</a>
 
-    <!-- Botón hamburguesa (solo móvil) -->
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">
-      <span class="sr-only">Abrir menú</span>
-      <span class="nav-toggle-bar" aria-hidden="true"></span>
-      <span class="nav-toggle-bar" aria-hidden="true"></span>
-      <span class="nav-toggle-bar" aria-hidden="true"></span>
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Blog</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+    </nav>
+
+    <button class="jr-burger" type="button"
+            aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
     </button>
-
-    <!-- Menú desktop -->
-    <nav class="links" aria-label="Secciones del sitio">
-      
-      
-      
-      
-      
-      
-      
-      
-      
-    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#red">Red</a><a href="#blog">Blog</a><a href="/interno/" rel="nofollow">Área interna</a></nav>
-  </div>
-
-  <!-- Panel móvil (drawer) -->
-  <div id="mobile-menu" class="mobile-menu" hidden="">
-    <div class="mobile-menu-inner">
-      
-      
-      
-      
-      
-      
-      
-      
-      
-    <a href="#etapas">Trayectoria</a><a href="#proyectos">Proyectos recientes</a><a href="#servicios">Servicios</a><a href="#red">Red</a><a href="#blog">Blog</a></div>
   </div>
 </header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <p class="jr-menu-kicker">Navegación</p>
+
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Blog</a>
+  </nav>
+
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/contacto/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
 
 <section id="home" class="hero"><div class="hero-media"><img class="hero-photo" src="assets/img/hero-jrr-2400.webp" srcset="assets/img/hero-jrr-1100.webp 1100w, assets/img/hero-jrr-2400.webp 2400w" sizes="100vw" width="2400" height="1340" fetchpriority="high" decoding="async" alt="Joaquín Romero Roldán, consejero y asesor independiente"></div>
   
@@ -1624,45 +1480,7 @@ document.addEventListener("DOMContentLoaded", function () {
   })();
 </script>
 
-<script>
-(function(){
-  const btn  = document.querySelector('.nav-toggle');
-  const menu = document.getElementById('mobile-menu');
-  if(!btn || !menu) return;
-
-  function openMenu(){
-    menu.hidden = false;
-    btn.setAttribute('aria-expanded','true');
-    document.body.classList.add('menu-open');
-  }
-  function closeMenu(){
-    menu.hidden = true;
-    btn.setAttribute('aria-expanded','false');
-    document.body.classList.remove('menu-open');
-  }
-  function toggleMenu(){
-    const isOpen = btn.getAttribute('aria-expanded') === 'true';
-    isOpen ? closeMenu() : openMenu();
-  }
-
-  btn.addEventListener('click', toggleMenu);
-
-  // Cierra al hacer click en un enlace
-  menu.addEventListener('click', (e) => {
-    const a = e.target.closest('a');
-    if(a) closeMenu();
-  });
-
-  // Cierra con ESC
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape') closeMenu();
-  });
-
-  // Si pasas a desktop, cierra
-  const mq = window.matchMedia('(min-width: 768px)');
-  mq.addEventListener?.('change', () => { if(mq.matches) closeMenu(); });
-})();
-</script>
+<!-- el JS del menu vive ahora en el asset compartido -->
 
 
 
@@ -1876,4 +1694,19 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
 
 
 
+<style id="fix-hero-cita">
+@media (max-width: 900px){
+  /* La cabecera ya no es fixed, así que el hero no debe reservarle alto.
+     Se pone --hdr a 0 y no padding-top:0, porque la cita se posiciona con
+     top:var(--hdr): quitando solo el padding, la cita quedaba 64px por debajo
+     del borde superior de la foto. */
+  #home.hero{ --hdr: 0px; padding-top: 0; }
+
+  /* La cita llevaba aspect-ratio:.855, que la hacía ~32px más alta que la foto
+     (3/2). Ese sobrante caía encima de "Joaquín Romero Roldán". Se iguala a la
+     altura real de la foto: ancho del viewport dividido por 1.5. */
+  #home.hero .hero-quote{ aspect-ratio: auto; height: calc(100vw / 1.5); }
+}
+</style>
+<script src="/assets/nav.js" defer></script>
 </body></html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-menu="dark">
 <head>
 <meta charset="utf-8">
 <link rel="canonical" href="https://joaquinromero.com/blog/art01.html">
@@ -18,7 +18,7 @@
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fregona, Chupa Chups, futbolín... no todas nuestras innovaciones pasaron por "poner palos a las cosas".">
+<meta property="og:image:alt" content="Fregona, Chupa Chups, futbolín... no todas nuestras innovaciones pasaron por &quot;poner palos a las cosas&quot;.">
 
 
 <!-- (Opcional pero recomendable) Twitter Card: muchas apps lo leen también -->
@@ -39,11 +39,6 @@
     html,body{margin:0;background:var(--bg);color:#111827;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
     a{color:var(--brand);text-decoration:none}
     a:hover{text-decoration:underline}
-    header.site{position:sticky;top:0;backdrop-filter:blur(8px);background:rgba(255,255,255,.8);border-bottom:1px solid #e5e7eb;z-index:40}
-    .nav{max-width:1160px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px}
-    .nav .brand{font-weight:600;color:#0b1324}
-    .nav .links a{margin-left:16px;font-size:14px;color:#374151}
-    .nav .links a:hover{color:#111827}
 
     /* ======= LECTURA ======= */
     .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
@@ -145,28 +140,59 @@ p, li{ line-height:1.65; }
 img[width], img[height]{ width:100% !important; height:auto !important; }
 
   </style>
+  <link rel="stylesheet" href="/assets/nav.css">
 </head>
 <body>
   <!-- barra de progreso -->
   <div class="progress" id="progress"></div>
 
   <!-- Header del sitio -->
-  <header class="site">
-    <div class="nav">
-      <a class="brand" href="../index.html#home">JR</a>
-      <nav class="links" aria-label="Secciones del sitio">
-        <a href="../index.html#innovacion">Innovación</a>
-        <a href="../index.html#estrategia">Estrategia</a>
-        <a href="../index.html#liderazgo">Liderazgo</a>
-        <a href="../index.html#consejos">Consejero</a>
-        <a href="../index.html#trayectoria">Trayectoria</a>
-        <a href="../index.html#socios">Socios</a>
-        <a href="../index.html#red">Red</a>
-        <a href="../index.html#galeria">Hitos</a>
-        <a href="../index.html#blog" class="active">Blog</a>
-      </nav>
-    </div>
-  </header>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Blog</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+    </nav>
+
+    <button class="jr-burger" type="button"
+            aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <p class="jr-menu-kicker">Navegación</p>
+
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Blog</a>
+  </nav>
+
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/contacto/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
 
 <main class="article-grid container">
     <article class="article" itemscope itemtype="https://schema.org/BlogPosting">
@@ -265,5 +291,6 @@ Una empresa o institución crece más cuando se abre a la posibilidad de estar e
       onScroll();
     })();
   </script>
+<script src="/assets/nav.js" defer></script>
 </body>
 </html>
