@@ -1819,8 +1819,10 @@ async function participanteMotor(codigo, s){
             <div class="field"><input id="tj${i}" maxlength="${lim}"
               placeholder="${i===0?"Escribe aquí":"Otra idea (opcional)"}" autocomplete="off"></div>`).join("")}</div>
           <div id="aviso"></div>
-          <div class="btnrow"><button class="btn" id="env">Enviar</button></div>
+          <div class="btnrow"><button class="btn" id="env">Enviar</button>
+            <button class="btn ghost sm" id="todas">Ver todas</button></div>
         </div></div>`;
+        $("#todas").onclick = () => { estado.paso = "lista"; pintar(); };
         $("#env").onclick = async () => {
           const txt = Array.from({length:maxA},(_,i)=>$("#tj"+i).value.trim()).filter(Boolean);
           if(!txt.length){ $("#aviso").innerHTML =
@@ -1845,20 +1847,27 @@ async function participanteMotor(codigo, s){
         <div id="saltar"></div>
         <span class="phasetag">${esc(p.codigo||"")} · votar</span>
         <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
-        <p class="small">Elige hasta ${maxV} de los temas en que se han agrupado las respuestas.</p>
+        ${(g.grupos||[]).length
+          ? `<p class="small">Elige hasta ${maxV} de los temas en que se han agrupado
+             las respuestas.</p>`
+          : `<div class="aviso">Todavía no hay temas que votar: quien conduce la sesión está
+             agrupando las respuestas. Aparecerán aquí en cuanto termine.</div>`}
         <div id="gs">${(g.grupos||[]).map(x=>
           `<button type="button" class="btn ghost" data-g="${esc(x.id)}"
              style="display:block;width:100%;text-align:left;margin:6px 0">${esc(x.etiqueta)}</button>`).join("")}</div>
         <div id="aviso"></div>
-        <div class="btnrow"><button class="btn" id="env">Enviar votos</button></div>
+        <div class="btnrow">${(g.grupos||[]).length
+            ? `<button class="btn" id="env">Enviar votos</button>` : ""}
+          <button class="btn ghost sm" id="todas">Ver todas</button></div>
       </div></div>`;
+      $("#todas").onclick = () => { estado.paso = "lista"; pintar(); };
       app().querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
         const id = b.dataset.g;
         if(sel.has(id)) sel.delete(id); else if(sel.size < maxV) sel.add(id);
         app().querySelectorAll("[data-g]").forEach(x =>
           x.classList.toggle("ghost", !sel.has(x.dataset.g)));
       });
-      $("#env").onclick = async () => {
+      if($("#env")) $("#env").onclick = async () => {
         if(!sel.size){ $("#aviso").innerHTML =
           `<div class="aviso rojo">Elige al menos uno.</div>`; return; }
         $("#env").disabled = true; $("#env").textContent = "Guardando…";
