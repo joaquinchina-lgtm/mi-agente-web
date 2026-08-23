@@ -293,19 +293,42 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .pares th{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-secondary);text-align:left;padding:0 8px 8px 0;font-weight:600}
 .pares td{padding:0 8px 8px 0;vertical-align:top;text-align:left}
-.pares td:last-child{width:1%;white-space:nowrap;padding-right:0}
+/* Solo en la tabla EDITABLE: la última columna es el mando de filas y no
+   debe partirse. En la de lectura, esa misma última columna es una frase
+   de veinte palabras, y `nowrap` la sacaba de la pantalla del móvil. */
+.pares:not(.leida) td:last-child{width:1%;white-space:nowrap;padding-right:0}
 .pares input{margin:0}
 .pares .mueve{display:flex;gap:4px;padding-top:4px}
 /* En un móvil dos columnas de texto no caben: cada fila pasa a bloque. */
 @media (max-width:640px){
-  .pares, .pares tr, .pares td{display:block;width:auto}
+  .pares:not(.leida), .pares:not(.leida) tr, .pares:not(.leida) td{display:block;width:auto}
   .pares thead, .pares th{display:none}
-  .pares tr{border-bottom:1px solid var(--grid);padding-bottom:10px;margin-bottom:10px}
-  .pares td:last-child{width:auto}
+  .pares:not(.leida) tr{border-bottom:1px solid var(--grid);
+    padding-bottom:10px;margin-bottom:10px}
+  .pares:not(.leida) td:last-child{width:auto}
 }
-/* La misma tabla, ya sin editar: acta, proyección y encuesta. */
-.pares.leida td{padding:10px 14px 10px 0;border-bottom:1px solid var(--grid);font-size:17px}
+/* La misma tabla, ya sin editar: acta, proyección y encuesta.
+   `table-layout:fixed` + `overflow-wrap` porque la segunda columna lleva
+   una frase de veinte palabras: sin eso la tabla se ensancha hasta lo que
+   mida la frase más larga y en un móvil de 390 px se sale de la pantalla.
+   Lo detectó la prueba midiendo el desborde, no el ojo. */
+.pares.leida{table-layout:fixed}
+.pares.leida td{padding:10px 14px 10px 0;border-bottom:1px solid var(--grid);font-size:17px;
+  overflow-wrap:anywhere}
 .pares.leida td:first-child{font-weight:650;width:40%}
+/* En el móvil, cada par se lee como un bloque: etiqueta arriba, nivel
+   debajo. Dos columnas de texto en 390 px no son dos columnas. Todo el
+   árbol de la tabla pasa a bloque —table, thead, tbody, tr, td— porque
+   dejar uno solo en `display:table*` basta para que el ancho lo siga
+   marcando el contenido y la tabla se salga de la pantalla. */
+@media (max-width:640px){
+  .pares.leida,.pares.leida tbody,.pares.leida tr,.pares.leida td{
+    display:block;width:auto;max-width:100%}
+  .pares.leida thead{display:none}
+  .pares.leida tr{border-bottom:1px solid var(--grid);padding:8px 0}
+  .pares.leida td{border-bottom:0;padding:0 0 2px}
+  .pares.leida td:last-child{color:var(--text-secondary)}
+}
 .matriz{width:100%;border-collapse:separate;border-spacing:2px;margin-top:18px}
 .matriz th{font-size:16px;font-weight:600;color:var(--text-secondary);text-align:left;
   padding:6px 8px;vertical-align:bottom}
@@ -2875,9 +2898,13 @@ function cuerpoResultado(p, r, cab, pie){
 function tablaAlcance(grupos, grande){
   const g = (grupos || []).filter(x => x && (x.grupo || x.nivel));
   if(!g.length) return "";
+  // `thead` de verdad y no una fila con `th` sueltos: es lo que permite
+  // esconder la cabecera en el móvil, donde cada par se lee como un
+  // bloque y unos encabezados de columna sobran.
   return `<table class="pares leida"${grande ? ` style="font-size:26px"` : ""}>
-    <tr><th>Tipo de responsable</th><th>Nivel de responsabilidad</th></tr>
-    ${g.map(x=>`<tr><td>${esc(x.grupo||"—")}</td><td>${esc(x.nivel||"—")}</td></tr>`).join("")}
+    <thead><tr><th>Tipo de responsable</th><th>Nivel de responsabilidad</th></tr></thead>
+    <tbody>${g.map(x=>`<tr><td>${esc(x.grupo||"—")}</td>
+      <td>${esc(x.nivel||"—")}</td></tr>`).join("")}</tbody>
   </table>`;
 }
 
@@ -4233,11 +4260,13 @@ async function consolaMotor(s){
           garantiza que el texto sea el que acordó el comité. Enlazar solo se puede hacer al
           crear la sesión.</div>`}
         ${mod.definicion ? `<h3>Definición</h3><p>${esc(mod.definicion)}</p>` : ""}
-        ${mod.alcance ? `<h3>Alcance</h3><p>${esc(mod.alcance)}</p>` : ""}
-        ${(!mod.definicion && !mod.alcance && origen) ? `<div class="aviso">El taller no tiene
-          escrita ni la definición ni el alcance. Se pueden escribir en su pantalla de
-          «Taller de funciones clave»; sin ellos, quien responda valora las funciones sin
-          saber de dónde salen.</div>` : ""}
+        ${(mod.alcance || (mod.grupos||[]).length) ? `<h3>Alcance</h3>
+          ${mod.alcance ? `<p>${esc(mod.alcance)}</p>` : ""}
+          ${(mod.grupos||[]).length ? tablaAlcance(mod.grupos) : ""}` : ""}
+        ${(!mod.definicion && !mod.alcance && !(mod.grupos||[]).length && origen)
+          ? `<div class="aviso">El taller no tiene escrito el modelo. Se escribe en su
+             pantalla de «Taller de modelo de liderazgo»; sin ese texto, quien responda
+             valora las funciones sin saber de dónde salen.</div>` : ""}
         ${fs.length ? `<h3>Funciones clave <span class="estado">${fs.length}</span></h3>
           <div class="lista">${fs.map(f=>`<div class="it"><div><b>${esc(f.nombre)}</b>
             ${f.definicion ? `<div class="small">${esc(f.definicion)}</div>`
@@ -4246,6 +4275,24 @@ async function consolaMotor(s){
           <div class="btnrow">
             <button class="btn" id="volcarEva">Volcar en las preguntas</button></div>
           <h3>Cobertura de la parte escrita</h3>
+          ${(() => {
+            /* Cuántas funciones tienen ya su pantalla de texto. Se cuenta
+               por código —EX01…, EX02…— y no por título, porque el título
+               lleva el nombre de la función y ese nombre se puede haber
+               cambiado en el taller después de generar las pantallas. */
+            const conPantalla = new Set(preguntas.map(p => p.codigo || "")
+              .filter(c => /^EX\d\d/.test(c)).map(c => c.slice(0,4)));
+            const n = conPantalla.size;
+            if(n >= fs.length && fs.length) return `<div class="aviso">Las
+              <b>${fs.length} funciones</b> tienen su pantalla de texto. Cada persona se
+              pronuncia sobre todas.</div>`;
+            return `<div class="aviso rojo"><b>${n} de ${fs.length} funciones tienen pantalla
+              de texto.</b> Tal como está, esta encuesta mide las funciones con las dos
+              matrices —eso sí lo responde todo el mundo sobre todas— pero <b>no recoge ni un
+              comentario</b> sobre ${fs.length - n === fs.length ? "ninguna"
+                : "las " + (fs.length - n) + " que faltan"}. Genera las pantallas con uno de
+              los botones de abajo antes de repartir el enlace.</div>`;
+          })()}
           <p class="small">Las dos matrices ya obligan a puntuar <b>todas</b> las funciones:
             el móvil no deja enviar con una fila sin valorar. Esto extiende la cobertura al
             texto libre, para que ninguna función se quede sin comentarios.</p>
@@ -4484,6 +4531,20 @@ async function consolaMotor(s){
         await API.actualizarPregunta(p.id, {config: cfg});
         hechas.push(d.c);
       }
+      /* E03 —«¿a qué colectivo perteneces?»— sale de la PRIMERA COLUMNA de
+         la tabla del alcance. Es el mismo vocabulario con el que el comité
+         definió a quién llama líder, así que al cruzar los resultados por
+         colectivo las categorías coinciden con las del modelo en vez de
+         ser una lista paralela inventada aquí. Se añade «Otra» al final:
+         siempre hay alguien que no se reconoce en ninguna. */
+      const cols = ((origen && origen.modelo) || s.modelo || {}).grupos || [];
+      const cats = cols.map(g => (g.grupo||"").trim()).filter(Boolean);
+      const p03 = preguntas.find(x => x.codigo === "E03");
+      if(p03 && cats.length){
+        await API.actualizarPregunta(p03.id,
+          {config: {...(p03.config||{}), opciones: cats.concat(["Otra"])}});
+        hechas.push("E03");
+      } else if(p03 && !cats.length){ faltan.push("E03 (la tabla del alcance está vacía)"); }
       preguntas = await API.preguntas(s.id);
       // `await`: `pinta()` redibuja la pantalla entera. Si el aviso se
       // escribe antes de que termine, se borra con el resto y nadie llega
@@ -5373,11 +5434,12 @@ const BANCO_EVA = [
      + "equipo y cuánta antigüedad tiene, y eso viaja con cada envío como segmento. "
      + "Añádela solo si necesitas el tramo fino de veteranía en el mando.",
  cfg:{opciones:["No la ejerzo","Menos de 2 años","2–5 años","6–10 años","Más de 10 años"]}},
-{c:"E03", b:0, t:"unica", nuc:false, nat:"derivada",
+{c:"E03", b:0, t:"unica", nuc:true, nat:"derivada",
  q:"¿A qué colectivo perteneces en [ORGANIZACION]?",
- ayuda:"Derivada: escribe aquí las categorías de ESTE cliente. Cuidado con dejar "
-     + "grupos de tres o cuatro personas: un texto libre firmado por un grupo así "
-     + "deja de ser anónimo aunque el recuento lo sea.",
+ ayuda:"Se rellena al volcar, con la primera columna de la tabla del alcance: los "
+     + "mismos colectivos con los que el comité definió a quién llama líder. Cuidado "
+     + "con dejar grupos de tres o cuatro personas: un texto libre firmado por un "
+     + "grupo así deja de ser anónimo aunque el recuento lo sea.",
  cfg:{opciones:[]}},
 
 /* ── Bloque 1 · Conocimiento del modelo ─────────────────────────── */
@@ -5412,14 +5474,18 @@ const BANCO_EVA = [
      + "obliga a priorizar de verdad, porque en las matrices se puede poner un 5 a "
      + "todo y aquí no.",
  cfg:{opciones:[]}},
-{c:"E09", b:3, t:"abierta_campos", nuc:false, nat:"fija",
- q:"Sobre esa función clave que acabas de elegir:",
- ayuda:"Fuera del núcleo: si generas las pantallas por función desde la consola —una "
-     + "por cada función clave—, esta sobra y pregunta dos veces lo mismo. Añádela "
-     + "solo si NO vas a generarlas.",
- cfg:{campos:[{clave:"fuerte", etiqueta:"¿Qué se hace bien hoy?"},
-              {clave:"mejora", etiqueta:"¿Qué habría que mejorar?"},
-              {clave:"accion", etiqueta:"¿Qué acción concreta propones?"}]}},
+/* Aquí había una E09 —«sobre esa función clave que acabas de elegir»— con
+   los tres campos. Se ha quitado del banco a propósito.
+
+   Parecía la parte cualitativa del cuestionario y no lo era: cada persona
+   escribía sobre UNA función, la que hubiera elegido en E08. Al mirar los
+   resultados salía un montón de texto y daba la sensación de cobertura,
+   pero una función que nadie eligiera se quedaba sin un solo comentario, y
+   eso no se ve hasta que buscas y no hay nada.
+
+   La cobertura de verdad la generan las pantallas por función desde la
+   consola: una por cada función clave, con los tres campos dentro. Están a
+   un botón, y la tarjeta de la consola avisa cuando faltan. */
 {c:"E10", b:3, t:"abierta", nuc:false, nat:"fija",
  q:"¿Echas en falta alguna función clave, o sobra alguna de las que hay?",
  cfg:{maximo_caracteres:300}},
