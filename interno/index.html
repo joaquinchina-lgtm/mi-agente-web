@@ -1514,6 +1514,31 @@ async function participanteMotor(codigo, s){
   // Por eso la marca de «hecha» lleva la fase pegada.
   const clave = p => p.id + (p.tipo === "tarjetas" ? ":" + (p.fase || "recogida") : "");
   const hecha = p => !!estado.hechas[clave(p)];
+
+  /* CASILLAS QUE NO ARRASTRAN LO ANTERIOR
+     Ocho pantallas seguidas, una por función clave, con las mismas tres
+     etiquetas y —hasta ahora— los mismos `id`: `c0`, `c1`, `c2`. Para el
+     navegador de un móvil eso es el mismo formulario ocho veces, y lo
+     trata como tal: autorrelleno, restauración de formulario, sugerencia
+     del teclado. Resultado, lo que se escribió en la primera aparece
+     puesto en la segunda.
+
+     Dos medidas, porque cada una tapa un camino distinto:
+       `ident`   da a cada pregunta su propia identidad de campo, así que
+                 no hay nada guardado que encaje con la siguiente;
+       `limpiar` vacía lo pintado y lo repasa en el fotograma siguiente y
+                 un poco después, porque el navegador rellena cuando le
+                 parece —después de que el guion termine—. Solo vacía lo
+                 que nadie ha tocado: en cuanto escribes, la casilla es
+                 tuya y no se toca. */
+  const ident = p => "f" + String(p.id || p.codigo || "x").replace(/[^a-zA-Z0-9]/g,"").slice(-10) + "_";
+  const limpiar = raiz => {
+    const cs = () => [...raiz.querySelectorAll("input,textarea")];
+    cs().forEach(x => { x.value = ""; x.addEventListener("input", () => { x.dataset.mio = "1"; }); });
+    const repasa = () => cs().forEach(x => { if(!x.dataset.mio && x.value) x.value = ""; });
+    requestAnimationFrame(repasa);
+    setTimeout(repasa, 400);
+  };
   const respondible = p => {
     if(p.estado !== "abierta") return false;
     if(p.tipo !== "tarjetas") return true;
@@ -2006,18 +2031,30 @@ async function participanteMotor(codigo, s){
 
     } else if(p.tipo === "abierta"){
       const lim = cfg.maximo_caracteres || 300;
-      campo.innerHTML = `<div class="field"><textarea id="tx" rows="4" maxlength="${lim}"
+      const uid = ident(p);
+      campo.innerHTML = `<div class="field"><textarea id="${uid}tx" name="${uid}tx" rows="4"
+        maxlength="${lim}" data-c="0" autocomplete="off"
         placeholder="Escribe aquí"></textarea><p class="small" id="cnt">${lim} caracteres</p></div>`;
-      $("#tx").oninput = () => $("#cnt").textContent = (lim - $("#tx").value.length) + " caracteres";
-      leer = () => $("#tx").value.trim() ? {texto: $("#tx").value.trim()} : null;
+      const tx = campo.querySelector("textarea");
+      limpiar(campo);
+      tx.oninput = () => $("#cnt").textContent = (lim - tx.value.length) + " caracteres";
+      leer = () => tx.value.trim() ? {texto: tx.value.trim()} : null;
 
     } else if(p.tipo === "abierta_campos"){
       const cs = cfg.campos || [];
+      // El identificador de cada casilla lleva dentro el de la pregunta.
+      // Con `c0`, `c1`, `c2` repetidos en las ocho pantallas por función,
+      // el navegador del móvil las trata como el mismo formulario y
+      // arrastra a la siguiente lo que se escribió en la anterior.
+      const uid = ident(p);
       campo.innerHTML = cs.map((c,i)=>`<div class="field">
-        <label for="c${i}">${esc(c.etiqueta)}</label>
-        <input id="c${i}" maxlength="200" autocomplete="off"></div>`).join("");
+        <label for="${uid}c${i}">${esc(c.etiqueta)}</label>
+        <input id="${uid}c${i}" name="${uid}c${i}" maxlength="200" value="" data-c="${i}"
+          autocomplete="off" autocorrect="off" spellcheck="true"></div>`).join("");
+      limpiar(campo);
       leer = () => { const o = {}; let algo = false;
-        cs.forEach((c,i)=>{ const v = $("#c"+i).value.trim(); if(v){ o[c.clave]=v; algo=true; } });
+        cs.forEach((c,i)=>{ const e = campo.querySelector(`[data-c="${i}"]`);
+          const v = e ? e.value.trim() : ""; if(v){ o[c.clave]=v; algo=true; } });
         return algo ? {campos:o} : null; };
 
     } else if(p.tipo === "puntos100"){
@@ -2052,12 +2089,16 @@ async function participanteMotor(codigo, s){
       // Varias casillas cortas y no un campo libre: lo que se agrega es el
       // término, y un término por casilla evita tener que trocear frases.
       const max = cfg.maximo || 3, lim = cfg.maximo_caracteres || 30;
+      const uid = ident(p);
       campo.innerHTML = `<p class="small">Una palabra o expresión corta por casilla,
           hasta ${max}. No hace falta rellenarlas todas.</p>${
-        Array.from({length:max},(_,i)=>`<div class="field"><input id="nb${i}"
+        Array.from({length:max},(_,i)=>`<div class="field"><input id="${uid}nb${i}"
+          name="${uid}nb${i}" value="" data-c="${i}"
           maxlength="${lim}" autocomplete="off" placeholder="${
             i===0?"Escribe aquí":"Otra (opcional)"}"></div>`).join("")}`;
-      leer = () => { const t = Array.from({length:max},(_,i)=>$("#nb"+i).value.trim())
+      limpiar(campo);
+      leer = () => { const t = Array.from({length:max},(_,i)=>{
+          const e = campo.querySelector(`[data-c="${i}"]`); return e ? e.value.trim() : ""; })
           .filter(Boolean); return t.length ? {terminos:t} : null; };
 
     } else if(p.tipo === "ranking" || p.tipo === "secuencia"){
@@ -4112,6 +4153,40 @@ async function consolaMotor(s){
   const funcionesVigentes = () =>
     ((origen && origen.funciones) || s.funciones || []).filter(f => f && f.nombre);
 
+  /* DÓNDE CAE CADA PREGUNTA
+     Pone el `orden` a las filas que todavía no existen y corrige el de las
+     que ya están, si hace falta. Se llama SIEMPRE antes de crearlas.
+
+     Dos reglas, en este orden:
+       1. una pregunta del banco cae donde le toca por su código, no al
+          final. Añadir la E04 cuando ya están la E03 y la E05 la mete
+          entre las dos, que es donde se lee;
+       2. y después las EX —las pantallas por función clave— se meten en
+          su banda, entre la E08 y la E10.
+
+     Lo que NO hace: reordenar lo que ya está. Si moviste algo a mano con
+     las flechas, se queda donde lo pusiste; solo se coloca lo nuevo, y
+     relativo a lo que hay. Con la lista vacía, esto solo corrige la banda
+     de las EX. Devuelve cuántas preguntas ha tenido que mover; es
+     idempotente y no escribe nada si ya está todo en su sitio. */
+  let avisoEva = "";
+  const recolocar = async (nuevas) => {
+    const antes = new Map(preguntas.filter(p=>p.id).map(p => [p.id, p.orden]));
+    const indice = {}; BANCO.forEach((p,i) => { indice[p.c] = i; });
+    let lista = insertarPorBanco(preguntas, nuevas || [], indice);
+    lista.forEach((p,i) => { p.orden = i + 1; });   // provisional, para que `colocarEx` ordene
+    lista = colocarEx(lista, []);
+    let movidas = 0;
+    for(let i = 0; i < lista.length; i++){
+      const p = lista[i];
+      if(p.id && antes.get(p.id) !== i + 1){
+        await API.actualizarPregunta(p.id, {orden: i + 1}); movidas++;
+      }
+      p.orden = i + 1;
+    }
+    return movidas;
+  };
+
   /* Cómo se dibuja un taller dentro de la lista de preguntas. No lleva
      estado, ni recuento, ni «abrir»: no es una pregunta. Lleva lo que ya se
      haya acordado en él, para que se vea de un vistazo si está hecho. */
@@ -4303,7 +4378,7 @@ async function consolaMotor(s){
               · ${fs.length}</button>
             <button class="btn ghost" id="abiertasTres">Tres por función
               · ${fs.length*3}</button></div>
-          <div id="avisoEva"></div>
+          <div id="avisoEva">${avisoEva}</div>
           <p class="note"><b>Una pantalla por función</b> es la que recomiendo: los tres
             campos —qué destaca, qué mejorar, qué acción— van juntos en la misma pantalla, así
             que quien responde ve de un vistazo lo que ya ha dicho y no se repite. Cubre
@@ -4512,8 +4587,11 @@ async function consolaMotor(s){
       return sueltas.length;
     };
 
-    const decirEva = (t, mal) => { const c = bt("avisoEva");
-      if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
+    /* El aviso se guarda además en una variable de la consola. `pinta()`
+       redibuja la pantalla entera y sin esto el recado se borraba con el
+       resto: ya ha pasado tres veces. */
+    const decirEva = (t, mal) => { avisoEva = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
+      const c = bt("avisoEva"); if(c) c.innerHTML = avisoEva; };
 
     if(bt("volcarEva")) bt("volcarEva").onclick = async () => {
       const fs = funcionesVigentes();
@@ -4558,15 +4636,23 @@ async function consolaMotor(s){
          un cuestionario roto. Así que se crean al volcar, que es el
          momento en el que las funciones existen. Si alguna sobra, se
          quita a mano, que es la operación rara. */
-      const creadas = await pantallasPorFuncion();
+      const px = await pantallasPorFuncion();
       preguntas = await API.preguntas(s.id);
       // `await`: `pinta()` redibuja la pantalla entera. Si el aviso se
       // escribe antes de que termine, se borra con el resto y nadie llega
       // a leerlo. Es el mismo tropiezo que costó el «recado» del taller.
       await pinta();
       decirEva(`Volcadas ${nombres.length} funciones en ${hechas.join(", ") || "ninguna pregunta"}.`
-        + (creadas ? ` Y creadas <b>${creadas} pantallas de texto</b>, una por función:
+        + (px.creadas ? ` Y creadas <b>${px.creadas} pantallas de texto</b>, una por función:
             así cada persona se pronuncia sobre todas.` : "")
+        + (px.refrescadas ? ` Actualizado el enunciado de <b>${px.refrescadas}</b>
+            ${px.refrescadas===1?"pantalla":"pantallas"} por función, porque el nombre o la
+            descripción cambiaron en el taller.` : "")
+        + (px.congeladas.length ? ` <b>No</b> se ha tocado ${px.congeladas.join(", ")}: ${
+            px.congeladas.length===1 ? "ya tiene respuestas" : "ya tienen respuestas"}, y
+            cambiarle el enunciado dejaría sin saber a qué contestó la gente. Si aun así
+            quieres el nombre nuevo, ${px.congeladas.length===1 ? "bórrala" : "bórralas"}
+            y vuelve a volcar.` : "")
         + (faltan.length ? ` No están en esta sesión: <b>${faltan.join(", ")}</b>.` : ""),
         !hechas.length);
     };
@@ -4589,14 +4675,13 @@ async function consolaMotor(s){
     const generarAbiertas = async (modo, callado) => {
       const fs = funcionesVigentes();
       const ya = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
-      let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
       const filas = [];
       fs.forEach((f, i) => {
         const n = String(i+1).padStart(2,"0");
         if(modo === "campos"){
           const cod = "EX" + n + "C";
           if(ya.has(cod)) return;
-          filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta_campos",
+          filas.push({sesion_id: s.id, codigo: cod, tipo: "abierta_campos",
             titulo: resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars),
             ayuda: f.definicion || null,
             config: {campos: ABIERTAS_POR_FUNCION.map(pl =>
@@ -4608,12 +4693,13 @@ async function consolaMotor(s){
         lista.forEach(pl => {
           const cod = "EX" + n + pl.suf;
           if(ya.has(cod)) return;
-          filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta",
+          filas.push({sesion_id: s.id, codigo: cod, tipo: "abierta",
             titulo: resolverTexto(pl.q.replace(/\[FUNCION\]/g, f.nombre), vars),
             ayuda: f.definicion || null,
             config: {maximo_caracteres: 300}, estado: "cerrada"});
         });
       });
+      await recolocar(filas);
       if(!filas.length){ if(!callado) decirEva("Ya estaban creadas: no se ha añadido ninguna. "
         + "Si quieres cambiar de formato, quita primero las que hay.", true); return 0; }
       await API.crearPreguntas(filas);
@@ -4833,13 +4919,16 @@ async function consolaMotor(s){
     const ya = new Set(preguntas.map(p=>p.codigo));
     const nuevas = lista.filter(p => p && !ya.has(p.c) && TIPOS_LISTOS.includes(p.t));
     if(!nuevas.length) return;
-    let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
-    await API.crearPreguntas(nuevas.map(p => ({
-      sesion_id: s.id, orden: ++orden, codigo: p.c, tipo: p.t,
+    const filas = nuevas.map(p => ({
+      sesion_id: s.id, codigo: p.c, tipo: p.t,
       titulo: resolverTexto(p.q, vars),
       ayuda: p.ayuda ? resolverTexto(p.ayuda, vars) : null,
       config: resolverCfg(p.cfg), estado: "cerrada"
-    })));
+    }));
+    // El `orden` no es «al final»: cada una cae en el sitio que le da su
+    // código dentro del banco. `recolocar` se lo pone antes de crearlas.
+    await recolocar(filas);
+    await API.crearPreguntas(filas);
     preguntas = await API.preguntas(s.id);
 
     /* Y, en una evaluación enlazada a un taller, las pantallas por función.
@@ -4853,35 +4942,74 @@ async function consolaMotor(s){
        la vez su banco y sus funciones. Si alguna sobra, se quita a mano:
        esa es la operación rara, no la contraria. */
     if(String(s.instrumento||"").split("-")[0] === "evaluacion"){
-      const creadas = await pantallasPorFuncion();
-      if(creadas) preguntas = await API.preguntas(s.id);
+      const px = await pantallasPorFuncion();
+      if(px.creadas || px.refrescadas) preguntas = await API.preguntas(s.id);
     }
     pinta();
   };
 
   /* Una pantalla de texto por función clave, con los tres campos dentro.
      Vive fuera de los manejadores porque la llaman dos caminos: añadir el
-     cuestionario base y volcar las funciones. Devuelve cuántas ha creado;
-     cero significa que ya estaban, no que haya fallado. */
+     cuestionario base y volcar las funciones.
+
+     QUÉ RELACIÓN TIENEN ESTAS PREGUNTAS CON EL TALLER
+     El enunciado y la descripción se COPIAN aquí, no se leen del taller
+     cada vez. Es a propósito: una pregunta ya respondida no puede cambiar
+     de enunciado por detrás, porque entonces no se sabe a qué contestó la
+     gente. El precio es que, si en el taller se rebautiza una función, la
+     copia se queda con el nombre viejo. Por eso «Volcar» refresca las
+     copias que todavía no tienen ni una respuesta, y deja intactas —
+     avisando— las que ya la tienen.
+
+     Devuelve {creadas, refrescadas, congeladas}. */
   const pantallasPorFuncion = async () => {
     const fs = ((origen && origen.funciones) || s.funciones || []).filter(f => f && f.nombre);
-    if(!fs.length) return 0;
-    const ya = new Set(preguntas.map(p => p.codigo).filter(Boolean));
-    let orden = preguntas.length ? Math.max(...preguntas.map(p => p.orden)) : 0;
+    if(!fs.length) return {creadas:0, refrescadas:0, congeladas:[]};
     const filas = [];
-    fs.forEach((f, i) => {
+    let refrescadas = 0; const congeladas = [];
+    const campos = () => ({campos: ABIERTAS_POR_FUNCION.map(pl =>
+      ({clave: pl.campo, etiqueta: pl.etiqueta}))});
+    for(let i = 0; i < fs.length; i++){
+      const f = fs[i];
       const cod = "EX" + String(i+1).padStart(2,"0") + "C";
-      if(ya.has(cod)) return;
-      filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta_campos",
-        titulo: resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars),
-        ayuda: f.definicion || null,
-        config: {campos: ABIERTAS_POR_FUNCION.map(pl => ({clave: pl.campo, etiqueta: pl.etiqueta}))},
-        estado: "cerrada"});
-    });
-    if(!filas.length) return 0;
-    await API.crearPreguntas(filas);
-    return filas.length;
+      const titulo = resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars);
+      const ayuda = f.definicion || null;
+      const hay = preguntas.find(p => p.codigo === cod);
+      if(!hay){
+        filas.push({sesion_id: s.id, codigo: cod, tipo: "abierta_campos",
+          titulo, ayuda, config: campos(), estado: "cerrada"});
+        continue;
+      }
+      if(hay.titulo === titulo && (hay.ayuda || null) === ayuda) continue;
+      // Cambió el nombre o la descripción en el taller. Solo se reescribe
+      // si nadie ha contestado todavía a esa pantalla.
+      let respuestas = 1;   // ante la duda, no se toca
+      try{ const r = await API.resultadosPregunta(s.codigo, hay.id);
+           respuestas = (r && r.respondidos) || 0; }catch(e){ respuestas = 1; }
+      if(respuestas){ congeladas.push(cod); continue; }
+      await API.actualizarPregunta(hay.id, {titulo, ayuda});
+      hay.titulo = titulo; hay.ayuda = ayuda; refrescadas++;
+    }
+    // Siempre, aunque no haya nada nuevo que crear: así una sesión montada
+    // antes de esta regla se recoloca sola.
+    await recolocar(filas);
+    if(filas.length) await API.crearPreguntas(filas);
+    return {creadas: filas.length, refrescadas, congeladas};
   };
+
+  /* Las sesiones que se montaron antes de la regla tienen sus EX al final,
+     detrás de las preguntas de cierre. Se recolocan al entrar en la
+     consola. Solo escribe si están mal, y lo dice. */
+  if(String(s.instrumento||"").split("-")[0] === "evaluacion"){
+    try{
+      const movidas = await recolocar([]);
+      if(movidas){
+        preguntas = await API.preguntas(s.id);
+        avisoEva = `<div class="aviso">Se ha recolocado el orden de ${movidas} preguntas:
+          las pantallas por función clave van ahora entre <b>E08</b> y <b>E10</b>.</div>`;
+      }
+    }catch(e){}
+  }
 
   await pinta();
 }
@@ -5670,6 +5798,65 @@ function situarTalleres(instrumento, preguntas){
     else (antes[i] = antes[i] || []).push(t);
   });
   return {antes, huerfanos};
+}
+
+/* DÓNDE VAN LAS PANTALLAS POR FUNCIÓN (EX01C, EX02C…)
+   La regla, literal: nunca antes de la E08 o anteriores, y nunca después
+   de la E10 o posteriores. Es decir, el bloque EX ocupa el hueco que hay
+   entre una y otra, que además es donde tiene sentido: ya has dicho qué
+   función hay que trabajar antes (E08) y todavía no has entrado en las de
+   cierre (E10 y siguientes).
+
+   Se creaban con `orden = max + 1` —«al final»— y por eso quedaban detrás
+   de las preguntas de cierre.
+
+   Esto devuelve la lista ENTERA en el orden que debe quedar; renumerar de
+   uno a N es más simple de razonar que ir abriendo hueco, y no hay índice
+   único sobre `orden` que lo impida. */
+function numeroE(codigo){
+  const m = /^E(\d\d)$/.exec(String(codigo || ""));
+  return m ? +m[1] : null;
+}
+/* Y dónde cae una pregunta del banco: en su sitio, no al final.
+   `indice` es codigo → posición en el banco. Cada nueva se mete detrás de
+   la última que, según el banco, vaya antes que ella; si no hay ninguna,
+   delante de la primera que vaya después. Las que no son del banco —las
+   EX, o una pregunta escrita a mano— se dejan al final y las coloca quien
+   corresponda. Lo que ya estaba NO se reordena: si lo moviste con las
+   flechas, se queda donde lo pusiste. */
+function insertarPorBanco(existentes, nuevas, indice){
+  const lista = existentes.slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  (nuevas || []).slice()
+    .sort((a,b)=>(indice[a.codigo] ?? 1e9) - (indice[b.codigo] ?? 1e9))
+    .forEach(n => {
+      const i = indice[n.codigo];
+      if(i == null){ lista.push(n); return; }
+      let corte = -1;
+      lista.forEach((p,k) => { const j = indice[p.codigo]; if(j != null && j < i) corte = k; });
+      if(corte < 0){
+        const k = lista.findIndex(p => { const j = indice[p.codigo]; return j != null && j > i; });
+        corte = k < 0 ? lista.length - 1 : k - 1;
+      }
+      lista.splice(corte + 1, 0, n);
+    });
+  return lista;
+}
+
+function colocarEx(existentes, nuevas){
+  const esEx = p => /^EX\d/.test(String(p.codigo || ""));
+  const porOrden = (a,b) => (a.orden || 0) - (b.orden || 0);
+  const resto  = existentes.filter(p => !esEx(p)).slice().sort(porOrden);
+  const bloque = existentes.filter(esEx).slice().sort(porOrden).concat(nuevas || []);
+  if(!bloque.length) return resto;
+  // El suelo: detrás de la última E08-o-anterior que haya.
+  let corte = -1;
+  resto.forEach((p,i) => { const n = numeroE(p.codigo); if(n !== null && n <= 8) corte = i; });
+  if(corte < 0){
+    // Si no hay ninguna, manda el techo: delante de la primera E10-o-posterior.
+    const j = resto.findIndex(p => { const n = numeroE(p.codigo); return n !== null && n >= 10; });
+    corte = j < 0 ? resto.length - 1 : j - 1;
+  }
+  return resto.slice(0, corte+1).concat(bloque, resto.slice(corte+1));
 }
 
 const BANCOS = {
