@@ -284,6 +284,11 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .taller-fila{border-left:3px solid var(--tono-6);padding-left:14px}
 /* Tabla de pares: el alcance del modelo de liderazgo, y cualquier otra
    cosa que sean dos columnas de texto y un mando de filas al final. */
+/* La fila de ordenar, cuando su elemento trae definición desplegable. */
+.fila-orden .txt details{margin-top:6px}
+.fila-orden .txt details p{margin:6px 0 0}
+.fila-orden{align-items:flex-start}
+.fila-orden .pos,.fila-orden .mueve{flex:0 0 auto}
 .pares{width:100%;border-collapse:collapse;margin-top:14px}
 .pares th{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-secondary);text-align:left;padding:0 8px 8px 0;font-weight:600}
@@ -1848,10 +1853,12 @@ async function participanteMotor(codigo, s){
         <span class="phasetag">${esc(p.codigo||"")} · votar</span>
         <h2 style="margin-top:8px">${esc(p.titulo)}</h2>
         ${(g.grupos||[]).length
-          ? `<p class="small">Elige hasta ${maxV} de los temas en que se han agrupado
-             las respuestas.</p>`
-          : `<div class="aviso">Todavía no hay temas que votar: quien conduce la sesión está
-             agrupando las respuestas. Aparecerán aquí en cuanto termine.</div>`}
+          ? `<p class="small">Elige hasta ${maxV} ${cfg.sin_agrupar
+              ? "de las aportaciones que ha hecho el grupo."
+              : "de los temas en que se han agrupado las respuestas."}</p>`
+          : `<div class="aviso">Todavía no hay nada que votar${cfg.sin_agrupar ? ""
+              : ": quien conduce la sesión está agrupando las respuestas"}.
+             Aparecerá aquí en cuanto quien conduce la sesión lo abra.</div>`}
         <div id="gs">${(g.grupos||[]).map(x=>
           `<button type="button" class="btn ghost" data-g="${esc(x.id)}"
              style="display:block;width:100%;text-align:left;margin:6px 0">${esc(x.etiqueta)}</button>`).join("")}</div>
@@ -2038,6 +2045,10 @@ async function participanteMotor(codigo, s){
       // elementos tanto como la prioridad del grupo.
       const orden = barajar((cfg.elementos || cfg.opciones || []).slice());
       const cuantos = cfg.maximo_posiciones || orden.length;
+      // Igual que en la matriz y en las de opción: si el elemento trae
+      // definición, se despliega. Ordenar por prioridad diez funciones
+      // clave leyendo solo su título de tres palabras es ordenar títulos.
+      const defsO = cfg.definiciones || {};
       const dibuja = () => {
         campo.innerHTML = `<p class="small">${p.tipo==="ranking"
             ? "Coloca arriba lo más prioritario."
@@ -2046,7 +2057,10 @@ async function participanteMotor(codigo, s){
           <div>${orden.map((o,i)=>`
             <div class="fila-orden${cuantos<orden.length && i>=cuantos ? " ".trim() : ""}"
                  style="${cuantos<orden.length && i>=cuantos ? "opacity:.45" : ""}">
-              <div class="pos">${i+1}</div><div class="txt">${esc(o)}</div>
+              <div class="pos">${i+1}</div>
+              <div class="txt">${esc(o)}${defsO[o] ? `
+                <details><summary>ver definición</summary>
+                  <p class="small">${esc(defsO[o])}</p></details>` : ""}</div>
               <div class="mueve">
                 <button type="button" data-sb="${i}" ${i===0?"disabled":""}
                   aria-label="Subir">▲</button>
@@ -3460,7 +3474,7 @@ async function tallerFunciones(s, preguntas, volver){
       // cinco minutos: la matriz sabe desplegar la definición de cada fila
       // y no había ninguna razón para no dársela.
       const defs = b.reduce((o,f)=>(f.definicion ? (o[f.nombre]=f.definicion) : 0, o), {});
-      const destinos = [{c:"L16", k:"items", d:true}, {c:"L18", k:"opciones"}];
+      const destinos = [{c:"L16", k:"items", d:true}, {c:"L18", k:"opciones", d:true}];
       let hechas = 0;
       for(const dst of destinos){
         const p = preguntas.find(x=>x.codigo===dst.c); if(!p) continue;
@@ -3772,10 +3786,13 @@ async function proyeccionMotor(codigo, s){
           cuerpo = cab + `<div class="taller2" style="margin-top:26px"><div>${
             rt.grupos.map((g,i)=>`<div class="fila-taller">
               <i style="background:${tonoDe(g.etiqueta)}"></i>
-              <span>${esc(g.etiqueta)}</span><b>${g.tarjetas}</b></div>`).join("")}</div></div>
+              <span>${esc(g.etiqueta)}</span>${(p.config||{}).sin_agrupar
+                ? "" : `<b>${g.tarjetas}</b>`}</div>`).join("")}</div></div>
             <p class="small" style="margin-top:20px">Vota en tu móvil ·
-              ${rt.n_votantes} ${rt.n_votantes===1?"persona ha votado":"personas han votado"} ·
-              el número de la derecha es cuántas aportaciones agrupa cada tema, no los votos</p>`;
+              ${rt.n_votantes} ${rt.n_votantes===1?"persona ha votado":"personas han votado"}${
+              (p.config||{}).sin_agrupar ? ""
+                : " · el número de la derecha es cuántas aportaciones agrupa cada tema, "
+                  + "no los votos"}</p>`;
         else if(rt.grupos && rt.grupos.length)
           cuerpo = cab + barras(rt.grupos, d=>d.etiqueta + " ("+d.tarjetas+")", d=>d.votos)
             + `<p class="small" style="margin-top:18px">Votos de ${rt.n_votantes} personas ·
@@ -4303,7 +4320,18 @@ async function consolaMotor(s){
                 el móvil la enseñaría vacía.</div>` : ""}
               ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? `<div class="small"
                 style="margin-top:4px">${
-                  {recogida:"<b>Recoger</b>: la gente escribe en el móvil. La pared solo "
+                  ((p.config||{}).sin_agrupar ? {
+                   recogida:"<b>Recoger</b>: la gente escribe en el móvil. La pared solo "
+                    + "enseña el contador — lo aportado no se ve hasta cerrar la recogida.",
+                   agrupando:"<b>Agrupando</b>: esta pregunta no se agrupa. Pasa a «Votar».",
+                   votacion:"<b>Votar</b>: se vota <b>aportación por aportación</b>, sin "
+                    + "agrupar: al pulsar «Votar» cada aportación pasa a ser votable por sí "
+                    + "misma. Lo que se escriba después de ese momento no entra en la "
+                    + "votación, así que cierra la recogida antes.",
+                   resultados:"<b>Resultados</b>: la pared ordena las aportaciones por votos, "
+                    + "a partir de tres votantes."
+                  } : {
+                   recogida:"<b>Recoger</b>: la gente escribe en el móvil. La pared solo "
                     + "enseña el contador — lo aportado no se ve hasta cerrar la recogida.",
                    agrupando:"<b>Agrupando</b>: el móvil no pide nada; la pared enseña las "
                     + "aportaciones. Es el rato en el que tú las juntas en la mesa.",
@@ -4311,11 +4339,16 @@ async function consolaMotor(s){
                     + "los enseña. Sin temas agrupados, aquí no hay nada que votar.",
                    resultados:"<b>Resultados</b>: la pared enseña las barras con los votos, "
                     + "a partir de tres votantes."
-                  }[p.fase||"recogida"]}${
+                  })[p.fase||"recogida"]}${
                   gruposDe[p.id] != null
-                    ? ` · <b>${gruposDe[p.id]}</b> ${gruposDe[p.id]===1?"tema":"temas"} en la mesa`
+                    ? ((p.config||{}).sin_agrupar
+                        ? ` · <b>${gruposDe[p.id]}</b> ${gruposDe[p.id]===1
+                            ? "aportación votable" : "aportaciones votables"}`
+                        : ` · <b>${gruposDe[p.id]}</b> ${gruposDe[p.id]===1
+                            ? "tema" : "temas"} en la mesa`)
                     : ""}</div>
-                ${(gruposDe[p.id] === 0 && ["votacion","resultados"].includes(p.fase||""))
+                ${(gruposDe[p.id] === 0 && !(p.config||{}).sin_agrupar
+                   && ["votacion","resultados"].includes(p.fase||""))
                   ? `<div class="small" style="color:#d03b3b">Esta pregunta está en
                      «${p.fase==="votacion"?"Votar":"Resultados"}» y <b>no tiene ningún tema
                      agrupado</b>: al móvil le llega una lista vacía y la pared sigue
@@ -4324,12 +4357,15 @@ async function consolaMotor(s){
             <div class="btnrow" style="margin:0">
               ${LISTAS_TIPO[p.tipo] ? `<button class="btn ${faltaContenido(p)?"":"ghost"} sm"
                 data-listas="${p.id}">Contenido…</button>` : ""}
-              ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? FASES_TARJ.map(f=>
+              ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? FASES_TARJ
+                  .filter(f => !((p.config||{}).sin_agrupar && f.k === "agrupando"))
+                  .map(f =>
                 `<button class="btn ${p.fase===f.k?"":"ghost"} sm" data-fase="${p.id}"
                    data-k="${f.k}">${esc(f.t)}</button>`).join("")
-                + `<button class="btn ${(gruposDe[p.id]===0
+                + ((p.config||{}).sin_agrupar ? "" :
+                   `<button class="btn ${(gruposDe[p.id]===0
                     && ["votacion","resultados"].includes(p.fase||"")) ? "" : "ghost "}sm"
-                     data-mesa="${p.id}">Mesa de agrupación…</button>` : ""}
+                     data-mesa="${p.id}">Mesa de agrupación…</button>`) : ""}
               ${p.estado==="cerrada"   ? `<button class="btn sm" data-abrir="${p.id}">Abrir</button>` : ""}
               ${p.estado==="abierta"   ? `<button class="btn ghost sm" data-fin="${p.id}">Terminar</button>` : ""}
               ${p.estado==="terminada" ? `<button class="btn ghost sm" data-reabrir="${p.id}">Reabrir</button>` : ""}
@@ -4350,6 +4386,7 @@ async function consolaMotor(s){
             </div>` : ""}
           <div class="btnrow"${s.modo === "survey" ? ` style="display:none"` : ""}>
             <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
+            <button class="btn ghost" id="terminarTodasD">Terminar todas</button>
             <button class="btn ghost" type="button"
               onclick="abrirProyeccion('${esc(s.codigo)}')">Abrir proyección</button>
             <button class="btn ghost" id="espera">Proyectar la espera</button>
@@ -4404,6 +4441,30 @@ async function consolaMotor(s){
       tallerFunciones(s, preguntas, async () => {
         preguntas = await API.preguntas(s.id); pinta(); }));
 
+    /* «Cada aportación, un tema». Para las preguntas de tarjetas en las
+       que agrupar no aporta nada —L17: matices sobre una redacción— se
+       crea un grupo por cada aportación suelta, con el propio texto como
+       etiqueta. A partir de ahí todo lo demás funciona igual: se vota,
+       se cuenta, se proyecta y se respeta el suelo de tres votantes.
+
+       No hay tabla nueva ni función nueva en la base de datos. Un voto
+       sigue apuntando a un grupo; lo que cambia es que el grupo tiene una
+       sola aportación dentro. Cambiar el esquema para poder votar
+       tarjetas habría sido la otra opción, y habría duplicado el recuento,
+       la agregación y la pantalla de resultados para ganar exactamente
+       nada. */
+    const unoPorAportacion = async (pid) => {
+      const tj = await API.tarjetasAdmin(pid);
+      const sueltas = (tj||[]).filter(t => !t.grupo_id && !t.oculta);
+      if(!sueltas.length) return 0;
+      let orden = 0;
+      for(const t of sueltas){
+        const g = await API.crearGrupo(pid, (t.texto||"").slice(0,120), ++orden);
+        await API.tocarTarjeta(t.id, {grupo_id: g.id});
+      }
+      return sueltas.length;
+    };
+
     const decirEva = (t, mal) => { const c = bt("avisoEva");
       if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
 
@@ -4413,7 +4474,7 @@ async function consolaMotor(s){
       const defs = fs.reduce((o,f)=>(f.definicion ? (o[f.nombre]=f.definicion) : 0, o), {});
       // Cada destino recibe la lista en la clave que su tipo sabe leer.
       const destinos = [{c:"E05", k:"items", d:true}, {c:"E06", k:"items", d:true},
-                        {c:"E07", k:"opciones"},      {c:"E08", k:"opciones", d:true}];
+                        {c:"E07", k:"opciones", d:true}, {c:"E08", k:"opciones", d:true}];
       const hechas = [], faltan = [];
       for(const d of destinos){
         const p = preguntas.find(x => x.codigo === d.c);
@@ -4512,14 +4573,27 @@ async function consolaMotor(s){
         + "NO se han abierto estas, porque les falta contenido y en el móvil saldrían "
         + "vacías:\n\n" + rotas.map(p=>(p.codigo||"") + " " + p.titulo).join("\n"));
     };
-    if(bt("terminarTodas")) bt("terminarTodas").onclick = async () => {
-      if(!confirm("Se van a dar por terminadas todas las preguntas abiertas. "
-        + "Dejarán de admitir respuestas.")) return;
-      for(const p of preguntas.filter(p => p.estado === "abierta"))
-        await API.actualizarPregunta(p.id, {estado:"terminada"});
+    const terminarTodas = async () => {
+      const abiertas = preguntas.filter(p => p.estado === "abierta");
+      if(!abiertas.length){ alert("No hay ninguna pregunta abierta."); return; }
+      // Las de tarjetas en recogida se avisan aparte: terminarlas deja las
+      // aportaciones dentro pero sin agrupar ni votar, y eso no se puede
+      // deshacer solo reabriendo —la gente ya se ha ido de esa pantalla—.
+      const tj = abiertas.filter(p => p.tipo === "tarjetas"
+        && ["recogida","agrupando"].includes(p.fase || "recogida"));
+      if(!confirm("Se van a dar por terminadas " + abiertas.length
+        + " pregunta(s) abiertas. Dejarán de admitir respuestas."
+        + (tj.length ? "\n\nOJO: " + tj.length + " de ellas es de tarjetas y todavía no ha "
+            + "pasado por la votación:\n" + tj.map(p=>"· " + (p.codigo||"") + " "
+            + p.titulo.slice(0,60)).join("\n")
+            + "\n\nSus aportaciones se quedan recogidas, pero sin votar." : "")
+        + "\n\n¿Sigo?")) return;
+      for(const p of abiertas) await API.actualizarPregunta(p.id, {estado:"terminada"});
       preguntas = await API.preguntas(s.id);
       pinta();
     };
+    if(bt("terminarTodas"))  bt("terminarTodas").onclick  = terminarTodas;
+    if(bt("terminarTodasD")) bt("terminarTodasD").onclick = terminarTodas;
 
     if(bt("vivo")) bt("vivo").onclick = () =>
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
@@ -4563,8 +4637,16 @@ async function consolaMotor(s){
       tocar(b.dataset.fin, {estado:"terminada"}, true));
     app().querySelectorAll("[data-reabrir]").forEach(b => b.onclick = () =>
       tocar(b.dataset.reabrir, {estado:"abierta"}, true));
-    app().querySelectorAll("[data-fase]").forEach(b => b.onclick = () =>
-      tocar(b.dataset.fase, {fase: b.dataset.k, estado:"abierta"}, true));
+    app().querySelectorAll("[data-fase]").forEach(b => b.onclick = async () => {
+      const p = preguntas.find(x => x.id === b.dataset.fase);
+      // En las que no se agrupan, pasar a «Votar» crea los temas solo.
+      // Si no se hiciera aquí, habría que acordarse de pulsar otro botón
+      // antes, y olvidarlo deja al móvil una lista vacía.
+      if(b.dataset.k === "votacion" && p && (p.config||{}).sin_agrupar){
+        try{ await unoPorAportacion(p.id); }catch(e){}
+      }
+      tocar(b.dataset.fase, {fase: b.dataset.k, estado:"abierta"}, true);
+    });
     app().querySelectorAll("[data-listas]").forEach(b => b.onclick = () =>
       editorListas(s, preguntas.find(x=>x.id === b.dataset.listas), preguntas,
         async () => { preguntas = await API.preguntas(s.id); pinta(); }));
@@ -5217,7 +5299,12 @@ const BANCO_LID = [
 {c:"L17", b:5, t:"tarjetas", nuc:true, nat:"derivada",
  q:"¿Qué cambiarías en la formulación de alguna de las funciones clave?",
  ayuda:"Aquí se recogen los matices que después incorporas al texto definitivo.",
- cfg:{maximo_aportaciones:3, maximo_caracteres:200, votos:3}},
+ // `sin_agrupar`: aquí no hay nada que juntar. Cada aportación es un
+ // matiz concreto sobre una redacción concreta —«en la tercera, cambiar
+ // “dirigir” por “acompañar”»— y fusionar dos matices distintos en un
+ // tema común destruye justo el detalle que hace falta para corregir el
+ // texto. Se vota aportación por aportación, y no son muchas.
+ cfg:{maximo_aportaciones:3, maximo_caracteres:200, votos:3, sin_agrupar:true}},
 {c:"L18", b:5, t:"ranking", nuc:true, nat:"derivada",
  q:"Ordena las funciones clave por prioridad de desarrollo en [ORGANIZACION].",
  ayuda:"Se rellena con las funciones validadas. Arriba, lo que hay que trabajar antes.",
