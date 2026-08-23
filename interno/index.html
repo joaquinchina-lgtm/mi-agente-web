@@ -1644,7 +1644,14 @@ async function participanteMotor(codigo, s){
                           .sort((a,b) => b[1] - a[1])
                           .map(([k, n]) => k + " " + n).join(" · ") || null;
       case "abierta":    return v.texto || null;
-      case "abierta_campos": return Object.values(v.campos || {}).join(" · ") || null;
+      // La valoración va con su escala detrás —«5 de 7»— y no suelta: un
+      // número solo, entre tres frases, no se sabe de qué es.
+      case "abierta_campos": return (cfg.campos || []).map(c => {
+                            const x = (v.campos || {})[c.clave];
+                            if(x == null || x === "") return null;
+                            return c.tipo === "escala" ? x + " de " + (c.max ?? 7) : x;
+                          }).filter(Boolean).join(" · ")
+                          || Object.values(v.campos || {}).join(" · ") || null;
       case "ranking": case "secuencia": return (v.orden || []).join(" › ") || null;
       case "dos_ejes":   return Object.keys(v.pos || {}).length + " elementos colocados";
       case "clasificar": return Object.entries(v.asignacion || {})
@@ -1992,10 +1999,14 @@ async function participanteMotor(codigo, s){
 
     } else if(p.tipo === "escala"){
       const min = cfg.min ?? 1, max = cfg.max ?? 7; let v = null;
-      campo.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:14px 0">${
+      /* Rejilla y no flex: con siete botones de 44 px y los márgenes de un
+         móvil estrecho, el último no cabe, se va a una línea él solo y
+         ocupa todo el ancho. Siete columnas iguales caben siempre. */
+      campo.innerHTML = `<div style="display:grid;grid-template-columns:repeat(${
+          max-min+1},1fr);gap:5px;margin:14px 0">${
         Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
           `<button type="button" class="btn ghost" data-n="${n}"
-             style="flex:1;min-width:44px">${n}</button>`).join("")}</div>
+             style="padding:12px 0">${n}</button>`).join("")}</div>
         <div style="display:flex;justify-content:space-between;gap:10px">
           <span class="small">${esc(cfg.ancla_min||"")}</span>
           <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>`;
@@ -2015,10 +2026,11 @@ async function participanteMotor(codigo, s){
         <div style="margin-bottom:6px">${esc(it)}</div>
         ${defsM[it] ? `<details style="margin:-2px 0 8px"><summary>ver definición</summary>
            <p class="small">${esc(defsM[it])}</p></details>` : ""}
-        <div style="display:flex;gap:5px;flex-wrap:wrap" data-fila="${ix}">${
+        <div style="display:grid;grid-template-columns:repeat(${max-min+1},1fr);gap:5px"
+             data-fila="${ix}">${
           Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
             `<button type="button" class="btn ghost" data-n="${n}"
-               style="flex:1;min-width:40px;padding:9px 0">${n}</button>`).join("")}</div></div>`).join("")
+               style="padding:9px 0">${n}</button>`).join("")}</div></div>`).join("")
         + `<div style="display:flex;justify-content:space-between;gap:10px">
              <span class="small">${esc(cfg.ancla_min||"")}</span>
              <span class="small" style="text-align:right">${esc(cfg.ancla_max||"")}</span></div>`;
@@ -2047,14 +2059,48 @@ async function participanteMotor(codigo, s){
       // el navegador del móvil las trata como el mismo formulario y
       // arrastra a la siguiente lo que se escribió en la anterior.
       const uid = ident(p);
-      campo.innerHTML = cs.map((c,i)=>`<div class="field">
-        <label for="${uid}c${i}">${esc(c.etiqueta)}</label>
-        <input id="${uid}c${i}" name="${uid}c${i}" maxlength="200" value="" data-c="${i}"
-          autocomplete="off" autocorrect="off" spellcheck="true"></div>`).join("");
+      // Un campo puede ser una casilla de texto o una escala de botones.
+      // Las pantallas por función clave empiezan por una escala —cómo está
+      // hoy esa función en la organización— y siguen con los tres textos.
+      const notas = {};
+      campo.innerHTML = cs.map((c,i)=>{
+        if(c.tipo !== "escala") return `<div class="field">
+          <label for="${uid}c${i}">${esc(c.etiqueta)}</label>
+          <input id="${uid}c${i}" name="${uid}c${i}" maxlength="200" value="" data-c="${i}"
+            autocomplete="off" autocorrect="off" spellcheck="true"></div>`;
+        const min = c.min ?? 1, max = c.max ?? 7;
+        return `<div class="field" data-esc="${i}">
+          <label>${esc(c.etiqueta)}${c.obligatorio ? "" : " <span class='small'>(opcional)</span>"}</label>
+          ${c.ayuda ? `<p class="small" style="margin:-4px 0 8px">${esc(c.ayuda)}</p>` : ""}
+          <div style="display:grid;grid-template-columns:repeat(${
+              max-min+1},1fr);gap:5px;margin:6px 0">${
+            Array.from({length:max-min+1},(_,k)=>min+k).map(n=>
+              `<button type="button" class="btn ghost" data-n="${n}"
+                 style="padding:11px 0">${n}</button>`).join("")}</div>
+          <div style="display:flex;justify-content:space-between;gap:10px">
+            <span class="small">${esc(c.ancla_min||"")}</span>
+            <span class="small" style="text-align:right">${esc(c.ancla_max||"")}</span></div>
+        </div>`;
+      }).join("");
       limpiar(campo);
+      campo.querySelectorAll("[data-esc]").forEach(f => f.onclick = ev => {
+        const b = ev.target.closest("[data-n]"); if(!b) return;
+        notas[+f.dataset.esc] = +b.dataset.n;
+        f.querySelectorAll("[data-n]").forEach(x => x.classList.toggle("ghost", x !== b));
+      });
       leer = () => { const o = {}; let algo = false;
-        cs.forEach((c,i)=>{ const e = campo.querySelector(`[data-c="${i}"]`);
-          const v = e ? e.value.trim() : ""; if(v){ o[c.clave]=v; algo=true; } });
+        for(let i = 0; i < cs.length; i++){
+          const c = cs[i];
+          if(c.tipo === "escala"){
+            if(notas[i] != null){ o[c.clave] = notas[i]; algo = true; }
+            // Sin la valoración no hay media, y sin media no hay brecha:
+            // por eso esta sí corta el envío.
+            else if(c.obligatorio) return null;
+            continue;
+          }
+          const e = campo.querySelector(`[data-c="${i}"]`);
+          const v = e ? e.value.trim() : ""; if(v){ o[c.clave]=v; algo=true; }
+        }
         return algo ? {campos:o} : null; };
 
     } else if(p.tipo === "puntos100"){
@@ -2223,6 +2269,9 @@ async function participanteMotor(codigo, s){
           : p.tipo==="clasificar" ? "Falta clasificar algún elemento."
           : p.tipo==="matriz_valoracion" ? "Falta valorar alguna casilla."
           : p.tipo==="nube" ? "Escribe al menos una palabra."
+          : p.tipo==="abierta_campos" && (cfg.campos||[])
+              .some(c => c.tipo==="escala" && c.obligatorio)
+            ? "Falta la valoración: elige un número antes de enviar."
           : "Responde antes de enviar."}</div>`; return; }
       $("#env").disabled = true; $("#env").textContent = "Guardando…";
       try{ await API.guardarItem(estado.envio, p.id, valor); }
@@ -2779,7 +2828,7 @@ const filasEscala = (filas, cfg) => {
     const cuentas = Array.from({length: max-min+1}, (_,k) => Number(rep[String(min+k)] || 0));
     const hay = cuentas.some(c=>c>0);
     return `<div class="esc-fila">
-      <h4>${esc(f.clave)}</h4>
+      <h4>${esc(f.etiqueta ?? f.clave)}</h4>
       <div class="esc-caja">
         ${hay ? `<svg class="esc-den" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
                    aria-hidden="true"><path d="${silueta(cuentas, W, H)}"
@@ -2825,6 +2874,29 @@ const barrasClasif = (datos, cfg) => {
    informe de la consola: si el gráfico de la sala cambia, cambia el del
    informe, y nunca se separan. `cab` es la cabecera —cada pantalla pone la
    suya— y `pie` el texto de debajo. */
+/* La valoración que abre una pantalla por función, agregada: media,
+   reparto y la escala en la que está. Devuelve null si esa pantalla no
+   lleva escala o si nadie la ha puntuado. Lo usan los resultados de la
+   pregunta y la tabla de la brecha, y conviene que sea el mismo cálculo
+   en los dos sitios. */
+function mediaDeCampos(p, datos){
+  const cfg = p.config || {};
+  const e = (cfg.campos || []).find(c => c.tipo === "escala");
+  if(!e || !Array.isArray(datos)) return null;
+  const ns = datos.map(v => Number((v.campos || {})[e.clave]))
+                  .filter(n => Number.isFinite(n));
+  if(!ns.length) return null;
+  const reparto = {};
+  ns.forEach(n => { reparto[String(n)] = (reparto[String(n)] || 0) + 1; });
+  return {
+    funcion: cfg.funcion || null, etiqueta: e.etiqueta || "Valoración", n: ns.length,
+    media: Math.round(ns.reduce((a,b)=>a+b, 0) / ns.length * 100) / 100,
+    reparto,
+    escala: {min: e.min ?? 1, max: e.max ?? 7,
+             ancla_min: e.ancla_min || "", ancla_max: e.ancla_max || ""}
+  };
+}
+
 function cuerpoResultado(p, r, cab, pie){
   let cuerpo = "";
   const cfg = p.config || {};
@@ -2876,6 +2948,29 @@ function cuerpoResultado(p, r, cab, pie){
     else if(p.tipo === "clasificar")
       cuerpo = cab + barrasClasif(r.datos, cfg)
         + pie(`${r.respondidos} respuestas`);
+    /* Una pantalla por función clave: primero el número, después lo escrito.
+       La media se calcula aquí y no en la base de datos porque la base
+       devuelve estas respuestas en crudo —y solo a partir de tres, así que
+       el suelo del anonimato ya está puesto antes de llegar hasta aquí. */
+    else if(p.tipo === "abierta_campos"){
+      const nota = mediaDeCampos(p, r.datos);
+      const libres = (cfg.campos || []).filter(c => c.tipo !== "escala");
+      const textos = (r.datos || []).map(v => libres
+          .map(c => (v.campos || {})[c.clave]).filter(Boolean).join(" · "))
+        .filter(Boolean);
+      cuerpo = cab
+        /* La etiqueta va aparte de la clave: el nombre de la función ya
+           está en el título de la pregunta y repetirlo debajo no informa,
+           pero la clave tiene que seguir siendo la función para que el
+           color de cada una sea el mismo en todos los gráficos. */
+        + (nota ? filasEscala([{clave: cfg.funcion || nota.etiqueta,
+             etiqueta: nota.etiqueta, media: nota.media, reparto: nota.reparto}],
+             nota.escala) : "")
+        + (textos.length ? `<div style="margin-top:22px">${textos.slice(0,12).map(t=>
+            `<div class="enun">${esc(t)}</div>`).join("")}</div>` : "")
+        + pie(`${r.respondidos} respuestas${nota
+            ? ` · valoración media ${num(nota.media)} de ${nota.escala.max}` : ""}`);
+    }
     else
       cuerpo = cab + `<div style="margin-top:22px">${(r.datos||[]).slice(0,12).map(v=>
         `<div class="enun">${esc(v.texto || Object.values(v.campos||{}).join(" · "))}</div>`).join("")}</div>
@@ -3607,19 +3702,45 @@ async function informeSesion(s, preguntas, volver){
      dos resultados que ya están agregados y ya han pasado el mínimo de
      tres respuestas. Nada de esto toca respuestas individuales. */
   const brecha = () => {
-    const uno = c => (partes.find(x => x.p.codigo === c) || {}).r;
-    const des = uno("E05"), imp = uno("E06");
-    if(!des || !imp || !Array.isArray(des.datos) || !Array.isArray(imp.datos)) return "";
-    const m = {};
-    des.datos.forEach(d => m[d.clave] = {clave:d.clave, des:d.media});
-    imp.datos.forEach(d => { if(m[d.clave]) m[d.clave].imp = d.media; });
-    const filas = Object.values(m).filter(x => x.imp != null)
-      .map(x => ({...x, dif: Math.round((x.imp - x.des) * 100) / 100}))
+    const e06 = partes.find(x => x.p.codigo === "E06");
+    const imp = e06 && e06.r;
+    if(!imp || !Array.isArray(imp.datos)) return "";
+
+    /* El desarrollo ya no sale de una matriz propia: sale de la valoración
+       que abre la pantalla de cada función clave. Se casan por el nombre de
+       la función, que viaja en `config.funcion` precisamente para esto y no
+       hay que sacarlo del título a trozos. */
+    const des = {}; let escDes = null;
+    partes.forEach(({p, r}) => {
+      if(!p || p.tipo !== "abierta_campos") return;
+      const nota = mediaDeCampos(p, r && r.datos);
+      if(!nota || !nota.funcion) return;
+      des[nota.funcion] = nota.media;
+      escDes = escDes || nota.escala;
+    });
+    if(!escDes) return "";
+
+    /* Restar dos escalas distintas no significa nada. Si alguien ha tocado
+       a mano el 1–7 de la E06, se dice y no se calcula: un número inventado
+       con aspecto de dato es peor que ningún número. */
+    const maxImp = (e06.p.config || {}).max ?? 7;
+    if(maxImp !== escDes.max) return `<div class="card informe-bloque">
+      <h2 style="font-size:26px;margin:0">Dónde está la brecha</h2>
+      <div class="aviso rojo" style="margin-top:12px">No se puede calcular: la importancia
+        (E06) está en una escala de 1 a ${esc(String(maxImp))} y la valoración de cada
+        función, en una de 1 a ${esc(String(escDes.max))}. Restar una de otra no significa
+        nada. Iguala las dos escalas en el contenido de las preguntas y vuelve aquí.</div></div>`;
+
+    const filas = imp.datos
+      .filter(d => des[d.clave] != null)
+      .map(d => ({clave: d.clave, imp: d.media, des: des[d.clave],
+                  dif: Math.round((d.media - des[d.clave]) * 100) / 100}))
       .sort((a,b) => b.dif - a.dif);
     if(!filas.length) return "";
     const tope = Math.max(...filas.map(f => Math.abs(f.dif))) || 1;
     return `<div class="card informe-bloque">
-      <div class="small">calculado · a partir de E05 y E06</div>
+      <div class="small">calculado · importancia (E06) menos la valoración de cada
+        pantalla por función · escala 1–${esc(String(escDes.max))}</div>
       <h2 style="font-size:26px;margin:6px 0 0">Dónde está la brecha</h2>
       <p class="small" style="margin-top:8px">Importancia menos desarrollo, función por
         función. Arriba, lo que más importa y menos hay.</p>
@@ -4162,7 +4283,8 @@ async function consolaMotor(s){
           final. Añadir la E04 cuando ya están la E03 y la E05 la mete
           entre las dos, que es donde se lee;
        2. y después las EX —las pantallas por función clave— se meten en
-          su banda, entre la E08 y la E10.
+          su banda: detrás de la última E08-o-anterior que haya, y delante
+          de la primera E10-o-posterior.
 
      Lo que NO hace: reordenar lo que ya está. Si moviste algo a mano con
      las flechas, se queda donde lo pusiste; solo se coloca lo nuevo, y
@@ -4387,10 +4509,11 @@ async function consolaMotor(s){
             ${fs.length*3} pantallas de escribir. En aquel formulario esa batería llevó la
             participación de 65 respuestas a 28 entre la primera pregunta y la última, y llenó
             las finales de «ídem a las anteriores». Está ahí por si un cliente lo exige.</p>
-          <p class="note"><b>Volcar</b> rellena E05, E06, E07 y E08 con estas funciones y sus
-            definiciones. Sustituye la lista entera: hazlo antes de abrir la encuesta, porque
-            cambiar los elementos con respuestas dentro deja los resultados colgando de
-            nombres que ya no existen.</p>`
+          <p class="note"><b>Volcar</b> rellena E06 y E07 con estas funciones y sus
+            definiciones, crea o actualiza una pantalla por función, y llena la <b>E01</b>
+            con la primera columna de la tabla del alcance. Sustituye las listas enteras:
+            hazlo antes de abrir la encuesta, porque cambiar los elementos con respuestas
+            dentro deja los resultados colgando de nombres que ya no existen.</p>`
         : `<div class="aviso rojo">No hay funciones clave que volcar. ${origen
             ? "El taller enlazado no tiene ninguna guardada."
             : "Escríbelas en el contenido de cada pregunta, o crea la encuesta enlazada a un taller."}</div>`}
@@ -4497,6 +4620,16 @@ async function consolaMotor(s){
               <button class="btn ghost sm" data-quita="${p.id}">Quitar</button>
             </div>
           </div>`).join("")}${sitio.huerfanos.map(t=>filaTaller(t, true)).join("")}</div>
+          ${(() => {
+            // Un resumen arriba de las que saldrían en blanco. La línea roja
+            // de cada fila está bien cuando hay seis preguntas; con veinte no
+            // se ve, y la que se queda vacía suele ser la primera.
+            const sinC = preguntas.filter(p => faltaContenido(p));
+            return sinC.length ? `<div class="aviso rojo"><b>${sinC.length}
+              ${sinC.length===1?"pregunta sale":"preguntas salen"} en blanco</b>:
+              ${esc(sinC.map(p=>p.codigo||p.titulo.slice(0,24)).join(", "))}. Su contenido
+              viene del modelo y todavía no se ha volcado. No se pueden abrir así.</div>` : "";
+          })()}
           ${s.modo === "survey" ? `<div class="aviso"><b>Esto es un survey.</b> No hay nadie
             conduciendo: quien entre verá, de una vez, todas las preguntas que estén
             <b>abiertas</b>, y terminará cuando las responda. Las que dejes cerradas no
@@ -4598,8 +4731,7 @@ async function consolaMotor(s){
       const nombres = fs.map(f=>f.nombre);
       const defs = fs.reduce((o,f)=>(f.definicion ? (o[f.nombre]=f.definicion) : 0, o), {});
       // Cada destino recibe la lista en la clave que su tipo sabe leer.
-      const destinos = [{c:"E05", k:"items", d:true}, {c:"E06", k:"items", d:true},
-                        {c:"E07", k:"opciones", d:true}, {c:"E08", k:"opciones", d:true}];
+      const destinos = [{c:"E06", k:"items", d:true}, {c:"E07", k:"opciones", d:true}];
       const hechas = [], faltan = [];
       for(const d of destinos){
         const p = preguntas.find(x => x.codigo === d.c);
@@ -4609,7 +4741,7 @@ async function consolaMotor(s){
         await API.actualizarPregunta(p.id, {config: cfg});
         hechas.push(d.c);
       }
-      /* E03 —«¿a qué colectivo perteneces?»— sale de la PRIMERA COLUMNA de
+      /* E01 —«¿a qué colectivo perteneces?»— sale de la PRIMERA COLUMNA de
          la tabla del alcance. Es el mismo vocabulario con el que el comité
          definió a quién llama líder, así que al cruzar los resultados por
          colectivo las categorías coinciden con las del modelo en vez de
@@ -4617,12 +4749,12 @@ async function consolaMotor(s){
          siempre hay alguien que no se reconoce en ninguna. */
       const cols = ((origen && origen.modelo) || s.modelo || {}).grupos || [];
       const cats = cols.map(g => (g.grupo||"").trim()).filter(Boolean);
-      const p03 = preguntas.find(x => x.codigo === "E03");
-      if(p03 && cats.length){
-        await API.actualizarPregunta(p03.id,
-          {config: {...(p03.config||{}), opciones: cats.concat(["Otra"])}});
-        hechas.push("E03");
-      } else if(p03 && !cats.length){ faltan.push("E03 (la tabla del alcance está vacía)"); }
+      const p01 = preguntas.find(x => x.codigo === "E01");
+      if(p01 && cats.length){
+        await API.actualizarPregunta(p01.id,
+          {config: {...(p01.config||{}), opciones: cats.concat(["Otra"])}});
+        hechas.push("E01");
+      } else if(p01 && !cats.length){ faltan.push("E01 (la tabla del alcance está vacía)"); }
       /* Y AQUÍ SE CREAN LAS PANTALLAS POR FUNCIÓN.
 
          Antes esto vivía detrás de un botón aparte, opcional, en una
@@ -4684,8 +4816,7 @@ async function consolaMotor(s){
           filas.push({sesion_id: s.id, codigo: cod, tipo: "abierta_campos",
             titulo: resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars),
             ayuda: f.definicion || null,
-            config: {campos: ABIERTAS_POR_FUNCION.map(pl =>
-              ({clave: pl.campo, etiqueta: pl.etiqueta}))},
+            config: {funcion: f.nombre, campos: camposPorFuncion(vars, resolverTexto)},
             estado: "cerrada"});
           return;
         }
@@ -4739,10 +4870,10 @@ async function consolaMotor(s){
           .filter(c => /^EX\d\d/.test(c)).map(c => c.slice(0,4))).size;
         if(nf && cub < nf && !confirm(
           "ATENCIÓN: " + (nf - cub) + " de las " + nf + " funciones clave no tienen "
-          + "pantalla de texto.\n\nSi abres la encuesta así, la gente puntuará las funciones "
-          + "en las dos matrices pero NO escribirá ni un comentario sobre "
-          + (cub ? "esas " + (nf - cub) : "ninguna") + ".\n\nSe crean con «Volcar en las "
-          + "preguntas», arriba.\n\n¿Abrir de todas formas?")) return;
+          + "pantalla propia.\n\nSi abres la encuesta así, esas funciones no se valoran ni "
+          + "se comenta nada sobre ellas: no habrá media, y sin media no salen en la tabla "
+          + "de la brecha.\n\nSe crean con «Volcar en las preguntas», arriba.\n\n"
+          + "¿Abrir de todas formas?")) return;
       }
       const abribles = preguntas.filter(p => p.estado === "cerrada" && !faltaContenido(p));
       const rotas = preguntas.filter(p => p.estado === "cerrada" && faltaContenido(p));
@@ -4811,8 +4942,20 @@ async function consolaMotor(s){
       if(proyectar) Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"q:"+id}));
       preguntas = await API.preguntas(s.id); pinta();
     };
-    app().querySelectorAll("[data-abrir]").forEach(b => b.onclick = () =>
-      tocar(b.dataset.abrir, {estado:"abierta"}, true));
+    /* Abrir una pregunta sin contenido es repartir una pantalla en blanco.
+       Pasa de verdad desde que la E01 —el colectivo— sale de la tabla del
+       alcance: nace vacía y solo se llena al volcar, así que la primera
+       pregunta de la encuesta es justo la que puede estar en blanco. */
+    app().querySelectorAll("[data-abrir]").forEach(b => b.onclick = () => {
+      const p = preguntas.find(x => x.id === b.dataset.abrir);
+      const falta = p && faltaContenido(p);
+      if(falta){ alert("Esta pregunta no se puede abrir: le falta rellenar " + falta
+        + ".\n\nEn el móvil saldría vacía." + ((p.config||{}).opciones && !((p.config||{})
+        .opciones.length) && String(s.instrumento||"").startsWith("evaluacion")
+        ? "\n\nSi es una de las que salen del modelo, se llena con «Volcar en las "
+          + "preguntas»." : "")); return; }
+      tocar(b.dataset.abrir, {estado:"abierta"}, true);
+    });
     app().querySelectorAll("[data-fin]").forEach(b => b.onclick = () =>
       tocar(b.dataset.fin, {estado:"terminada"}, true));
     app().querySelectorAll("[data-reabrir]").forEach(b => b.onclick = () =>
@@ -4967,28 +5110,34 @@ async function consolaMotor(s){
     if(!fs.length) return {creadas:0, refrescadas:0, congeladas:[]};
     const filas = [];
     let refrescadas = 0; const congeladas = [];
-    const campos = () => ({campos: ABIERTAS_POR_FUNCION.map(pl =>
-      ({clave: pl.campo, etiqueta: pl.etiqueta}))});
+    // La firma de los campos: qué se pregunta y con qué escala. Sirve para
+    // saber si una pantalla vieja se quedó sin la valoración 1–7.
+    const firma = cfg => ((cfg && cfg.campos) || [])
+      .map(c => c.clave + ":" + (c.tipo || "texto") + ":" + (c.max || "")).join("|");
     for(let i = 0; i < fs.length; i++){
       const f = fs[i];
       const cod = "EX" + String(i+1).padStart(2,"0") + "C";
       const titulo = resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars);
       const ayuda = f.definicion || null;
+      const config = {funcion: f.nombre, campos: camposPorFuncion(vars, resolverTexto)};
       const hay = preguntas.find(p => p.codigo === cod);
       if(!hay){
         filas.push({sesion_id: s.id, codigo: cod, tipo: "abierta_campos",
-          titulo, ayuda, config: campos(), estado: "cerrada"});
+          titulo, ayuda, config, estado: "cerrada"});
         continue;
       }
-      if(hay.titulo === titulo && (hay.ayuda || null) === ayuda) continue;
-      // Cambió el nombre o la descripción en el taller. Solo se reescribe
-      // si nadie ha contestado todavía a esa pantalla.
+      const igual = hay.titulo === titulo && (hay.ayuda || null) === ayuda
+        && (hay.config||{}).funcion === f.nombre
+        && firma(hay.config) === firma(config);
+      if(igual) continue;
+      // Cambió el nombre, la descripción o la forma de la pantalla. Solo se
+      // reescribe si nadie ha contestado todavía a esa pantalla.
       let respuestas = 1;   // ante la duda, no se toca
       try{ const r = await API.resultadosPregunta(s.codigo, hay.id);
            respuestas = (r && r.respondidos) || 0; }catch(e){ respuestas = 1; }
       if(respuestas){ congeladas.push(cod); continue; }
-      await API.actualizarPregunta(hay.id, {titulo, ayuda});
-      hay.titulo = titulo; hay.ayuda = ayuda; refrescadas++;
+      await API.actualizarPregunta(hay.id, {titulo, ayuda, config});
+      hay.titulo = titulo; hay.ayuda = ayuda; hay.config = config; refrescadas++;
     }
     // Siempre, aunque no haya nada nuevo que crear: así una sesión montada
     // antes de esta regla se recoloca sola.
@@ -5006,7 +5155,7 @@ async function consolaMotor(s){
       if(movidas){
         preguntas = await API.preguntas(s.id);
         avisoEva = `<div class="aviso">Se ha recolocado el orden de ${movidas} preguntas:
-          las pantallas por función clave van ahora entre <b>E08</b> y <b>E10</b>.</div>`;
+          las pantallas por función clave van ahora antes de la <b>E10</b>.</div>`;
       }
     }catch(e){}
   }
@@ -5623,24 +5772,29 @@ const BLOQUES_EVA = [
 
 const BANCO_EVA = [
 /* ── Bloque 0 · Perfil ──────────────────────────────────────────── */
-{c:"E01", b:0, t:"unica", nuc:true, nat:"fija",
- q:"¿Desde qué posición respondes en [ORGANIZACION]?",
- cfg:{opciones:["Dirección o gobierno","Mando intermedio con equipo",
-   "Responsable de proyecto o proceso","Referente técnico sin equipo a cargo",
-   "Personas y cultura / RRHH","Otra"]}},
-{c:"E02", b:0, t:"unica", nuc:false, nat:"fija", bench:true,
- q:"¿Cuánto tiempo llevas ejerciendo responsabilidad sobre personas o equipos?",
- ayuda:"Fuera del núcleo a propósito: la pantalla de entrada ya pregunta si dirige "
-     + "equipo y cuánta antigüedad tiene, y eso viaja con cada envío como segmento. "
-     + "Añádela solo si necesitas el tramo fino de veteranía en el mando.",
- cfg:{opciones:["No la ejerzo","Menos de 2 años","2–5 años","6–10 años","Más de 10 años"]}},
-{c:"E03", b:0, t:"unica", nuc:true, nat:"derivada",
+/* La primera pregunta ya no es una lista de puestos escrita aquí, sino la
+   PRIMERA COLUMNA DE LA TABLA DEL ALCANCE: los mismos colectivos con los
+   que el comité definió a quién llama líder. Antes eran dos preguntas —una
+   lista fija mía y esta— y la lista fija era una taxonomía paralela que no
+   coincidía con la del modelo, así que al cruzar los resultados por
+   colectivo había que decidir a mano qué era cada cosa.
+
+   El precio, y hay que saberlo: esta pregunta NACE VACÍA. Sin volcar, la
+   encuesta no tiene primera pregunta. Por eso la consola no deja abrir una
+   derivada sin contenido y lo dice con todas las letras. */
+{c:"E01", b:0, t:"unica", nuc:true, nat:"derivada",
  q:"¿A qué colectivo perteneces en [ORGANIZACION]?",
  ayuda:"Se rellena al volcar, con la primera columna de la tabla del alcance: los "
      + "mismos colectivos con los que el comité definió a quién llama líder. Cuidado "
      + "con dejar grupos de tres o cuatro personas: un texto libre firmado por un "
      + "grupo así deja de ser anónimo aunque el recuento lo sea.",
  cfg:{opciones:[]}},
+{c:"E02", b:0, t:"unica", nuc:false, nat:"fija", bench:true,
+ q:"¿Cuánto tiempo llevas ejerciendo responsabilidad sobre personas o equipos?",
+ ayuda:"Fuera del núcleo a propósito: la pantalla de entrada ya pregunta si dirige "
+     + "equipo y cuánta antigüedad tiene, y eso viaja con cada envío como segmento. "
+     + "Añádela solo si necesitas el tramo fino de veteranía en el mando.",
+ cfg:{opciones:["No la ejerzo","Menos de 2 años","2–5 años","6–10 años","Más de 10 años"]}},
 
 /* ── Bloque 1 · Conocimiento del modelo ─────────────────────────── */
 {c:"E04", b:1, t:"escala", nuc:true, nat:"fija", bench:true,
@@ -5650,31 +5804,39 @@ const BANCO_EVA = [
  cfg:{min:1, max:5, ancla_min:"No lo conocía", ancla_max:"Lo conocía bien"}},
 
 /* ── Bloque 2 · Valoración ──────────────────────────────────────── */
-{c:"E05", b:2, t:"matriz_escala", nuc:true, nat:"derivada", bench:true,
- q:"¿Hasta qué punto está desarrollada hoy cada una de estas funciones clave en [ORGANIZACION]?",
- ayuda:"Se rellena con las funciones de la sesión de origen. Toca el nombre de "
-     + "cada una para leer su definición.",
- cfg:{min:1, max:5, items:[], ancla_min:"Poco desarrollada", ancla_max:"Muy desarrollada"}},
+/* Aquí había una E05 —una matriz con el desarrollo actual de cada función—
+   y se ha quitado: preguntaba exactamente lo mismo que la valoración que
+   ahora abre la pantalla de cada función clave. Contestar dos veces lo
+   mismo, una en matriz y otra suelta, es la mejor forma de que las dos
+   respuestas no coincidan y no saber cuál creer.
+
+   El desarrollo sale ahora de esas pantallas, y con él se calcula la
+   brecha contra la importancia. Por eso la E06 está en 1–7 y no en 1–5:
+   restar una escala de otra distinta no significa nada. */
 {c:"E06", b:2, t:"matriz_escala", nuc:true, nat:"derivada", bench:true,
  q:"¿Y qué importancia tiene cada una para el futuro de [ORGANIZACION]?",
  ayuda:"Esta es la pregunta que faltaba en el formulario original. Sin ella tienes "
      + "un ranking de lo flojo, pero no sabes qué de lo flojo importa: la prioridad "
-     + "es la distancia entre estas dos valoraciones, no la nota más baja.",
- cfg:{min:1, max:5, items:[], ancla_min:"Poco importante", ancla_max:"Imprescindible"}},
+     + "es la distancia entre esta valoración y el desarrollo que se recoge en la "
+     + "pantalla de cada función clave, no la nota más baja. Va en 1–7, la misma "
+     + "escala que aquella, para que la resta signifique algo.",
+ cfg:{min:1, max:7, items:[], ancla_min:"Poco importante", ancla_max:"Imprescindible"}},
 {c:"E07", b:2, t:"ranking", nuc:false, nat:"derivada",
  q:"Ordena las funciones clave por prioridad de desarrollo en [ORGANIZACION].",
- ayuda:"Alternativa a E06 si prefieres una sola pregunta de prioridad. Con más de "
-     + "siete elementos, ordenar en un móvil se hace pesado.",
+ ayuda:"Opcional. La prioridad ya sale calculada de la brecha —importancia menos "
+     + "desarrollo—, que es un dato y no una opinión sobre el dato. Añádela solo si "
+     + "quieres además la prioridad declarada, para contrastarla con la calculada. "
+     + "Con más de siete elementos, ordenar en un móvil se hace pesado.",
  cfg:{opciones:[]}},
 
 /* ── Bloque 3 · Cualitativo ─────────────────────────────────────── */
-{c:"E08", b:3, t:"unica", nuc:true, nat:"derivada",
- q:"De todas ellas, ¿cuál crees que hay que trabajar antes en [ORGANIZACION]?",
- ayuda:"Se rellena con las funciones de origen. Una sola elección forzada: es la que "
-     + "obliga a priorizar de verdad, porque en las matrices se puede poner un 5 a "
-     + "todo y aquí no.",
- cfg:{opciones:[]}},
-/* Aquí había una E09 —«sobre esa función clave que acabas de elegir»— con
+/* Y aquí había una E08 —«de todas ellas, ¿cuál hay que trabajar antes?»—.
+   También fuera: la E07 ya ordena las funciones por prioridad, y una lista
+   ordenada dice todo lo que decía aquella elección única y además dice qué
+   va segundo y qué va último. Mantener las dos era pedir la misma decisión
+   dos veces con distinto formulario.
+
+   Aquí había también una E09 —«sobre esa función clave que acabas de elegir»— con
    los tres campos. Se ha quitado del banco a propósito.
 
    Parecía la parte cualitativa del cuestionario y no lo era: cada persona
@@ -5709,9 +5871,29 @@ const VARIABLES_EVA = [
   {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Periodo al que se refiere el modelo. Por ejemplo, 2026-2029."}
 ];
 
-/* Plantilla de las abiertas por función. Se usa cuando decides generar la
-   batería completa —o la reducida— desde la consola. `[FUNCION]` se
-   sustituye por el nombre de cada función clave. */
+/* LA PANTALLA DE CADA FUNCIÓN CLAVE
+   Una valoración y tres textos, en la misma pantalla y en este orden.
+
+   La valoración va PRIMERA y a propósito. Es la misma pregunta que hacía
+   la antigua matriz E05 —cómo está hoy esta función en la organización—,
+   pero hecha aquí, con la definición de la función a la vista y justo
+   antes de escribir sobre ella. Puntuar diez funciones seguidas en una
+   rejilla y escribir sobre ellas veinte pantallas después era pedir dos
+   juicios sobre lo mismo en dos contextos distintos.
+
+   Es del estado de la función en la ORGANIZACIÓN, no de nadie en
+   concreto: esto no es una evaluación de personas y el enunciado lo dice.
+
+   Obligatoria: sin número no hay media, y sin media no hay brecha. Los
+   tres textos siguen siendo opcionales.
+
+   `[FUNCION]` se sustituye por el nombre de cada función clave. */
+const ESCALA_POR_FUNCION = {
+  campo: "estado", tipo: "escala", min: 1, max: 7, obligatorio: true,
+  etiqueta: "¿Cómo está hoy esta función en [ORGANIZACION]?",
+  ayuda: "El estado de la función en la organización, no el de ninguna persona.",
+  ancla_min: "Muy poco desarrollada", ancla_max: "Muy desarrollada"
+};
 const ABIERTAS_POR_FUNCION = [
   {suf:"F", campo:"fuerte", etiqueta:"¿En qué destaca hoy?",
    q:"[FUNCION]: ¿en qué destaca hoy [ORGANIZACION]?"},
@@ -5720,6 +5902,16 @@ const ABIERTAS_POR_FUNCION = [
   {suf:"A", campo:"accion", etiqueta:"¿Qué acción concreta propones?",
    q:"[FUNCION]: ¿qué acciones concretas propones?"}
 ];
+/* Los campos de una pantalla por función, ya resueltos. `funcion` viaja en
+   la config para que los resultados puedan casar cada pantalla con su
+   función clave sin tener que desmontar el título. */
+function camposPorFuncion(vars, resolver){
+  const e = ESCALA_POR_FUNCION;
+  return [{clave:e.campo, tipo:"escala", min:e.min, max:e.max, obligatorio:true,
+           etiqueta: resolver(e.etiqueta, vars), ayuda: resolver(e.ayuda, vars),
+           ancla_min:e.ancla_min, ancla_max:e.ancla_max}]
+    .concat(ABIERTAS_POR_FUNCION.map(pl => ({clave: pl.campo, etiqueta: pl.etiqueta})));
+}
 
 const VARIABLES_ESC = [
   {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización, unidad o sistema analizado."},
@@ -5804,8 +5996,12 @@ function situarTalleres(instrumento, preguntas){
    La regla, literal: nunca antes de la E08 o anteriores, y nunca después
    de la E10 o posteriores. Es decir, el bloque EX ocupa el hueco que hay
    entre una y otra, que además es donde tiene sentido: ya has dicho qué
-   función hay que trabajar antes (E08) y todavía no has entrado en las de
    cierre (E10 y siguientes).
+
+   La regla se escribió cuando existía la E08. Al quitarla del banco sigue
+   valiendo tal cual: el suelo pasa a ser la última que quede por debajo de
+   ocho —hoy la E07, la priorización— y el techo sigue siendo la E10. Es a
+   propósito que hable de números y no de códigos concretos.
 
    Se creaban con `orden = max + 1` —«al final»— y por eso quedaban detrás
    de las preguntas de cierre.
@@ -6732,8 +6928,17 @@ async function respuestasEnsayoMotor(s, preguntas, n, avisar){
       case "abierta":  return {texto: "Respuesta de ensayo " + NUMEROS[i % NUMEROS.length]};
       case "abierta_campos": {
         const cs = c.campos || []; if(!cs.length) return null;
-        const o = {}; cs.forEach((f,k) => o[f.clave] =
-          "Ensayo " + NUMEROS[(i+k) % NUMEROS.length]);
+        const o = {};
+        cs.forEach((f,k) => {
+          if(f.tipo === "escala"){
+            // Un número de ensayo con algo de dispersión, no el mismo
+            // siempre: con todos iguales, la silueta del reparto sale plana
+            // y no se ve si el gráfico funciona.
+            const min = f.min ?? 1, max = f.max ?? 7;
+            o[f.clave] = min + Math.min(max-min,
+              Math.floor(Math.abs(rnd()+rnd()-1) * (max-min+1)));
+          } else o[f.clave] = "Ensayo " + NUMEROS[(i+k) % NUMEROS.length];
+        });
         return {campos:o};
       }
       // La nube se carga con pocos términos y muy repetidos: así se ve la
