@@ -270,6 +270,37 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .mapa .pt{fill:var(--deseada);stroke:var(--surface-1);stroke-width:2}
 .mapa .rot{font-size:21px;fill:var(--text-primary);font-weight:600}
 .mapa .ejetxt{font-size:18px;fill:var(--text-muted)}
+/* Índice del entregable: tres enlaces en una fila, discreto. No es una
+   navegación por pestañas a propósito: en un documento que se va a imprimir,
+   esconder dos tercios detrás de un clic es exactamente lo contrario de lo
+   que hace falta. Aquí solo lleva el ojo al sitio. */
+.indice{display:flex;flex-wrap:wrap;gap:10px;padding:14px 18px}
+.indice a{font-size:13.5px;text-decoration:none;color:var(--text-secondary);
+  border:1px solid var(--border);border-radius:999px;padding:6px 14px}
+.indice a:hover{color:var(--text-primary);border-color:var(--text-secondary)}
+/* Un taller dentro de la lista de preguntas. Se distingue con un borde a
+   la izquierda, no con un color de fondo: en una lista de veinte filas, un
+   bloque de color pesa más que la información que lleva dentro. */
+.taller-fila{border-left:3px solid var(--tono-6);padding-left:14px}
+/* Tabla de pares: el alcance del modelo de liderazgo, y cualquier otra
+   cosa que sean dos columnas de texto y un mando de filas al final. */
+.pares{width:100%;border-collapse:collapse;margin-top:14px}
+.pares th{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-secondary);text-align:left;padding:0 8px 8px 0;font-weight:600}
+.pares td{padding:0 8px 8px 0;vertical-align:top;text-align:left}
+.pares td:last-child{width:1%;white-space:nowrap;padding-right:0}
+.pares input{margin:0}
+.pares .mueve{display:flex;gap:4px;padding-top:4px}
+/* En un móvil dos columnas de texto no caben: cada fila pasa a bloque. */
+@media (max-width:640px){
+  .pares, .pares tr, .pares td{display:block;width:auto}
+  .pares thead, .pares th{display:none}
+  .pares tr{border-bottom:1px solid var(--grid);padding-bottom:10px;margin-bottom:10px}
+  .pares td:last-child{width:auto}
+}
+/* La misma tabla, ya sin editar: acta, proyección y encuesta. */
+.pares.leida td{padding:10px 14px 10px 0;border-bottom:1px solid var(--grid);font-size:17px}
+.pares.leida td:first-child{font-weight:650;width:40%}
 .matriz{width:100%;border-collapse:separate;border-spacing:2px;margin-top:18px}
 .matriz th{font-size:16px;font-weight:600;color:var(--text-secondary);text-align:left;
   padding:6px 8px;vertical-align:bottom}
@@ -1433,7 +1464,8 @@ async function participanteMotor(codigo, s){
   const esSurvey = s.modo === "survey";
   // El modelo heredado de la sesión de origen. Solo la evaluación lo trae.
   const modelo = s.modelo || {}, funciones = s.funciones || [];
-  const hayModelo = !!(modelo.definicion || modelo.alcance || funciones.length);
+  const hayModelo = !!(modelo.definicion || modelo.alcance || funciones.length
+                       || (modelo.grupos||[]).length);
 
   /* Memoria del móvil. Hasta ahora vivía solo en la variable: al recargar
      la página, esa persona empezaba de cero y abría un envío nuevo, así
@@ -1650,7 +1682,9 @@ async function participanteMotor(codigo, s){
           <h3 style="margin-top:0">Lo que se te pide valorar</h3>
           ${modelo.definicion ? `<p><b>Qué entendemos por liderar aquí.</b><br>
              ${esc(modelo.definicion)}</p>` : ""}
-          ${modelo.alcance ? `<p><b>A quién se considera líder.</b><br>
+          ${(modelo.grupos||[]).length ? `<p><b>A quién se considera líder.</b></p>
+             ${tablaAlcance(modelo.grupos)}`
+            : modelo.alcance ? `<p><b>A quién se considera líder.</b><br>
              ${esc(modelo.alcance)}</p>` : ""}
           ${funciones.length ? `<p><b>Las ${funciones.length} funciones clave:</b></p>
             <div class="lista">${funciones.map(f=>`<div class="it"><div>
@@ -2812,6 +2846,18 @@ function cuerpoResultado(p, r, cab, pie){
    votos—. Es la conclusión, no la evidencia; la evidencia está en «Ver
    todos los resultados» y no tiene por qué circular con esto.
    ═══════════════════════════════════════════════════════════════════ */
+/* La tabla del alcance, ya sin editar. La usan el acta, la proyección de
+   la sala y la portada de la encuesta de evaluación: tres sitios, un solo
+   sitio donde arreglarla. `grande` sube el cuerpo para la pared. */
+function tablaAlcance(grupos, grande){
+  const g = (grupos || []).filter(x => x && (x.grupo || x.nivel));
+  if(!g.length) return "";
+  return `<table class="pares leida"${grande ? ` style="font-size:26px"` : ""}>
+    <tr><th>Tipo de responsable</th><th>Nivel de responsabilidad</th></tr>
+    ${g.map(x=>`<tr><td>${esc(x.grupo||"—")}</td><td>${esc(x.nivel||"—")}</td></tr>`).join("")}
+  </table>`;
+}
+
 function actaModelo(s, volver){
   const m = s.modelo || {}, fs = (s.funciones || []).filter(f => f.nombre);
   const org = (s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "";
@@ -2832,25 +2878,36 @@ function actaModelo(s, volver){
         Puedes imprimirlo igual, pero saldrá marcado como versión de trabajo: es preferible
         eso a que circule un PDF que parece definitivo y no lo es.</div>`}
       <div class="btnrow no-imprimir">
-        <button class="btn ghost" id="imprimir">Imprimir o guardar en PDF</button></div>
-      <p class="note no-imprimir">Al imprimir se quitan los botones y cada función procura no
-        partirse entre dos páginas. Para guardarlo en PDF, elige «Guardar como PDF» en el
-        destino de la impresora.</p>
+        <button class="btn" id="imprimir">Guardar en PDF</button>
+        <button class="btn ghost" id="pared">Mandar a la pared</button>
+        <button class="btn ghost" id="ventana">Abrir la proyección</button></div>
+      <div class="no-imprimir" id="avisoActa"></div>
+      <p class="note no-imprimir">«Guardar en PDF» abre el diálogo de impresión: elige
+        <b>Guardar como PDF</b> en el destino. Se quitan los botones y ninguna función se
+        parte entre dos páginas. «Mandar a la pared» pone este mismo contenido en el
+        proyector, en tres pantallas grandes que pasan con las flechas.</p>
     </div>
 
-    <div class="card informe-bloque">
+    <div class="card no-imprimir indice">
+      ${[["def","Qué entendemos por liderazgo"],["alc","A quién se considera líder"],
+         ["fun","Las funciones clave · " + fs.length]].map(([k,t])=>
+        `<a href="#modelo-${k}">${esc(t)}</a>`).join("")}
+    </div>
+
+    <div class="card informe-bloque" id="modelo-def">
       <h2 style="font-size:26px;margin:0">Qué entendemos por liderazgo</h2>
       ${m.definicion ? `<p class="lead" style="margin-top:14px">${esc(m.definicion)}</p>`
         : `<div class="aviso rojo">Sin redactar.</div>`}
     </div>
 
-    <div class="card informe-bloque">
+    <div class="card informe-bloque" id="modelo-alc">
       <h2 style="font-size:26px;margin:0">A quién se considera líder</h2>
-      ${m.alcance ? `<p class="lead" style="margin-top:14px">${esc(m.alcance)}</p>`
-        : `<div class="aviso rojo">Sin redactar.</div>`}
+      ${(m.grupos||[]).length ? tablaAlcance(m.grupos)
+        : `<div class="aviso rojo">Sin definir.</div>`}
+      ${m.alcance ? `<p class="small" style="margin-top:14px">${esc(m.alcance)}</p>` : ""}
     </div>
 
-    <div class="card informe-bloque">
+    <div class="card informe-bloque" id="modelo-fun">
       <h2 style="font-size:26px;margin:0">Las funciones clave
         <span class="estado">${fs.length}</span></h2>
       ${fs.length ? `<div style="margin-top:18px">${fs.map((f,i)=>`
@@ -2871,6 +2928,16 @@ function actaModelo(s, volver){
     </div></div>`;
   $("#atras").onclick = volver;
   $("#imprimir").onclick = () => window.print();
+  $("#pared").onclick = async () => {
+    try{
+      Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"modelo"}));
+      $("#avisoActa").innerHTML = `<div class="aviso">En la pared: el modelo completo, en
+        tres pantallas. Pasan solas cada veinte segundos y con las flechas ← →.
+        Si el proyector no está abierto, ábrelo con el botón de al lado.</div>`;
+    }catch(e){ $("#avisoActa").innerHTML =
+      `<div class="aviso rojo">${esc(e.message||e)}</div>`; }
+  };
+  $("#ventana").onclick = () => abrirProyeccion(s.codigo);
   window.scrollTo({top:0});
 }
 
@@ -2957,6 +3024,10 @@ async function tallerFunciones(s, preguntas, volver){
   let fs = JSON.parse(JSON.stringify(s.funciones || []));
   if(!fs.length) fs = [{nombre:"", definicion:""}];
   let modelo = JSON.parse(JSON.stringify(s.modelo || {}));
+  // Los pares del alcance. Una fila vacía de arranque para que la tabla no
+  // aparezca como un encabezado suelto sin sitio donde escribir.
+  let gr = (modelo.grupos || []).map(g => ({grupo:g.grupo||"", nivel:g.nivel||""}));
+  if(!gr.length) gr = [{grupo:"", nivel:""}];
   // Los avisos sobreviven al repintado: si se escriben en el DOM y después
   // se llama a pinta(), se borran sin que nadie los haya leído.
   let recado = "", recado1 = "";
@@ -3013,19 +3084,26 @@ async function tallerFunciones(s, preguntas, volver){
     alc: () => evidenciaDe("alc",
         "Esto es lo que ha dicho y votado el grupo sobre a quién considerar líder y con qué niveles:")
       .concat([
-        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + ", como una",
-        "tabla de PARES «grupo de líderes → nivel de responsabilidad».",
+        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + " como una",
+        "TABLA DE PARES, y nada más que eso. Sin párrafo introductorio, sin",
+        "conclusión: la tabla es el entregable.",
         "",
-        "1. Entre dos y cuatro GRUPOS DE LÍDERES. De cada uno:",
-        "   - nombre corto del grupo,",
-        "   - qué puestos o roles concretos entran (de los que aparecen arriba),",
-        "   - el NIVEL DE RESPONSABILIDAD que le corresponde, con un nombre y no",
-        "     solo un número, y justificado por tres cosas: alcance de la",
-        "     decisión, horizonte temporal y si tiene o no personas a cargo.",
-        "   Preséntalo como tabla de dos columnas: grupo | nivel.",
-        "2. Después, un párrafo de redacción final para el documento, que empiece",
-        "   por «A efectos de este modelo, en " + org() + " se consideran líderes…»",
-        "   y recorra los grupos en orden de nivel.",
+        "Dos columnas, entre dos y cinco filas:",
+        "",
+        "  TIPO DE RESPONSABLE  |  NIVEL DE RESPONSABILIDAD",
+        "",
+        "- Columna 1: el nombre del colectivo, corto, como lo llaman ellos.",
+        "  Debajo del nombre no pongas nada más: si necesitas aclarar qué",
+        "  puestos entran, dilo fuera de la tabla.",
+        "- Columna 2: el nivel, descrito en UNA línea de doce a veinte palabras,",
+        "  con nombre propio y no un número. Tiene que decir sobre qué decide,",
+        "  con qué horizonte, y si tiene personas a cargo. «Nivel 2» no dice",
+        "  nada; «Decide sobre su unidad, horizonte anual, con equipo a cargo»",
+        "  se entiende desde el fondo de la sala.",
+        "- Ordena las filas de más alcance a menos.",
+        "",
+        "Después de la tabla, y solo después:",
+        "- qué puestos concretos entran en cada fila, de los que aparecen arriba,",
         "",
         "- Los niveles salen de «Qué niveles de liderazgo reconocen»: usa los",
         "  criterios que ha dado el grupo, no una escala tuya.",
@@ -3056,8 +3134,8 @@ async function tallerFunciones(s, preguntas, volver){
     app().innerHTML = `<div class="wrap ancho">${cabecera(
       `<button class="iconbtn" id="atras">Volver</button>`)}
       <div class="card">
-        <span class="phasetag">${esc(s.titulo)} · definición del modelo</span>
-        <h1 style="margin:6px 0 0">Definición del modelo</h1>
+        <span class="phasetag">${esc(s.titulo)} · taller</span>
+        <h1 style="margin:6px 0 0">Taller de modelo de liderazgo</h1>
         <p class="lead" style="margin-top:8px">Definición, alcance y funciones clave.</p>
         <p class="small">Los tres pasos que no puede dar la aplicación. En cada uno tienes la
           evidencia que ha producido el grupo, un texto listo para pegar en tu IA, y el sitio
@@ -3115,13 +3193,30 @@ async function tallerFunciones(s, preguntas, volver){
             <textarea id="mdef" rows="4"
               placeholder="La persona que lidera en esta organización…">${esc(modelo.definicion||"")}</textarea></div>`
         : fase.f === "alc" ? `
-          <div class="field" style="margin-top:18px"><label for="malc">Alcance · redacción final</label>
-            <textarea id="malc" rows="5"
-              placeholder="A efectos de este modelo, se consideran líderes…">${esc(modelo.alcance||"")}</textarea></div>
-          <p class="note">Los grupos y sus niveles se redactan aquí, en un solo texto. No es
-            una lista con estructura en la base de datos a propósito: cada cliente los nombra
-            de una manera y en cuanto lo conviertes en campos fijos, empiezas a forzar la
-            realidad del cliente para que quepa en tu formulario.</p>`
+          <h3 style="margin-top:22px">El alcance, en pares</h3>
+          <p class="small">Una fila por tipo de responsable, con el nivel que le corresponde.
+            Esto no es un párrafo: es la tabla que se proyecta, la que va en el acta y la que
+            lee quien responda la encuesta. Un párrafo que enumera seis colectivos no se
+            entiende desde el fondo de una sala.</p>
+          <table class="pares" id="tgr">
+            <tr><th>Tipo de responsable</th><th>Nivel de responsabilidad</th><th></th></tr>
+            ${gr.map((g,i)=>`<tr>
+              <td><input id="gg${i}" value="${esc(g.grupo||"")}" maxlength="80"
+                    placeholder="Jefaturas de servicio" autocomplete="off"></td>
+              <td><input id="gn${i}" value="${esc(g.nivel||"")}" maxlength="80"
+                    placeholder="Decide sobre su unidad, horizonte anual" autocomplete="off"></td>
+              <td class="mueve">
+                <button type="button" data-gsb="${i}" ${i===0?"disabled":""}>▲</button>
+                <button type="button" data-gbj="${i}" ${i===gr.length-1?"disabled":""}>▼</button>
+                <button type="button" data-gqt="${i}">×</button></td></tr>`).join("")}
+          </table>
+          <div class="btnrow"><button class="btn ghost" id="masgr">Añadir fila</button></div>
+          ${modelo.alcance ? `<div class="aviso"><b>Texto anterior del alcance.</b> Lo escribiste
+            cuando esto era un párrafo. Pásalo a la tabla de arriba y bórralo de aquí; mientras
+            siga escrito, se enseñará debajo de la tabla como nota.
+            <div class="field" style="margin-top:10px"><textarea id="malc" rows="3"
+              >${esc(modelo.alcance)}</textarea></div></div>`
+            : `<input type="hidden" id="malc" value="">`}`
         : ""}
       </div>`;}).join("")}
 
@@ -3152,7 +3247,7 @@ async function tallerFunciones(s, preguntas, volver){
             </div></div>`).join("")}</div>
         <div class="btnrow">
           <button class="btn ghost" id="mas">Añadir otra</button>
-          <button class="btn" id="guardar">Guardar funciones</button></div>
+          <button class="btn" id="guardar">Guardar modelo</button></div>
         <div id="aviso">${recado1}</div>
         <h3>Proyectar</h3>
         <p class="small">Lo que ve la sala mientras trabajáis. Se actualiza sola cada tres
@@ -3160,8 +3255,8 @@ async function tallerFunciones(s, preguntas, volver){
         <div class="btnrow" style="margin-top:0">
           <button class="btn ghost" id="proyVotado">Proyectar lo votado</button>
           <button class="btn ghost" id="proyFunciones">Proyectar las funciones</button>
-          <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}"
-             target="_blank">Abrir proyección</a></div>
+          <button class="btn ghost" type="button"
+             onclick="abrirProyeccion('${esc(s.codigo)}')">Abrir proyección</button></div>
         <div id="aviso3"></div>
       </div>
 
@@ -3189,7 +3284,9 @@ async function tallerFunciones(s, preguntas, volver){
         // sobre lo que hay escrito en pantalla: cerrar un modelo que no
         // está guardado dejaría un acta que no coincide con la sesión.
         const g = s.modelo || {}, gf = (s.funciones||[]).filter(f=>f.nombre);
-        const pend = [!g.definicion && "la definición", !g.alcance && "el alcance",
+        const ngr = (g.grupos||[]).filter(x => x.grupo || x.nivel).length;
+        const pend = [!g.definicion && "la definición",
+                      !ngr && "al menos un par en la tabla del alcance",
                       !gf.length && "al menos una función clave"].filter(Boolean);
         const cerrado = g.cerrado_en;
         return `<div class="card">
@@ -3205,9 +3302,10 @@ async function tallerFunciones(s, preguntas, volver){
         <div class="btnrow">
           <button class="btn" id="cerrarModelo" ${pend.length ? "disabled" : ""}>${
             cerrado ? "Volver a cerrar con la versión de hoy" : "Cerrar el modelo"}</button>
-          <button class="btn ghost" id="proyModelo" ${pend.length ? "disabled" : ""}>Proyectar el modelo</button>
-          <button class="btn ghost" id="acta" ${pend.length ? "disabled" : ""}>Ver el acta · PDF</button></div>
+          <button class="btn ghost" id="acta" ${pend.length ? "disabled" : ""}>Ver el modelo</button></div>
         <div id="aviso4"></div>
+        <p class="note">«Ver el modelo» abre el entregable: las tres partes tal como quedan,
+          con botón para guardarlo en PDF y para mandarlo a la pared de la sala.</p>
         <p class="note">Cerrar no bloquea nada ni borra nada: no hay ninguna puerta que se
           cierre de forma irreversible en este sistema, y esta tampoco. Lo que hace es poner
           fecha a la versión acordada y dejar de tratar el modelo como un borrador. La
@@ -3227,8 +3325,11 @@ async function tallerFunciones(s, preguntas, volver){
       // Se conserva lo que ya hubiera en `modelo` —hoy, la fecha de
       // cierre—. Sobrescribir el objeto entero borraba esa fecha en el
       // primer guardado posterior al cierre, y encima en silencio.
+      gr = gr.map((_,i) => ({grupo: ($("#gg"+i)||{}).value ? $("#gg"+i).value.trim() : "",
+                             nivel: ($("#gn"+i)||{}).value ? $("#gn"+i).value.trim() : ""}));
       modelo = {...modelo, definicion: $("#mdef").value.trim(),
-                           alcance: $("#malc").value.trim()};
+                           alcance: ($("#malc") ? $("#malc").value.trim() : ""),
+                           grupos: gr.filter(g => g.grupo || g.nivel)};
       return fs.map((_,i) => ({nombre: $("#fn"+i).value.trim(),
                                definicion: $("#fd"+i).value.trim()}));
     };
@@ -3242,6 +3343,16 @@ async function tallerFunciones(s, preguntas, volver){
       const c = $("#copiado-" + f);
       if(c) c.textContent = "Copiado. Pégalo en tu conversación con la IA.";
     });
+
+    if($("#masgr")) $("#masgr").onclick = () => {
+      fs = leer(); gr.push({grupo:"", nivel:""}); pinta(); };
+    app().querySelectorAll("[data-gqt]").forEach(b => b.onclick = () => {
+      fs = leer(); gr.splice(+b.dataset.gqt, 1);
+      if(!gr.length) gr = [{grupo:"", nivel:""}]; pinta(); });
+    app().querySelectorAll("[data-gsb]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.gsb; fs = leer(); [gr[i-1], gr[i]] = [gr[i], gr[i-1]]; pinta(); });
+    app().querySelectorAll("[data-gbj]").forEach(b => b.onclick = () => {
+      const i = +b.dataset.gbj; fs = leer(); [gr[i+1], gr[i]] = [gr[i], gr[i+1]]; pinta(); });
 
     $("#mas").onclick = () => { fs = leer(); fs.push({nombre:"", definicion:""}); pinta(); };
     app().querySelectorAll("[data-qt]").forEach(b => b.onclick = () => {
@@ -3297,14 +3408,6 @@ async function tallerFunciones(s, preguntas, volver){
       }catch(e){ b.disabled = false; decir4(esc(e.message||e), true); }
     };
 
-    if($("#proyModelo")) $("#proyModelo").onclick = async () => {
-      await guardar().catch(()=>null);
-      try{ Object.assign(s, await API.actualizarSesion(s.id, {vista_activa:"modelo"}));
-        decir4("En la sala: el modelo completo —definición, alcance y funciones—. "
-          + "Se pasa de una parte a otra con las flechas del teclado o solo, cada 20 segundos.");
-      }catch(e){ decir4(esc(e.message||e), true); }
-    };
-
     if($("#acta")) $("#acta").onclick = async () => {
       await guardar().catch(()=>null);
       actaModelo(s, () => tallerFunciones(s, preguntas, volver));
@@ -3314,17 +3417,17 @@ async function tallerFunciones(s, preguntas, volver){
       $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
       try{ const b = await guardar();
         const faltan = [!modelo.definicion && "la definición",
-                        !modelo.alcance && "el alcance"].filter(Boolean);
+                        !(modelo.grupos||[]).length && "la tabla del alcance"].filter(Boolean);
         recado1 = `<div class="aviso">Guardadas ${b.length} funciones y el texto del modelo.
           La encuesta de evaluación podrá heredarlo de aquí.${
-          faltan.length ? ` <b>Falta ${faltan.join(" y ")}</b>: sin ese texto, quien responda
+          faltan.length ? ` <b>Falta ${faltan.join(" y ")}</b>: sin eso, quien responda
             la encuesta estará valorando funciones sueltas sin saber de dónde salen.` : ""}</div>`;
         // Se repinta porque «Cerrar el modelo» mira lo GUARDADO: sin esto,
         // acabas de guardarlo todo y el botón sigue diciendo que falta.
         pinta();
       }catch(e){
         recado1 = `<div class="aviso rojo">${esc(e.message||e)}</div>`;
-        $("#guardar").disabled = false; $("#guardar").textContent = "Guardar funciones";
+        $("#guardar").disabled = false; $("#guardar").textContent = "Guardar modelo";
         if($("#aviso")) $("#aviso").innerHTML = recado1;
       }
     };
@@ -3334,11 +3437,17 @@ async function tallerFunciones(s, preguntas, volver){
       if(!b || !b.length){ $("#aviso").innerHTML =
         `<div class="aviso rojo">Escribe al menos una función con nombre.</div>`; return; }
       const nombres = b.map(f=>f.nombre);
-      const destinos = [{c:"L16", k:"items"}, {c:"L18", k:"opciones"}];
+      // Las definiciones viajan con los nombres a L16. Sin ellas, en el
+      // móvil el comité valida títulos de cuatro palabras redactados hace
+      // cinco minutos: la matriz sabe desplegar la definición de cada fila
+      // y no había ninguna razón para no dársela.
+      const defs = b.reduce((o,f)=>(f.definicion ? (o[f.nombre]=f.definicion) : 0, o), {});
+      const destinos = [{c:"L16", k:"items", d:true}, {c:"L18", k:"opciones"}];
       let hechas = 0;
-      for(const d of destinos){
-        const p = preguntas.find(x=>x.codigo===d.c); if(!p) continue;
-        const cfg = Object.assign({}, p.config||{}); cfg[d.k] = nombres;
+      for(const dst of destinos){
+        const p = preguntas.find(x=>x.codigo===dst.c); if(!p) continue;
+        const cfg = Object.assign({}, p.config||{}); cfg[dst.k] = nombres;
+        if(dst.d) cfg.definiciones = defs; else delete cfg.definiciones;
         try{ await API.actualizarPregunta(p.id, {config: cfg}); hechas++; }catch(e){}
       }
       preguntas = await API.preguntas(s.id);
@@ -3529,11 +3638,12 @@ async function proyeccionMotor(codigo, s){
        segundos y perdería el sitio en cada refresco. */
     if(va === "modelo"){
       const m = n.modelo || {}, fs = n.funciones || [];
+      const gr = (m.grupos || []).filter(x => x && (x.grupo || x.nivel));
       const hojas = [
         {t:"Qué entendemos por liderazgo", p:m.definicion},
-        {t:"A quién consideramos líder",   p:m.alcance},
+        {t:"A quién consideramos líder",   gr:gr},
         {t:"Las funciones clave",          fs}
-      ].filter(h => h.p || (h.fs && h.fs.length));
+      ].filter(h => h.p || (h.fs && h.fs.length) || (h.gr && h.gr.length));
       if(!hojas.length){
         app().innerHTML = `<div class="proy"><h1>El modelo todavía no está escrito</h1></div>`;
         return;
@@ -3552,7 +3662,7 @@ async function proyeccionMotor(codigo, s){
       // Las hojas de texto se centran en vertical: son cuatro frases en una
       // pantalla de dos metros, y pegadas al borde de arriba parecen el
       // encabezado de otra cosa que no llegó a cargar.
-      app().innerHTML = `<div class="proy"${h.fs ? "" :
+      app().innerHTML = `<div class="proy"${(h.fs || h.gr) ? "" :
           ` style="min-height:78vh;display:flex;flex-direction:column;justify-content:center"`}>
         <div class="small">${esc(n.titulo||"")}${m.cerrado_en
           ? " · acordado el " + new Date(m.cerrado_en).toLocaleDateString("es-ES",
@@ -3562,6 +3672,7 @@ async function proyeccionMotor(codigo, s){
             <div class="fun"><b style="color:${tonoN(i)}">${i+1}</b>
               <div><h3>${esc(f.nombre)}</h3>${
                 f.definicion ? `<p>${esc(f.definicion)}</p>` : ""}</div></div>`).join("")}</div>`
+          : h.gr ? tablaAlcance(h.gr, true)
           : `<p style="font-size:40px;line-height:1.4;max-width:20em">${esc(h.p)}</p>`}
         <p class="small" style="margin-top:28px">${HOJA.i + 1} de ${hojas.length}
           · las flechas ← → pasan de una a otra</p></div>`;
@@ -3839,6 +3950,32 @@ const tonoCfg = (cfg, clave) => {
 // Costó un «Cannot read properties of null» en la primera prueba.
 const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
 
+/* La proyección se abre en VENTANA, no en pestaña. Con `window.open` y una
+   lista de características, el navegador saca una ventana independiente en
+   vez de una pestaña más: eso es lo que permite compartir solo la sala en
+   una videollamada, o mandarla al segundo monitor, sin que el cliente vea
+   tu consola al lado.
+
+   `noopener` para que la ventana de la sala no pueda tocar esta, y un
+   nombre fijo por sesión: si vuelves a pulsar el botón, se reutiliza la
+   ventana que ya está en el proyector en vez de abrir una segunda. */
+function abrirProyeccion(codigo){
+  const url = location.origin + location.pathname + "?proy=" + encodeURIComponent(codigo);
+  const w = Math.min(1440, Math.round((screen.availWidth || 1440) * 0.75));
+  const h = Math.min(900,  Math.round((screen.availHeight || 900) * 0.85));
+  const v = window.open(url, "proy-" + String(codigo).toUpperCase(),
+    "popup=yes,noopener,width=" + w + ",height=" + h + ",left=40,top=40");
+  // Si el navegador bloquea la ventana emergente, no se pierde el clic:
+  // se abre como siempre y se dice por qué, que es mejor que no pasar nada.
+  if(!v){
+    window.open(url, "_blank");
+    alert("Tu navegador ha bloqueado la ventana emergente, así que se ha abierto "
+      + "en una pestaña.\n\nSi quieres la ventana aparte —para proyectar solo la "
+      + "sala—, permite las ventanas emergentes de este sitio y vuelve a pulsar.");
+  }
+  return v;
+}
+
 // Fisher-Yates. Se usa para que cada móvil reciba las listas ordenables en
 // un orden distinto.
 function barajar(a){
@@ -3889,9 +4026,41 @@ async function consolaMotor(s){
   const funcionesVigentes = () =>
     ((origen && origen.funciones) || s.funciones || []).filter(f => f && f.nombre);
 
+  /* Cómo se dibuja un taller dentro de la lista de preguntas. No lleva
+     estado, ni recuento, ni «abrir»: no es una pregunta. Lleva lo que ya se
+     haya acordado en él, para que se vea de un vistazo si está hecho. */
+  const filaTaller = (t, huerfano) => {
+    const g = s.modelo || {}, nf = (s.funciones||[]).filter(f=>f.nombre).length;
+    const ngr = (g.grupos||[]).filter(x=>x.grupo||x.nivel).length;
+    const hecho = [g.definicion && "definición", ngr && (ngr + " pares de alcance"),
+                   nf && (nf + " funciones")].filter(Boolean);
+    return `<div class="it taller-fila">
+      <div><span class="phasetag">taller</span>
+        <b style="display:block;margin-top:4px">${esc(t.nombre)}</b>
+        <div class="small">${esc(t.desc)}</div>
+        <div class="small" style="margin-top:4px">${
+          g.cerrado_en ? `<b>Modelo cerrado</b> el ` + new Date(g.cerrado_en)
+            .toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})
+          : hecho.length ? "En marcha: " + hecho.join(" · ")
+          : "<b>Sin empezar.</b> Se hace en la sala, cuando L11 y L13 estén terminadas."}</div>
+        ${huerfano ? `<div class="small" style="color:#d03b3b">Va antes de
+          <b>${esc(t.ancla)}</b>, que no está en esta sesión: por eso sale al final.</div>` : ""}</div>
+      <div class="btnrow" style="margin:0">
+        <button class="btn ${g.cerrado_en ? "ghost " : ""}sm" data-taller="${esc(t.k)}">${
+          g.cerrado_en ? "Abrir el taller" : "Hacer el taller"}</button></div>
+    </div>`;
+  };
+
   const pinta = async () => {
     const usados = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
     const faltanVars = VARIABLES.filter(v => !vars[v.clave]);
+    const sitio = situarTalleres(s.instrumento, preguntas);
+    // Preguntas que quedaron con el hueco escrito y hoy se podrían tapar.
+    const conHueco = preguntas.map(p => ({p, ...huecosDe(p, vars)}))
+      .filter(x => x.rellenables.length);
+    const huecosMuertos = [...new Set(preguntas.flatMap(p => {
+      const h = huecosDe(p, vars);
+      return h.todos.filter(k => !h.rellenables.includes(k)); }))];
     // Solo se pide el recuento de lo que no está cerrado: con veinte preguntas,
     // sondear todas cada tres segundos es castigar la base de datos por nada.
     const cuentas = {};
@@ -3930,13 +4099,18 @@ async function consolaMotor(s){
           <b>${prog.en_curso}</b> en curso</p>` : ""}
         ${s.es_prueba ? `<div class="aviso"><b>Sesión de ensayo.</b> Contiene respuestas
           simuladas y nunca entrará en el benchmark entre clientes. La marca no se puede quitar.</div>` : ""}
-        ${((s.funciones||[]).length || (s.modelo||{}).definicion || (s.modelo||{}).alcance)
-          ? `<p class="small" style="margin-top:10px"><b>Modelo acordado:</b> ${
-            [(s.modelo||{}).definicion ? "definición" : null,
-             (s.modelo||{}).alcance ? "alcance" : null,
-             (s.funciones||[]).length ? (s.funciones.length + " funciones clave") : null
-            ].filter(Boolean).join(" · ")}${(s.funciones||[]).length
-              ? "<br>" + s.funciones.map(f=>esc(f.nombre)).join(" · ") : ""}</p>` : ""}
+        ${(() => {
+          const g = s.modelo || {};
+          const ngr = (g.grupos||[]).filter(x=>x.grupo||x.nivel).length;
+          const partes = [g.definicion ? "definición" : null,
+            ngr ? (ngr + (ngr===1 ? " par de alcance" : " pares de alcance")) : null,
+            (s.funciones||[]).length ? (s.funciones.length + " funciones clave") : null
+            ].filter(Boolean);
+          return partes.length ? `<p class="small" style="margin-top:10px"><b>Modelo${
+            g.cerrado_en ? " cerrado" : " acordado"}:</b> ${partes.join(" · ")}${
+            (s.funciones||[]).length
+              ? "<br>" + s.funciones.map(f=>esc(f.nombre)).join(" · ") : ""}</p>` : "";
+        })()}
         <div class="btnrow" style="margin-top:14px">
           <button class="btn ${s.resultados_en_vivo ? "" : "ghost "}sm" id="vivo">
             Resultados en vivo: ${s.resultados_en_vivo ? "encendidos" : "apagados"}</button></div>
@@ -4039,9 +4213,24 @@ async function consolaMotor(s){
           <div class="field"><label for="${idVar(v.clave)}">${esc(v.etiqueta)}</label>
             <input id="${idVar(v.clave)}" value="${esc(vars[v.clave]||"")}" placeholder="${esc(v.ayuda)}">
           </div>`).join("")}</div>
-        <div class="btnrow"><button class="btn" id="gv">Guardar variables</button></div>
+        <div class="btnrow"><button class="btn" id="gv">Guardar variables</button>${
+          conHueco.length ? `<button class="btn" id="tapar">Rellenar los huecos en ${
+            conHueco.length} ${conHueco.length===1?"pregunta":"preguntas"}</button>` : ""}</div>
         ${faltanVars.length ? `<p class="note">Sin rellenar: ${faltanVars.map(v=>esc(v.etiqueta)).join(", ")}.
           Las preguntas que las usen se añadirán con el hueco sin resolver.</p>` : ""}
+        ${conHueco.length ? `<div class="aviso rojo" id="avisoHueco"><b>Hay ${conHueco.length}
+          ${conHueco.length===1?"pregunta que enseña":"preguntas que enseñan"} el hueco sin
+          rellenar</b> —${[...new Set(conHueco.flatMap(x=>x.rellenables))]
+            .map(k=>"<code>["+esc(k)+"]</code>").join(", ")}— tal cual, en el móvil y en la
+          pared. Pasa cuando se añaden preguntas antes de escribir la variable, o cuando se
+          cambia después. El botón las reescribe con el valor de hoy.
+          <div class="small" style="margin-top:8px">${
+            conHueco.map(x=>esc(x.p.codigo||"") + " " + esc(x.p.titulo.slice(0,70))).join(" · ")}</div>
+          </div>` : ""}
+        ${huecosMuertos.length ? `<p class="note">Además hay huecos que <b>no se pueden
+          rellenar</b> porque esas variables están vacías: ${huecosMuertos
+          .map(k=>"<code>["+esc(k)+"]</code>").join(", ")}. Escríbelas arriba, guarda, y
+          vuelve a mirar.</p>` : ""}
       </div>
 
       <div class="card">
@@ -4049,6 +4238,7 @@ async function consolaMotor(s){
         ${preguntas.length ? `<p class="small">Cerrada = el móvil no la ve · Abierta = se puede
           responder · Terminada = ya no admite respuestas y su resultado se puede proyectar.</p>
           <div class="lista">${preguntas.map((p,i)=>`
+          ${(sitio.antes[i]||[]).map(t=>filaTaller(t)).join("")}
           <div class="it">
             <div><b>${i+1}. ${esc(p.titulo)}</b>
               <div class="small"><code>${esc(p.codigo||"propia")}</code> ·
@@ -4074,7 +4264,7 @@ async function consolaMotor(s){
               <button class="btn ghost sm" data-baja="${p.id}" ${i===preguntas.length-1?"disabled":""}>↓</button>
               <button class="btn ghost sm" data-quita="${p.id}">Quitar</button>
             </div>
-          </div>`).join("")}</div>
+          </div>`).join("")}${sitio.huerfanos.map(t=>filaTaller(t, true)).join("")}</div>
           ${s.modo === "survey" ? `<div class="aviso"><b>Esto es un survey.</b> No hay nadie
             conduciendo: quien entre verá, de una vez, todas las preguntas que estén
             <b>abiertas</b>, y terminará cuando las responda. Las que dejes cerradas no
@@ -4086,11 +4276,10 @@ async function consolaMotor(s){
             </div>` : ""}
           <div class="btnrow"${s.modo === "survey" ? ` style="display:none"` : ""}>
             <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
-            <a class="btn ghost" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
+            <button class="btn ghost" type="button"
+              onclick="abrirProyeccion('${esc(s.codigo)}')">Abrir proyección</button>
             <button class="btn ghost" id="espera">Proyectar la espera</button>
             <button class="btn ghost" id="informe">Ver todos los resultados</button>
-            ${String(s.instrumento||"").split("-")[0] === "liderazgo"
-              ? `<button class="btn ghost" id="taller">Definición del modelo</button>` : ""}
           </div>`
           : `<p class="small">Todavía no has añadido ninguna. Empieza por el itinerario núcleo.</p>`}
         <div class="btnrow">
@@ -4137,8 +4326,9 @@ async function consolaMotor(s){
       informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
     if(bt("informe"))  bt("informe").onclick  = verInforme;
     if(bt("informeS")) bt("informeS").onclick = verInforme;
-    if(bt("taller")) bt("taller").onclick = () =>
-      tallerFunciones(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
+    app().querySelectorAll("[data-taller]").forEach(b => b.onclick = () =>
+      tallerFunciones(s, preguntas, async () => {
+        preguntas = await API.preguntas(s.id); pinta(); }));
 
     const decirEva = (t, mal) => { const c = bt("avisoEva");
       if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
@@ -4337,6 +4527,30 @@ async function consolaMotor(s){
       Object.assign(s, await API.actualizarSesion(s.id, {variables:nv}));
       Object.keys(vars).forEach(k=>delete vars[k]); Object.assign(vars, nv);
       pinta();
+    };
+    if(bt("tapar")) bt("tapar").onclick = async () => {
+      const conResp = conHueco.filter(x => cuentas[x.p.id] > 0);
+      if(!confirm("Se van a reescribir " + conHueco.length + " pregunta(s) sustituyendo los "
+        + "huecos por el valor de las variables de hoy."
+        + (conResp.length ? "\n\nOJO: " + conResp.length + " de ellas YA TIENE respuestas. "
+            + "Quien respondió leyó el texto con el hueco; a partir de ahora el enunciado "
+            + "guardado será otro. Las respuestas no se tocan, pero el informe no dirá que "
+            + "la pregunta cambió de texto." : "")
+        + "\n\n¿Sigo?")) return;
+      const b = bt("tapar"); b.disabled = true; b.textContent = "Rellenando…";
+      let n = 0;
+      for(const x of conHueco){
+        const cambios = {titulo: resolverTexto(x.p.titulo, vars)};
+        if(x.p.ayuda) cambios.ayuda = resolverTexto(x.p.ayuda, vars);
+        // La configuración también lleva huecos: los ítems de una matriz de
+        // escalas se escriben con [ORGANIZACION] igual que el enunciado.
+        cambios.config = JSON.parse(resolverTexto(JSON.stringify(x.p.config||{}), vars));
+        try{ await API.actualizarPregunta(x.p.id, cambios); n++; }catch(e){}
+      }
+      preguntas = await API.preguntas(s.id);
+      await pinta();
+      const c = bt("avisoHueco");
+      if(c) c.outerHTML = `<div class="aviso">Rellenadas ${n} preguntas.</div>`;
     };
     $("#nucleo").onclick = () => añadir(BANCO.filter(p=>p.nuc && TIPOS_LISTOS.includes(p.t)));
     $("#bench").onclick  = () => añadir(BANCO.filter(p=>p.bench));
@@ -5085,6 +5299,21 @@ const VARIABLES_ESC = [
   {clave:"GRUPOS",       etiqueta:"Grupos",       ayuda:"Colectivos internos o externos relevantes."}
 ];
 
+/* Qué huecos de variable quedan sin resolver en una pregunta, y cuáles de
+   ellos ya se pueden rellenar porque la variable existe hoy en la sesión.
+
+   Esto pasa por una razón concreta y previsible: el texto se resuelve AL
+   AÑADIR la pregunta. Si añades preguntas antes de escribir el nombre de
+   la organización —o lo cambias de cliente a mitad—, lo que quedó escrito
+   en la base de datos es «[ORGANIZACION]», literal, y así se lo enseña al
+   móvil y al proyector. */
+function huecosDe(p, vars){
+  const txt = JSON.stringify([p.titulo || "", p.ayuda || "", p.config || {}]);
+  const todos = [...new Set((txt.match(/\[[A-ZÑ ]+\]/g) || [])
+    .map(x => x.slice(1, -1)))];
+  return {todos, rellenables: todos.filter(k => vars && vars[k])};
+}
+
 function resolverTexto(txt, vars){
   return String(txt||"").replace(/\[([A-ZÑ ]+)\]/g, (m, k) =>
     (vars && vars[k]) ? vars[k] : m);
@@ -5098,6 +5327,49 @@ function resolverTexto(txt, vars){
    variables. Esto es lo que hace que añadir un instrumento sea redactar
    preguntas y no escribir una pantalla nueva.
    ═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   TALLERES
+
+   Un taller es un momento de la sesión en el que se para de preguntar y se
+   trabaja con lo respondido: se cruza, se redacta, se acuerda. No es una
+   pregunta —no tiene respuestas ni resultados— pero ocupa un lugar exacto
+   en el guion, y ese lugar hay que verlo donde se ve todo lo demás.
+
+   `ancla` es el código de la pregunta ANTES de la cual va. Se ancla a una
+   pregunta y no a una posición porque las sesiones se componen a mano: si
+   quitas tres preguntas del bloque 4, «el número 15» deja de significar
+   nada, mientras que «justo antes de L16» sigue siendo verdad. Si la
+   pregunta ancla no está en la sesión, el taller va al final de la lista y
+   lo dice, en vez de esconderse.
+
+   Añadir un taller a otro instrumento es una entrada más aquí.
+   ═══════════════════════════════════════════════════════════════════ */
+const TALLERES = {
+  liderazgo: [{
+    k: "modelo",
+    nombre: "Taller de modelo de liderazgo",
+    desc: "Definición, alcance y funciones clave. Se hace con lo votado en L04, "
+        + "L08, L09, L11 y L13, y su resultado rellena L16 y L18.",
+    ancla: "L16"
+  }]
+};
+const talleresDe = instrumento =>
+  TALLERES[String(instrumento||"").split("-")[0]] || [];
+
+/* En qué punto de la lista se dibuja cada taller. Devuelve un mapa
+   «índice de la lista → talleres que van justo antes», más los que se
+   quedan huérfanos porque su ancla no está en la sesión. */
+function situarTalleres(instrumento, preguntas){
+  const ts = talleresDe(instrumento);
+  const antes = {}, huerfanos = [];
+  ts.forEach(t => {
+    const i = preguntas.findIndex(p => p.codigo === t.ancla);
+    if(i < 0) huerfanos.push(t);
+    else (antes[i] = antes[i] || []).push(t);
+  });
+  return {antes, huerfanos};
+}
+
 const BANCOS = {
   escenarios: {bloques: BLOQUES_ESC, banco: BANCO_ESC, variables: VARIABLES_ESC,
                nucleo: "el itinerario núcleo"},
@@ -5457,7 +5729,8 @@ async function consolaSesion(id){
               <code style="word-break:break-all">${esc(urlPart)}</code></p>
             <div class="btnrow" style="margin-top:8px">
               <button class="btn ghost sm" onclick="copiar('${esc(urlPart)}')">Copiar enlace</button>
-              <a class="btn ghost sm" href="?proy=${encodeURIComponent(s.codigo)}" target="_blank">Abrir proyección</a>
+              <button class="btn ghost sm" type="button"
+                onclick="abrirProyeccion('${esc(s.codigo)}')">Abrir proyección</button>
             </div></div>
           <div class="qr" id="qr"></div>
         </div>
