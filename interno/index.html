@@ -1682,10 +1682,10 @@ async function participanteMotor(codigo, s){
           <h3 style="margin-top:0">Lo que se te pide valorar</h3>
           ${modelo.definicion ? `<p><b>Qué entendemos por liderar aquí.</b><br>
              ${esc(modelo.definicion)}</p>` : ""}
-          ${(modelo.grupos||[]).length ? `<p><b>A quién se considera líder.</b></p>
-             ${tablaAlcance(modelo.grupos)}`
-            : modelo.alcance ? `<p><b>A quién se considera líder.</b><br>
-             ${esc(modelo.alcance)}</p>` : ""}
+          ${(modelo.alcance || (modelo.grupos||[]).length)
+            ? `<p><b>A quién se considera líder.</b>${
+                modelo.alcance ? "<br>" + esc(modelo.alcance) : ""}</p>
+               ${(modelo.grupos||[]).length ? tablaAlcance(modelo.grupos) : ""}` : ""}
           ${funciones.length ? `<p><b>Las ${funciones.length} funciones clave:</b></p>
             <div class="lista">${funciones.map(f=>`<div class="it"><div>
               <b>${esc(f.nombre)}</b>${f.definicion
@@ -2902,9 +2902,10 @@ function actaModelo(s, volver){
 
     <div class="card informe-bloque" id="modelo-alc">
       <h2 style="font-size:26px;margin:0">A quién se considera líder</h2>
+      ${m.alcance ? `<p class="lead" style="margin-top:14px">${esc(m.alcance)}</p>`
+        : `<div class="aviso rojo">Falta el párrafo.</div>`}
       ${(m.grupos||[]).length ? tablaAlcance(m.grupos)
-        : `<div class="aviso rojo">Sin definir.</div>`}
-      ${m.alcance ? `<p class="small" style="margin-top:14px">${esc(m.alcance)}</p>` : ""}
+        : `<div class="aviso rojo">Falta la tabla.</div>`}
     </div>
 
     <div class="card informe-bloque" id="modelo-fun">
@@ -3084,10 +3085,15 @@ async function tallerFunciones(s, preguntas, volver){
     alc: () => evidenciaDe("alc",
         "Esto es lo que ha dicho y votado el grupo sobre a quién considerar líder y con qué niveles:")
       .concat([
-        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + " como una",
-        "TABLA DE PARES, y nada más que eso. Sin párrafo introductorio, sin",
-        "conclusión: la tabla es el entregable.",
+        "Tarea: propón el ALCANCE del modelo de liderazgo de " + org() + ".",
+        "Son dos piezas y las quiero las dos, en este orden:",
         "",
+        "PIEZA 1 · UN PÁRRAFO de tres o cuatro frases que empiece por «A efectos",
+        "de este modelo, en " + org() + " se consideran líderes…». No enumeres ahí",
+        "los colectivos uno a uno —para eso está la tabla—: lo que tiene que",
+        "decir el párrafo es el CRITERIO, por qué esos y no otros.",
+        "",
+        "PIEZA 2 · UNA TABLA DE PARES.",
         "Dos columnas, entre dos y cinco filas:",
         "",
         "  TIPO DE RESPONSABLE  |  NIVEL DE RESPONSABILIDAD",
@@ -3193,11 +3199,17 @@ async function tallerFunciones(s, preguntas, volver){
             <textarea id="mdef" rows="4"
               placeholder="La persona que lidera en esta organización…">${esc(modelo.definicion||"")}</textarea></div>`
         : fase.f === "alc" ? `
-          <h3 style="margin-top:22px">El alcance, en pares</h3>
+          <div class="field" style="margin-top:22px"><label for="malc">Alcance · el párrafo</label>
+            <textarea id="malc" rows="4"
+              placeholder="A efectos de este modelo, se consideran líderes…">${esc(modelo.alcance||"")}</textarea></div>
+          <p class="note">El párrafo dice el criterio —por qué esos y no otros— y la tabla dice
+            quién es quién. Las dos cosas van juntas en el acta, en la pared y en la encuesta:
+            el párrafo solo obliga a leer seis colectivos en una frase, y la tabla sola deja
+            sin explicar de dónde sale el corte.</p>
+
+          <h3 style="margin-top:22px">Alcance · la tabla de pares</h3>
           <p class="small">Una fila por tipo de responsable, con el nivel que le corresponde.
-            Esto no es un párrafo: es la tabla que se proyecta, la que va en el acta y la que
-            lee quien responda la encuesta. Un párrafo que enumera seis colectivos no se
-            entiende desde el fondo de una sala.</p>
+            Es lo que se proyecta y lo que se lee de un vistazo.</p>
           <table class="pares" id="tgr">
             <tr><th>Tipo de responsable</th><th>Nivel de responsabilidad</th><th></th></tr>
             ${gr.map((g,i)=>`<tr>
@@ -3211,12 +3223,7 @@ async function tallerFunciones(s, preguntas, volver){
                 <button type="button" data-gqt="${i}">×</button></td></tr>`).join("")}
           </table>
           <div class="btnrow"><button class="btn ghost" id="masgr">Añadir fila</button></div>
-          ${modelo.alcance ? `<div class="aviso"><b>Texto anterior del alcance.</b> Lo escribiste
-            cuando esto era un párrafo. Pásalo a la tabla de arriba y bórralo de aquí; mientras
-            siga escrito, se enseñará debajo de la tabla como nota.
-            <div class="field" style="margin-top:10px"><textarea id="malc" rows="3"
-              >${esc(modelo.alcance)}</textarea></div></div>`
-            : `<input type="hidden" id="malc" value="">`}`
+`
         : ""}
       </div>`;}).join("")}
 
@@ -3286,6 +3293,7 @@ async function tallerFunciones(s, preguntas, volver){
         const g = s.modelo || {}, gf = (s.funciones||[]).filter(f=>f.nombre);
         const ngr = (g.grupos||[]).filter(x => x.grupo || x.nivel).length;
         const pend = [!g.definicion && "la definición",
+                      !g.alcance && "el párrafo del alcance",
                       !ngr && "al menos un par en la tabla del alcance",
                       !gf.length && "al menos una función clave"].filter(Boolean);
         const cerrado = g.cerrado_en;
@@ -3417,6 +3425,7 @@ async function tallerFunciones(s, preguntas, volver){
       $("#guardar").disabled = true; $("#guardar").textContent = "Guardando…";
       try{ const b = await guardar();
         const faltan = [!modelo.definicion && "la definición",
+                        !modelo.alcance && "el párrafo del alcance",
                         !(modelo.grupos||[]).length && "la tabla del alcance"].filter(Boolean);
         recado1 = `<div class="aviso">Guardadas ${b.length} funciones y el texto del modelo.
           La encuesta de evaluación podrá heredarlo de aquí.${
@@ -3641,7 +3650,7 @@ async function proyeccionMotor(codigo, s){
       const gr = (m.grupos || []).filter(x => x && (x.grupo || x.nivel));
       const hojas = [
         {t:"Qué entendemos por liderazgo", p:m.definicion},
-        {t:"A quién consideramos líder",   gr:gr},
+        {t:"A quién consideramos líder",   p:m.alcance, gr:gr},
         {t:"Las funciones clave",          fs}
       ].filter(h => h.p || (h.fs && h.fs.length) || (h.gr && h.gr.length));
       if(!hojas.length){
@@ -3672,7 +3681,9 @@ async function proyeccionMotor(codigo, s){
             <div class="fun"><b style="color:${tonoN(i)}">${i+1}</b>
               <div><h3>${esc(f.nombre)}</h3>${
                 f.definicion ? `<p>${esc(f.definicion)}</p>` : ""}</div></div>`).join("")}</div>`
-          : h.gr ? tablaAlcance(h.gr, true)
+          : h.gr ? `${h.p ? `<p style="font-size:26px;line-height:1.4;max-width:34em;
+               color:var(--text-secondary)">${esc(h.p)}</p>` : ""}
+             ${tablaAlcance(h.gr, true)}`
           : `<p style="font-size:40px;line-height:1.4;max-width:20em">${esc(h.p)}</p>`}
         <p class="small" style="margin-top:28px">${HOJA.i + 1} de ${hojas.length}
           · las flechas ← → pasan de una a otra</p></div>`;
@@ -3739,17 +3750,39 @@ async function proyeccionMotor(codigo, s){
         const rt = await API.resultadosTarjetas(codigo, id).catch(()=>null);
         const cab = `<div class="small">${esc(p.codigo||"")}</div><h1>${esc(p.titulo)}</h1>`;
         if(!rt || rt.existe === false) cuerpo = `<h1>Preparando…</h1>`;
+        // Mientras se vota, la pared enseña LA LISTA DE TEMAS: es lo que la
+        // sala tiene delante en el móvil, y sin ella «Votar» no cambiaba
+        // nada de lo que se veía antes. El marcador solo aparece si el
+        // directo está encendido; si no, la lista va sin números.
+        // `con_votos` lo trae la v13. Si la base de datos todavía es la v12,
+        // el campo no existe: se deduce de si los grupos traen un número en
+        // `votos`. Sin esto, subir el HTML antes que el SQL dejaba la fase
+        // de RESULTADOS enseñando la lista en vez de las barras.
+        else if(rt.grupos && rt.grupos.length
+                && !(rt.con_votos ?? rt.grupos.some(g => typeof g.votos === "number")))
+          cuerpo = cab + `<div class="taller2" style="margin-top:26px"><div>${
+            rt.grupos.map((g,i)=>`<div class="fila-taller">
+              <i style="background:${tonoDe(g.etiqueta)}"></i>
+              <span>${esc(g.etiqueta)}</span><b>${g.tarjetas}</b></div>`).join("")}</div></div>
+            <p class="small" style="margin-top:20px">Vota en tu móvil ·
+              ${rt.n_votantes} ${rt.n_votantes===1?"persona ha votado":"personas han votado"} ·
+              el número de la derecha es cuántas aportaciones agrupa cada tema, no los votos</p>`;
         else if(rt.grupos && rt.grupos.length)
           cuerpo = cab + barras(rt.grupos, d=>d.etiqueta + " ("+d.tarjetas+")", d=>d.votos)
             + `<p class="small" style="margin-top:18px">Votos de ${rt.n_votantes} personas ·
-                 entre paréntesis, cuántas aportaciones agrupa cada tema</p>`;
+                 entre paréntesis, cuántas aportaciones agrupa cada tema${
+                 rt.fase === "votacion" ? " · <span class=\"envivo\"><b></b>en vivo, "
+                   + "la votación sigue abierta</span>" : ""}</p>`;
         else if(rt.tarjetas && rt.tarjetas.length)
           // Las tarjetas sueltas sí se proyectan: son material de
           // conversación, no una media que ancle a nadie.
           cuerpo = cab + `<div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px">${
             rt.tarjetas.slice(0,40).map(t=>
               `<div class="enun" style="flex:1 1 300px;margin:0">${esc(t.texto)}</div>`).join("")}</div>
-            <p class="small" style="margin-top:18px">${rt.n_tarjetas} aportaciones</p>`;
+            <p class="small" style="margin-top:18px">${rt.n_tarjetas} aportaciones${
+              rt.fase === "votacion"
+                ? ` · <b>no hay temas que votar todavía</b>: agrúpalas primero desde la consola`
+                : ""}</p>`;
         else
           cuerpo = cab + `<div class="contador" style="margin-top:30px"><b>${rt.n_tarjetas}</b>
             <span style="font-size:20px">${rt.n_tarjetas===1?"aportación recibida":"aportaciones recibidas"}</span></div>
@@ -4063,7 +4096,7 @@ async function consolaMotor(s){
       return h.todos.filter(k => !h.rellenables.includes(k)); }))];
     // Solo se pide el recuento de lo que no está cerrado: con veinte preguntas,
     // sondear todas cada tres segundos es castigar la base de datos por nada.
-    const cuentas = {};
+    const cuentas = {}, gruposDe = {};
     await Promise.all(preguntas.filter(p=>p.estado!=="cerrada").map(async p => {
       try{
         const r = p.tipo === "tarjetas"
@@ -4071,6 +4104,15 @@ async function consolaMotor(s){
           : await API.resultadosPregunta(s.codigo, p.id);
         if(r && r.existe !== false)
           cuentas[p.id] = p.tipo === "tarjetas" ? r.n_tarjetas : r.respondidos;
+        // Cuántos temas hay en la mesa. En recogida la función no los
+        // devuelve todavía, así que se preguntan aparte: es la diferencia
+        // entre «no hay» y «aún no toca», y decir lo segundo por lo
+        // primero es lo que hacía que «Votar» pareciera roto.
+        if(p.tipo === "tarjetas"){
+          if(Array.isArray(r && r.grupos)) gruposDe[p.id] = r.grupos.length;
+          else { try{ gruposDe[p.id] = (await API.grupos(p.id) || []).length; }
+                 catch(e){} }
+        }
       }catch(e){}
     }));
     const prog = await API.progreso(s.codigo).catch(()=>null);
@@ -4103,7 +4145,8 @@ async function consolaMotor(s){
           const g = s.modelo || {};
           const ngr = (g.grupos||[]).filter(x=>x.grupo||x.nivel).length;
           const partes = [g.definicion ? "definición" : null,
-            ngr ? (ngr + (ngr===1 ? " par de alcance" : " pares de alcance")) : null,
+            g.alcance ? "alcance" : null,
+            ngr ? (ngr + (ngr===1 ? " par" : " pares")) : null,
             (s.funciones||[]).length ? (s.funciones.length + " funciones clave") : null
             ].filter(Boolean);
           return partes.length ? `<p class="small" style="margin-top:10px"><b>Modelo${
@@ -4248,14 +4291,36 @@ async function consolaMotor(s){
                 ${s.vista_activa === "q:"+p.id ? " · <b>en el proyector</b>" : ""}</div>
               ${faltaContenido(p) ? `<div class="small" style="color:#d03b3b">
                 Sin contenido: falta rellenar ${esc(faltaContenido(p))}. Tal como está,
-                el móvil la enseñaría vacía.</div>` : ""}</div>
+                el móvil la enseñaría vacía.</div>` : ""}
+              ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? `<div class="small"
+                style="margin-top:4px">${
+                  {recogida:"<b>Recoger</b>: la gente escribe en el móvil. La pared solo "
+                    + "enseña el contador — lo aportado no se ve hasta cerrar la recogida.",
+                   agrupando:"<b>Agrupando</b>: el móvil no pide nada; la pared enseña las "
+                    + "aportaciones. Es el rato en el que tú las juntas en la mesa.",
+                   votacion:"<b>Votar</b>: el móvil ofrece los temas de la mesa y la pared "
+                    + "los enseña. Sin temas agrupados, aquí no hay nada que votar.",
+                   resultados:"<b>Resultados</b>: la pared enseña las barras con los votos, "
+                    + "a partir de tres votantes."
+                  }[p.fase||"recogida"]}${
+                  gruposDe[p.id] != null
+                    ? ` · <b>${gruposDe[p.id]}</b> ${gruposDe[p.id]===1?"tema":"temas"} en la mesa`
+                    : ""}</div>
+                ${(gruposDe[p.id] === 0 && ["votacion","resultados"].includes(p.fase||""))
+                  ? `<div class="small" style="color:#d03b3b">Esta pregunta está en
+                     «${p.fase==="votacion"?"Votar":"Resultados"}» y <b>no tiene ningún tema
+                     agrupado</b>: al móvil le llega una lista vacía y la pared sigue
+                     enseñando las tarjetas sueltas. Abre la mesa de agrupación y junta las
+                     aportaciones en temas antes de pedir el voto.</div>` : ""}` : ""}</div>
             <div class="btnrow" style="margin:0">
               ${LISTAS_TIPO[p.tipo] ? `<button class="btn ${faltaContenido(p)?"":"ghost"} sm"
                 data-listas="${p.id}">Contenido…</button>` : ""}
               ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? FASES_TARJ.map(f=>
                 `<button class="btn ${p.fase===f.k?"":"ghost"} sm" data-fase="${p.id}"
                    data-k="${f.k}">${esc(f.t)}</button>`).join("")
-                + `<button class="btn ghost sm" data-mesa="${p.id}">Agrupar…</button>` : ""}
+                + `<button class="btn ${(gruposDe[p.id]===0
+                    && ["votacion","resultados"].includes(p.fase||"")) ? "" : "ghost "}sm"
+                     data-mesa="${p.id}">Mesa de agrupación…</button>` : ""}
               ${p.estado==="cerrada"   ? `<button class="btn sm" data-abrir="${p.id}">Abrir</button>` : ""}
               ${p.estado==="abierta"   ? `<button class="btn ghost sm" data-fin="${p.id}">Terminar</button>` : ""}
               ${p.estado==="terminada" ? `<button class="btn ghost sm" data-reabrir="${p.id}">Reabrir</button>` : ""}
