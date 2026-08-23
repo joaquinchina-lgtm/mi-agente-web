@@ -4558,7 +4558,7 @@ async function consolaMotor(s){
          un cuestionario roto. Así que se crean al volcar, que es el
          momento en el que las funciones existen. Si alguna sobra, se
          quita a mano, que es la operación rara. */
-      const creadas = await generarAbiertas("campos", true);
+      const creadas = await pantallasPorFuncion();
       preguntas = await API.preguntas(s.id);
       // `await`: `pinta()` redibuja la pantalla entera. Si el aviso se
       // escribe antes de que termine, se borra con el resto y nadie llega
@@ -4841,7 +4841,46 @@ async function consolaMotor(s){
       config: resolverCfg(p.cfg), estado: "cerrada"
     })));
     preguntas = await API.preguntas(s.id);
+
+    /* Y, en una evaluación enlazada a un taller, las pantallas por función.
+
+       Estaban detrás de un botón. Después las puse detrás de «Volcar».
+       Las dos veces pasó lo mismo: se monta la encuesta, se reparte, se
+       responde entera, y no hay ni una frase sobre ninguna función clave.
+       La lección es que un cuestionario que dice evaluar N funciones y no
+       pregunta por ellas no puede depender de que alguien se acuerde de
+       nada. Se crean aquí, en el primer momento en que la sesión tiene a
+       la vez su banco y sus funciones. Si alguna sobra, se quita a mano:
+       esa es la operación rara, no la contraria. */
+    if(String(s.instrumento||"").split("-")[0] === "evaluacion"){
+      const creadas = await pantallasPorFuncion();
+      if(creadas) preguntas = await API.preguntas(s.id);
+    }
     pinta();
+  };
+
+  /* Una pantalla de texto por función clave, con los tres campos dentro.
+     Vive fuera de los manejadores porque la llaman dos caminos: añadir el
+     cuestionario base y volcar las funciones. Devuelve cuántas ha creado;
+     cero significa que ya estaban, no que haya fallado. */
+  const pantallasPorFuncion = async () => {
+    const fs = ((origen && origen.funciones) || s.funciones || []).filter(f => f && f.nombre);
+    if(!fs.length) return 0;
+    const ya = new Set(preguntas.map(p => p.codigo).filter(Boolean));
+    let orden = preguntas.length ? Math.max(...preguntas.map(p => p.orden)) : 0;
+    const filas = [];
+    fs.forEach((f, i) => {
+      const cod = "EX" + String(i+1).padStart(2,"0") + "C";
+      if(ya.has(cod)) return;
+      filas.push({sesion_id: s.id, orden: ++orden, codigo: cod, tipo: "abierta_campos",
+        titulo: resolverTexto(f.nombre + ": ¿cómo la ejerce hoy [ORGANIZACION]?", vars),
+        ayuda: f.definicion || null,
+        config: {campos: ABIERTAS_POR_FUNCION.map(pl => ({clave: pl.campo, etiqueta: pl.etiqueta}))},
+        estado: "cerrada"});
+    });
+    if(!filas.length) return 0;
+    await API.crearPreguntas(filas);
+    return filas.length;
   };
 
   await pinta();
