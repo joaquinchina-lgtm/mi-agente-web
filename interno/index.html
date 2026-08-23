@@ -3296,7 +3296,7 @@ async function tallerFunciones(s, preguntas, volver){
           necesitan, para que no tengas que teclearlas tres veces con la sala esperando.</p>
         <div class="lista">${["L16","L17","L18"].map(c=>{
           const p = preguntas.find(x=>x.codigo===c);
-          const nom = {L16:"Validación 1-4 de cada función", L17:"Qué cambiarías (tarjetas)",
+          const nom = {L16:"Validación 1-4 de cada función", L17:"Qué cambiarías (abierta)",
                        L18:"Ranking de prioridad"}[c];
           return `<div class="it"><div><b>${c}</b> · ${nom}
             <div class="small">${p ? (c === "L17" ? "no necesita lista"
@@ -5296,15 +5296,18 @@ const BANCO_LID = [
  q:"¿Hasta qué punto cada una de estas funciones clave describe bien el liderazgo que [ORGANIZACION] necesita?",
  ayuda:"Se rellena en la sesión con las funciones que hayas redactado a partir de L11 y L13.",
  cfg:{min:1, max:4, items:[], ancla_min:"No la describe", ancla_max:"La describe muy bien"}},
-{c:"L17", b:5, t:"tarjetas", nuc:true, nat:"derivada",
+/* L17 es una pregunta abierta y nada más. Ni agrupar ni votar.
+
+   Lo que se recoge aquí son matices sobre una redacción concreta —«en la
+   tercera, cambiar “dirigir” por “acompañar”»—. Agruparlos destruye el
+   detalle que hace falta para corregir el texto, y votarlos tampoco
+   decide nada: si alguien detecta que dos funciones se solapan, eso hay
+   que mirarlo aunque lo diga una sola persona. La maquinaria de fases
+   añadía tres pasos a una pregunta cuyo resultado se lee y ya está. */
+{c:"L17", b:5, t:"abierta", nuc:true, nat:"derivada",
  q:"¿Qué cambiarías en la formulación de alguna de las funciones clave?",
- ayuda:"Aquí se recogen los matices que después incorporas al texto definitivo.",
- // `sin_agrupar`: aquí no hay nada que juntar. Cada aportación es un
- // matiz concreto sobre una redacción concreta —«en la tercera, cambiar
- // “dirigir” por “acompañar”»— y fusionar dos matices distintos en un
- // tema común destruye justo el detalle que hace falta para corregir el
- // texto. Se vota aportación por aportación, y no son muchas.
- cfg:{maximo_aportaciones:3, maximo_caracteres:200, votos:3, sin_agrupar:true}},
+ ayuda:"Los matices que después incorporas al texto definitivo. Di a cuál te refieres.",
+ cfg:{maximo_caracteres:300}},
 {c:"L18", b:5, t:"ranking", nuc:true, nat:"derivada",
  q:"Ordena las funciones clave por prioridad de desarrollo en [ORGANIZACION].",
  ayuda:"Se rellena con las funciones validadas. Arriba, lo que hay que trabajar antes.",
