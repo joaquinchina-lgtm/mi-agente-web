@@ -4545,12 +4545,28 @@ async function consolaMotor(s){
           {config: {...(p03.config||{}), opciones: cats.concat(["Otra"])}});
         hechas.push("E03");
       } else if(p03 && !cats.length){ faltan.push("E03 (la tabla del alcance está vacía)"); }
+      /* Y AQUÍ SE CREAN LAS PANTALLAS POR FUNCIÓN.
+
+         Antes esto vivía detrás de un botón aparte, opcional, en una
+         tarjeta de más abajo. El resultado previsible —y ocurrió— es que
+         se monta la encuesta entera, se reparte, se responde, y no hay ni
+         un comentario sobre ninguna función clave: las dos matrices
+         puntúan, pero nadie ha escrito nada.
+
+         Un cuestionario que dice evaluar las funciones clave y no recoge
+         una sola frase sobre ellas no es una opción de configuración: es
+         un cuestionario roto. Así que se crean al volcar, que es el
+         momento en el que las funciones existen. Si alguna sobra, se
+         quita a mano, que es la operación rara. */
+      const creadas = await generarAbiertas("campos", true);
       preguntas = await API.preguntas(s.id);
       // `await`: `pinta()` redibuja la pantalla entera. Si el aviso se
       // escribe antes de que termine, se borra con el resto y nadie llega
       // a leerlo. Es el mismo tropiezo que costó el «recado» del taller.
       await pinta();
       decirEva(`Volcadas ${nombres.length} funciones en ${hechas.join(", ") || "ninguna pregunta"}.`
+        + (creadas ? ` Y creadas <b>${creadas} pantallas de texto</b>, una por función:
+            así cada persona se pronuncia sobre todas.` : "")
         + (faltan.length ? ` No están en esta sesión: <b>${faltan.join(", ")}</b>.` : ""),
         !hechas.length);
     };
@@ -4570,7 +4586,7 @@ async function consolaMotor(s){
        una los tres campos se ven juntos: quien responde ve de un vistazo
        que ya ha dicho lo que iba a decir y no repite. La tercera existe
        porque a veces el cliente exige literalmente ese formato. */
-    const generarAbiertas = async modo => {
+    const generarAbiertas = async (modo, callado) => {
       const fs = funcionesVigentes();
       const ya = new Set(preguntas.map(p=>p.codigo).filter(Boolean));
       let orden = preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0;
@@ -4598,9 +4614,10 @@ async function consolaMotor(s){
             config: {maximo_caracteres: 300}, estado: "cerrada"});
         });
       });
-      if(!filas.length){ decirEva("Ya estaban creadas: no se ha añadido ninguna. Si quieres "
-        + "cambiar de formato, quita primero las que hay.", true); return; }
+      if(!filas.length){ if(!callado) decirEva("Ya estaban creadas: no se ha añadido ninguna. "
+        + "Si quieres cambiar de formato, quita primero las que hay.", true); return 0; }
       await API.crearPreguntas(filas);
+      if(callado) return filas.length;   // el que llama repinta y avisa
       preguntas = await API.preguntas(s.id);
       await pinta();
       decirEva(`Añadidas ${filas.length} preguntas, ${
@@ -4608,6 +4625,7 @@ async function consolaMotor(s){
         : "una por cada función clave"}. Todas las funciones quedan cubiertas y todo el
         mundo se pronuncia sobre todas. Quedan <b>cerradas</b>: ábrelas con «Abrir todas»
         cuando el cuestionario esté como lo quieres.`);
+      return filas.length;
     };
     if(bt("abiertasCampos")) bt("abiertasCampos").onclick = () => generarAbiertas("campos");
     if(bt("abiertasAccion")) bt("abiertasAccion").onclick = () => generarAbiertas("accion");
@@ -4625,6 +4643,21 @@ async function consolaMotor(s){
     };
 
     if(bt("abrirTodas")) bt("abrirTodas").onclick = async () => {
+      /* Último filtro antes de repartir el enlace. En una evaluación sin
+         una sola pantalla por función, el cuestionario se responde entero
+         y no recoge un comentario: se descubre al leer los resultados, que
+         es tres semanas tarde. */
+      if(String(s.instrumento||"").split("-")[0] === "evaluacion"){
+        const nf = funcionesVigentes().length;
+        const cub = new Set(preguntas.map(p => p.codigo || "")
+          .filter(c => /^EX\d\d/.test(c)).map(c => c.slice(0,4))).size;
+        if(nf && cub < nf && !confirm(
+          "ATENCIÓN: " + (nf - cub) + " de las " + nf + " funciones clave no tienen "
+          + "pantalla de texto.\n\nSi abres la encuesta así, la gente puntuará las funciones "
+          + "en las dos matrices pero NO escribirá ni un comentario sobre "
+          + (cub ? "esas " + (nf - cub) : "ninguna") + ".\n\nSe crean con «Volcar en las "
+          + "preguntas», arriba.\n\n¿Abrir de todas formas?")) return;
+      }
       const abribles = preguntas.filter(p => p.estado === "cerrada" && !faltaContenido(p));
       const rotas = preguntas.filter(p => p.estado === "cerrada" && faltaContenido(p));
       for(const p of abribles) await API.actualizarPregunta(p.id, {estado:"abierta"});
