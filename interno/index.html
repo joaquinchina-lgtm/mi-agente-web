@@ -1651,8 +1651,40 @@ async function participanteMotor(codigo, s){
     requestAnimationFrame(repasa);
     setTimeout(repasa, 400);
   };
+  /* A QUIÉN LE TOCA CADA PANTALLA
+     El taller de escenarios reparte la sala en cuatro grupos y en cada uno
+     escribe una sola persona. Eso se resuelve aquí, en el móvil, con lo que
+     cada cual ya ha contestado: `config.solo_si` dice de qué respuesta
+     depende esta pantalla.
+
+     Y hay que decirlo claro: esto es ORIENTACIÓN, NO CONTROL. No hay
+     identidad ni sesión de usuario en esta aplicación, así que quien mienta
+     al declarar su papel entra igual. Se asume a propósito: el trabajo del
+     taller es grupal y público, y quien escriba en nombre de un grupo del
+     que no forma parte se delata solo en cuanto el grupo lo lee en voz
+     alta. Poner aquí una barrera de verdad exigiría saber quién es cada
+     persona, que es exactamente lo que este instrumento no hace.
+
+     Si todavía no ha contestado la pregunta de la que depende, la pantalla
+     no se le ofrece: aparecerá en cuanto la conteste. */
+  const respuestaDe = cod => {
+    const q = (estado.todas || []).find(x => x.codigo === cod);
+    if(!q) return null;
+    const v = estado.valores[clave(q)];
+    return v && v.opcion != null ? v.opcion : null;
+  };
+  const meToca = p => {
+    const cond = (p.config || {}).solo_si;
+    if(!cond) return true;
+    return [].concat(cond).every(c => {
+      const dicho = respuestaDe(c.codigo);
+      return dicho != null && [].concat(c.valor).includes(dicho);
+    });
+  };
+
   const respondible = p => {
     if(p.estado !== "abierta") return false;
+    if(!meToca(p)) return false;
     if(p.tipo !== "tarjetas") return true;
     const f = p.fase || "recogida";
     return f === "recogida" || f === "votacion";
@@ -1911,7 +1943,11 @@ async function participanteMotor(codigo, s){
       // facilitador ya ha cerrado. Las cerradas no se pueden cambiar, pero
       // poder releer lo que uno votó hace media hora es lo que permite
       // decir en voz alta «espera, yo esa la entendí de otra manera».
-      const lista = estado.todas;
+      // Lo que no te toca tampoco se lista: a un vocal, las veinticuatro
+      // pantallas del taller no le dicen nada y le hacen creer que se ha
+      // dejado media sesión sin contestar. Se hace la excepción con lo que
+      // ya haya contestado, por si declaró su papel después.
+      const lista = estado.todas.filter(p => meToca(p) || estado.valores[clave(p)]);
       app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
         <h2>Tus respuestas</h2>
         <p class="small">Todo lo que has respondido en esta sesión. Puedes volver a
@@ -4458,7 +4494,7 @@ async function consolaMotor(s){
      relativo a lo que hay. Con la lista vacía, esto solo corrige la banda
      de las EX. Devuelve cuántas preguntas ha tenido que mover; es
      idempotente y no escribe nada si ya está todo en su sitio. */
-  let avisoEva = "";
+  let avisoEva = "", avisoEsc = "";
   const recolocar = async (nuevas) => {
     const antes = new Map(preguntas.filter(p=>p.id).map(p => [p.id, p.orden]));
     const indice = {}; BANCO.forEach((p,i) => { indice[p.c] = i; });
@@ -4608,6 +4644,42 @@ async function consolaMotor(s){
         <div id="avisoEnsayo"></div>
       </div>
 
+      ${String(s.instrumento||"").split("-")[0] === "escenarios" ? (() => {
+        const m = s.modelo || {}, ej = m.ejes || {}, es = m.escenarios || ESC_VACIOS;
+        const hechos = es.filter(e => (e.nombre||"").trim()).length;
+        const copias = preguntas.filter(p => esCopiaEsc(p.codigo)).length;
+        return `<div class="card">
+        <h2>El taller de escenarios</h2>
+        <p class="small">Los dos ejes no se votan: los eliges tú mirando lo más votado en
+          <b>P19</b>, <b>P20</b> y <b>P26</b> contra el mapa de impacto de la <b>P29</b>.
+          El criterio duro es que sean <b>independientes</b> entre sí: si al mover uno se
+          mueve el otro, los cuatro cuadrantes son en realidad dos y el taller no da de sí.</p>
+        <div class="field"><label for="ejeY">Eje vertical</label>
+          <input id="ejeY" maxlength="90" value="${esc(ej.y||"")}"
+            placeholder="p. ej. Financiación: escasa ↕ abundante"></div>
+        <div class="field"><label for="ejeX">Eje horizontal</label>
+          <input id="ejeX" maxlength="90" value="${esc(ej.x||"")}"
+            placeholder="p. ej. Regulación: laxa ↔ estricta"></div>
+        <h3>Los cuatro escenarios</h3>
+        <p class="small">El nombre puede quedar vacío ahora y ponerse en la sala; sin los
+          cuatro no se pueden generar las pantallas del taller.</p>
+        ${es.map((e,i)=>`<div class="field">
+          <label for="esc${i}">${esc(e.k)} · ${esc(e.pos)}</label>
+          <input id="esc${i}" maxlength="70" value="${esc(e.nombre||"")}"
+            placeholder="Nombre del escenario"></div>`).join("")}
+        <div class="btnrow">
+          <button class="btn ghost" id="guardarEsc">Guardar el mapa</button>
+          <button class="btn" id="generarEsc">Generar las pantallas del taller</button></div>
+        <p class="note">Generar sustituye cada pregunta del taller por <b>cuatro copias</b>,
+          una por escenario, y rellena la <b>P63</b> con los cuatro nombres. Las copias se
+          marcan como <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sin el
+          mínimo de tres. Es la única excepción del sistema y solo se pone aquí.
+          ${copias ? `Ahora mismo hay <b>${copias}</b> pantallas por escenario.`
+                   : `Todavía no se ha generado ninguna.`}
+          ${hechos < 4 ? ` Faltan <b>${4-hechos}</b> nombres.` : ""}</p>
+        <div id="avisoEsc">${avisoEsc}</div>
+      </div>`; })() : ""}
+
       ${String(s.instrumento||"").split("-")[0] === "evaluacion" ? (() => {
         const fs = funcionesVigentes();
         const mod = (origen && origen.modelo) || s.modelo || {};
@@ -4730,6 +4802,11 @@ async function consolaMotor(s){
               ${faltaContenido(p) ? `<div class="small" style="color:#d03b3b">
                 Sin contenido: falta rellenar ${esc(faltaContenido(p))}. Tal como está,
                 el móvil la enseñaría vacía.</div>` : ""}
+              ${(p.config||{}).grupal ? `<div class="small" style="color:#c26a1b">
+                <b>Respuesta de grupo, sin mínimo de tres.</b> Se enseña aunque la
+                conteste una sola persona. Aquí no se escribe nada personal.</div>` : ""}
+              ${((p.config||{}).solo_si||[]).length ? `<div class="small">Solo la ven
+                ${esc([].concat(p.config.solo_si).map(c=>c.valor).join(" + "))}.</div>` : ""}
               ${p.tipo==="tarjetas" && p.estado!=="cerrada" ? `<div class="small"
                 style="margin-top:4px">${
                   ((p.config||{}).sin_agrupar ? {
@@ -4892,6 +4969,44 @@ async function consolaMotor(s){
        resto: ya ha pasado tres veces. */
     const decirEva = (t, mal) => { avisoEva = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
       const c = bt("avisoEva"); if(c) c.innerHTML = avisoEva; };
+    const decirEsc = (t, mal) => { avisoEsc = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
+      const c = bt("avisoEsc"); if(c) c.innerHTML = avisoEsc; };
+
+    /* EL MAPA DE ESCENARIOS
+       Dos ejes y cuatro nombres. Vive en `sesion.modelo`, el mismo cajón
+       jsonb donde el instrumento de liderazgo guarda su modelo: son
+       sesiones distintas de instrumentos distintos, no se pisan, y así
+       esto no ha necesitado una columna nueva. */
+    const leerMapa = () => ({
+      ejes: {y: (bt("ejeY")||{}).value || "", x: (bt("ejeX")||{}).value || ""},
+      escenarios: ESC_VACIOS.map((e,i) => ({...e,
+        nombre: ((bt("esc"+i)||{}).value || "").trim()}))
+    });
+    if(bt("guardarEsc")) bt("guardarEsc").onclick = async () => {
+      const nuevo = {...(s.modelo||{}), ...leerMapa()};
+      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
+      catch(e){ decirEsc(esc(e.message||e), true); return; }
+      await pinta();
+      decirEsc("Mapa guardado.");
+    };
+    if(bt("generarEsc")) bt("generarEsc").onclick = async () => {
+      const nuevo = {...(s.modelo||{}), ...leerMapa()};
+      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
+      catch(e){ decirEsc(esc(e.message||e), true); return; }
+      const r = await pantallasPorEscenario();
+      preguntas = await API.preguntas(s.id);
+      await pinta();
+      if(r.fallo){ decirEsc(r.fallo, true); return; }
+      decirEsc(`Creadas <b>${r.creadas}</b> pantallas por escenario`
+        + (r.retiradas ? `, y retiradas ${r.retiradas} preguntas genéricas que ahora
+             están cuatro veces, una por escenario` : "")
+        + `. La <b>P63</b> ya ofrece los cuatro nombres.`
+        + (r.bloqueadas.length ? ` <b>No</b> se han tocado ${r.bloqueadas.join(", ")}:
+             ya tienen respuestas, y desdoblarlas ahora dejaría esas respuestas
+             colgando de una pregunta que deja de existir.` : "")
+        + ` Quedan <b>cerradas</b>: ábrelas cuando empiece el taller.`,
+        !r.creadas);
+    };
 
     if(bt("volcarEva")) bt("volcarEva").onclick = async () => {
       const fs = funcionesVigentes();
@@ -5314,6 +5429,87 @@ async function consolaMotor(s){
     return {creadas: filas.length, refrescadas, congeladas};
   };
 
+  /* CUATRO COPIAS DE CADA PREGUNTA DEL TALLER, UNA POR ESCENARIO
+
+     Es lo mismo que hacen las pantallas por función clave en la evaluación
+     de liderazgo, y por la misma razón: si los cuatro grupos contestan LA
+     MISMA pregunta, las cuatro respuestas llegan sin marca de a qué
+     escenario pertenece cada una, y no hay forma de averiguarlo sin ligar
+     respuestas a personas —cosa que esta aplicación no hace—. Con una
+     pregunta por escenario, la atribución es estructural.
+
+     La original se retira: tener a la vez la P37 genérica y sus cuatro
+     copias es garantizar que alguien conteste la que no toca. Si ya tiene
+     respuestas, no se toca y se avisa: perderlas para ganar orden sería un
+     mal negocio. */
+  const pantallasPorEscenario = async () => {
+    const m = s.modelo || {};
+    const ess = (m.escenarios || []).filter(e => e && (e.nombre||"").trim());
+    if(ess.length !== 4) return {fallo:"Hacen falta los cuatro nombres de escenario "
+      + "antes de generar nada. Escríbelos arriba y vuelve a darle.", creadas:0,
+      retiradas:0, bloqueadas:[]};
+
+    const ya = new Map(preguntas.filter(p=>p.codigo).map(p=>[p.codigo, p]));
+    const lista = preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+    const nuevas = [], quitar = [], bloqueadas = [], final = [];
+    // Las copias que ya existen se colocan por sí mismas. La primera vez no
+    // hay ninguna; a la segunda, la original ya no está —se retiró— y si no
+    // se recogieran aquí se quedarían fuera de la renumeración y acabarían
+    // compartiendo `orden` con otras. Eso es exactamente lo que pasó.
+    const puestas = new Set();
+
+    for(const p of lista){
+      const cod = p.codigo || "";
+      if(esCopiaEsc(cod)){
+        if(!puestas.has(cod)){ puestas.add(cod); final.push(p); }
+        continue;
+      }
+      if(!ESC_TALLER.includes(cod)){ final.push(p); continue; }
+      // Con respuestas dentro, ni se desdobla ni se retira.
+      let n = 1;
+      try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+           n = (r && r.respondidos) || 0; }catch(e){ n = 1; }
+      if(n){ bloqueadas.push(cod); final.push(p); continue; }
+      ess.forEach((e, i) => {
+        const c2 = cod + "E" + (i+1);
+        if(puestas.has(c2)) return;          // ya colocada más arriba
+        puestas.add(c2);
+        const hay = ya.get(c2);
+        if(hay){ final.push(hay); return; }
+        const cfg = {...(p.config || {}), escenario: e.nombre, grupal: true,
+          solo_si: [{codigo:"P64", valor:"Relator/a"},
+                    {codigo:"P63", valor: e.nombre}]};
+        // La matriz de robustez, en su copia, valora un solo escenario.
+        if(p.tipo === "matriz_valoracion") cfg.columnas = [e.nombre];
+        const fila = {sesion_id: s.id, codigo: c2, tipo: p.tipo,
+          titulo: e.nombre + " · " + p.titulo, ayuda: p.ayuda || null,
+          config: cfg, estado: "cerrada"};
+        nuevas.push(fila); final.push(fila);
+      });
+      quitar.push(p);
+    }
+
+    // La P63 ofrece los cuatro nombres: es la respuesta de la que depende
+    // qué pantallas ve cada persona, así que tiene que decir exactamente
+    // lo mismo que dicen las copias.
+    const p63 = ya.get("P63");
+    if(p63) await API.actualizarPregunta(p63.id,
+      {config: {...(p63.config||{}), opciones: ess.map(e=>e.nombre)}});
+
+    // Renumerar entero: es más simple de razonar que abrir hueco, y aquí
+    // además unas preguntas se van y otras llegan en su sitio.
+    const antes = new Map(preguntas.filter(p=>p.id).map(p=>[p.id, p.orden]));
+    for(let i = 0; i < final.length; i++){
+      const p = final[i];
+      if(p.id && antes.get(p.id) !== i + 1)
+        await API.actualizarPregunta(p.id, {orden: i + 1});
+      p.orden = i + 1;
+    }
+    if(nuevas.length) await API.crearPreguntas(nuevas);
+    for(const p of quitar) await API.borrarPregunta(p.id);
+    return {creadas: nuevas.length, retiradas: quitar.length, bloqueadas};
+  };
+
   /* Las sesiones que se montaron antes de la regla tienen sus EX al final,
      detrás de las preguntas de cierre. Se recolocan al entrar en la
      consola. Solo escribe si están mal, y lo dice. */
@@ -5599,18 +5795,53 @@ const BANCO_ESC = [
    defiendes. */
 
 /* ── Bloque 5 · Arquitectura de escenarios ─────────────────────── */
-{c:"P35", b:5, t:"dos_ejes", nuc:true, nat:"derivada",
- q:"Sitúa los cuatro futuros resultantes en la matriz formada por las dos incertidumbres críticas.",
- cfg:{eje_x:"", eje_y:"", elementos:["Escenario 1","Escenario 2","Escenario 3","Escenario 4"]}},
-{c:"P36", b:5, t:"tarjetas", nuc:false, nat:"derivada",
- q:"¿Qué nombre breve y memorable darías a este escenario?",
- cfg:{maximo_caracteres:60, votos:1}},
+/* Y aquí estaba la P35, que pedía a cada participante situar los cuatro
+   escenarios en la matriz. Fuera: el mapa ya no se vota, se construye. Los
+   dos ejes los eliges tú en la preparación, y los cuatro cuadrantes salen
+   de ahí por aritmética. Preguntar dónde va cada escenario cuando la
+   respuesta la determinan los ejes es pedir opinión sobre una definición.
+
+   ── EL TALLER DE ESCENARIOS EMPIEZA AQUÍ ──────────────────────────
+   De la P63 a la P48, la sesión deja de ser individual. La gente se
+   reparte en cuatro grupos, uno por escenario, y en cada grupo hay una
+   persona relatora que escribe lo que el grupo acuerda.
+
+   Estas preguntas NO se contestan tal como están en el banco: la consola
+   genera cuatro copias de cada una, una por escenario, y retira la
+   original. Esa es la única forma de saber a qué escenario pertenece cada
+   relato sin ligar respuestas a personas, que es justo lo que esta
+   aplicación no hace ni va a hacer.
+
+   Las copias van marcadas como `grupal`: no las escribe una persona, las
+   dicta un grupo en voz alta. Por eso se enseñan con una sola respuesta,
+   sin el mínimo de tres del resto del instrumento. */
+{c:"P63", b:5, t:"unica", nuc:true, nat:"derivada",
+ q:"¿A qué escenario te han asignado?",
+ ayuda:"Se rellena al preparar el taller, con el nombre de los cuatro escenarios. "
+     + "De esta respuesta depende qué pantallas del taller ves.",
+ cfg:{opciones:[]}},
+{c:"P64", b:5, t:"unica", nuc:true, nat:"fija",
+ q:"¿Qué papel tienes en tu grupo?",
+ ayuda:"En cada grupo hay una sola persona relatora: es quien escribe en el móvil lo "
+     + "que el grupo acuerda. Las vocales debaten pero no escriben; sus pantallas "
+     + "vuelven al terminar el taller.",
+ cfg:{opciones:["Relator/a","Vocal"]}},
+{c:"P36", b:5, t:"abierta", nuc:true, nat:"escenario",
+ q:"¿Qué nombre breve y memorable le dais a este escenario?",
+ ayuda:"Era una pregunta de tarjetas con votación. Con una sola persona escribiendo "
+     + "por grupo, una votación de uno no es una votación: aquí se escribe el nombre "
+     + "que el grupo ha acordado.",
+ cfg:{maximo_caracteres:60}},
 {c:"P37", b:5, t:"abierta", nuc:false, nat:"escenario",
  q:"¿Qué titular de prensa publicado en [HORIZONTE] capturaría la esencia de este escenario?",
  cfg:{maximo_caracteres:160}},
-{c:"P38", b:5, t:"secuencia", nuc:true, nat:"escenario",
- q:"¿Qué acontecimientos tendrían que suceder para llegar desde el presente hasta este escenario?",
- cfg:{elementos:[]}},
+{c:"P38", b:5, t:"abierta_campos", nuc:true, nat:"escenario",
+ q:"¿Qué tendría que pasar para llegar desde hoy hasta este escenario?",
+ ayuda:"Era una pregunta de ordenar elementos, pero la lista a ordenar estaba vacía y "
+     + "había que escribirla a mano antes. Aquí se escribe la cadena directamente, que "
+     + "es lo que el grupo hace de todos modos: cuatro hitos en orden.",
+ cfg:{campos:[{clave:"h1", etiqueta:"Primero"},{clave:"h2", etiqueta:"Después"},
+              {clave:"h3", etiqueta:"Más tarde"},{clave:"h4", etiqueta:"Y al final"}]}},
 {c:"P39", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
  q:"¿Cómo sería la experiencia cotidiana de los actores relevantes en este escenario?",
  cfg:{campos:[{clave:"usuarios", etiqueta:"Clientes o usuarios"},
@@ -5625,12 +5856,23 @@ const BANCO_ESC = [
               {clave:"pierden", etiqueta:"Actores que pierden"},
               {clave:"mecanismo", etiqueta:"Mecanismo que explica el cambio"}]}},
 /* ── Bloque 6 · Implicaciones y robustez ───────────────────────── */
-{c:"P44", b:6, t:"tarjetas", nuc:true, nat:"escenario",
+/* ── FASE DE ESTRATEGIAS DEL TALLER ───────────────────────────────
+   Sigue escribiendo solo la persona relatora, y sigue habiendo cuatro
+   copias de cada una, una por escenario.
+
+   Las dos primeras eran de tarjetas con votación. Un grupo que aporta por
+   boca de una sola persona no vota: acuerda. Se convierten en tres huecos
+   escritos, que además dejan cada oportunidad y cada amenaza por separado
+   —y eso es lo que luego se puede pegar en una IA o cruzar entre los
+   cuatro escenarios, cosa que un párrafo corrido no permite—. */
+{c:"P44", b:6, t:"abierta_campos", nuc:true, nat:"escenario",
  q:"¿Qué oportunidades abriría este escenario para [ORGANIZACION]?",
- cfg:{maximo_aportaciones:3, votos:2}},
-{c:"P45", b:6, t:"tarjetas", nuc:true, nat:"escenario",
+ cfg:{campos:[{clave:"o1", etiqueta:"Oportunidad"},{clave:"o2", etiqueta:"Otra"},
+              {clave:"o3", etiqueta:"Y otra más (opcional)"}]}},
+{c:"P45", b:6, t:"abierta_campos", nuc:true, nat:"escenario",
  q:"¿Qué amenazas o fragilidades revelaría este escenario?",
- cfg:{maximo_aportaciones:3, votos:2}},
+ cfg:{campos:[{clave:"a1", etiqueta:"Amenaza"},{clave:"a2", etiqueta:"Otra"},
+              {clave:"a3", etiqueta:"Y otra más (opcional)"}]}},
 {c:"P46", b:6, t:"clasificar", nuc:false, nat:"derivada",
  q:"¿Sobre cuáles de estos factores puede influir realmente [ORGANIZACION]?",
  cfg:{categorias:["Control directo","Influencia parcial","Solo adaptación o seguimiento"], elementos:[]}},
@@ -5638,6 +5880,20 @@ const BANCO_ESC = [
  q:"¿Qué opciones estratégicas convendría considerar hoy sin comprometerse todavía con una sola predicción?",
  ayuda:"Una opción por tarjeta: acciones, inversiones, experimentos o alianzas.",
  cfg:{maximo_aportaciones:5, votos:3}},
+/* Evitar y mitigar no son la misma pregunta y por eso van separadas. La
+   primera solo tiene sentido si el escenario es indeseable Y la
+   organización puede influir en que ocurra; la segunda vale siempre, y es
+   la que la gente se salta cuando las dos van juntas en una casilla. */
+{c:"P61", b:6, t:"abierta", nuc:true, nat:"escenario",
+ q:"Si procede, ¿qué acciones evitarían que este escenario llegue a producirse?",
+ ayuda:"Solo si el escenario es indeseable y está en vuestra mano influir. Si no lo "
+     + "está —y muchas veces no lo está—, dilo y pasa a la siguiente.",
+ cfg:{maximo_caracteres:300}},
+{c:"P62", b:6, t:"abierta", nuc:true, nat:"escenario",
+ q:"Y si este escenario llega a producirse, ¿qué acciones mitigarían sus efectos?",
+ ayuda:"Esta vale siempre, incluso cuando el escenario es deseable: mitigar también "
+     + "es prepararse para lo que un buen escenario rompe por el camino.",
+ cfg:{maximo_caracteres:300}},
 {c:"P48", b:6, t:"matriz_valoracion", nuc:true, nat:"derivada",
  q:"Evalúa la robustez de cada opción estratégica en los cuatro escenarios.",
  ayuda:"Wind tunneling. 1 = perjudicial o inviable · 3 = neutra o adaptable · 5 = muy valiosa.",
@@ -6125,6 +6381,26 @@ const talleresDe = instrumento =>
 /* En qué punto de la lista se dibuja cada taller. Devuelve un mapa
    «índice de la lista → talleres que van justo antes», más los que se
    quedan huérfanos porque su ancla no está en la sesión. */
+/* LOS CUATRO CUADRANTES, EN EL ORDEN EN QUE SE LEEN
+   Arriba-izquierda, arriba-derecha, abajo-derecha, abajo-izquierda: el
+   sentido de las agujas del reloj empezando por arriba a la izquierda, que
+   es el orden que Joaquín usa en la sala y el que espera ver en el mapa. */
+const ESC_VACIOS = [
+  {k:"E1", pos:"arriba-izquierda", nombre:""},
+  {k:"E2", pos:"arriba-derecha",   nombre:""},
+  {k:"E3", pos:"abajo-derecha",    nombre:""},
+  {k:"E4", pos:"abajo-izquierda",  nombre:""}
+];
+
+/* Las preguntas que se trabajan por grupos, en el orden del banco. De cada
+   una salen cuatro copias y la original se retira. */
+const ESC_TALLER = ["P36","P37","P38","P39","P41","P42",
+                    "P44","P45","P46","P47","P61","P62","P48"];
+const esCopiaEsc = cod => {
+  const c = String(cod || "");
+  return /E[1-4]$/.test(c) && ESC_TALLER.includes(c.slice(0, -2));
+};
+
 function situarTalleres(instrumento, preguntas){
   const ts = talleresDe(instrumento);
   const antes = {}, huerfanos = [];
