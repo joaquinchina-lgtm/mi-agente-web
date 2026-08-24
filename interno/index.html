@@ -287,6 +287,35 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .informe-bloque .mapa{max-height:none}
 
 /* Las respuestas escritas, agrupadas por lo que se preguntó. */
+/* El mapa de los cuatro escenarios. La rejilla es 2×2 y el orden del DOM
+   es arriba-izquierda, arriba-derecha, abajo-izquierda, abajo-derecha. */
+.mapa-esc{margin-top:20px}
+.mapa-esc .eje{font-size:13.5px;color:var(--text-secondary);text-align:center;
+  padding:8px 0}
+.mapa-esc .eje b{color:var(--text-primary)}
+.mapa-esc .cuadros{display:grid;grid-template-columns:1fr;gap:2px;
+  background:var(--border);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden}
+@media (min-width:720px){ .mapa-esc .cuadros{grid-template-columns:1fr 1fr} }
+.cuad{background:var(--surface-1);padding:20px 18px;min-height:120px}
+.cuad.vacio{min-height:60px}
+.cuad-k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-muted);font-weight:650}
+.cuad h3{font-size:21px;margin:6px 0 0;color:var(--text-primary);
+  text-transform:none;letter-spacing:0;font-weight:650}
+.cuad .lema{font-size:16px;font-style:italic;color:var(--text-secondary);margin:6px 0 0}
+.cuad .tramo{margin-top:14px}
+.cuad .tramo b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-muted);margin-bottom:3px}
+.cuad .tramo p{margin:0;font-size:15px;color:var(--text-primary);line-height:1.45}
+
+/* Las pantallas del taller de escenarios: seis preguntas y sus huecos. A
+   partir de tablet van a dos columnas; en un móvil, apiladas. */
+.dos-col{display:grid;grid-template-columns:1fr;gap:0 26px}
+@media (min-width:760px){ .dos-col{grid-template-columns:1fr 1fr} }
+.dos-col .field{margin-bottom:18px}
+.dos-col textarea{min-height:96px}
+
 .grupo-txt{margin-top:26px;break-inside:auto}
 .grupo-txt h4{display:flex;align-items:baseline;gap:9px;margin:0 0 8px;
   font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:650;
@@ -2094,7 +2123,11 @@ async function participanteMotor(codigo, s){
     }
 
     const ix = estado.abiertas.findIndex(x => x.id === p.id);
-    app().innerHTML = `<div class="wrap">${cabecera()}<div class="card">
+    // Las pantallas del taller llevan seis preguntas con sus huecos: con el
+    // ancho de lectura normal, en un portátil salen dos columnas estrechas
+    // donde hay que escribir párrafos. Estas van anchas.
+    app().innerHTML = `<div class="wrap${cfg.dos_columnas ? " ancho" : ""}">${
+      cabecera()}<div class="card">
       <div id="saltar"></div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
         <span class="phasetag">${esc(p.codigo||"")}${
@@ -2211,10 +2244,23 @@ async function participanteMotor(codigo, s){
       // Las pantallas por función clave empiezan por una escala —cómo está
       // hoy esa función en la organización— y siguen con los tres textos.
       const notas = {};
+      // `dos_columnas` es para las pantallas del taller de escenarios, que
+      // llevan seis preguntas dentro. En un móvil no hay dos columnas y la
+      // rejilla se queda en una: la pregunta encima y su hueco debajo, que
+      // es lo mismo apilado.
+      if(cfg.dos_columnas) campo.classList.add("dos-col");
       campo.innerHTML = cs.map((c,i)=>{
+        if(c.tipo === "texto") return `<div class="field">
+          <label for="${uid}c${i}">${esc(c.etiqueta)}</label>
+          ${c.ayuda ? `<p class="small" style="margin:-4px 0 6px">${esc(c.ayuda)}</p>` : ""}
+          <textarea id="${uid}c${i}" name="${uid}c${i}" rows="${c.filas || 4}"
+            maxlength="${c.maximo || 1200}" data-c="${i}"
+            autocomplete="off" spellcheck="true"></textarea></div>`;
         if(c.tipo !== "escala") return `<div class="field">
           <label for="${uid}c${i}">${esc(c.etiqueta)}</label>
-          <input id="${uid}c${i}" name="${uid}c${i}" maxlength="200" value="" data-c="${i}"
+          ${c.ayuda ? `<p class="small" style="margin:-4px 0 6px">${esc(c.ayuda)}</p>` : ""}
+          <input id="${uid}c${i}" name="${uid}c${i}" maxlength="${c.maximo || 200}"
+            value="" data-c="${i}"
             autocomplete="off" autocorrect="off" spellcheck="true"></div>`;
         const min = c.min ?? 1, max = c.max ?? 7;
         return `<div class="field" data-esc="${i}">
@@ -3203,6 +3249,172 @@ function tablaAlcance(grupos, grande){
     <tbody>${g.map(x=>`<tr><td>${esc(x.grupo||"—")}</td>
       <td>${esc(x.nivel||"—")}</td></tr>`).join("")}</tbody>
   </table>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EL MAPA DE ESCENARIOS
+
+   Los dos ejes, los cuatro cuadrantes, y dentro de cada uno lo que su
+   grupo escribió. Es el entregable del taller: se mira en la consola, se
+   manda a la pared y se guarda en PDF con la misma maquetación que el
+   acta del modelo y el informe de resultados.
+
+   Lee de las respuestas, no de una copia: si un grupo corrige su relato a
+   media sesión, aquí sale corregido al recargar.
+   ═══════════════════════════════════════════════════════════════════ */
+async function leerEscenarios(s, preguntas){
+  const m = s.modelo || {};
+  const ess = (m.escenarios || ESC_VACIOS).map(e => ({...e, relato:{}, estrategias:{}}));
+  const campos = {};
+  TALLER_ESC.forEach(t => { campos[t.k] = t.campos; });
+  for(let i = 0; i < ess.length; i++){
+    for(const t of TALLER_ESC){
+      const p = preguntas.find(x => x.codigo === t.k + "E" + (i+1));
+      if(!p) continue;
+      let r = null;
+      try{ r = await API.resultadosPregunta(s.codigo, p.id); }catch(e){}
+      // Una sola respuesta: la del grupo. Si hubiera más de una —alguien
+      // que contestó sin ser relator— se queda la última, que es la que
+      // quedó en pie después de hablarlo.
+      const filas = (r && Array.isArray(r.datos)) ? r.datos : [];
+      const v = filas.length ? (filas[filas.length-1].campos || {}) : {};
+      const destino = t.k === "PT1" ? "relato" : "estrategias";
+      ess[i][destino] = v;
+      ess[i][destino + "_campos"] = (p.config || {}).campos || campos[t.k] || [];
+      ess[i][destino + "_n"] = (r && r.respondidos) || 0;
+    }
+  }
+  return {ejes: m.ejes || {}, escenarios: ess};
+}
+
+/* Los encargos para la IA. Van con la misma disciplina que los del taller
+   de liderazgo: se le da lo que hay escrito, se le prohíbe inventar, y se
+   le exige decir de qué escenario sale cada cosa. Lo que devuelva lo
+   revisas tú, que es donde está tu trabajo. */
+function encargoEscenarios(d, fase){
+  const l = [];
+  const eje = (d.ejes.y || d.ejes.x)
+    ? `Los dos ejes del análisis son:\n· Vertical: ${d.ejes.y || "(sin definir)"}\n`
+      + `· Horizontal: ${d.ejes.x || "(sin definir)"}\n\n` : "";
+  d.escenarios.forEach((e, i) => {
+    const c = e[fase + "_campos"] || [], v = e[fase] || {};
+    const dentro = c.map(x => {
+      const t = (v[x.clave] || "").toString().trim();
+      return t ? `  ${x.etiqueta}\n  → ${t}` : null;
+    }).filter(Boolean);
+    if(!dentro.length) return;
+    l.push(`ESCENARIO ${i+1} · ${e.nombre || "(sin nombre)"} (${e.pos})\n`
+      + dentro.join("\n"));
+  });
+  if(!l.length) return "";
+  const encargo = fase === "relato"
+    ? "Eres analista de prospectiva. Abajo tienes las notas que cuatro grupos han "
+      + "escrito sobre cuatro escenarios de futuro, uno cada grupo.\n\n"
+      + "Para CADA escenario, devuélveme:\n"
+      + "1. Un NOMBRE de dos o tres palabras. Si el grupo ya puso uno, respétalo salvo "
+      + "que sea ilegible; si lo cambias, di por qué.\n"
+      + "2. Un LEMA de una línea, en forma de titular de prensa.\n"
+      + "3. Un RELATO de entre 150 y 200 palabras, en presente, contado desde dentro "
+      + "de ese futuro.\n\n"
+      + "Reglas: no inventes ningún hecho que no esté en las notas. Si algo falta, dilo "
+      + "en una línea aparte en vez de rellenarlo. No suavices los escenarios "
+      + "incómodos. Los cuatro relatos tienen que ser distinguibles entre sí: si dos "
+      + "se parecen, avísame, porque significa que los ejes no eran independientes.\n\n"
+    : "Eres analista de estrategia. Abajo tienes lo que cuatro grupos han escrito sobre "
+      + "las implicaciones de cuatro escenarios de futuro.\n\n"
+      + "Devuélveme:\n"
+      + "1. Por cada escenario, sus estrategias y acciones, ordenadas y sin repetir.\n"
+      + "2. Una lista de ACCIONES ROBUSTAS: las que aparecen, con otras palabras, en "
+      + "tres o cuatro escenarios. Para cada una, di en cuáles aparece y con qué "
+      + "palabras lo dijo cada grupo.\n"
+      + "3. Una lista de APUESTAS: las que solo valen en uno o dos escenarios. Di en "
+      + "cuáles, y qué habría que ver en el mundo para saber que toca activarlas.\n\n"
+      + "Reglas: no inventes ninguna acción que no esté escrita. Si dos grupos dicen lo "
+      + "mismo con distintas palabras, júntalas y enséñame las dos formulaciones. No "
+      + "conviertas en robusta una acción que solo esté en dos escenarios.\n\n";
+  return encargo + eje + l.join("\n\n");
+}
+
+async function mapaEscenarios(s, preguntas, volver){
+  app().innerHTML = `<div class="wrap ancho">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card"><h1>Reuniendo lo que han escrito los grupos…</h1></div></div>`;
+  if($("#atras")) $("#atras").onclick = volver;
+  const d = await leerEscenarios(s, preguntas);
+  const org = (s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "";
+  const hoy = new Date().toLocaleDateString("es-ES",
+    {day:"numeric", month:"long", year:"numeric"});
+  // El orden del DOM no es el de los cuadrantes: arriba-izquierda,
+  // arriba-derecha, abajo-izquierda, abajo-derecha. Y E3 es abajo-derecha.
+  const rejilla = [d.escenarios[0], d.escenarios[1], d.escenarios[3], d.escenarios[2]];
+  const cuadro = (e, i) => {
+    if(!e) return `<div class="cuad vacio"></div>`;
+    const v = e.relato || {}, c = e.relato_campos || [];
+    const largo = c.filter(x => x.tipo === "texto");
+    return `<div class="cuad">
+      <span class="cuad-k">${esc(e.k)} · ${esc(e.pos)}</span>
+      <h3>${esc(v.nombre || e.nombre || "Sin nombre todavía")}</h3>
+      ${v.lema ? `<p class="lema">«${esc(v.lema)}»</p>` : ""}
+      ${largo.map(x => (v[x.clave]||"").trim() ? `<div class="tramo">
+          <b>${esc(x.etiqueta)}</b><p>${esc(v[x.clave])}</p></div>` : "").join("")}
+      ${!e.relato_n ? `<p class="small">Este grupo todavía no ha escrito nada.</p>` : ""}
+    </div>`;
+  };
+  const enc1 = encargoEscenarios(d, "relato");
+  const enc2 = encargoEscenarios(d, "estrategias");
+
+  app().innerHTML = `<div class="wrap ancho doc">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card informe-cab">
+      <div class="filete"></div>
+      <p class="org">${esc(org)}</p>
+      <h1>Los cuatro escenarios</h1>
+      <p class="sub">${esc(s.titulo)}</p>
+      <dl class="meta">
+        <div><dt>Fecha</dt><dd>${esc(hoy)}</dd></div>
+        <div><dt>Sesión</dt><dd>${esc(s.codigo)}</dd></div>
+        <div><dt>Eje vertical</dt><dd>${esc(d.ejes.y || "—")}</dd></div>
+        <div><dt>Eje horizontal</dt><dd>${esc(d.ejes.x || "—")}</dd></div>
+      </dl>
+      <div class="btnrow no-imprimir">
+        <button class="btn ghost" id="imprimir">Guardar en PDF</button>
+        <button class="btn ghost" id="recargar">Actualizar</button></div>
+    </div>
+
+    <div class="card informe-bloque">
+      <span class="num">01</span><h2>El mapa</h2>
+      <div class="mapa-esc">
+        <div class="eje eje-y"><b>↑</b> ${esc(d.ejes.y || "eje vertical sin definir")}</div>
+        <div class="cuadros">${rejilla.map(cuadro).join("")}</div>
+        <div class="eje eje-x"><b>←</b> ${esc(d.ejes.x || "eje horizontal sin definir")}
+          <b>→</b></div>
+      </div>
+    </div>
+
+    <div class="card no-imprimir">
+      <h2>Los encargos para la IA</h2>
+      <p class="small">Copian lo que han escrito los cuatro grupos y le piden a la IA una
+        cosa concreta. Léelos antes de pegarlos: los dos le prohíben expresamente inventar
+        nada que no esté escrito, y le exigen decir de qué escenario sale cada cosa.
+        Lo que devuelva lo revisas tú.</p>
+      <div class="btnrow">
+        <button class="btn ghost" id="cop1" ${enc1 ? "" : "disabled"}>Fase de relato</button>
+        <button class="btn ghost" id="cop2" ${enc2 ? "" : "disabled"}>Fase de estrategias</button>
+        <span class="small" id="copiado"></span></div>
+      ${!enc1 && !enc2 ? `<div class="aviso">Todavía no hay nada escrito en las pantallas
+        del taller. Los encargos aparecen en cuanto los grupos empiecen a contestar.</div>` : ""}
+    </div>
+    <div class="pie-doc"><span>${esc(org)} · Los cuatro escenarios</span>
+      <span>${esc(s.codigo)} · ${esc(hoy)}</span></div>
+    </div>`;
+  $("#atras").onclick = volver;
+  $("#imprimir").onclick = () => window.print();
+  $("#recargar").onclick = () => mapaEscenarios(s, preguntas, volver);
+  const avisar = t => { $("#copiado").textContent = t;
+    setTimeout(()=>{ if($("#copiado")) $("#copiado").textContent = ""; }, 2500); };
+  if($("#cop1")) $("#cop1").onclick = () => { copiar(enc1); avisar("Copiado."); };
+  if($("#cop2")) $("#cop2").onclick = () => { copiar(enc2); avisar("Copiado."); };
+  window.scrollTo({top:0});
 }
 
 function actaModelo(s, volver){
@@ -4669,7 +4881,9 @@ async function consolaMotor(s){
             placeholder="Nombre del escenario"></div>`).join("")}
         <div class="btnrow">
           <button class="btn ghost" id="guardarEsc">Guardar el mapa</button>
-          <button class="btn" id="generarEsc">Generar las pantallas del taller</button></div>
+          <button class="btn" id="generarEsc">Generar las pantallas del taller</button>
+          ${copias ? `<button class="btn ghost" id="verMapa">Ver el mapa de escenarios</button>`
+                   : ""}</div>
         <p class="note">Generar sustituye cada pregunta del taller por <b>cuatro copias</b>,
           una por escenario, y rellena la <b>P63</b> con los cuatro nombres. Las copias se
           marcan como <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sin el
@@ -4982,6 +5196,8 @@ async function consolaMotor(s){
       escenarios: ESC_VACIOS.map((e,i) => ({...e,
         nombre: ((bt("esc"+i)||{}).value || "").trim()}))
     });
+    if(bt("verMapa")) bt("verMapa").onclick = () =>
+      mapaEscenarios(s, preguntas, () => pinta());
     if(bt("guardarEsc")) bt("guardarEsc").onclick = async () => {
       bt("guardarEsc").disabled = true;
       const nuevo = {...(s.modelo||{}), ...leerMapa()};
@@ -5525,6 +5741,37 @@ async function consolaMotor(s){
       quitar.push(p);
     }
 
+    /* Y las dos pantallas del taller, que no salen de ninguna pregunta del
+       banco sino de la plantilla: van justo detrás de la P64, que es donde
+       cada persona acaba de decir su escenario y su papel. */
+    const iTras64 = final.findIndex(p => p.codigo === "P64");
+    const bloque = [];
+    TALLER_ESC.forEach(t => {
+      ess.forEach((e, i) => {
+        const c2 = t.k + "E" + (i+1);
+        if(puestas.has(c2)) return;
+        puestas.add(c2);
+        const hay = ya.get(c2);
+        if(hay){ bloque.push(hay); return; }
+        const fila = {sesion_id: s.id, codigo: c2, tipo: "abierta_campos",
+          titulo: resolverTexto(t.q.replace(/\[ESCENARIO\]/g, e.nombre), vars),
+          ayuda: t.ayuda,
+          config: {escenario: e.nombre, grupal: true, dos_columnas: true,
+            campos: t.campos.map(c => ({...c,
+              etiqueta: resolverTexto(c.etiqueta, vars),
+              ayuda: c.ayuda ? resolverTexto(c.ayuda, vars) : undefined})),
+            solo_si: [{codigo:"P64", valor:"Relator/a"},
+                      {codigo:"P63", valor: e.nombre}]},
+          estado: "cerrada"};
+        nuevas.push(fila); bloque.push(fila);
+      });
+    });
+    // Las que ya existían y ya se colocaron por su `orden` no se mueven; las
+    // nuevas entran detrás de la P64.
+    const soloNuevas = bloque.filter(x => !x.id);
+    if(soloNuevas.length) final.splice(iTras64 >= 0 ? iTras64 + 1 : final.length,
+      0, ...soloNuevas);
+
     // La P63 ofrece los cuatro nombres: es la respuesta de la que depende
     // qué pantallas ve cada persona, así que tiene que decir exactamente
     // lo mismo que dicen las copias.
@@ -5883,35 +6130,6 @@ const BANCO_ESC = [
      + "que el grupo acuerda. Las vocales debaten pero no escriben; sus pantallas "
      + "vuelven al terminar el taller.",
  cfg:{opciones:["Relator/a","Vocal"]}},
-{c:"P36", b:5, t:"abierta", nuc:true, nat:"escenario",
- q:"¿Qué nombre breve y memorable le dais a este escenario?",
- ayuda:"Era una pregunta de tarjetas con votación. Con una sola persona escribiendo "
-     + "por grupo, una votación de uno no es una votación: aquí se escribe el nombre "
-     + "que el grupo ha acordado.",
- cfg:{maximo_caracteres:60}},
-{c:"P37", b:5, t:"abierta", nuc:false, nat:"escenario",
- q:"¿Qué titular de prensa publicado en [HORIZONTE] capturaría la esencia de este escenario?",
- cfg:{maximo_caracteres:160}},
-{c:"P38", b:5, t:"abierta_campos", nuc:true, nat:"escenario",
- q:"¿Qué tendría que pasar para llegar desde hoy hasta este escenario?",
- ayuda:"Era una pregunta de ordenar elementos, pero la lista a ordenar estaba vacía y "
-     + "había que escribirla a mano antes. Aquí se escribe la cadena directamente, que "
-     + "es lo que el grupo hace de todos modos: cuatro hitos en orden.",
- cfg:{campos:[{clave:"h1", etiqueta:"Primero"},{clave:"h2", etiqueta:"Después"},
-              {clave:"h3", etiqueta:"Más tarde"},{clave:"h4", etiqueta:"Y al final"}]}},
-{c:"P39", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
- q:"¿Cómo sería la experiencia cotidiana de los actores relevantes en este escenario?",
- cfg:{campos:[{clave:"usuarios", etiqueta:"Clientes o usuarios"},
-              {clave:"personas", etiqueta:"Personas de la organización"},
-              {clave:"socios", etiqueta:"Socios y proveedores"},
-              {clave:"sociedad", etiqueta:"Sociedad y territorio"}]}},
-{c:"P41", b:5, t:"nube", nuc:false, nat:"escenario",
- q:"¿Qué capacidades serían más escasas o decisivas en este escenario?", cfg:{maximo:3}},
-{c:"P42", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
- q:"¿Quién ganaría y quién perdería poder o capacidad de decisión en este escenario?",
- cfg:{campos:[{clave:"ganan", etiqueta:"Actores que ganan"},
-              {clave:"pierden", etiqueta:"Actores que pierden"},
-              {clave:"mecanismo", etiqueta:"Mecanismo que explica el cambio"}]}},
 /* ── Bloque 6 · Implicaciones y robustez ───────────────────────── */
 /* ── FASE DE ESTRATEGIAS DEL TALLER ───────────────────────────────
    Sigue escribiendo solo la persona relatora, y sigue habiendo cuatro
@@ -5922,35 +6140,10 @@ const BANCO_ESC = [
    escritos, que además dejan cada oportunidad y cada amenaza por separado
    —y eso es lo que luego se puede pegar en una IA o cruzar entre los
    cuatro escenarios, cosa que un párrafo corrido no permite—. */
-{c:"P44", b:6, t:"abierta_campos", nuc:true, nat:"escenario",
- q:"¿Qué oportunidades abriría este escenario para [ORGANIZACION]?",
- cfg:{campos:[{clave:"o1", etiqueta:"Oportunidad"},{clave:"o2", etiqueta:"Otra"},
-              {clave:"o3", etiqueta:"Y otra más (opcional)"}]}},
-{c:"P45", b:6, t:"abierta_campos", nuc:true, nat:"escenario",
- q:"¿Qué amenazas o fragilidades revelaría este escenario?",
- cfg:{campos:[{clave:"a1", etiqueta:"Amenaza"},{clave:"a2", etiqueta:"Otra"},
-              {clave:"a3", etiqueta:"Y otra más (opcional)"}]}},
-{c:"P46", b:6, t:"clasificar", nuc:false, nat:"derivada",
- q:"¿Sobre cuáles de estos factores puede influir realmente [ORGANIZACION]?",
- cfg:{categorias:["Control directo","Influencia parcial","Solo adaptación o seguimiento"], elementos:[]}},
-{c:"P47", b:6, t:"tarjetas", nuc:true, nat:"fija",
- q:"¿Qué opciones estratégicas convendría considerar hoy sin comprometerse todavía con una sola predicción?",
- ayuda:"Una opción por tarjeta: acciones, inversiones, experimentos o alianzas.",
- cfg:{maximo_aportaciones:5, votos:3}},
 /* Evitar y mitigar no son la misma pregunta y por eso van separadas. La
    primera solo tiene sentido si el escenario es indeseable Y la
    organización puede influir en que ocurra; la segunda vale siempre, y es
    la que la gente se salta cuando las dos van juntas en una casilla. */
-{c:"P61", b:6, t:"abierta", nuc:true, nat:"escenario",
- q:"Si procede, ¿qué acciones evitarían que este escenario llegue a producirse?",
- ayuda:"Solo si el escenario es indeseable y está en vuestra mano influir. Si no lo "
-     + "está —y muchas veces no lo está—, dilo y pasa a la siguiente.",
- cfg:{maximo_caracteres:300}},
-{c:"P62", b:6, t:"abierta", nuc:true, nat:"escenario",
- q:"Y si este escenario llega a producirse, ¿qué acciones mitigarían sus efectos?",
- ayuda:"Esta vale siempre, incluso cuando el escenario es deseable: mitigar también "
-     + "es prepararse para lo que un buen escenario rompe por el camino.",
- cfg:{maximo_caracteres:300}},
 {c:"P48", b:6, t:"matriz_valoracion", nuc:true, nat:"derivada",
  q:"Evalúa la robustez de cada opción estratégica en los cuatro escenarios.",
  ayuda:"Wind tunneling. 1 = perjudicial o inviable · 3 = neutra o adaptable · 5 = muy valiosa.",
@@ -6451,11 +6644,73 @@ const ESC_VACIOS = [
 
 /* Las preguntas que se trabajan por grupos, en el orden del banco. De cada
    una salen cuatro copias y la original se retira. */
-const ESC_TALLER = ["P36","P37","P38","P39","P41","P42",
-                    "P44","P45","P46","P47","P61","P62","P48"];
+/* LAS DOS PANTALLAS DEL TALLER
+   Aquí estaban las trece preguntas del taller, una pantalla cada una. Por
+   cuatro escenarios eran cincuenta y dos pantallas: nadie conduce eso, y
+   la persona relatora se pasaba la sesión yendo y volviendo entre ellas
+   mientras seis personas hablaban.
+
+   Ahora son dos pantallas por escenario, con las preguntas dentro. Cada
+   una lleva su enunciado y debajo su hueco; en tablet o portátil van a dos
+   columnas, en un móvil apiladas. El grupo ve de un golpe todo lo que
+   tiene que producir, y al terminar hay un solo bloque de texto por
+   escenario listo para pegar en una IA.
+
+   Lo que NO cabe aquí es la matriz de robustez: son números, no texto, y
+   se queda como pantalla aparte. */
+const TALLER_ESC = [
+  {k:"PT1", nombre:"Relato del escenario",
+   q:"Fase de relato · [ESCENARIO]",
+   ayuda:"Escribe lo que el grupo acuerde. No hace falta rellenarlo todo de una vez: "
+       + "puedes enviar y volver mientras la pantalla siga abierta.",
+   campos:[
+    {clave:"nombre", maximo:70,
+     etiqueta:"¿Qué nombre breve y memorable le dais a este escenario?"},
+    {clave:"lema", maximo:180,
+     etiqueta:"¿Qué titular de prensa publicado en [HORIZONTE] capturaría su esencia?"},
+    {clave:"camino", tipo:"texto",
+     etiqueta:"¿Qué tendría que pasar para llegar desde hoy hasta aquí?",
+     ayuda:"La cadena de acontecimientos, en orden."},
+    {clave:"vida", tipo:"texto",
+     etiqueta:"¿Cómo sería la vida cotidiana de los actores relevantes?",
+     ayuda:"Usuarios, personas de la organización, socios, sociedad y territorio."},
+    {clave:"capacidades", tipo:"texto", filas:3,
+     etiqueta:"¿Qué capacidades serían más escasas o decisivas?"},
+    {clave:"poder", tipo:"texto",
+     etiqueta:"¿Quién ganaría y quién perdería poder o capacidad de decisión?",
+     ayuda:"Y por qué mecanismo: sin el mecanismo, es una lista de simpatías."}]},
+
+  {k:"PT2", nombre:"Estrategias del escenario",
+   q:"Fase de estrategias · [ESCENARIO]",
+   ayuda:"Sigue escribiendo el grupo por boca de su relator o relatora.",
+   campos:[
+    {clave:"oportunidades", tipo:"texto",
+     etiqueta:"¿Qué oportunidades abriría este escenario para [ORGANIZACION]?"},
+    {clave:"amenazas", tipo:"texto",
+     etiqueta:"¿Qué amenazas o fragilidades revelaría?"},
+    {clave:"influencia", tipo:"texto", filas:3,
+     etiqueta:"¿Sobre cuáles de esos factores puede influir realmente [ORGANIZACION]?",
+     ayuda:"Control directo, influencia parcial, o solo adaptarse."},
+    {clave:"opciones", tipo:"texto",
+     etiqueta:"¿Qué opciones estratégicas convendría considerar hoy?",
+     ayuda:"Sin comprometerse todavía con una sola predicción: acciones, inversiones, "
+         + "experimentos o alianzas."},
+    {clave:"evitar", tipo:"texto", filas:3,
+     etiqueta:"Si procede, ¿qué acciones evitarían que este escenario llegue a producirse?",
+     ayuda:"Solo si es indeseable y está en vuestra mano influir. Muchas veces no lo está."},
+    {clave:"mitigar", tipo:"texto", filas:3,
+     etiqueta:"Y si llega a producirse, ¿qué acciones mitigarían sus efectos?",
+     ayuda:"Esta vale siempre, incluso si el escenario es deseable."}]}
+];
+
+/* La matriz de robustez sigue siendo una pregunta del banco y también se
+   copia por escenario, porque cada grupo valora el suyo. */
+const ESC_TALLER = ["P48"];
 const esCopiaEsc = cod => {
   const c = String(cod || "");
-  return /E[1-4]$/.test(c) && ESC_TALLER.includes(c.slice(0, -2));
+  if(!/E[1-4]$/.test(c)) return false;
+  const raiz = c.slice(0, -2);
+  return ESC_TALLER.includes(raiz) || TALLER_ESC.some(t => t.k === raiz);
 };
 
 function situarTalleres(instrumento, preguntas){
