@@ -4983,6 +4983,7 @@ async function consolaMotor(s){
         nombre: ((bt("esc"+i)||{}).value || "").trim()}))
     });
     if(bt("guardarEsc")) bt("guardarEsc").onclick = async () => {
+      bt("guardarEsc").disabled = true;
       const nuevo = {...(s.modelo||{}), ...leerMapa()};
       try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
       catch(e){ decirEsc(esc(e.message||e), true); return; }
@@ -4990,14 +4991,25 @@ async function consolaMotor(s){
       decirEsc("Mapa guardado.");
     };
     if(bt("generarEsc")) bt("generarEsc").onclick = async () => {
+      /* El botón se apaga mientras trabaja. Generar tarda varios segundos
+         —consulta una por una si las preguntas del taller tienen respuestas—
+         y sin apagarlo se puede pulsar dos veces. La segunda pulsación
+         arranca con la lista de preguntas vieja, no ve las copias que la
+         primera está creando, y las crea otra vez: el recorrido acaba con
+         cada pregunta del taller repetida. */
+      const bg = bt("generarEsc");
+      bg.disabled = true; bg.textContent = "Generando…";
       const nuevo = {...(s.modelo||{}), ...leerMapa()};
       try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
-      catch(e){ decirEsc(esc(e.message||e), true); return; }
+      catch(e){ bg.disabled = false; bg.textContent = "Generar las pantallas del taller";
+        decirEsc(esc(e.message||e), true); return; }
       const r = await pantallasPorEscenario();
       preguntas = await API.preguntas(s.id);
       await pinta();
       if(r.fallo){ decirEsc(r.fallo, true); return; }
       decirEsc(`Creadas <b>${r.creadas}</b> pantallas por escenario`
+        + (r.duplicadas ? ` · <b>Limpiadas ${r.duplicadas} pantallas repetidas</b> que
+             habían quedado de una generación anterior interrumpida` : "")
         + (r.retiradas ? `, y retiradas ${r.retiradas} preguntas genéricas que ahora
              están cuatro veces, una por escenario` : "")
         + `. La <b>P63</b> ya ofrece los cuatro nombres.`
@@ -5447,7 +5459,31 @@ async function consolaMotor(s){
     const ess = (m.escenarios || []).filter(e => e && (e.nombre||"").trim());
     if(ess.length !== 4) return {fallo:"Hacen falta los cuatro nombres de escenario "
       + "antes de generar nada. Escríbelos arriba y vuelve a darle.", creadas:0,
-      retiradas:0, bloqueadas:[]};
+      retiradas:0, duplicadas:0, bloqueadas:[]};
+
+    /* Se relee la lista antes de nada. Si la generación anterior se quedó a
+       medias —o alguien pulsó dos veces— la copia local está vieja, y
+       trabajar sobre ella es justo lo que multiplica las pantallas. */
+    preguntas = await API.preguntas(s.id);
+
+    /* Y se limpia lo que haya quedado repetido. Dos preguntas con el mismo
+       código son dos pantallas idénticas seguidas en el móvil: se queda la
+       primera y se van las demás, siempre que estén vacías. Si alguna tiene
+       respuestas se queda donde está: mejor una pantalla repetida que una
+       respuesta perdida. */
+    let duplicadas = 0;
+    const vistos = new Map();
+    for(const p of preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0))){
+      const cod = p.codigo || "";
+      if(!cod) continue;
+      if(!vistos.has(cod)){ vistos.set(cod, p); continue; }
+      let n = 1;
+      try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+           n = (r && r.respondidos) || 0; }catch(e){ n = 1; }
+      if(n) continue;
+      try{ await API.borrarPregunta(p.id); duplicadas++; }catch(e){}
+    }
+    if(duplicadas) preguntas = await API.preguntas(s.id);
 
     const ya = new Map(preguntas.filter(p=>p.codigo).map(p=>[p.codigo, p]));
     const lista = preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
@@ -5507,7 +5543,7 @@ async function consolaMotor(s){
     }
     if(nuevas.length) await API.crearPreguntas(nuevas);
     for(const p of quitar) await API.borrarPregunta(p.id);
-    return {creadas: nuevas.length, retiradas: quitar.length, bloqueadas};
+    return {creadas: nuevas.length, retiradas: quitar.length, duplicadas, bloqueadas};
   };
 
   /* Las sesiones que se montaron antes de la regla tienen sus EX al final,
@@ -5743,8 +5779,12 @@ const BANCO_ESC = [
  q:"¿Qué cambios del entorno podrían transformar de forma significativa [ORGANIZACION] en los próximos 5 a 10 años?",
  ayuda:"Un cambio por tarjeta. Describe una fuerza, no una solución ni un deseo.",
  cfg:{maximo_aportaciones:5, votos:3}},
-{c:"P20", b:3, t:"nube", nuc:false, nat:"fija",
- q:"¿Qué tendencias influirán más en el futuro de [ORGANIZACION]?", cfg:{maximo:3}},
+{c:"P20", b:3, t:"tarjetas", nuc:false, nat:"fija",
+ q:"¿Qué tendencias influirán más en el futuro de [ORGANIZACION]?",
+ ayuda:"Una tendencia por tarjeta. Era una nube de palabras y se quedaba corta: «IA» "
+     + "escrito por doce personas sale grande, pero doce personas queriendo decir doce "
+     + "cosas distintas. Agrupando y votando se ve cuáles son de verdad las mismas.",
+ cfg:{maximo_caracteres:200, maximo_aportaciones:3, votos:3}},
 {c:"P21", b:3, t:"multiple", nuc:false, nat:"fija", bench:true,
  q:"¿En qué ámbitos se concentran las fuerzas de cambio detectadas?",
  ayuda:"Clasificación PESTEL ampliada.",
@@ -5755,6 +5795,23 @@ const BANCO_ESC = [
  q:"¿Cuáles de estas tendencias son ya suficientemente visibles y persistentes como para tratarlas como predeterminadas?",
  ayuda:"Lista consolidada de P19–P21. Solo procesos con dirección relativamente estable.",
  cfg:{maximo:5, opciones:[]}},
+/* LA RECOGIDA DE INCERTIDUMBRES VA AQUÍ, NO DESPUÉS.
+   Estaba abriendo el bloque 4, después de las señales débiles, las reglas
+   que pueden romperse y los ámbitos de ruptura. Era el orden equivocado:
+   esas tres preguntas se apoyan en la lista de incertidumbres, y la lista
+   se recogía a continuación. Ahora se recoge primero, se agrupa y se vota,
+   y las tres siguientes beben de ella.
+
+   No he añadido una recogida nueva: ya existía y estaba mal colocada.
+   Poner otra habría dejado dos muros de tarjetas pidiendo casi lo mismo,
+   y eso en una sala se nota. */
+{c:"P26", b:3, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué factores relevantes podrían evolucionar en direcciones plausibles muy diferentes?",
+ ayuda:"Una incertidumbre por tarjeta, formulada como variable neutral: «grado de "
+     + "centralización de las decisiones», no «exceso de centralización». Se agrupan y "
+     + "se votan: de aquí salen las tres preguntas siguientes y, más adelante, los dos "
+     + "ejes del taller.",
+ cfg:{maximo_aportaciones:5, votos:3}},
 {c:"P23", b:3, t:"tarjetas", nuc:true, nat:"fija",
  q:"¿Qué señal débil podría parecer marginal hoy y resultar decisiva en [HORIZONTE]?",
  cfg:{maximo_caracteres:200, maximo_aportaciones:2, votos:3}},
@@ -5763,16 +5820,16 @@ const BANCO_ESC = [
  cfg:{campos:[{clave:"regla", etiqueta:"Regla o supuesto"},
               {clave:"causa", etiqueta:"Causa de ruptura"}]}},
 {c:"P25", b:3, t:"multiple", nuc:false, nat:"fija", bench:true,
- q:"¿Dónde aparecerían primero los puntos de ruptura?",
+ q:"Si esas reglas se rompieran, ¿en qué ámbito de [ORGANIZACION] se notaría primero?",
+ ayuda:"«Los puntos de ruptura» de la pregunta anterior: las reglas o supuestos del "
+     + "sector que podrían dejar de cumplirse. Antes esta pregunta decía «los puntos de "
+     + "ruptura» sin decir de qué, y quien la leía suelta —que es casi todo el mundo, "
+     + "porque nadie llega leyendo el hilo— no tenía forma de saberlo.",
  cfg:{maximo:3, opciones:["Demanda y usuarios","Ingresos y precios","Talento",
    "Operaciones y suministro","Tecnología y datos","Regulación","Financiación",
    "Infraestructura","Reputación y confianza","Cohesión social","Recursos naturales","Gobernanza"]}},
 
 /* ── Bloque 4 · Incertidumbres críticas ────────────────────────── */
-{c:"P26", b:4, t:"tarjetas", nuc:true, nat:"fija",
- q:"¿Qué factores relevantes podrían evolucionar en direcciones plausibles muy diferentes?",
- ayuda:"Formula cada incertidumbre como variable neutral: «grado de centralización de las decisiones», no «exceso de centralización».",
- cfg:{maximo_aportaciones:5, votos:3}},
 {c:"P29", b:4, t:"dos_ejes", nuc:true, nat:"derivada",
  q:"Clasifica las incertidumbres según su impacto potencial y su grado de incertidumbre.",
  cfg:{eje_x:"Baja incertidumbre → alta incertidumbre", eje_y:"Bajo impacto → alto impacto", elementos:[]}},
