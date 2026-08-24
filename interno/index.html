@@ -241,21 +241,72 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   letter-spacing:0}
 .fun p{font-size:17px;margin:0;line-height:1.4}
 
-/* informe */
-.informe-bloque{padding:26px 22px}
-.informe-bloque h2{line-height:1.25}
+/* ── INFORME Y ACTA · maquetación de entregable ──────────────────────
+   Lo que se imprime no es la pantalla. En pantalla mandan las tarjetas,
+   el contraste alto y el ancho cómodo; en papel mandan la jerarquía
+   tipográfica, el blanco y el filete fino. Por eso el bloque de impresión
+   de abajo no ajusta cuatro márgenes: rehace la página.
+
+   La serif es de sistema y no de Google Fonts a propósito. Un enlace a un
+   servidor de tipografías es una dependencia de red en una sala con mal
+   wifi, y el día que falle el informe sale en Times sin que nadie lo haya
+   decidido. Esta pila da Iowan o Palatino en un Mac, Georgia en Windows y
+   Linux: tres serif de texto correctas, y ninguna sorpresa. */
+.doc{--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif}
+
+.doc .informe-cab{padding:34px 30px}
+.doc .filete{height:2px;width:54px;background:var(--text-primary);margin-bottom:22px}
+.doc .informe-cab .org{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-secondary);font-weight:650;margin:0 0 12px}
+.doc .informe-cab h1{font-family:var(--serif);font-size:38px;line-height:1.12;
+  font-weight:600;letter-spacing:-.012em;margin:0;max-width:17em}
+.doc .informe-cab .sub{font-family:var(--serif);font-size:19px;font-style:italic;
+  color:var(--text-secondary);margin:12px 0 0}
+.doc .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+  gap:16px 28px;margin:28px 0 0;padding-top:20px;border-top:1px solid var(--border)}
+.doc .meta dt{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-muted);margin:0 0 5px}
+.doc .meta dd{margin:0;font-size:16px;color:var(--text-primary);
+  font-variant-numeric:tabular-nums}
+.doc .contenido{margin:26px 0 0;padding-top:20px;border-top:1px solid var(--border)}
+.doc .contenido h3{margin:0 0 10px}
+.doc .contenido ol{list-style:none;margin:0;padding:0;columns:2;column-gap:34px}
+.doc .contenido li{display:flex;gap:10px;font-size:14px;padding:5px 0;
+  color:var(--text-secondary);break-inside:avoid}
+.doc .contenido li b{color:var(--text-muted);font-weight:500;
+  font-variant-numeric:tabular-nums}
+
+.doc .informe-bloque{padding:30px}
+.doc .informe-bloque .num{font-family:var(--serif);font-size:13px;letter-spacing:.14em;
+  color:var(--text-muted);display:block;margin-bottom:6px}
+.doc .informe-bloque h2{font-family:var(--serif);font-size:27px;font-weight:600;
+  line-height:1.22;letter-spacing:-.006em;max-width:25em}
+.doc .informe-bloque > p, .doc .informe-bloque .aviso{max-width:40em}
 .informe-bloque .enun{font-size:18px;padding:11px 0}
 .informe-bloque .barra{height:12px}
 .informe-bloque .mapa{max-height:none}
-@media print{
-  @page{margin:14mm}
-  body{background:#fff}
-  .no-imprimir, header.top, .vistas{display:none !important}
-  .card{border:none;padding:0 0 6mm;margin:0 0 8mm;break-inside:avoid;background:none}
-  .informe-bloque{break-inside:avoid}
-  .wrap{max-width:none;padding:0}
-  .esc-den, .mapa{max-height:none}
-}
+
+/* Las respuestas escritas, agrupadas por lo que se preguntó. */
+.grupo-txt{margin-top:26px;break-inside:auto}
+.grupo-txt h4{display:flex;align-items:baseline;gap:9px;margin:0 0 8px;
+  font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:650;
+  color:var(--text-secondary)}
+.grupo-txt h4 span{font-size:11px;font-weight:500;letter-spacing:0;
+  color:var(--text-muted);font-variant-numeric:tabular-nums}
+.grupo-txt ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+.grupo-txt li{position:relative;max-width:46em;padding:9px 0 9px 18px;
+  border-bottom:1px solid var(--border);font-size:16.5px;line-height:1.45;
+  color:var(--text-primary);break-inside:avoid}
+.grupo-txt li::before{content:"";position:absolute;left:2px;top:.92em;
+  width:5px;height:5px;border-radius:50%;background:var(--axis)}
+
+/* Un colofón al final y no un pie corrido en cada página. Un pie que se
+   repita exige cajas de margen de @page, que Chrome no implementa; los
+   elementos fijos salen una sola vez y en el sitio equivocado. Antes que un
+   pie que aparece a media página, ninguno. Los números de página los pone
+   el propio navegador si se marca «Encabezados y pies de página». */
+.pie-doc{display:none}
+
 
 /* proyección */
 .proy{max-width:1200px;margin:0 auto;padding:34px 30px}
@@ -407,6 +458,67 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .proy .enun{font-size:23px;line-height:1.45;color:var(--text-primary);
   padding:16px 0;border-bottom:1px solid var(--grid)}
 .proy .enun:last-child{border-bottom:none}
+
+/* El bloque de impresión va el ÚLTIMO del hoja de estilo a propósito.
+   Con la misma especificidad gana la regla que se declara después, y estaba
+   antes de `.matriz td{font-size:24px}`: los tamaños de pantalla ganaban a
+   los de papel y la tabla salía con cifras de tablero en un informe. */
+@media print{
+  /* Se imprime en claro aunque el navegador esté en oscuro. Sin esto, quien
+     tenga el sistema en modo oscuro se llevaba un PDF con el texto blanco
+     sobre el papel blanco. */
+  :root, :root[data-theme="dark"]{
+    --surface-1:#fff; --plane:#fff;
+    --text-primary:#0b0b0b; --text-secondary:#3d3c39; --text-muted:#75736d;
+    --grid:#e4e3dd; --axis:#bfbeb3; --border:rgba(11,11,11,0.16);
+    --actual:#5598e7; --deseada:#1c5cab;
+    --div-neg:#d03b3b; --div-neg-suave:#ec835a; --div-medio:#f0efec;
+    --div-pos-suave:#86b6ef; --div-pos:#1c5cab;
+    --tono-1:#1c5cab; --tono-2:#c26a1b; --tono-3:#2e8f6b; --tono-4:#b23a8c;
+    --tono-5:#94861a; --tono-6:#7b52c8; --tono-7:#c0392b; --tono-8:#0d8ba6;
+  }
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:18mm 16mm 22mm}
+  body{background:#fff;font-size:11.5pt;line-height:1.45}
+  .no-imprimir, header.top, .vistas{display:none !important}
+  .card{border:none;padding:0;margin:0 0 10mm;break-inside:avoid;background:none}
+  .wrap{max-width:none;padding:0}
+  .esc-den, .mapa{max-height:none}
+
+  /* La portada, una página entera para ella sola. */
+  .doc .informe-cab{padding:0;break-after:page;margin:0;
+    min-height:246mm;display:flex;flex-direction:column}
+  .doc .meta{margin-top:auto}
+  .doc .informe-cab h1{font-size:30pt}
+  .doc .informe-cab .sub{font-size:13.5pt}
+  .doc .contenido ol{columns:1}
+
+  /* Y cada bloque, separado por un filete y no por una caja. */
+  .doc .informe-bloque{padding:8mm 0 0;margin:0 0 10mm;
+    border-top:1px solid var(--border)}
+  .doc .informe-bloque h2{font-size:17pt}
+  .doc .informe-bloque .num{font-size:9pt}
+  h2, h3, h4{break-after:avoid}
+  p, li{orphans:3;widows:3}
+  .grupo-txt li{font-size:10.5pt;padding:6px 0 6px 15px}
+  /* La escala, en papel, es un dato dentro de una sección y no el titular
+     de la pantalla: su rótulo baja a etiqueta y la vía adelgaza. */
+  .doc .esc-fila{margin-bottom:7mm}
+  .doc .esc-fila h4{font-size:8.5pt;letter-spacing:.1em;text-transform:uppercase;
+    font-weight:650;color:var(--text-secondary);margin-bottom:6px}
+  .doc .esc-via{height:8px}
+  .doc .esc-bola{min-width:38px;height:26px;font-size:10pt}
+  .doc .esc-anclas span{font-size:8.5pt}
+  .matriz th{font-size:8.5pt;letter-spacing:.06em}
+  .matriz td{font-size:13pt;padding:8px 6px}
+  .matriz td.et{font-size:10.5pt;width:32%}
+
+  .doc .informe-bloque:last-of-type{margin-bottom:0}
+  .pie-doc{display:flex;justify-content:space-between;gap:14px;
+    border-top:1px solid var(--border);padding-top:3mm;margin-top:6mm;
+    font-size:8.5pt;color:var(--text-muted);break-inside:avoid;break-before:avoid}
+}
+
 </style>
 </head>
 <body>
@@ -2955,9 +3067,21 @@ function cuerpoResultado(p, r, cab, pie){
     else if(p.tipo === "abierta_campos"){
       const nota = mediaDeCampos(p, r.datos);
       const libres = (cfg.campos || []).filter(c => c.tipo !== "escala");
-      const textos = (r.datos || []).map(v => libres
-          .map(c => (v.campos || {})[c.clave]).filter(Boolean).join(" · "))
-        .filter(Boolean);
+      /* POR CATEGORÍA Y NO POR PERSONA.
+         Antes cada fila era una persona y sus tres respuestas juntas,
+         separadas por puntos. Para leerlo había que ir línea a línea
+         quedándote con el trozo que te interesaba, y a la tercera ya no
+         te acuerdas de cuál de los tres era. Agrupado, los puntos fuertes
+         se leen todos seguidos, y las propuestas se leen como lo que son:
+         una lista de cosas que hacer.
+         Se pierde saber qué mejora escribió quien escribió qué punto
+         fuerte. No es pérdida: estas respuestas son anónimas y cruzarlas
+         entre sí sería justamente lo que no se puede hacer. */
+      const grupos = libres.map(c => ({
+        titulo: c.corto || c.etiqueta || c.clave,
+        textos: (r.datos || []).map(v => (v.campos || {})[c.clave])
+          .filter(x => x != null && String(x).trim())
+      })).filter(g => g.textos.length);
       cuerpo = cab
         /* La etiqueta va aparte de la clave: el nombre de la función ya
            está en el título de la pregunta y repetirlo debajo no informa,
@@ -2966,8 +3090,9 @@ function cuerpoResultado(p, r, cab, pie){
         + (nota ? filasEscala([{clave: cfg.funcion || nota.etiqueta,
              etiqueta: nota.etiqueta, media: nota.media, reparto: nota.reparto}],
              nota.escala) : "")
-        + (textos.length ? `<div style="margin-top:22px">${textos.slice(0,12).map(t=>
-            `<div class="enun">${esc(t)}</div>`).join("")}</div>` : "")
+        + grupos.map(g => `<div class="grupo-txt">
+            <h4>${esc(g.titulo)} <span>${g.textos.length}</span></h4>
+            <ul>${g.textos.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></div>`).join("")
         + pie(`${r.respondidos} respuestas${nota
             ? ` · valoración media ${num(nota.media)} de ${nota.escala.max}` : ""}`);
     }
@@ -3051,16 +3176,24 @@ function actaModelo(s, volver){
     ? new Date(m.cerrado_en).toLocaleDateString("es-ES",
         {day:"numeric", month:"long", year:"numeric"})
     : null;
-  app().innerHTML = `<div class="wrap ancho">${cabecera(
+  app().innerHTML = `<div class="wrap ancho doc">${cabecera(
     `<button class="iconbtn" id="atras">Volver</button>`)}
     <div class="card informe-cab">
-      <span class="phasetag">${esc(org)}${
-        (s.variables||{}).HORIZONTE ? " · " + esc(s.variables.HORIZONTE) : ""}</span>
-      <h1 style="margin:6px 0 0">Modelo de liderazgo</h1>
-      <p class="small" style="margin-top:8px">${
-        fecha ? `Acordado el <b>${fecha}</b>` : `<b>Versión de trabajo, sin cerrar</b>`}
-        · ${esc(s.titulo)}</p>
-      ${fecha ? "" : `<div class="aviso no-imprimir">Este modelo todavía no está cerrado.
+      <div class="filete"></div>
+      <p class="org">${esc(org)}${
+        (s.variables||{}).HORIZONTE ? " · " + esc(s.variables.HORIZONTE) : ""}</p>
+      <h1>Modelo de liderazgo</h1>
+      <p class="sub">${fecha ? "Acordado el " + esc(fecha)
+        : "Versión de trabajo, sin cerrar"}</p>
+      <dl class="meta">
+        <div><dt>Sesión</dt><dd>${esc(s.titulo)}</dd></div>
+        <div><dt>Código</dt><dd>${esc(s.codigo)}</dd></div>
+        <div><dt>Funciones clave</dt><dd>${fs.length}</dd></div>
+        ${(s.variables||{}).HORIZONTE
+          ? `<div><dt>Horizonte</dt><dd>${esc(s.variables.HORIZONTE)}</dd></div>` : ""}
+      </dl>
+      ${fecha ? "" : `<div class="aviso no-imprimir" style="margin-top:22px">Este modelo
+        todavía no está cerrado.
         Puedes imprimirlo igual, pero saldrá marcado como versión de trabajo: es preferible
         eso a que circule un PDF que parece definitivo y no lo es.</div>`}
       <div class="btnrow no-imprimir">
@@ -3081,13 +3214,13 @@ function actaModelo(s, volver){
     </div>
 
     <div class="card informe-bloque" id="modelo-def">
-      <h2 style="font-size:26px;margin:0">Qué entendemos por liderazgo</h2>
+      <span class="num">01</span><h2>Qué entendemos por liderazgo</h2>
       ${m.definicion ? `<p class="lead" style="margin-top:14px">${esc(m.definicion)}</p>`
         : `<div class="aviso rojo">Sin redactar.</div>`}
     </div>
 
     <div class="card informe-bloque" id="modelo-alc">
-      <h2 style="font-size:26px;margin:0">A quién se considera líder</h2>
+      <span class="num">02</span><h2>A quién se considera líder</h2>
       ${m.alcance ? `<p class="lead" style="margin-top:14px">${esc(m.alcance)}</p>`
         : `<div class="aviso rojo">Falta el párrafo.</div>`}
       ${(m.grupos||[]).length ? tablaAlcance(m.grupos)
@@ -3095,7 +3228,7 @@ function actaModelo(s, volver){
     </div>
 
     <div class="card informe-bloque" id="modelo-fun">
-      <h2 style="font-size:26px;margin:0">Las funciones clave
+      <span class="num">03</span><h2>Las funciones clave
         <span class="estado">${fs.length}</span></h2>
       ${fs.length ? `<div style="margin-top:18px">${fs.map((f,i)=>`
         <div class="enun" style="display:flex;gap:18px;align-items:baseline;
@@ -3109,6 +3242,8 @@ function actaModelo(s, volver){
         : `<div class="aviso rojo">Ninguna.</div>`}
     </div>
 
+    <div class="pie-doc"><span>${esc(org)} · Modelo de liderazgo</span><span>${
+      fecha ? esc(fecha) : "versión de trabajo"}</span></div>
     <div class="card no-imprimir"><p class="small">Esto es el acuerdo, no los datos. Lo que
       votó cada quien está en «Ver todos los resultados», y ahí se queda: un acta que
       circula por correo no tiene por qué llevar dentro las respuestas de la sala.</p>
@@ -3725,7 +3860,7 @@ async function informeSesion(s, preguntas, volver){
        con aspecto de dato es peor que ningún número. */
     const maxImp = (e06.p.config || {}).max ?? 7;
     if(maxImp !== escDes.max) return `<div class="card informe-bloque">
-      <h2 style="font-size:26px;margin:0">Dónde está la brecha</h2>
+      <span class="num">LECTURA</span><h2>Dónde está la brecha</h2>
       <div class="aviso rojo" style="margin-top:12px">No se puede calcular: la importancia
         (E06) está en una escala de 1 a ${esc(String(maxImp))} y la valoración de cada
         función, en una de 1 a ${esc(String(escDes.max))}. Restar una de otra no significa
@@ -3739,9 +3874,9 @@ async function informeSesion(s, preguntas, volver){
     if(!filas.length) return "";
     const tope = Math.max(...filas.map(f => Math.abs(f.dif))) || 1;
     return `<div class="card informe-bloque">
-      <div class="small">calculado · importancia (E06) menos la valoración de cada
-        pantalla por función · escala 1–${esc(String(escDes.max))}</div>
-      <h2 style="font-size:26px;margin:6px 0 0">Dónde está la brecha</h2>
+      <span class="num">LECTURA</span><h2>Dónde está la brecha</h2>
+      <div class="small" style="margin-top:8px">calculado · importancia (E06) menos la
+        valoración de cada pantalla por función · escala 1–${esc(String(escDes.max))}</div>
       <p class="small" style="margin-top:8px">Importancia menos desarrollo, función por
         función. Arriba, lo que más importa y menos hay.</p>
       <table class="matriz" style="margin-top:16px">
@@ -3766,10 +3901,14 @@ async function informeSesion(s, preguntas, volver){
     </div>`;
   };
 
-  const bloque = ({p, r, rt}) => {
-    const cab = `<div class="small">${esc(p.codigo || "propia")} ·
-      ${esc(TIPOS_NOMBRE[p.tipo] || p.tipo)} · ${esc(p.estado)}</div>
-      <h2 style="font-size:26px;margin:6px 0 0">${esc(p.titulo)}</h2>`;
+  const bloque = ({p, r, rt}, n) => {
+    // El número en la esquina, y debajo el enunciado tal cual lo leyó la
+    // gente. La ficha técnica —código, tipo, estado— va de segunda: importa
+    // cuando ya sabes qué estás mirando, no antes.
+    const cab = `<span class="num">${esc(n || "")}</span>
+      <h2>${esc(p.titulo)}</h2>
+      <div class="small" style="margin-top:8px">${esc(p.codigo || "propia")} ·
+      ${esc(TIPOS_NOMBRE[p.tipo] || p.tipo)} · ${esc(p.estado)}</div>`;
     const pie = txt => `<p class="small" style="margin-top:16px">${esc(txt)}</p>`;
 
     if(p.tipo === "tarjetas"){
@@ -3795,27 +3934,55 @@ async function informeSesion(s, preguntas, volver){
     return cuerpoResultado(p, r, cab, pie);
   };
 
-  app().innerHTML = `<div class="wrap ancho">${cabecera(
+  const org = (s.organizacion || {}).nombre || "";
+  const hoy = new Date().toLocaleDateString("es-ES",
+    {day:"numeric", month:"long", year:"numeric"});
+  // Cuánta gente ha llegado a contestar algo: el máximo de respondidos de
+  // todas las preguntas. Es un suelo, no un censo, y por eso se rotula
+  // «respuestas» y no «participantes».
+  const respMax = Math.max(0, ...partes.map(x =>
+    (x.r && x.r.respondidos) || (x.rt && x.rt.n_tarjetas) || 0));
+  const tituloDe = x => (x.p.titulo || "").replace(/\s+/g, " ").trim();
+
+  app().innerHTML = `<div class="wrap ancho doc">${cabecera(
     `<button class="iconbtn" id="atras">Volver</button>`)}
     <div class="card informe-cab">
-      <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · resultados</span>
-      <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1>
-      <p class="small" style="margin-top:8px"><code>${esc(s.codigo)}</code> ·
-        ${preguntas.length} preguntas · <b>${conDatos}</b> con resultado ·
-        ${esc(s.estado)}${s.es_prueba ? " · <b>sesión de ensayo</b>" : ""}</p>
-      ${s.es_prueba ? `<div class="aviso"><b>Ojo:</b> estos datos son simulados.
-        No los uses en un informe de cliente.</div>` : ""}
+      <div class="filete"></div>
+      <p class="org">${esc(org)}</p>
+      <h1>${esc(s.titulo)}</h1>
+      <p class="sub">Informe de resultados</p>
+      ${s.es_prueba ? `<div class="aviso" style="margin-top:22px"><b>Ojo:</b> estos datos
+        son simulados. No los uses en un informe de cliente.</div>` : ""}
+      <dl class="meta">
+        <div><dt>Fecha</dt><dd>${esc(hoy)}</dd></div>
+        <div><dt>Sesión</dt><dd>${esc(s.codigo)}</dd></div>
+        <div><dt>Preguntas</dt><dd>${preguntas.length}</dd></div>
+        <div><dt>Con resultado</dt><dd>${conDatos}</dd></div>
+        <div><dt>Respuestas</dt><dd>${respMax}</dd></div>
+        <div><dt>Estado</dt><dd>${esc(s.estado)}</dd></div>
+      </dl>
+      <nav class="contenido">
+        <h3>Contenido</h3>
+        <ol>${brecha() ? `<li><b>··</b><span>Dónde está la brecha</span></li>` : ""}${
+          partes.map((x,i)=>`<li><b>${String(i+1).padStart(2,"0")}</b>
+            <span>${esc(tituloDe(x))}</span></li>`).join("")}</ol>
+      </nav>
       <div class="btnrow no-imprimir">
         <button class="btn ghost" id="imprimir">Imprimir o guardar en PDF</button>
         <button class="btn ghost" id="recargar">Actualizar</button></div>
-      <p class="note no-imprimir">Al imprimir se quitan los botones y cada pregunta procura
-        no partirse entre dos páginas. Para guardarlo en PDF, elige «Guardar como PDF»
-        en el destino de la impresora.</p>
+      <p class="note no-imprimir">«Guardar en PDF» abre el diálogo de impresión: elige
+        «Guardar como PDF» en el destino. La portada ocupa su propia página y ninguna
+        pregunta se parte entre dos. Si quieres numeración de páginas, marca en
+        <b>Más opciones</b> la casilla «Encabezados y pies de página»; ten en cuenta que
+        el navegador escribe ahí también la dirección web y la fecha del sistema.</p>
     </div>
     ${brecha()}
-    ${partes.map(x => `<div class="card informe-bloque">${bloque(x)}</div>`).join("")}
+    ${partes.map((x,i) => `<div class="card informe-bloque">${bloque(x,
+        String(i+1).padStart(2,"0"))}</div>`).join("")}
     <div class="card no-imprimir"><p class="small">Esto son los datos, no el informe.
       Lo que significan lo escribes tú.</p></div>
+    <div class="pie-doc"><span>${esc(org)}${org && s.titulo ? " · " : ""}${
+      esc(s.titulo)}</span><span>${esc(s.codigo)} · ${esc(hoy)}</span></div>
     </div>`;
 
   $("#atras").onclick = volver;
@@ -5113,7 +5280,8 @@ async function consolaMotor(s){
     // La firma de los campos: qué se pregunta y con qué escala. Sirve para
     // saber si una pantalla vieja se quedó sin la valoración 1–7.
     const firma = cfg => ((cfg && cfg.campos) || [])
-      .map(c => c.clave + ":" + (c.tipo || "texto") + ":" + (c.max || "")).join("|");
+      .map(c => c.clave + ":" + (c.tipo || "texto") + ":" + (c.max || "")
+              + ":" + (c.etiqueta || "") + ":" + (c.corto || "")).join("|");
     for(let i = 0; i < fs.length; i++){
       const f = fs[i];
       const cod = "EX" + String(i+1).padStart(2,"0") + "C";
@@ -5895,11 +6063,14 @@ const ESCALA_POR_FUNCION = {
   ancla_min: "Muy poco desarrollada", ancla_max: "Muy desarrollada"
 };
 const ABIERTAS_POR_FUNCION = [
-  {suf:"F", campo:"fuerte", etiqueta:"¿En qué destaca hoy?",
-   q:"[FUNCION]: ¿en qué destaca hoy [ORGANIZACION]?"},
-  {suf:"M", campo:"mejora", etiqueta:"¿Qué debería mejorar?",
-   q:"[FUNCION]: ¿qué debería mejorar [ORGANIZACION]?"},
-  {suf:"A", campo:"accion", etiqueta:"¿Qué acción concreta propones?",
+  {suf:"F", campo:"fuerte", corto:"Puntos fuertes",
+   etiqueta:"¿Qué destacarías como puntos fuertes de su desarrollo hoy?",
+   q:"[FUNCION]: ¿qué destacarías como puntos fuertes de su desarrollo hoy en [ORGANIZACION]?"},
+  {suf:"M", campo:"mejora", corto:"Áreas de mejora",
+   etiqueta:"Identifica áreas de mejora respecto al desarrollo de esta función hoy",
+   q:"[FUNCION]: identifica áreas de mejora respecto al desarrollo de esta función hoy en [ORGANIZACION]"},
+  {suf:"A", campo:"accion", corto:"Propuestas",
+   etiqueta:"¿Qué acción concreta propones?",
    q:"[FUNCION]: ¿qué acciones concretas propones?"}
 ];
 /* Los campos de una pantalla por función, ya resueltos. `funcion` viaja en
@@ -5910,7 +6081,11 @@ function camposPorFuncion(vars, resolver){
   return [{clave:e.campo, tipo:"escala", min:e.min, max:e.max, obligatorio:true,
            etiqueta: resolver(e.etiqueta, vars), ayuda: resolver(e.ayuda, vars),
            ancla_min:e.ancla_min, ancla_max:e.ancla_max}]
-    .concat(ABIERTAS_POR_FUNCION.map(pl => ({clave: pl.campo, etiqueta: pl.etiqueta})));
+    // `corto` es el rótulo con el que se agrupan las respuestas en el
+    // informe: el enunciado completo es una pregunta, y una pregunta larga
+    // no vale como encabezado de una lista de treinta frases.
+    .concat(ABIERTAS_POR_FUNCION.map(pl =>
+      ({clave: pl.campo, etiqueta: pl.etiqueta, corto: pl.corto})));
 }
 
 const VARIABLES_ESC = [
