@@ -5489,11 +5489,6 @@ const BANCO_ESC = [
  q:"¿En qué tramo se sitúa el tamaño de [ORGANIZACION]?",
  ayuda:"Solo en sesiones con varias organizaciones.",
  cfg:{opciones:["1–10","11–50","51–250","251–1.000","1.001–5.000","Más de 5.000","No lo sé o no aplica"]}},
-{c:"P05", b:0, t:"unica", nuc:false, nat:"fija",
- q:"¿Desde qué perspectiva observas principalmente [TEMA FOCAL]?",
- cfg:{opciones:["Estratégica","Operativa","Económica","Tecnológica","Humana o social",
-   "Ambiental","Regulatoria o política","Usuario o mercado","Otra"]}},
-
 /* ── Bloque 1 · Activación ─────────────────────────────────────── */
 {c:"P06", b:1, t:"nube", nuc:true, nat:"fija",
  q:"Cuando piensas en el futuro de [ORGANIZACION], ¿qué palabra te viene primero a la cabeza?",
@@ -5518,20 +5513,17 @@ const BANCO_ESC = [
  cfg:{maximo_caracteres:140}},
 
 /* ── Bloque 2 · Pregunta focal y sistema ───────────────────────── */
-{c:"P12", b:2, t:"tarjetas", nuc:true, nat:"fija",
- q:"¿Cuál es la decisión estratégica que [ORGANIZACION] necesita iluminar mediante este ejercicio?",
- cfg:{maximo_caracteres:200, votos:3}},
-{c:"P13", b:2, t:"unica", nuc:true, nat:"derivada",
- q:"¿Qué formulación de la pregunta focal debería guiar el ejercicio?",
- ayuda:"Plantilla: «¿Cómo podría cambiar [TEMA FOCAL] para [ORGANIZACION] de aquí a [HORIZONTE], y qué decisiones deberíamos tomar hoy?»",
- cfg:{opciones:[]}},
-{c:"P14", b:2, t:"multiple", nuc:false, nat:"fija",
- q:"¿Qué partes del sistema deben quedar dentro del alcance del análisis?",
- cfg:{maximo:5, opciones:["Clientes o usuarios","Personas y talento","Productos y servicios",
-   "Operaciones","Tecnología y datos","Financiación","Proveedores","Socios","Reguladores",
-   "Territorio y comunidad","Medioambiente","Competidores o alternativas","Otras"]}},
+/* Aquí estaban la P12 —«¿qué decisión necesita iluminar el ejercicio?»—,
+   la P13 —elegir entre formulaciones de la pregunta focal— y la P14 —el
+   alcance del sistema—. Fuera las tres.
+
+   La pregunta focal no se vota: se decide antes de convocar a nadie. Un
+   ejercicio de escenarios que empieza preguntando al grupo para qué se le
+   ha convocado empieza mal, y las tres pantallas se comían el primer
+   cuarto de hora de la sesión para llegar, con suerte, a la frase que ya
+   estaba en el encargo. */
 {c:"P15", b:2, t:"puntos100", nuc:false, nat:"fija", bench:true,
- q:"¿Qué actores tendrán mayor capacidad para condicionar la evolución de [TEMA FOCAL]?",
+ q:"¿Qué actores tendrán mayor capacidad para condicionar la evolución de [ORGANIZACION]?",
  cfg:{total:100, paso:5, opciones:["[ORGANIZACION]","Clientes o usuarios","Plantilla","Proveedores",
    "Competidores","Administraciones y reguladores","Socios y alianzas","Financiadores",
    "Ciudadanía y comunidad","Nuevos entrantes o plataformas"]}},
@@ -5552,7 +5544,7 @@ const BANCO_ESC = [
 
 /* ── Bloque 3 · Entorno y fuerzas ──────────────────────────────── */
 {c:"P19", b:3, t:"tarjetas", nuc:true, nat:"fija",
- q:"¿Qué cambios del entorno podrían transformar de forma significativa [TEMA FOCAL] antes de [HORIZONTE]?",
+ q:"¿Qué cambios del entorno podrían transformar de forma significativa [ORGANIZACION] en los próximos 5 a 10 años?",
  ayuda:"Un cambio por tarjeta. Describe una fuerza, no una solución ni un deseo.",
  cfg:{maximo_aportaciones:5, votos:3}},
 {c:"P20", b:3, t:"nube", nuc:false, nat:"fija",
@@ -5585,15 +5577,6 @@ const BANCO_ESC = [
  q:"¿Qué factores relevantes podrían evolucionar en direcciones plausibles muy diferentes?",
  ayuda:"Formula cada incertidumbre como variable neutral: «grado de centralización de las decisiones», no «exceso de centralización».",
  cfg:{maximo_aportaciones:5, votos:3}},
-{c:"P27", b:4, t:"multiple", nuc:false, nat:"derivada",
- q:"Para la incertidumbre elegida, ¿qué es exactamente lo que desconocemos?",
- cfg:{opciones:["Si ocurrirá","Cuándo ocurrirá","Con qué velocidad","Con qué intensidad",
-   "En qué dirección evolucionará","A quién afectará más","Cómo interactuará con otras fuerzas",
-   "Cuánto durará","Otra"]}},
-{c:"P28", b:4, t:"abierta_campos", nuc:true, nat:"derivada",
- q:"¿Cuáles son los dos extremos plausibles de esta incertidumbre en [HORIZONTE]?",
- cfg:{campos:[{clave:"a", etiqueta:"Extremo A"},{clave:"ev_a", etiqueta:"Evidencia de plausibilidad de A"},
-              {clave:"b", etiqueta:"Extremo B"},{clave:"ev_b", etiqueta:"Evidencia de plausibilidad de B"}]}},
 {c:"P29", b:4, t:"dos_ejes", nuc:true, nat:"derivada",
  q:"Clasifica las incertidumbres según su impacto potencial y su grado de incertidumbre.",
  cfg:{eje_x:"Baja incertidumbre → alta incertidumbre", eje_y:"Bajo impacto → alto impacto", elementos:[]}},
@@ -5603,17 +5586,17 @@ const BANCO_ESC = [
 {c:"P31", b:4, t:"ranking", nuc:false, nat:"derivada",
  q:"¿Qué incertidumbres son más difíciles de anticipar?",
  ayuda:"Alternativa a P29, no adicional. Usar solo si no se puede extraer el eje X.", cfg:{opciones:[]}},
-{c:"P32", b:4, t:"puntos100", nuc:true, nat:"derivada",
- q:"Distribuye 100 puntos entre las incertidumbres según su criticidad para la pregunta focal.",
- ayuda:"Crítica = relevancia decisional + impacto + imprevisibilidad.",
- cfg:{total:100, paso:5, opciones:[]}},
-{c:"P33", b:4, t:"unica", nuc:true, nat:"derivada",
- q:"¿Qué par de incertidumbres es simultáneamente crítico, independiente y capaz de producir futuros sustancialmente distintos?",
- cfg:{opciones:[]}},
-{c:"P34", b:4, t:"escala", nuc:true, nat:"derivada",
- q:"¿En qué medida son independientes entre sí las dos incertidumbres seleccionadas?",
- ayuda:"Si la mediana baja de 5, revisa la pareja de ejes.",
- cfg:{...ESC_1a7, ancla_min:"Casi el mismo fenómeno", ancla_max:"Claramente independientes"}},
+/* Aquí estaban la P27 y la P28 —clasificar y describir incertidumbres— y
+   la P32, la P33 y la P34, que eran las que elegían los dos ejes críticos
+   votando. Fuera las cinco.
+
+   Elegir los dos ejes no es una votación: es una decisión con un criterio
+   duro que una votación no sabe aplicar —los dos ejes tienen que ser
+   INDEPENDIENTES entre sí, o los cuatro cuadrantes salen siendo dos—.
+   Eso se hace en la preparación del taller, mirando lo más votado en la
+   P19, la P20 y la P26 contra el mapa de impacto de la P29. Lo que el
+   grupo aporta es la materia prima; el par de ejes lo eliges tú y lo
+   defiendes. */
 
 /* ── Bloque 5 · Arquitectura de escenarios ─────────────────────── */
 {c:"P35", b:5, t:"dos_ejes", nuc:true, nat:"derivada",
@@ -5634,10 +5617,6 @@ const BANCO_ESC = [
               {clave:"personas", etiqueta:"Personas de la organización"},
               {clave:"socios", etiqueta:"Socios y proveedores"},
               {clave:"sociedad", etiqueta:"Sociedad y territorio"}]}},
-{c:"P40", b:5, t:"puntos100", nuc:false, nat:"escenario",
- q:"Reparte 100 puntos según dónde se concentraría la creación de valor en este escenario.",
- cfg:{total:100, paso:5, opciones:["Eficiencia","Innovación","Personalización","Escala",
-   "Confianza","Conocimiento","Sostenibilidad","Colaboración y ecosistema","Acceso e inclusión"]}},
 {c:"P41", b:5, t:"nube", nuc:false, nat:"escenario",
  q:"¿Qué capacidades serían más escasas o decisivas en este escenario?", cfg:{maximo:3}},
 {c:"P42", b:5, t:"abierta_campos", nuc:false, nat:"escenario",
@@ -5645,10 +5624,6 @@ const BANCO_ESC = [
  cfg:{campos:[{clave:"ganan", etiqueta:"Actores que ganan"},
               {clave:"pierden", etiqueta:"Actores que pierden"},
               {clave:"mecanismo", etiqueta:"Mecanismo que explica el cambio"}]}},
-{c:"P43", b:5, t:"abierta", nuc:false, nat:"escenario",
- q:"¿Qué hecho haría que este escenario dejara de ser plausible?",
- cfg:{maximo_caracteres:200}},
-
 /* ── Bloque 6 · Implicaciones y robustez ───────────────────────── */
 {c:"P44", b:6, t:"tarjetas", nuc:true, nat:"escenario",
  q:"¿Qué oportunidades abriría este escenario para [ORGANIZACION]?",
@@ -5684,6 +5659,10 @@ const BANCO_ESC = [
               {clave:"mantener", etiqueta:"Mantener"}]}},
 
 /* ── Bloque 7 · Señales y cierre ───────────────────────────────── */
+/* Del cierre quedan solo las tres de alerta temprana. La P57 —cada cuánto
+   revisar—, la P58 —cuánto ha cambiado tu visión—, la P59 y la P60 eran
+   evaluación de la sesión, no del futuro: preguntas para saber si el taller
+   había gustado, contestadas por gente que ya tenía el abrigo puesto. */
 {c:"P54", b:7, t:"abierta_campos", nuc:true, nat:"escenario",
  q:"¿Qué señal observable indicaría que nos estamos acercando a este escenario?",
  cfg:{campos:[{clave:"indicador", etiqueta:"Indicador"},{clave:"fuente", etiqueta:"Fuente"},
@@ -5696,21 +5675,6 @@ const BANCO_ESC = [
  q:"¿Quién debería asumir la observación y la conversación periódica sobre estas señales?",
  cfg:{opciones:["Dirección","Estrategia","Área responsable","Equipo transversal",
    "Socio externo","Otra"]}},
-{c:"P57", b:7, t:"unica", nuc:false, nat:"fija",
- q:"¿Con qué frecuencia debería revisarse la vigencia de los escenarios?",
- cfg:{opciones:["Mensual","Trimestral","Semestral","Anual","Ante un evento gatillo",
-   "Revisión periódica y gatillos"]}},
-{c:"P58", b:7, t:"escala", nuc:false, nat:"fija", bench:true,
- q:"Tras el ejercicio, ¿en qué medida ha cambiado tu visión sobre [TEMA FOCAL]?",
- cfg:{...ESC_1a7, ancla_min:"Nada", ancla_max:"Profundamente"}},
-{c:"P59", b:7, t:"abierta", nuc:false, nat:"fija",
- q:"¿Qué supuesto propio o de [ORGANIZACION] cuestionas ahora?",
- cfg:{maximo_caracteres:200}},
-{c:"P60", b:7, t:"abierta_campos", nuc:true, nat:"fija",
- q:"¿Qué conversación o acción concreta debería producirse en las próximas dos semanas?",
- cfg:{campos:[{clave:"accion", etiqueta:"Acción o conversación"},
-              {clave:"responsable", etiqueta:"Responsable sugerido"},
-              {clave:"fecha", etiqueta:"Fecha objetivo"}]}}
 ];
 
 /* Variables que hay que resolver antes de crear las preguntas. */
@@ -6088,13 +6052,18 @@ function camposPorFuncion(vars, resolver){
       ({clave: pl.campo, etiqueta: pl.etiqueta, corto: pl.corto})));
 }
 
+/* TEMA FOCAL ya no está: no quedaba ni una pregunta que lo usara.
+   Se rellenaba con una frase larga —«Escenarios futuros de investigación»—
+   que luego aparecía incrustada dentro del enunciado y se leía como un
+   error de plantilla. Una variable que hay que rellenar y no sale en
+   ninguna parte es una casilla que solo sirve para equivocarse. */
 const VARIABLES_ESC = [
   {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la organización, unidad o sistema analizado."},
-  {clave:"TEMA FOCAL",   etiqueta:"Tema focal",   ayuda:"Reto, decisión o ámbito objeto del ejercicio."},
   {clave:"TERRITORIO",   etiqueta:"Territorio",   ayuda:"Región, país o área de influencia relevante."},
-  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Año o intervalo futuro. Se recomienda 5–15 años según el sector."},
-  {clave:"GRUPOS",       etiqueta:"Grupos",       ayuda:"Colectivos internos o externos relevantes."}
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Año o intervalo futuro. Se recomienda 5–15 años según el sector."}
 ];
+/* GRUPOS tampoco está, y esa no la ha matado la poda de hoy: llevaba
+   declarada desde el principio sin que ninguna pregunta la usara. */
 
 /* Qué huecos de variable quedan sin resolver en una pregunta, y cuáles de
    ellos ya se pueden rellenar porque la variable existe hoy en la sesión.
