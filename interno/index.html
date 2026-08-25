@@ -5977,6 +5977,51 @@ async function consolaMotor(s){
      aplicarse nunca. Se aplica al entrar. Solo escribe si hace falta. */
   if(String(s.instrumento||"").split("-")[0] === "escenarios"){
     try{
+      /* Antes de recolocar nada, la limpieza. Estaba también solo dentro
+         de «Generar», y con el mismo resultado: quien tenía la sesión
+         montada seguía viendo las pantallas de la versión anterior del
+         taller —P36E1, P37E2, P48E3…— sin razón alguna para volver a
+         generar.
+
+         Y con la P48 hay un paso más. La versión vieja la desdoblaba en
+         cuatro y BORRABA la original, así que retirar las cuatro copias
+         deja la sesión sin matriz de robustez. Se vuelve a crear desde el
+         banco, con los cuatro escenarios de columnas: la robustez se lee
+         en una sola rejilla o no se lee. */
+      const vj = preguntas.filter(p => esLegadoEsc(p.codigo));
+      let limpiadas = 0, repuesta = false;
+      for(const p of vj){
+        let n = 1;
+        try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+             n = (r && r.respondidos) || 0; }catch(e){ n = 1; }
+        if(n) continue;                       // con respuestas dentro, no se toca
+        try{ await API.borrarPregunta(p.id); limpiadas++; }catch(e){}
+      }
+      if(limpiadas) preguntas = await API.preguntas(s.id);
+
+      const ess = ((s.modelo||{}).escenarios || []).filter(e => e && (e.nombre||"").trim());
+      if(limpiadas && !preguntas.some(p => p.codigo === "P48")){
+        const base = BANCO.find(x => x.c === "P48");
+        if(base){
+          const cfg = resolverCfg(base.cfg);
+          if(ess.length === 4) cfg.columnas = ess.map(e => e.nombre);
+          // Justo delante de la primera P48-o-posterior que quede, no al
+          // final: si se crea al final acaba detrás de la P53 y hay que
+          // moverla a mano, que es lo que se quería evitar.
+          const techo = preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0))
+            .find(p => { const n = numeroP(p.codigo); return n !== null && n >= 48; });
+          const dest = techo ? (techo.orden - 0.5)
+            : (preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0) + 1;
+          try{
+            await API.crearPreguntas([{sesion_id: s.id, orden: dest,
+              codigo: "P48", tipo: base.t, titulo: resolverTexto(base.q, vars),
+              ayuda: base.ayuda ? resolverTexto(base.ayuda, vars) : null,
+              config: cfg, estado: "cerrada"}]);
+            preguntas = await API.preguntas(s.id); repuesta = true;
+          }catch(e){}
+        }
+      }
+
       const antes = new Map(preguntas.filter(p=>p.id).map(p=>[p.id, p.orden]));
       const final = colocarTaller(preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0)));
       let movidas = 0;
@@ -5987,10 +6032,19 @@ async function consolaMotor(s){
         }
         p.orden = i + 1;
       }
-      if(movidas){
-        preguntas = await API.preguntas(s.id);
-        avisoEsc = `<div class="aviso">Se ha recolocado el orden de ${movidas} preguntas:
-          el taller va ahora <b>detrás de la P31</b> y <b>delante de la P48</b>.</div>`;
+      if(movidas) preguntas = await API.preguntas(s.id);
+      if(limpiadas || repuesta || movidas){
+        avisoEsc = `<div class="aviso">`
+          + (limpiadas ? `Retiradas <b>${limpiadas} pantallas</b> de la versión anterior
+               del taller. ` : "")
+          + (repuesta ? `Repuesta la <b>P48</b> como una sola matriz de robustez${
+               ess.length === 4 ? ", con los cuatro escenarios de columnas"
+                                : " (le faltan las columnas: ponles nombre a los escenarios)"
+             }: las cuatro copias valoraban un escenario cada una, y eso no es robustez.
+               Ponle las filas desde «Contenido…» o vuélcalas desde el mapa. ` : "")
+          + (movidas ? `Recolocado el orden de <b>${movidas} preguntas</b>: el taller va
+               detrás de la <b>P31</b> y delante de la <b>P48</b>.` : "")
+          + `</div>`;
       }
     }catch(e){}
   }
