@@ -5970,6 +5970,31 @@ async function consolaMotor(s){
     }catch(e){}
   }
 
+  /* Y lo mismo con el taller de escenarios. La regla —entre la P31 y la
+     P48— vivía solo dentro de «Generar», y generar es algo que se pulsa
+     una vez, al montar la sesión. Quien ya la tenía montada no tenía
+     ninguna razón para volver a pulsarlo, así que la regla no llegaba a
+     aplicarse nunca. Se aplica al entrar. Solo escribe si hace falta. */
+  if(String(s.instrumento||"").split("-")[0] === "escenarios"){
+    try{
+      const antes = new Map(preguntas.filter(p=>p.id).map(p=>[p.id, p.orden]));
+      const final = colocarTaller(preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0)));
+      let movidas = 0;
+      for(let i = 0; i < final.length; i++){
+        const p = final[i];
+        if(p.id && antes.get(p.id) !== i + 1){
+          await API.actualizarPregunta(p.id, {orden: i + 1}); movidas++;
+        }
+        p.orden = i + 1;
+      }
+      if(movidas){
+        preguntas = await API.preguntas(s.id);
+        avisoEsc = `<div class="aviso">Se ha recolocado el orden de ${movidas} preguntas:
+          el taller va ahora <b>detrás de la P31</b> y <b>delante de la P48</b>.</div>`;
+      }
+    }catch(e){}
+  }
+
   await pinta();
 }
 
