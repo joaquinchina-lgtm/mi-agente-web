@@ -6000,7 +6000,16 @@ async function consolaMotor(s){
       if(limpiadas) preguntas = await API.preguntas(s.id);
 
       const ess = ((s.modelo||{}).escenarios || []).filter(e => e && (e.nombre||"").trim());
-      if(limpiadas && !preguntas.some(p => p.codigo === "P48")){
+      /* Y se repone SIEMPRE que falte, no solo cuando se acaba de limpiar.
+         La condición anterior era «si he borrado algo y no hay P48», y en
+         una sesión donde la limpieza ya se hizo en una visita anterior
+         nunca se cumplía: las cuatro copias ya no estaban, así que no se
+         borraba nada, así que no se reponía nada. La sesión se quedaba sin
+         matriz de robustez para siempre y en silencio.
+         La condición correcta es la que describe el estado que hay que
+         arreglar: hay taller y falta la P48. */
+      const hayTaller = preguntas.some(p => /^PT[12]E[1-4]$/.test(p.codigo || ""));
+      if(hayTaller && !preguntas.some(p => p.codigo === "P48")){
         const base = BANCO.find(x => x.c === "P48");
         if(base){
           const cfg = resolverCfg(base.cfg);
