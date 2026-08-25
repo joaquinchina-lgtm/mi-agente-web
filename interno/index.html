@@ -4837,7 +4837,18 @@ async function consolaMotor(s){
      relativo a lo que hay. Con la lista vacía, esto solo corrige la banda
      de las EX. Devuelve cuántas preguntas ha tenido que mover; es
      idempotente y no escribe nada si ya está todo en su sitio. */
-  let avisoEva = "", avisoEsc = "";
+  let avisoEva = "", avisoEsc = "", avisoCarga = "";
+  /* `bt` y los dos `decir…` viven aquí, en la consola, y no dentro de
+     `pinta()`: el taller de escenarios es ahora una pantalla aparte que
+     también los necesita, y desde allí `pinta()` no está en el alcance. */
+  const bt = id => document.getElementById(id);
+  /* El aviso se guarda además en una variable de la consola. `pinta()`
+     redibuja la pantalla entera y sin esto el recado se borraba con el
+     resto: ya ha pasado tres veces. */
+  const decirEva = (t, mal) => { avisoEva = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
+    const c = bt("avisoEva"); if(c) c.innerHTML = avisoEva; };
+  const decirEsc = (t, mal) => { avisoEsc = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
+    const c = bt("avisoEsc"); if(c) c.innerHTML = avisoEsc; };
   const recolocar = async (nuevas) => {
     const antes = new Map(preguntas.filter(p=>p.id).map(p => [p.id, p.orden]));
     const indice = {}; BANCO.forEach((p,i) => { indice[p.c] = i; });
@@ -4859,6 +4870,29 @@ async function consolaMotor(s){
      estado, ni recuento, ni «abrir»: no es una pregunta. Lleva lo que ya se
      haya acordado en él, para que se vea de un vistazo si está hecho. */
   const filaTaller = (t, huerfano) => {
+    if(t.k === "escenarios"){
+      const m = s.modelo || {}, ej = m.ejes || {};
+      const es = (m.escenarios || []).filter(e => (e.nombre||"").trim());
+      const pant = preguntas.filter(p => esCopiaEsc(p.codigo)).length;
+      const hecho = [ (ej.y && ej.x) && "los dos ejes",
+                      es.length === 4 && "los cuatro escenarios",
+                      pant && (pant + " pantallas de grupo") ].filter(Boolean);
+      return `<div class="it taller-fila">
+        <div><span class="phasetag">taller</span>
+          <b style="display:block;margin-top:4px">${esc(t.nombre)}</b>
+          <div class="small">${esc(t.desc)}</div>
+          <div class="small" style="margin-top:4px">${hecho.length
+            ? "En marcha: " + hecho.join(" · ")
+            : "<b>Sin empezar.</b> Se prepara antes de la sala, con lo votado en la "
+              + "P19, la P20, la P26 y la P29."}</div>
+          ${huerfano ? `<div class="small" style="color:#d03b3b">Va antes de
+            <b>${esc(t.ancla)}</b>, que no está en esta sesión: por eso sale al final.
+            Añade el recorrido completo y volverá a su sitio.</div>` : ""}</div>
+        <div class="btnrow" style="margin:0">
+          <button class="btn ${pant ? "ghost " : ""}sm" data-taller="${esc(t.k)}">${
+            pant ? "Abrir el taller" : "Preparar el taller"}</button></div>
+      </div>`;
+    }
     const g = s.modelo || {}, nf = (s.funciones||[]).filter(f=>f.nombre).length;
     const ngr = (g.grupos||[]).filter(x=>x.grupo||x.nivel).length;
     const hecho = [g.definicion && "definición", ngr && (ngr + " pares de alcance"),
@@ -4987,48 +5021,6 @@ async function consolaMotor(s){
         <div id="avisoEnsayo"></div>
       </div>
 
-      ${String(s.instrumento||"").split("-")[0] === "escenarios" ? (() => {
-        const m = s.modelo || {}, ej = m.ejes || {}, es = m.escenarios || ESC_VACIOS;
-        const hechos = es.filter(e => (e.nombre||"").trim()).length;
-        const copias = preguntas.filter(p => esCopiaEsc(p.codigo)).length;
-        const viejas = preguntas.filter(p => esLegadoEsc(p.codigo)).length;
-        return `<div class="card">
-        <h2>El taller de escenarios</h2>
-        ${viejas ? `<div class="aviso rojo"><b>Hay ${viejas} pantallas sobrantes</b> de la
-          versión anterior del taller, cuando cada pregunta era una pantalla y salían
-          cincuenta y dos. Ahora caben en dos por escenario. Dale a <b>Generar las
-          pantallas del taller</b> y se retiran: solo las que estén sin contestar.</div>` : ""}
-        <p class="small">Los dos ejes no se votan: los eliges tú mirando lo más votado en
-          <b>P19</b>, <b>P20</b> y <b>P26</b> contra el mapa de impacto de la <b>P29</b>.
-          El criterio duro es que sean <b>independientes</b> entre sí: si al mover uno se
-          mueve el otro, los cuatro cuadrantes son en realidad dos y el taller no da de sí.</p>
-        <div class="field"><label for="ejeY">Eje vertical</label>
-          <input id="ejeY" maxlength="90" value="${esc(ej.y||"")}"
-            placeholder="p. ej. Financiación: escasa ↕ abundante"></div>
-        <div class="field"><label for="ejeX">Eje horizontal</label>
-          <input id="ejeX" maxlength="90" value="${esc(ej.x||"")}"
-            placeholder="p. ej. Regulación: laxa ↔ estricta"></div>
-        <h3>Los cuatro escenarios</h3>
-        <p class="small">El nombre puede quedar vacío ahora y ponerse en la sala; sin los
-          cuatro no se pueden generar las pantallas del taller.</p>
-        ${es.map((e,i)=>`<div class="field">
-          <label for="esc${i}">${esc(e.k)} · ${esc(e.pos)}</label>
-          <input id="esc${i}" maxlength="70" value="${esc(e.nombre||"")}"
-            placeholder="Nombre del escenario"></div>`).join("")}
-        <div class="btnrow">
-          <button class="btn ghost" id="guardarEsc">Guardar el mapa</button>
-          <button class="btn" id="generarEsc">Generar las pantallas del taller</button>
-          ${copias ? `<button class="btn ghost" id="verMapa">Ver el mapa de escenarios</button>`
-                   : ""}</div>
-        <p class="note">Generar sustituye cada pregunta del taller por <b>cuatro copias</b>,
-          una por escenario, y rellena la <b>P63</b> con los cuatro nombres. Las copias se
-          marcan como <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sin el
-          mínimo de tres. Es la única excepción del sistema y solo se pone aquí.
-          ${copias ? `Ahora mismo hay <b>${copias}</b> pantallas por escenario.`
-                   : `Todavía no se ha generado ninguna.`}
-          ${hechos < 4 ? ` Faltan <b>${4-hechos}</b> nombres.` : ""}</p>
-        <div id="avisoEsc">${avisoEsc}</div>
-      </div>`; })() : ""}
 
       ${String(s.instrumento||"").split("-")[0] === "evaluacion" ? (() => {
         const fs = funcionesVigentes();
@@ -5138,6 +5130,11 @@ async function consolaMotor(s){
 
       <div class="card">
         <h2>Preguntas de esta sesión <span class="estado">${preguntas.length}</span></h2>
+        ${/* El parte de la reparación de arranque —pantallas viejas retiradas,
+              P48 repuesta, orden recolocado— habla de ESTA lista, así que se
+              lee aquí. No en la pantalla del taller: quien abre la consola y
+              se encuentra tres preguntas menos tiene derecho a saber por qué
+              sin entrar en ningún sitio. */ avisoCarga}
         ${preguntas.length ? `<p class="small">Cerrada = el móvil no la ve · Abierta = se puede
           responder · Terminada = ya no admite respuestas y su resultado se puede proyectar.</p>
           <div class="lista">${preguntas.map((p,i)=>`
@@ -5276,7 +5273,6 @@ async function consolaMotor(s){
 
     if(preguntas.length) pintarQR("qr", urlPart, 5);
     atarTitulo(s, () => pinta());
-    const bt = id => document.getElementById(id);
     const cambiarSesion = async c => { Object.assign(s, await API.actualizarSesion(s.id, c)); pinta(); };
     if(bt("abrirSesion"))  bt("abrirSesion").onclick  = () =>
       cambiarSesion({estado:"abierta", abierta_en:new Date().toISOString()});
@@ -5287,9 +5283,11 @@ async function consolaMotor(s){
       informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
     if(bt("informe"))  bt("informe").onclick  = verInforme;
     if(bt("informeS")) bt("informeS").onclick = verInforme;
-    app().querySelectorAll("[data-taller]").forEach(b => b.onclick = () =>
-      tallerFunciones(s, preguntas, async () => {
-        preguntas = await API.preguntas(s.id); pinta(); }));
+    app().querySelectorAll("[data-taller]").forEach(b => b.onclick = () => {
+      const volver = async () => { preguntas = await API.preguntas(s.id); pinta(); };
+      if(b.dataset.taller === "escenarios") tallerEscenarios();
+      else tallerFunciones(s, preguntas, volver);
+    });
 
     /* «Cada aportación, un tema». Para las preguntas de tarjetas en las
        que agrupar no aporta nada —L17: matices sobre una redacción— se
@@ -5313,66 +5311,6 @@ async function consolaMotor(s){
         await API.tocarTarjeta(t.id, {grupo_id: g.id});
       }
       return sueltas.length;
-    };
-
-    /* El aviso se guarda además en una variable de la consola. `pinta()`
-       redibuja la pantalla entera y sin esto el recado se borraba con el
-       resto: ya ha pasado tres veces. */
-    const decirEva = (t, mal) => { avisoEva = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
-      const c = bt("avisoEva"); if(c) c.innerHTML = avisoEva; };
-    const decirEsc = (t, mal) => { avisoEsc = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
-      const c = bt("avisoEsc"); if(c) c.innerHTML = avisoEsc; };
-
-    /* EL MAPA DE ESCENARIOS
-       Dos ejes y cuatro nombres. Vive en `sesion.modelo`, el mismo cajón
-       jsonb donde el instrumento de liderazgo guarda su modelo: son
-       sesiones distintas de instrumentos distintos, no se pisan, y así
-       esto no ha necesitado una columna nueva. */
-    const leerMapa = () => ({
-      ejes: {y: (bt("ejeY")||{}).value || "", x: (bt("ejeX")||{}).value || ""},
-      escenarios: ESC_VACIOS.map((e,i) => ({...e,
-        nombre: ((bt("esc"+i)||{}).value || "").trim()}))
-    });
-    if(bt("verMapa")) bt("verMapa").onclick = () =>
-      mapaEscenarios(s, preguntas, () => pinta());
-    if(bt("guardarEsc")) bt("guardarEsc").onclick = async () => {
-      bt("guardarEsc").disabled = true;
-      const nuevo = {...(s.modelo||{}), ...leerMapa()};
-      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
-      catch(e){ decirEsc(esc(e.message||e), true); return; }
-      await pinta();
-      decirEsc("Mapa guardado.");
-    };
-    if(bt("generarEsc")) bt("generarEsc").onclick = async () => {
-      /* El botón se apaga mientras trabaja. Generar tarda varios segundos
-         —consulta una por una si las preguntas del taller tienen respuestas—
-         y sin apagarlo se puede pulsar dos veces. La segunda pulsación
-         arranca con la lista de preguntas vieja, no ve las copias que la
-         primera está creando, y las crea otra vez: el recorrido acaba con
-         cada pregunta del taller repetida. */
-      const bg = bt("generarEsc");
-      bg.disabled = true; bg.textContent = "Generando…";
-      const nuevo = {...(s.modelo||{}), ...leerMapa()};
-      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
-      catch(e){ bg.disabled = false; bg.textContent = "Generar las pantallas del taller";
-        decirEsc(esc(e.message||e), true); return; }
-      const r = await pantallasPorEscenario();
-      preguntas = await API.preguntas(s.id);
-      await pinta();
-      if(r.fallo){ decirEsc(r.fallo, true); return; }
-      decirEsc(`Creadas <b>${r.creadas}</b> pantallas por escenario`
-        + (r.duplicadas ? ` · <b>Limpiadas ${r.duplicadas} pantallas repetidas</b> que
-             habían quedado de una generación anterior interrumpida` : "")
-        + (r.viejas ? ` · <b>Retiradas ${r.viejas} pantallas</b> de la versión anterior del
-             taller, que ahora caben en las dos plantillas` : "")
-        + (r.retiradas ? `, y retiradas ${r.retiradas} preguntas genéricas que ahora
-             están cuatro veces, una por escenario` : "")
-        + `. La <b>P63</b> ya ofrece los cuatro nombres.`
-        + (r.bloqueadas.length ? ` <b>No</b> se han tocado ${r.bloqueadas.join(", ")}:
-             ya tienen respuestas, y desdoblarlas ahora dejaría esas respuestas
-             colgando de una pregunta que deja de existir.` : "")
-        + ` Quedan <b>cerradas</b>: ábrelas cuando empiece el taller.`,
-        !r.creadas);
     };
 
     if(bt("volcarEva")) bt("volcarEva").onclick = async () => {
@@ -5796,6 +5734,125 @@ async function consolaMotor(s){
     return {creadas: filas.length, refrescadas, congeladas};
   };
 
+  /* LA PANTALLA DEL TALLER DE ESCENARIOS
+     Era una tarjeta suelta en lo alto de la consola, por encima incluso de
+     la lista de preguntas. Al conducir una sesión vas bajando por las
+     preguntas, y el taller se quedaba media pantalla más arriba sin
+     ninguna señal de cuándo tocaba hacerlo. Ahora es una pantalla propia
+     a la que se entra desde su fila del recorrido, igual que el taller del
+     modelo de liderazgo. */
+  /* EL MAPA DE ESCENARIOS
+     Dos ejes y cuatro nombres. Vive en `sesion.modelo`, el mismo cajón
+     jsonb donde el instrumento de liderazgo guarda su modelo: son
+     sesiones distintas de instrumentos distintos, no se pisan, y así
+     esto no ha necesitado una columna nueva.
+
+     Los tres botones repintan `tallerEscenarios()`, no `pinta()`: quien
+     está guardando el mapa está en la pantalla del taller y quiere
+     seguir en ella. Antes esto vivía dentro de `pinta()` y repintar la
+     consola era lo correcto; ahora te echaría de la pantalla en la que
+     estás trabajando. */
+  const atarEscenarios = () => {
+    const leerMapa = () => ({
+      ejes: {y: (bt("ejeY")||{}).value || "", x: (bt("ejeX")||{}).value || ""},
+      escenarios: ESC_VACIOS.map((e,i) => ({...e,
+        nombre: ((bt("esc"+i)||{}).value || "").trim()}))
+    });
+    if(bt("verMapa")) bt("verMapa").onclick = () =>
+      mapaEscenarios(s, preguntas, () => tallerEscenarios());
+    if(bt("guardarEsc")) bt("guardarEsc").onclick = async () => {
+      bt("guardarEsc").disabled = true;
+      const nuevo = {...(s.modelo||{}), ...leerMapa()};
+      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
+      catch(e){ decirEsc(esc(e.message||e), true); return; }
+      tallerEscenarios();
+      decirEsc("Mapa guardado.");
+    };
+    if(bt("generarEsc")) bt("generarEsc").onclick = async () => {
+      /* El botón se apaga mientras trabaja. Generar tarda varios segundos
+         —consulta una por una si las preguntas del taller tienen respuestas—
+         y sin apagarlo se puede pulsar dos veces. La segunda pulsación
+         arranca con la lista de preguntas vieja, no ve las copias que la
+         primera está creando, y las crea otra vez: el recorrido acaba con
+         cada pregunta del taller repetida. */
+      const bg = bt("generarEsc");
+      bg.disabled = true; bg.textContent = "Generando…";
+      const nuevo = {...(s.modelo||{}), ...leerMapa()};
+      try{ await API.actualizarSesion(s.id, {modelo: nuevo}); s.modelo = nuevo; }
+      catch(e){ bg.disabled = false; bg.textContent = "Generar las pantallas del taller";
+        decirEsc(esc(e.message||e), true); return; }
+      const r = await pantallasPorEscenario();
+      preguntas = await API.preguntas(s.id);
+      tallerEscenarios();
+      if(r.fallo){ decirEsc(r.fallo, true); return; }
+      decirEsc(`Creadas <b>${r.creadas}</b> pantallas por escenario`
+        + (r.duplicadas ? ` · <b>Limpiadas ${r.duplicadas} pantallas repetidas</b> que
+             habían quedado de una generación anterior interrumpida` : "")
+        + (r.viejas ? ` · <b>Retiradas ${r.viejas} pantallas</b> de la versión anterior del
+             taller, que ahora caben en las dos plantillas` : "")
+        + (r.retiradas ? `, y retiradas ${r.retiradas} preguntas genéricas que ahora
+             están cuatro veces, una por escenario` : "")
+        + `. La <b>P63</b> ya ofrece los cuatro nombres.`
+        + (r.bloqueadas.length ? ` <b>No</b> se han tocado ${r.bloqueadas.join(", ")}:
+             ya tienen respuestas, y desdoblarlas ahora dejaría esas respuestas
+             colgando de una pregunta que deja de existir.` : "")
+        + ` Quedan <b>cerradas</b>: ábrelas cuando empiece el taller.`,
+        !r.creadas);
+    };
+  };
+
+  const tallerEscenarios = () => {
+    const m = s.modelo || {}, ej = m.ejes || {}, es = m.escenarios || ESC_VACIOS;
+    const hechos = es.filter(e => (e.nombre||"").trim()).length;
+    const copias = preguntas.filter(p => esCopiaEsc(p.codigo)).length;
+    const viejas = preguntas.filter(p => esLegadoEsc(p.codigo)).length;
+    app().innerHTML = `<div class="wrap ancho">${cabecera(
+      `<button class="iconbtn" id="atrasT">Volver al recorrido</button>`)}
+      <div class="card">
+        <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · taller</span>
+        <h1 style="margin:6px 0 0">El taller de escenarios</h1>
+        ${viejas ? `<div class="aviso rojo" style="margin-top:16px"><b>Hay ${viejas}
+          pantallas sobrantes</b> de la versión anterior del taller, cuando cada pregunta
+          era una pantalla y salían cincuenta y dos. Ahora caben en dos por escenario.
+          Dale a <b>Generar las pantallas del taller</b> y se retiran: solo las que estén
+          sin contestar.</div>` : ""}
+        <p class="small" style="margin-top:14px">Los dos ejes no se votan: los eliges tú
+          mirando lo más votado en <b>P19</b>, <b>P20</b> y <b>P26</b> contra el mapa de
+          impacto de la <b>P29</b>. El criterio duro es que sean <b>independientes</b>
+          entre sí: si al mover uno se mueve el otro, los cuatro cuadrantes son en
+          realidad dos y el taller no da de sí.</p>
+        <div class="field"><label for="ejeY">Eje vertical</label>
+          <input id="ejeY" maxlength="90" value="${esc(ej.y||"")}"
+            placeholder="p. ej. Financiación: escasa ↕ abundante"></div>
+        <div class="field"><label for="ejeX">Eje horizontal</label>
+          <input id="ejeX" maxlength="90" value="${esc(ej.x||"")}"
+            placeholder="p. ej. Regulación: laxa ↔ estricta"></div>
+        <h3>Los cuatro escenarios</h3>
+        <p class="small">El nombre puede quedar vacío ahora y ponerse en la sala; sin los
+          cuatro no se pueden generar las pantallas del taller.</p>
+        ${es.map((e,i)=>`<div class="field">
+          <label for="esc${i}">${esc(e.k)} · ${esc(e.pos)}</label>
+          <input id="esc${i}" maxlength="70" value="${esc(e.nombre||"")}"
+            placeholder="Nombre del escenario"></div>`).join("")}
+        <div class="btnrow">
+          <button class="btn ghost" id="guardarEsc">Guardar el mapa</button>
+          <button class="btn" id="generarEsc">Generar las pantallas del taller</button>
+          ${copias ? `<button class="btn ghost" id="verMapa">Ver el mapa de escenarios</button>`
+                   : ""}</div>
+        <p class="note">Generar crea <b>dos pantallas por escenario</b> —relato y
+          estrategias— y rellena la <b>P63</b> con los cuatro nombres. Se marcan como
+          <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sin el mínimo de
+          tres. Es la única excepción del sistema y solo se pone aquí.
+          ${copias ? `Ahora mismo hay <b>${copias}</b> pantallas de grupo.`
+                   : `Todavía no se ha generado ninguna.`}
+          ${hechos < 4 ? ` Faltan <b>${4-hechos}</b> nombres.` : ""}</p>
+        <div id="avisoEsc">${avisoEsc}</div>
+      </div></div>`;
+    if(bt("atrasT")) bt("atrasT").onclick = () => { avisoEsc = ""; pinta(); };
+    atarEscenarios();
+    window.scrollTo({top:0});
+  };
+
   /* CUATRO COPIAS DE CADA PREGUNTA DEL TALLER, UNA POR ESCENARIO
 
      Es lo mismo que hacen las pantallas por función clave en la evaluación
@@ -6029,7 +6086,7 @@ async function consolaMotor(s){
               config: cfg, estado: "cerrada"}]);
             preguntas = await API.preguntas(s.id); repuesta = true;
           }catch(e){
-            avisoEsc = `<div class="aviso rojo">No se ha podido reponer la <b>P48</b>:
+            avisoCarga = `<div class="aviso rojo">No se ha podido reponer la <b>P48</b>:
               ${esc(e.message || String(e))}. Añádela a mano desde el banco.</div>`;
           }
         }
@@ -6059,7 +6116,7 @@ async function consolaMotor(s){
       }
       if(movidas) preguntas = await API.preguntas(s.id);
       if(limpiadas || repuesta || movidas){
-        avisoEsc = `<div class="aviso">`
+        avisoCarga = `<div class="aviso">`
           + (limpiadas ? `Retiradas <b>${limpiadas} pantallas</b> de la versión anterior
                del taller. ` : "")
           + (repuesta ? `Repuesta la <b>P48</b> como una sola matriz de robustez${
@@ -6890,6 +6947,30 @@ const TALLERES = {
     desc: "Definición, alcance y funciones clave. Se hace con lo votado en L04, "
         + "L08, L09, L11 y L13, y su resultado rellena L16 y L18.",
     ancla: "L16"
+  }],
+  /* El taller de escenarios estaba como una tarjeta suelta arriba del todo,
+     antes incluso de la lista de preguntas. Eso lo sacaba del recorrido: al
+     conducir la sesión ibas bajando por las preguntas y el taller se había
+     quedado media pantalla más arriba, sin ninguna señal de cuándo tocaba
+     hacerlo.
+
+     Va anclado a la P63 —«¿a qué escenario te han asignado?»—, que es la
+     primera pantalla del taller. Así la fila cae siempre justo delante del
+     bloque, se mueva este a donde se mueva.
+
+     Y con una segunda ancla, la P48, porque la P63 NO EXISTE hasta que se
+     generan las pantallas: sin esto, la sesión recién creada —justo cuando
+     hay que preparar el taller— era la única en la que la fila se caía al
+     final de la lista con un aviso rojo. La P48 es la primera pregunta de
+     después del bloque, así que la fila sale en el mismo sitio. */
+  escenarios: [{
+    k: "escenarios",
+    nombre: "Taller de escenarios",
+    desc: "Los dos ejes, los cuatro escenarios y el trabajo de los grupos. "
+        + "Se hace con lo votado en P19, P20 y P26 contra el mapa de impacto "
+        + "de la P29, y su resultado alimenta de la P48 a la P52.",
+    ancla: "P63",
+    tambien: ["P48", "P49", "P50"]
   }]
 };
 const talleresDe = instrumento =>
@@ -7079,7 +7160,15 @@ function situarTalleres(instrumento, preguntas){
   const ts = talleresDe(instrumento);
   const antes = {}, huerfanos = [];
   ts.forEach(t => {
-    const i = preguntas.findIndex(p => p.codigo === t.ancla);
+    /* Se prueban las anclas en orden y gana la primera que esté en la
+       sesión. Un taller cuya ancla principal la crea el propio taller
+       necesita una de repuesto, o la fila no aparece donde toca
+       precisamente el día que hay que usarla. */
+    let i = -1;
+    for(const cod of [t.ancla, ...(t.tambien || [])]){
+      i = preguntas.findIndex(p => p.codigo === cod);
+      if(i >= 0) break;
+    }
     if(i < 0) huerfanos.push(t);
     else (antes[i] = antes[i] || []).push(t);
   });
