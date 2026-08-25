@@ -6005,25 +6005,41 @@ async function consolaMotor(s){
         if(base){
           const cfg = resolverCfg(base.cfg);
           if(ess.length === 4) cfg.columnas = ess.map(e => e.nombre);
-          // Justo delante de la primera P48-o-posterior que quede, no al
-          // final: si se crea al final acaba detrás de la P53 y hay que
-          // moverla a mano, que es lo que se quería evitar.
-          const techo = preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0))
-            .find(p => { const n = numeroP(p.codigo); return n !== null && n >= 48; });
-          const dest = techo ? (techo.orden - 0.5)
-            : (preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0) + 1;
+          /* Se crea al final y se coloca después, en la renumeración. El
+             primer intento le puso un `orden` fraccionario —el de la P49
+             menos medio— para que cayera justo delante sin tocar a las
+             demás. `pregunta.orden` es un entero: el INSERT falló, el
+             `catch` se lo tragó entero, y la P48 no apareció sin que nada
+             lo dijera. De ahí que el error de esta parte se enseñe ahora
+             en pantalla en vez de callarse. */
           try{
-            await API.crearPreguntas([{sesion_id: s.id, orden: dest,
+            await API.crearPreguntas([{sesion_id: s.id,
+              orden: (preguntas.length ? Math.max(...preguntas.map(p=>p.orden)) : 0) + 1,
               codigo: "P48", tipo: base.t, titulo: resolverTexto(base.q, vars),
               ayuda: base.ayuda ? resolverTexto(base.ayuda, vars) : null,
               config: cfg, estado: "cerrada"}]);
             preguntas = await API.preguntas(s.id); repuesta = true;
-          }catch(e){}
+          }catch(e){
+            avisoEsc = `<div class="aviso rojo">No se ha podido reponer la <b>P48</b>:
+              ${esc(e.message || String(e))}. Añádela a mano desde el banco.</div>`;
+          }
         }
       }
 
       const antes = new Map(preguntas.filter(p=>p.id).map(p=>[p.id, p.orden]));
-      const final = colocarTaller(preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0)));
+      let lista = preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+      // La P48 recién repuesta está al final: se lleva a su sitio, delante
+      // de la primera pregunta con número mayor que 48.
+      if(repuesta){
+        const nueva = lista.find(p => p.codigo === "P48");
+        if(nueva){
+          lista = lista.filter(p => p !== nueva);
+          const j = lista.findIndex(p => { const n = numeroP(p.codigo);
+            return n !== null && n > 48; });
+          lista.splice(j < 0 ? lista.length : j, 0, nueva);
+        }
+      }
+      const final = colocarTaller(lista);
       let movidas = 0;
       for(let i = 0; i < final.length; i++){
         const p = final[i];
