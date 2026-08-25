@@ -488,6 +488,84 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   padding:16px 0;border-bottom:1px solid var(--grid)}
 .proy .enun:last-child{border-bottom:none}
 
+/* ── EL CIERRE: ACCIONES Y CUADRO DE VIGILANCIA ─────────────────────
+   Tres estados, y NUNCA solo el color. Cada uno lleva su forma y su
+   palabra al lado, por dos razones: en la sala hay gente que no
+   distingue el verde del rojo, y el proyector de un aula no es la
+   pantalla en la que yo elegí el tono. Si el color se cae, el panel
+   se sigue leyendo.
+
+   Los tres tonos son propios y no salen de la escala categórica: un
+   estado no es una serie más, y reutilizar el tono-3 para «en calma»
+   haría que el día que alguien pinte una gráfica de tres series, una
+   de ellas parezca un semáforo. */
+:root{
+  --sem-calma:#3b7d5f; --sem-atencion:#b8760d; --sem-activada:#b0342b;
+  --sem-calma-f:#e8f2ec; --sem-atencion-f:#f8efdc; --sem-activada-f:#f8e6e3;
+}
+@media (prefers-color-scheme: dark){:root:where(:not([data-theme="light"])){
+  --sem-calma:#4fa87f; --sem-atencion:#d99a2b; --sem-activada:#e26a5a;
+  --sem-calma-f:#1b2c24; --sem-atencion-f:#2e2513; --sem-activada-f:#2e1a17;}}
+:root[data-theme="dark"]{
+  --sem-calma:#4fa87f; --sem-atencion:#d99a2b; --sem-activada:#e26a5a;
+  --sem-calma-f:#1b2c24; --sem-atencion-f:#2e2513; --sem-activada-f:#2e1a17;}
+
+.sem{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  font-size:13px;font-weight:600;padding:3px 10px 3px 8px;border-radius:999px}
+.sem i{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}
+.sem.calma   {color:var(--sem-calma);    background:var(--sem-calma-f)}
+.sem.calma i {background:var(--sem-calma)}
+/* La forma cambia con el estado, no solo el tono: círculo, rombo, cuadrado. */
+.sem.atencion   {color:var(--sem-atencion); background:var(--sem-atencion-f)}
+.sem.atencion i {background:var(--sem-atencion);border-radius:2px;transform:rotate(45deg)}
+.sem.activada   {color:var(--sem-activada); background:var(--sem-activada-f)}
+.sem.activada i {background:var(--sem-activada);border-radius:2px}
+
+.tabla-cierre{width:100%;border-collapse:collapse;margin-top:14px}
+.tabla-cierre th{text-align:left;font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--text-muted);font-weight:600;
+  padding:0 10px 8px 0;border-bottom:1px solid var(--grid)}
+.tabla-cierre td{padding:10px 10px 10px 0;border-bottom:1px solid var(--grid);
+  vertical-align:top;font-size:14.5px}
+.tabla-cierre td input, .tabla-cierre td select, .tabla-cierre td textarea{
+  width:100%;min-width:0;box-sizing:border-box}
+.tabla-cierre .col-mini{width:1%}
+.candidatos{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.candidatos button{font-size:13px}
+
+/* En la pared. Tamaños de sala, no de escritorio. */
+.proy .acciones{margin-top:24px}
+.proy .acciones .acc{display:grid;grid-template-columns:auto 1fr;gap:0 22px;
+  padding:20px 0;border-bottom:1px solid var(--grid)}
+.proy .acciones .acc:last-child{border-bottom:none}
+.proy .acciones .acc b.n{font-size:34px;color:var(--text-muted);line-height:1.1}
+/* Sin la mayúscula que el `h3` general le pone a todo: aquí un h3 es una
+   frase entera, y una frase entera en mayúsculas se lee más despacio, que
+   es lo contrario de lo que hace falta desde el fondo de una sala. */
+.proy .acciones .acc h3{font-size:30px;margin:0;line-height:1.25;font-weight:600;
+  color:var(--text-primary);text-transform:none;letter-spacing:0}
+.proy .acciones .acc .pie{margin-top:8px;font-size:20px;color:var(--text-secondary)}
+.proy .vigila{margin-top:24px}
+.proy .vigila .ind{padding:18px 0;border-bottom:1px solid var(--grid);
+  display:grid;grid-template-columns:1fr auto;gap:10px 24px;align-items:start}
+.proy .vigila .ind:last-child{border-bottom:none}
+.proy .vigila .ind h3{font-size:26px;margin:0;line-height:1.25;font-weight:600;
+  color:var(--text-primary);text-transform:none;letter-spacing:0}
+.proy .vigila .ind .pie{margin-top:6px;font-size:18px;color:var(--text-secondary)}
+.proy .vigila .sem{font-size:18px;padding:6px 16px 6px 12px}
+.proy .vigila .sem i{width:16px;height:16px}
+/* En la pared los cuadrantes ocupan alto: un mapa de cuatro futuros
+   apretado en el tercio de arriba de una pantalla de tres metros parece
+   una nota al pie. */
+.proy .mapa-esc .cuad{min-height:27vh;display:flex;flex-direction:column;
+  justify-content:center;padding:26px 24px}
+.proy .mapa-esc .cuad.vacio{min-height:27vh}
+.proy .mapa-esc .cuad h3{font-size:34px}
+.proy .mapa-esc .cuad .lema{font-size:23px}
+.proy .mapa-esc .cuad .tramo p{font-size:19px}
+.proy .mapa-esc .eje{font-size:19px}
+.proy .mapa-esc .cuad-k{font-size:13px}
+
 /* El bloque de impresión va el ÚLTIMO del hoja de estilo a propósito.
    Con la misma especificidad gana la regla que se declara después, y estaba
    antes de `.matriz td{font-size:24px}`: los tamaños de pantalla ganaban a
@@ -541,6 +619,37 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   .matriz th{font-size:8.5pt;letter-spacing:.06em}
   .matriz td{font-size:13pt;padding:8px 6px}
   .matriz td.et{font-size:10.5pt;width:32%}
+
+  /* Los sellos del semáforo, en papel. El navegador no imprime fondos por
+     omisión —y a una impresora de oficina en blanco y negro le da igual lo
+     que yo pida—, así que en papel el estado se dibuja con línea y no con
+     relleno: el aro, el rombo y el cuadrado siguen distinguiéndose aunque
+     salga todo en gris, y la palabra sigue ahí al lado. */
+  /* Con la MISMA especificidad que las reglas de pantalla, no menos. Con
+     `.sem{background:none}` a secas, `.sem.activada{background:…}` gana por
+     ser más específica aunque esta venga después y esté dentro de @media
+     print, y el sello salía con su relleno de color. Ya me pasó con la
+     matriz: en CSS, «viene después» solo desempata a igualdad. */
+  .sem.calma, .sem.atencion, .sem.activada{
+    background:none;border:1px solid currentColor;padding:1px 8px 1px 6px;
+    font-size:8.5pt}
+  .sem.calma i, .sem.atencion i, .sem.activada i{
+    background:none;border:1.5px solid currentColor;width:8px;height:8px}
+  .sem.calma i{border-radius:50%}
+  .sem.atencion i{border-radius:1px;transform:rotate(45deg)}
+  .sem.activada i{border-radius:1px}
+  /* Los cuatro cuadrantes, en dos columnas también en papel. La regla de
+     pantalla que los pone en 2×2 va condicionada a `min-width:720px`, y una
+     A4 con márgenes no llega: se apilaban en una columna. Un mapa de dos
+     ejes apilado en vertical ya no es un mapa —la posición de cada cuadro
+     ES la mitad de la información— y quien lo leyera en el PDF no tendría
+     forma de saber cuál estaba arriba a la derecha. */
+  .doc .mapa-esc .cuadros{grid-template-columns:1fr 1fr}
+  .doc .mapa-esc .eje{font-size:9pt}
+  .doc .mapa-esc .cuad{border:1px solid var(--border);padding:5mm;min-height:0}
+  .doc .mapa-esc .cuad h3{font-size:13pt}
+  .doc .mapa-esc .cuad .lema{font-size:10.5pt}
+  .doc .mapa-esc .cuad .tramo p{font-size:10pt}
 
   .doc .informe-bloque:last-of-type{margin-bottom:0}
   .pie-doc{display:flex;justify-content:space-between;gap:14px;
@@ -3641,6 +3750,171 @@ function actaModelo(s, volver){
   $("#ventana").onclick = () => abrirProyeccion(s.codigo);
   window.scrollTo({top:0});
 }
+/* EL ACTA DEL CIERRE
+   Lo que de verdad sobrevive al taller. El cuadro de vigilancia dentro de
+   la aplicación es una foto: nadie va a reabrir una sesión de taller cinco
+   meses después para mover un indicador. Lo que sí puede sobrevivir es un
+   documento con dos columnas que obligan —el nombre de quien mira y la
+   fecha en la que se vuelve a hablar de esto— y que sale de la sala por
+   correo, firmado, y entra en el orden del día de alguien.
+
+   Por eso la primera fecha de revisión no es una celda más de la tabla:
+   es lo primero que se lee después del título. Si el acta no lleva fecha,
+   lo dice en rojo y no disimula. */
+function actaCierre(s, volver){
+  const m = s.modelo || {};
+  const ac = (m.acciones || []).filter(x => (x.accion||"").trim());
+  const vg = (m.vigilancia || []).filter(x => (x.indicador||"").trim());
+  const es = (m.escenarios || []).filter(e => (e.nombre||"").trim());
+  const elab = m.elaborado || {};
+  const ej = m.ejes || {};
+  const org = (s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "";
+  const hoy = new Date().toLocaleDateString("es-ES",
+    {day:"numeric", month:"long", year:"numeric"});
+  const fmt = f => { if(!f) return ""; const d = new Date(f + "T00:00:00");
+    return isNaN(d) ? f : d.toLocaleDateString("es-ES",
+      {day:"numeric", month:"long", year:"numeric"}); };
+  // La primera revisión que toca. Es el único dato de este documento con
+  // el que alguien puede hacer algo mañana.
+  const fechas = vg.map(x => x.revision).filter(Boolean).sort();
+  const primera = fechas.length ? fechas[0] : null;
+  const sinDueno = ac.filter(x => !(x.responsable||"").trim()).length
+                 + vg.filter(x => !(x.responsable||"").trim()).length;
+  const sinFecha = vg.filter(x => !(x.revision||"").trim()).length;
+  const ETQ = {calma:"En calma", atencion:"Atención", activada:"Activada"};
+  const pastilla = k => { const j = ETQ[k] ? k : "calma";
+    return `<span class="sem ${j}"><i></i>${esc(ETQ[j])}</span>`; };
+  const nombreDe = i => { const v = elab["e"+(i+1)] || {};
+    return (v.nombre || (es[i]||{}).nombre || "").trim(); };
+
+  app().innerHTML = `<div class="wrap ancho doc">${cabecera(
+    `<button class="iconbtn" id="atras">Volver</button>`)}
+    <div class="card informe-cab">
+      <div class="filete"></div>
+      <p class="org">${esc(org)}${
+        (s.variables||{}).HORIZONTE ? " · " + esc(s.variables.HORIZONTE) : ""}</p>
+      <h1>Acta del cierre</h1>
+      <p class="sub">${esc(s.titulo)}</p>
+      <dl class="meta">
+        <div><dt>Fecha de la sesión</dt><dd>${esc(hoy)}</dd></div>
+        <div><dt>Código</dt><dd>${esc(s.codigo)}</dd></div>
+        <div><dt>Acciones</dt><dd>${ac.length}</dd></div>
+        <div><dt>Indicadores</dt><dd>${vg.length}</dd></div>
+      </dl>
+      ${primera ? `<p class="lead" style="margin-top:22px;font-size:19px">
+          <b>La próxima conversación sobre esto es el ${esc(fmt(primera))}.</b>
+          Es la primera fecha de revisión de las que se acordaron abajo, y es lo único
+          de este documento que hace algo por sí solo: ponla hoy en el orden del día
+          de quien corresponda, antes de que se enfríe la sala.</p>`
+        : `<div class="aviso rojo" style="margin-top:22px"><b>Este acta no tiene ninguna
+          fecha de revisión.</b> Sin una fecha, lo de abajo es una lista de buenas
+          intenciones con formato de documento. Vuelve al cierre y pon al menos una.</div>`}
+      ${sinDueno ? `<div class="aviso rojo"><b>${sinDueno} ${sinDueno===1
+          ? "acuerdo sale de aquí sin nombre propio" : "acuerdos salen de aquí sin nombre propio"}.</b>
+          Se cumplen por casualidad o no se cumplen.</div>` : ""}
+      <div class="btnrow no-imprimir">
+        <button class="btn" id="imprimir">Guardar en PDF</button>
+        <button class="btn ghost" id="paredAcc">Las acciones a la pared</button>
+        <button class="btn ghost" id="paredVig">El cuadro a la pared</button>
+        <button class="btn ghost" id="ventana">Abrir la proyección</button></div>
+      <div class="no-imprimir" id="avisoActaC"></div>
+      <p class="note no-imprimir">«Guardar en PDF» abre el diálogo de impresión: elige
+        <b>Guardar como PDF</b> en el destino. Se quitan los botones y ninguna tabla se
+        parte entre dos páginas.</p>
+    </div>
+
+    <div class="card no-imprimir indice">
+      ${[["acc","Las acciones · " + ac.length],
+         ["vig","El cuadro de vigilancia · " + vg.length],
+         ["esc","Los escenarios · " + es.length]].map(([k,t])=>
+        `<a href="#cierre-${k}">${esc(t)}</a>`).join("")}
+    </div>
+
+    <div class="card informe-bloque" id="cierre-acc">
+      <span class="num">01</span><h2>Lo que hacemos a partir de mañana</h2>
+      ${ac.length ? `<table style="margin-top:18px">
+        <thead><tr><th style="width:52%">Acción</th><th style="text-align:left;width:26%"
+          >Responsable</th><th style="text-align:left;width:22%">Para cuándo</th></tr></thead>
+        <tbody>${ac.map(x=>`<tr style="break-inside:avoid">
+          <td style="font-size:15.5px;color:var(--text-primary)">${esc(x.accion)}</td>
+          <td style="text-align:left">${x.responsable ? esc(x.responsable)
+            : `<b style="color:var(--sem-activada)">SIN ASIGNAR</b>`}</td>
+          <td style="text-align:left">${x.plazo ? esc(x.plazo)
+            : `<span class="small">sin plazo</span>`}</td></tr>`).join("")}</tbody></table>`
+        : `<div class="aviso rojo">No se acordó ninguna acción.</div>`}
+    </div>
+
+    <div class="card informe-bloque" id="cierre-vig">
+      <span class="num">02</span><h2>Qué vamos a mirar</h2>
+      <p style="margin-top:14px">Cada indicador tiene un umbral: el punto en el que deja de
+        ser un dato y pasa a ser una razón para volver a sentarse. El estado es el del día
+        de la sesión y no se actualiza solo: quien lo mira es quien lo sabe.</p>
+      ${vg.length ? `<table style="margin-top:18px">
+        <thead><tr><th style="width:28%">Indicador</th>
+          <th style="text-align:left;width:16%">Escenario</th>
+          <th style="text-align:left;width:18%">Salta si</th>
+          <th style="text-align:left;width:16%">Quién lo mira</th>
+          <th style="text-align:left;width:14%">Revisión</th>
+          <th style="text-align:left;width:8%">Estado</th></tr></thead>
+        <tbody>${vg.map(x=>`<tr style="break-inside:avoid">
+          <td style="font-size:15.5px;color:var(--text-primary)">${esc(x.indicador)}</td>
+          <td style="text-align:left">${x.escenario ? esc(x.escenario)
+            : `<span class="small">—</span>`}</td>
+          <td style="text-align:left">${x.umbral ? esc(x.umbral)
+            : `<span class="small">sin umbral</span>`}</td>
+          <td style="text-align:left">${x.responsable ? esc(x.responsable)
+            : `<b style="color:var(--sem-activada)">SIN ASIGNAR</b>`}</td>
+          <td style="text-align:left">${x.revision ? esc(fmt(x.revision))
+            : `<b style="color:var(--sem-activada)">SIN FECHA</b>`}</td>
+          <td style="text-align:left">${pastilla(x.estado)}</td></tr>`).join("")}</tbody></table>
+        ${sinFecha ? `<div class="aviso rojo" style="margin-top:16px"><b>${sinFecha}
+          ${sinFecha===1 ? "indicador" : "indicadores"} sin fecha de revisión.</b> Un
+          indicador que nadie tiene apuntado para una fecha concreta no se mira: se
+          recuerda con culpa en la siguiente reunión, que no es lo mismo.</div>` : ""}`
+        : `<div class="aviso rojo">No se adoptó ningún indicador.</div>`}
+    </div>
+
+    <div class="card informe-bloque" id="cierre-esc">
+      <span class="num">03</span><h2>Los escenarios sobre los que se decidió esto</h2>
+      <p style="margin-top:14px">Van aquí porque dentro de un año nadie se acordará de por
+        qué se acordó lo de arriba. Las dos incertidumbres que se eligieron son la mitad
+        del argumento.</p>
+      <dl class="meta" style="margin-top:16px">
+        <div><dt>Eje vertical</dt><dd>${esc(ej.y || "—")}</dd></div>
+        <div><dt>Eje horizontal</dt><dd>${esc(ej.x || "—")}</dd></div>
+      </dl>
+      ${es.length ? `<div class="mapa-esc"><div class="cuadros">${
+        [0,1,3,2].map(i => { const e = es[i]; if(!e) return `<div class="cuad vacio"></div>`;
+          const v = elab["e"+(i+1)] || {};
+          return `<div class="cuad" style="break-inside:avoid">
+            <span class="cuad-k">${esc(e.k)} · ${esc(e.pos)}</span>
+            <h3>${esc(nombreDe(i) || "Sin nombre")}</h3>
+            ${v.lema ? `<p class="lema">«${esc(v.lema)}»</p>` : ""}
+            ${v.relato ? `<div class="tramo"><p>${esc(v.relato)}</p></div>` : ""}
+          </div>`; }).join("")}</div></div>`
+        : `<div class="aviso rojo">Los escenarios no llegaron a tener nombre.</div>`}
+    </div>
+
+    <div class="pie-doc"><span>${esc(org)} · Acta del cierre</span><span>${esc(hoy)}</span></div>
+    <div class="card no-imprimir"><p class="small">Esto es el acuerdo, no los datos. Lo que
+      votó cada quien está en «Ver todos los resultados», y ahí se queda: un acta que
+      circula por correo no tiene por qué llevar dentro las respuestas de la sala.</p>
+    </div></div>`;
+  $("#atras").onclick = volver;
+  $("#imprimir").onclick = () => window.print();
+  const decirActa = (t, mal) => { const c = $("#avisoActaC");
+    if(c) c.innerHTML = `<div class="aviso${mal?" rojo":""}">${t}</div>`; };
+  const aLaPared = async (v, txt) => {
+    try{ Object.assign(s, await API.actualizarSesion(s.id, {vista_activa: v}));
+         decirActa(txt); }
+    catch(e){ decirActa(esc(e.message||e), true); }
+  };
+  $("#paredAcc").onclick = () => aLaPared("acciones",
+    "En la pared: las acciones, con su responsable y su plazo.");
+  $("#paredVig").onclick = () => aLaPared("alerta", "En la pared: el cuadro de vigilancia.");
+  $("#ventana").onclick = () => abrirProyeccion(s.codigo);
+  window.scrollTo({top:0});
+}
 
 async function tallerFunciones(s, preguntas, volver){
   app().innerHTML = `<div class="wrap ancho">${cabecera(
@@ -4452,6 +4726,125 @@ async function proyeccionMotor(codigo, s){
       return;
     }
 
+    /* ── EL MAPA DE ESCENARIOS EN LA PARED ─────────────────────────
+       Cuatro relatos de doscientas palabras no caben a la vez en una
+       pared y leerse desde el fondo: o entran los cuatro y no se lee
+       ninguno, o se lee uno cada vez. Así que son cinco hojas —el mapa
+       entero y después uno por escenario— y pasan solas cada veinte
+       segundos, con el mismo mecanismo que ya usa el modelo de
+       liderazgo, incluidas las flechas para volver atrás.
+
+       Todo sale de `sesion.modelo`, que la función pública ya devuelve:
+       la pared no necesita estar identificada ni leer ninguna respuesta.
+       Se prefiere el relato elaborado —el que se revisó después de la
+       IA— y si no lo hay, salen los nombres que pusieron los grupos. */
+    if(va === "mapa"){
+      const m = n.modelo || {}, ej = m.ejes || {};
+      const es = (m.escenarios || []).filter(e => e);
+      const elab = m.elaborado || {};
+      const dato = i => { const e = es[i] || {}, v = elab["e"+(i+1)] || {};
+        return {k:e.k || ("E"+(i+1)), pos:e.pos || "",
+                nombre: (v.nombre || e.nombre || "").trim(),
+                lema: (v.lema || "").trim(), relato: (v.relato || "").trim()}; };
+      const todos = es.map((_,i) => dato(i));
+      if(!todos.some(d => d.nombre)){
+        app().innerHTML = `<div class="proy"><h1>El mapa todavía no está escrito</h1>
+          <p style="font-size:22px">Ponles nombre a los cuatro escenarios en el taller.</p>
+          </div>`;
+        return;
+      }
+      // El mapa entero primero, y después solo los que tengan relato: una
+      // hoja en blanco con un título proyectada veinte segundos delante de
+      // la sala es peor que no proyectar nada.
+      const hojas = [{mapa:true}].concat(todos.map((d,i)=>({d,i}))
+        .filter(x => x.d.relato));
+      if(!HOJA.giro) HOJA.giro = Date.now();
+      if(Date.now() - HOJA.giro > 20000){ HOJA.giro = Date.now(); HOJA.i++; }
+      HOJA.i = ((HOJA.i % hojas.length) + hojas.length) % hojas.length;
+      const h = hojas[HOJA.i];
+      // El orden del DOM no es el de los cuadrantes: arriba-izquierda,
+      // arriba-derecha, abajo-izquierda, abajo-derecha. Y E3 es abajo-derecha.
+      const rejilla = [0,1,3,2];
+      const cuerpoMapa = h.mapa
+        ? `<h1>Los cuatro escenarios</h1>
+           <div class="mapa-esc">
+             <div class="eje eje-y"><b>↑</b> ${esc(ej.y || "eje vertical sin definir")}</div>
+             <div class="cuadros">${rejilla.map(i => { const d = todos[i];
+               if(!d) return `<div class="cuad vacio"></div>`;
+               return `<div class="cuad">
+                 <span class="cuad-k">${esc(d.k)} · ${esc(d.pos)}</span>
+                 <h3>${esc(d.nombre || "Sin nombre todavía")}</h3>
+                 ${d.lema ? `<p class="lema">«${esc(d.lema)}»</p>` : ""}</div>`; }).join("")}</div>
+             <div class="eje eje-x"><b>←</b> ${esc(ej.x || "eje horizontal sin definir")}
+               <b>→</b></div>
+           </div>`
+        : `<div class="small">${esc(h.d.k)} · ${esc(h.d.pos)}</div>
+           <h1>${esc(h.d.nombre)}</h1>
+           ${h.d.lema ? `<p style="font-size:30px;font-style:italic;
+             color:var(--text-secondary);margin:0 0 20px;max-width:26em"
+             >«${esc(h.d.lema)}»</p>` : ""}
+           <p style="font-size:24px;line-height:1.5;max-width:34em">${esc(h.d.relato)}</p>`;
+      app().innerHTML = `<div class="proy">
+        <div class="small">${esc(n.titulo||"")}</div>
+        ${cuerpoMapa}
+        <p class="small" style="margin-top:28px">${HOJA.i + 1} de ${hojas.length}
+          · las flechas ← → pasan de una a otra</p></div>`;
+      return;
+    }
+
+    /* ── LAS ACCIONES COMUNES ──────────────────────────────────────
+       Sin responsable no se proyecta como una acción a medias: se
+       proyecta con el hueco a la vista y la palabra «SIN ASIGNAR» donde
+       debería ir un nombre. Es incómodo delante de la sala, y esa
+       incomodidad es exactamente la que hace que alguien lo asuma antes
+       de que se levante nadie. */
+    if(va === "acciones"){
+      const ac = ((n.modelo||{}).acciones || []).filter(x => (x.accion||"").trim());
+      app().innerHTML = `<div class="proy">
+        <div class="small">${esc(n.titulo||"")}</div>
+        <h1>Lo que hacemos a partir de mañana</h1>
+        ${ac.length ? `<div class="acciones">${ac.map((x,i)=>`
+          <div class="acc"><b class="n">${i+1}</b>
+            <div><h3>${esc(x.accion)}</h3>
+              <div class="pie">${x.responsable
+                ? esc(x.responsable)
+                : `<span style="color:var(--sem-activada);font-weight:600"
+                    >SIN ASIGNAR</span>`}${
+                x.plazo ? ` · ${esc(x.plazo)}` : ""}</div></div></div>`).join("")}</div>`
+          : `<p style="font-size:22px">Todavía no hay acciones acordadas.</p>`}</div>`;
+      return;
+    }
+
+    /* ── EL CUADRO DE VIGILANCIA ───────────────────────────────────
+       El estado NUNCA va solo en el color: cada sello lleva su forma
+       —círculo, rombo, cuadrado— y su palabra. En una sala hay gente
+       que no distingue el verde del rojo, y el proyector del aula no es
+       la pantalla en la que se eligieron los tonos. */
+    if(va === "alerta"){
+      const vg = ((n.modelo||{}).vigilancia || []).filter(x => (x.indicador||"").trim());
+      const fmt = f => { if(!f) return ""; const d = new Date(f + "T00:00:00");
+        return isNaN(d) ? f : d.toLocaleDateString("es-ES",
+          {day:"numeric", month:"long", year:"numeric"}); };
+      const ETQ = {calma:"En calma", atencion:"Atención", activada:"Activada"};
+      app().innerHTML = `<div class="proy">
+        <div class="small">${esc(n.titulo||"")}</div>
+        <h1>Qué vamos a mirar</h1>
+        ${vg.length ? `<div class="vigila">${vg.map(x=>{
+          const k = ETQ[x.estado] ? x.estado : "calma";
+          return `<div class="ind">
+            <div><h3>${esc(x.indicador)}</h3>
+              <div class="pie">${x.escenario ? esc(x.escenario) + " · " : ""}${
+                x.umbral ? "salta si " + esc(x.umbral) : "sin umbral"}</div>
+              <div class="pie">${x.responsable
+                ? esc(x.responsable)
+                : `<span style="color:var(--sem-activada);font-weight:600"
+                    >SIN ASIGNAR</span>`}${
+                x.revision ? ` · revisión el ${esc(fmt(x.revision))}` : ""}</div></div>
+            <span class="sem ${k}"><i></i>${esc(ETQ[k])}</span></div>`; }).join("")}</div>`
+          : `<p style="font-size:22px">Todavía no se ha adoptado ningún indicador.</p>`}</div>`;
+      return;
+    }
+
     if(va === "taller" || va === "funciones"){
       const fs = n.funciones || [];
       if(va === "funciones"){
@@ -4599,11 +4992,13 @@ async function proyeccionMotor(codigo, s){
   if(window.__mandoAtado) return arrancar();
   window.__mandoAtado = true;
   window.addEventListener("keydown", ev => {
-    // Con el modelo cerrado en la pared, las flechas pasan sus tres hojas.
-    // Sin esta salida, una flecha aquí cerraría una pregunta de la sesión
-    // sin que nadie lo pidiera: el mando no distingue qué se está viendo.
-    if(vistaActual === "modelo" && (ev.key === "ArrowRight" || ev.key === "ArrowLeft"
-       || ev.key === " ")){
+    // Con el modelo cerrado o el mapa de escenarios en la pared, las flechas
+    // pasan sus hojas. Sin esta salida, una flecha aquí cerraría una pregunta
+    // de la sesión sin que nadie lo pidiera: el mando no distingue qué se
+    // está viendo, y en mitad del cierre eso se lleva por delante una
+    // pregunta que la sala todavía estaba contestando.
+    if((vistaActual === "modelo" || vistaActual === "mapa")
+       && (ev.key === "ArrowRight" || ev.key === "ArrowLeft" || ev.key === " ")){
       ev.preventDefault();
       HOJA.i += ev.key === "ArrowLeft" ? -1 : 1;
       HOJA.giro = Date.now();
@@ -4870,6 +5265,35 @@ async function consolaMotor(s){
      estado, ni recuento, ni «abrir»: no es una pregunta. Lleva lo que ya se
      haya acordado en él, para que se vea de un vistazo si está hecho. */
   const filaTaller = (t, huerfano) => {
+    if(t.k === "cierre"){
+      const m = s.modelo || {};
+      const ac = (m.acciones || []).filter(x => (x.accion||"").trim());
+      const vg = (m.vigilancia || []).filter(x => (x.indicador||"").trim());
+      const sinDueno = ac.filter(x => !(x.responsable||"").trim()).length
+                     + vg.filter(x => !(x.responsable||"").trim()).length;
+      const hecho = [ ac.length && (ac.length + (ac.length===1?" acción":" acciones")),
+                      vg.length && (vg.length + (vg.length===1?" indicador":" indicadores"))
+                    ].filter(Boolean);
+      return `<div class="it taller-fila">
+        <div><span class="phasetag">plenario</span>
+          <b style="display:block;margin-top:4px">${esc(t.nombre)}</b>
+          <div class="small">${esc(t.desc)}</div>
+          <div class="small" style="margin-top:4px">${hecho.length
+            ? "Acordado: " + hecho.join(" · ")
+            : "<b>Sin empezar.</b> Se escribe en la sala, delante de todos, cuando la "
+              + "P48 y la P50 ya estén votadas."}</div>
+          ${/* Un acuerdo sin nombre propio al lado no es un acuerdo. Es la
+                única alarma de esta fila porque es el único fallo del cierre
+                que no se ve al leerlo: la lista parece completa. */
+            sinDueno ? `<div class="small" style="color:#d03b3b;margin-top:4px">
+            <b>${sinDueno} sin responsable.</b> Lo que no tiene nombre no se hace.</div>` : ""}
+          ${huerfano ? `<div class="small" style="color:#d03b3b">Va antes de
+            <b>${esc(t.ancla)}</b>, que no está en esta sesión: por eso sale al final.</div>` : ""}</div>
+        <div class="btnrow" style="margin:0">
+          <button class="btn ${hecho.length ? "ghost " : ""}sm" data-taller="${esc(t.k)}">${
+            hecho.length ? "Abrir el cierre" : "Preparar el cierre"}</button></div>
+      </div>`;
+    }
     if(t.k === "escenarios"){
       const m = s.modelo || {}, ej = m.ejes || {};
       const es = (m.escenarios || []).filter(e => (e.nombre||"").trim());
@@ -5285,7 +5709,8 @@ async function consolaMotor(s){
     if(bt("informeS")) bt("informeS").onclick = verInforme;
     app().querySelectorAll("[data-taller]").forEach(b => b.onclick = () => {
       const volver = async () => { preguntas = await API.preguntas(s.id); pinta(); };
-      if(b.dataset.taller === "escenarios") tallerEscenarios();
+      if(b.dataset.taller === "cierre") cierrePlenario();
+      else if(b.dataset.taller === "escenarios") tallerEscenarios();
       else tallerFunciones(s, preguntas, volver);
     });
 
@@ -5851,6 +6276,327 @@ async function consolaMotor(s){
     if(bt("atrasT")) bt("atrasT").onclick = () => { avisoEsc = ""; pinta(); };
     atarEscenarios();
     window.scrollTo({top:0});
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     EL CIERRE EN PLENARIO
+
+     Tres cosas que pasan en los últimos veinte minutos, cuando los
+     cuatro grupos vuelven a ser una sola sala: se acuerdan las acciones
+     comunes, se adopta el cuadro de vigilancia y se proyecta el mapa.
+
+     Todo vive en `sesion.modelo`, el mismo cajón jsonb que ya guarda los
+     ejes, los nombres y los relatos elaborados. No es una respuesta de
+     nadie: son acuerdos de la sala, escritos por quien conduce y a la
+     vista de todos. Por eso no pasan por `respuesta` ni por el suelo de
+     tres: no hay nada que proteger, porque no hay nadie detrás.
+
+     Lo que este código NO puede hacer, y conviene no confundirlo: esto
+     no vigila nada. Es la foto del día del taller. Un indicador cambia
+     de estado porque alguien entra aquí y lo cambia, y nadie entra en
+     una sesión cerrada cinco meses después. Lo que sobrevive al taller
+     son las dos columnas de la derecha —el responsable y la fecha de
+     revisión—, y sobreviven en la agenda de esa persona, no aquí. */
+  const SEM = [
+    {k:"calma",    t:"En calma",  d:"El indicador no se mueve."},
+    {k:"atencion", t:"Atención",  d:"Se mueve, pero no ha llegado al umbral."},
+    {k:"activada", t:"Activada",  d:"Ha pasado el umbral: toca revisar la estrategia."}
+  ];
+  const semDe = k => SEM.find(x => x.k === k) || SEM[0];
+  const sello = k => { const e = semDe(k);
+    return `<span class="sem ${e.k}"><i></i>${esc(e.t)}</span>`; };
+
+  /* Las respuestas de una pregunta de campos, en crudo. Devuelve una fila
+     por persona, no una media: aquí no se agrega nada, se lee lo que ha
+     escrito la sala para que quien conduce elija. */
+  const camposDe = async cod => {
+    const p = preguntas.find(x => x.codigo === cod);
+    if(!p) return [];
+    try{
+      const r = await API.resultadosPregunta(s.codigo, p.id);
+      return (r && Array.isArray(r.datos)) ? r.datos.map(x => x.campos || {}) : [];
+    }catch(e){ return []; }
+  };
+  const rankingDe = async cod => {
+    const p = preguntas.find(x => x.codigo === cod);
+    if(!p) return [];
+    try{
+      const r = await API.resultadosPregunta(s.codigo, p.id);
+      return (r && Array.isArray(r.datos)) ? r.datos.map(x => x.clave).filter(Boolean) : [];
+    }catch(e){ return []; }
+  };
+
+  let avisoCie = "";
+  const decirCie = (t, mal) => { avisoCie = `<div class="aviso${mal?" rojo":""}">${t}</div>`;
+    const c = bt("avisoCie"); if(c) c.innerHTML = avisoCie; };
+
+  const cierrePlenario = async () => {
+    app().innerHTML = `<div class="wrap ancho">${cabecera(
+      `<button class="iconbtn" id="atrasC">Volver al recorrido</button>`)}
+      <div class="card"><h1>Reuniendo lo que ha votado la sala…</h1></div></div>`;
+    if(bt("atrasC")) bt("atrasC").onclick = () => pinta();
+
+    // Se relee: entre que se abrió la consola y que llegas al cierre han
+    // pasado dos horas de taller y han cambiado casi todas las respuestas.
+    try{ preguntas = await API.preguntas(s.id); }catch(e){}
+    const m = s.modelo || {};
+    const ess = (m.escenarios || []).map(e => e.nombre).filter(Boolean);
+    let acc = (m.acciones || []).map(x => ({...x}));
+    let vig = (m.vigilancia || []).map(x => ({...x}));
+
+    const prio    = await rankingDe("P50");
+    const opc     = (m.opciones || []).filter(Boolean);
+    const empezar = await camposDe("P53");
+    const senales = await camposDe("P54");
+
+    /* Los candidatos que se le ofrecen a la sala. El orden no es casual:
+       primero lo que ha sobrevivido a los cuatro escenarios y está votado
+       —la prioridad de la P50 sobre las opciones de la P48—, y solo
+       después lo que escribió cada cual suelto en la P53.
+
+       Empezar por la P53 sería empezar por una hoja en blanco con ruido:
+       «mejorar la comunicación» sale siempre y no aguanta ningún
+       escenario. Lo que aguanta los cuatro ya está votado más arriba. */
+    const candAcc = [...new Set([].concat(
+      prio,
+      opc.filter(o => !prio.includes(o)),
+      empezar.map(c => (c.empezar||"").trim()).filter(Boolean)
+    ).map(x => String(x).trim()).filter(Boolean))];
+
+    const candVig = senales.map(c => ({
+      indicador: (c.indicador || "").trim(),
+      escenario: (c.escenario || "").trim(),
+      umbral:    (c.umbral || "").trim(),
+      fuente:    (c.fuente || "").trim(),
+      frecuencia:(c.frecuencia || "").trim()
+    })).filter(x => x.indicador);
+
+    const leer = () => {
+      acc = acc.map((_, i) => ({
+        accion:      (bt("ac-t"+i)||{}).value || "",
+        responsable: (bt("ac-r"+i)||{}).value || "",
+        plazo:       (bt("ac-p"+i)||{}).value || ""}));
+      vig = vig.map((x, i) => ({
+        indicador:   (bt("vg-i"+i)||{}).value || "",
+        escenario:   (bt("vg-e"+i)||{}).value || "",
+        umbral:      (bt("vg-u"+i)||{}).value || "",
+        responsable: (bt("vg-r"+i)||{}).value || "",
+        revision:    (bt("vg-f"+i)||{}).value || "",
+        estado:      (bt("vg-s"+i)||{}).value || "calma",
+        fuente: x.fuente || "", frecuencia: x.frecuencia || ""}));
+    };
+    const guardar = async () => {
+      leer();
+      const mod = {...(s.modelo||{}),
+        acciones:   acc.filter(x => (x.accion||"").trim()),
+        vigilancia: vig.filter(x => (x.indicador||"").trim())};
+      await API.actualizarSesion(s.id, {modelo: mod});
+      s.modelo = mod;
+      return mod;
+    };
+    /* Guardar ANTES de proyectar, siempre. Si no, la sala ve la versión
+       anterior mientras tú miras la nueva en tu portátil, y te pasas dos
+       minutos discutiendo con alguien que tiene razón. */
+    const proyectar = async (vista, txt) => {
+      try{ await guardar();
+           Object.assign(s, await API.actualizarSesion(s.id, {vista_activa: vista}));
+           decirCie(txt); }
+      catch(e){ decirCie(esc(e.message || e), true); }
+    };
+
+    const dibuja = () => {
+      const sinDuenoA = acc.filter(x => (x.accion||"").trim() && !(x.responsable||"").trim()).length;
+      const sinDuenoV = vig.filter(x => (x.indicador||"").trim() && !(x.responsable||"").trim()).length;
+      const sinFecha  = vig.filter(x => (x.indicador||"").trim() && !(x.revision||"").trim()).length;
+      app().innerHTML = `<div class="wrap ancho">${cabecera(
+        `<button class="iconbtn" id="atrasC">Volver al recorrido</button>`)}
+
+        <div class="card">
+          <span class="phasetag">${esc((s.organizacion||{}).nombre||"")} · plenario</span>
+          <h1 style="margin:6px 0 0">El cierre en plenario</h1>
+          <p class="small" style="margin-top:14px">Los cuatro grupos vuelven a ser una sala.
+            Aquí se escribe, delante de todos, lo que se acuerda: qué se hace, quién lo hace
+            y qué se va a mirar a partir de mañana. Nada de esto es una respuesta anónima
+            —son acuerdos con nombre— y por eso se escribe desde aquí y no desde los móviles.</p>
+          <div id="avisoCie">${avisoCie}</div>
+        </div>
+
+        <div class="card">
+          <h2>1 · Las acciones comunes</h2>
+          <p class="small">Empieza por lo que ya está votado y ha aguantado los cuatro
+            escenarios: la prioridad de la <b>P50</b> sobre las opciones de la <b>P48</b>.
+            Lo que sale de una hoja en blanco a las dos horas de taller son generalidades,
+            y una generalidad con responsable sigue siendo una generalidad.</p>
+          ${candAcc.length ? `<p class="small" style="margin-top:12px"><b>De lo votado:</b>
+            pulsa para bajarlo a la lista.</p>
+            <div class="candidatos">${candAcc.map((c,i) =>
+              `<button class="btn ghost sm" data-cand-a="${i}">${esc(c.slice(0,60))}</button>`
+              ).join("")}</div>` : `<p class="small" style="margin-top:12px">Todavía no hay
+            nada votado en la P50 ni volcado en la P48: escríbelas a mano.</p>`}
+          <table class="tabla-cierre">
+            <thead><tr><th style="width:46%">Acción</th><th style="width:24%">Responsable</th>
+              <th style="width:24%">Para cuándo</th><th class="col-mini"></th></tr></thead>
+            <tbody>${acc.length ? acc.map((x,i)=>`<tr>
+              <td><input id="ac-t${i}" value="${esc(x.accion||"")}" maxlength="160"
+                    placeholder="Qué se hace"></td>
+              <td><input id="ac-r${i}" value="${esc(x.responsable||"")}" maxlength="60"
+                    placeholder="Nombre y apellido"></td>
+              <td><input id="ac-p${i}" value="${esc(x.plazo||"")}" maxlength="40"
+                    placeholder="p. ej. antes de marzo"></td>
+              <td class="col-mini"><button class="btn ghost sm" data-qa="${i}">Quitar</button></td>
+            </tr>`).join("") : `<tr><td colspan="4" class="small">Todavía no hay ninguna
+              acción escrita.</td></tr>`}</tbody>
+          </table>
+          ${sinDuenoA ? `<div class="aviso rojo" style="margin-top:14px"><b>${sinDuenoA}
+            ${sinDuenoA===1 ? "acción" : "acciones"} sin responsable.</b> Un acuerdo sin un
+            nombre propio al lado se cumple solo por casualidad. Ponlo en la sala, en voz
+            alta, antes de que se levante nadie.</div>` : ""}
+          <div class="btnrow">
+            <button class="btn ghost" id="masAcc">Añadir una línea</button>
+            <button class="btn ghost" id="guardaAcc">Guardar</button>
+            <button class="btn" id="proyAcc">Proyectar en la pared</button></div>
+        </div>
+
+        <div class="card">
+          <h2>2 · El cuadro de vigilancia</h2>
+          <p class="small">Las señales que la sala ha escrito en la <b>P54</b>. Se adoptan
+            unas pocas —cinco o seis, no quince— y cada una sale de aquí con un nombre
+            propio y una fecha.</p>
+          <p class="note">Esto <b>no vigila nada por sí solo</b>. Es la foto del día del
+            taller: un indicador cambia de estado porque alguien entra aquí y lo cambia, y
+            nadie abre una sesión de taller cinco meses después. Lo único que sobrevive son
+            las dos últimas columnas, y sobreviven en la agenda de esa persona. Si no sales
+            de esta sala con una fecha de revisión en el calendario del comité, este cuadro
+            es un adorno.</p>
+          ${candVig.length ? `<p class="small" style="margin-top:12px"><b>Señales escritas
+            en la P54:</b></p>
+            <div class="candidatos">${candVig.map((c,i) =>
+              `<button class="btn ghost sm" data-cand-v="${i}">${esc(c.indicador.slice(0,60))}${
+                c.escenario ? ` · ${esc(c.escenario.slice(0,24))}` : ""}</button>`).join("")}</div>`
+            : `<p class="small" style="margin-top:12px">La <b>P54</b> no tiene respuestas
+              todavía, o no está en esta sesión. Escribe los indicadores a mano.</p>`}
+          <table class="tabla-cierre">
+            <thead><tr><th style="width:26%">Indicador</th><th style="width:15%">Escenario</th>
+              <th style="width:17%">Umbral</th><th style="width:15%">Quién lo mira</th>
+              <th style="width:13%">Revisión</th><th style="width:14%">Estado hoy</th>
+              <th class="col-mini"></th></tr></thead>
+            <tbody>${vig.length ? vig.map((x,i)=>`<tr>
+              <td><input id="vg-i${i}" value="${esc(x.indicador||"")}" maxlength="120"
+                    placeholder="Qué se mira"></td>
+              <td>${ess.length ? `<select id="vg-e${i}">
+                    <option value="">—</option>
+                    ${ess.map(n=>`<option${x.escenario===n?" selected":""}
+                      >${esc(n)}</option>`).join("")}
+                    ${x.escenario && !ess.includes(x.escenario)
+                      ? `<option selected>${esc(x.escenario)}</option>` : ""}
+                  </select>`
+                : `<input id="vg-e${i}" value="${esc(x.escenario||"")}" maxlength="70">`}</td>
+              <td><input id="vg-u${i}" value="${esc(x.umbral||"")}" maxlength="90"
+                    placeholder="Cuándo salta"></td>
+              <td><input id="vg-r${i}" value="${esc(x.responsable||"")}" maxlength="60"
+                    placeholder="Nombre"></td>
+              <td><input id="vg-f${i}" type="date" value="${esc(x.revision||"")}"></td>
+              <td><select id="vg-s${i}">${SEM.map(e=>`<option value="${e.k}"${
+                    (x.estado||"calma")===e.k?" selected":""}>${esc(e.t)}</option>`).join("")}
+                  </select></td>
+              <td class="col-mini"><button class="btn ghost sm" data-qv="${i}">Quitar</button></td>
+            </tr>`).join("") : `<tr><td colspan="7" class="small">Todavía no se ha adoptado
+              ningún indicador.</td></tr>`}</tbody>
+          </table>
+          ${(sinDuenoV || sinFecha) ? `<div class="aviso rojo" style="margin-top:14px">${
+            sinDuenoV ? `<b>${sinDuenoV} sin responsable.</b> ` : ""}${
+            sinFecha ? `<b>${sinFecha} sin fecha de revisión.</b> ` : ""}Son las dos únicas
+            columnas de este cuadro que siguen existiendo la semana que viene.</div>` : ""}
+          <p class="small" style="margin-top:12px">${SEM.map(e =>
+            `${sello(e.k)} <span style="color:var(--text-secondary)">${esc(e.d)}</span>`
+            ).join(" &nbsp; ")}</p>
+          <div class="btnrow">
+            <button class="btn ghost" id="masVig">Añadir una línea</button>
+            <button class="btn ghost" id="guardaVig">Guardar</button>
+            <button class="btn" id="proyVig">Proyectar en la pared</button></div>
+        </div>
+
+        <div class="card">
+          <h2>3 · El mapa en la pared</h2>
+          <p class="small">Los cuatro escenarios con sus nombres, sus lemas y su relato.
+            En la pared pasan solos: primero el mapa entero y después uno por hoja, veinte
+            segundos cada uno, para que se lean desde el fondo. Con las flechas ← → se
+            vuelve atrás cuando alguien quiere releer.</p>
+          <p class="small">${(m.elaborado && Object.values(m.elaborado).some(x=>x&&x.relato))
+            ? "Se proyecta el <b>relato elaborado</b>, que es el que revisaste después de la IA."
+            : "Todavía no hay relato elaborado: en la pared saldrán solo los nombres y los "
+              + "lemas que escribieron los grupos."}</p>
+          <div class="btnrow">
+            <button class="btn" id="proyMapa">Proyectar el mapa</button>
+            <button class="btn ghost" id="verMapaC">Ver el mapa y guardarlo en PDF</button>
+            <button class="btn ghost" id="proyNada">Quitar de la pared</button></div>
+        </div>
+
+        <div class="card">
+          <h2>4 · El acta del cierre</h2>
+          <p class="small">Un documento con las acciones, el cuadro de vigilancia y los
+            escenarios sobre los que se decidió todo esto. Lo primero que se lee, después
+            del título, es la fecha de la próxima revisión.</p>
+          <p class="note">Este es el paso que hace que lo de arriba sirva de algo. Lo que
+            queda dentro de la aplicación no lo va a mirar nadie dentro de cinco meses;
+            lo que sale de aquí en PDF y entra en el orden del día de una reunión, sí.
+            Sácalo antes de que se levante la sala y mándalo esa misma tarde.</p>
+          <div class="btnrow">
+            <button class="btn" id="actaC">Ver el acta y guardarla en PDF</button></div>
+        </div>
+      </div>`;
+
+      if(bt("atrasC")) bt("atrasC").onclick = () => { leer(); pinta(); };
+      app().querySelectorAll("[data-cand-a]").forEach(b => b.onclick = () => {
+        leer(); acc.push({accion: candAcc[+b.getAttribute("data-cand-a")] || "",
+          responsable:"", plazo:""}); dibuja(); });
+      app().querySelectorAll("[data-cand-v]").forEach(b => b.onclick = () => {
+        leer(); const c = candVig[+b.getAttribute("data-cand-v")];
+        vig.push({indicador:c.indicador, escenario:c.escenario, umbral:c.umbral,
+          fuente:c.fuente, frecuencia:c.frecuencia, responsable:"", revision:"",
+          estado:"calma"}); dibuja(); });
+      app().querySelectorAll("[data-qa]").forEach(b => b.onclick = () => {
+        leer(); acc.splice(+b.getAttribute("data-qa"), 1); dibuja(); });
+      app().querySelectorAll("[data-qv]").forEach(b => b.onclick = () => {
+        leer(); vig.splice(+b.getAttribute("data-qv"), 1); dibuja(); });
+      if(bt("masAcc")) bt("masAcc").onclick = () => {
+        leer(); acc.push({accion:"", responsable:"", plazo:""}); dibuja(); };
+      if(bt("masVig")) bt("masVig").onclick = () => {
+        leer(); vig.push({indicador:"", escenario:"", umbral:"", responsable:"",
+          revision:"", estado:"calma"}); dibuja(); };
+      const guardaY = async (id, txt) => {
+        const b = bt(id); if(!b) return;
+        b.onclick = async () => {
+          b.disabled = true;
+          try{ await guardar(); decirCie(txt); }
+          catch(e){ decirCie(esc(e.message||e), true); }
+          b.disabled = false; dibuja();
+        };
+      };
+      guardaY("guardaAcc", "Acciones guardadas.");
+      guardaY("guardaVig", "Cuadro de vigilancia guardado.");
+      if(bt("proyAcc")) bt("proyAcc").onclick = () => proyectar("acciones",
+        "En la pared: las acciones comunes, con su responsable y su plazo.");
+      if(bt("proyVig")) bt("proyVig").onclick = () => proyectar("alerta",
+        "En la pared: el cuadro de vigilancia.");
+      if(bt("proyMapa")) bt("proyMapa").onclick = () => proyectar("mapa",
+        "En la pared: el mapa de escenarios. Pasa de hoja solo cada veinte segundos.");
+      if(bt("proyNada")) bt("proyNada").onclick = () => proyectar("espera",
+        "La pared vuelve a la pantalla de espera.");
+      if(bt("verMapaC")) bt("verMapaC").onclick = async () => {
+        try{ await guardar(); }catch(e){}
+        mapaEscenarios(s, preguntas, () => cierrePlenario());
+      };
+      // Se guarda antes: un acta impresa a partir de lo que hay en pantalla
+      // pero no en la base de datos es exactamente el documento que después
+      // nadie sabe por qué no coincide con la aplicación.
+      if(bt("actaC")) bt("actaC").onclick = async () => {
+        try{ await guardar(); }catch(e){}
+        actaCierre(s, () => cierrePlenario());
+      };
+      window.scrollTo({top:0});
+    };
+    dibuja();
   };
 
   /* CUATRO COPIAS DE CADA PREGUNTA DEL TALLER, UNA POR ESCENARIO
@@ -6493,9 +7239,18 @@ const BANCO_ESC = [
    revisar—, la P58 —cuánto ha cambiado tu visión—, la P59 y la P60 eran
    evaluación de la sesión, no del futuro: preguntas para saber si el taller
    había gustado, contestadas por gente que ya tenía el abrigo puesto. */
-{c:"P54", b:7, t:"abierta_campos", nuc:true, nat:"escenario",
- q:"¿Qué señal observable indicaría que nos estamos acercando a este escenario?",
- cfg:{campos:[{clave:"indicador", etiqueta:"Indicador"},{clave:"fuente", etiqueta:"Fuente"},
+/* La P54 decía «este escenario» y estaba marcada como plantilla que se
+   repite una vez por escenario. No se repetía nunca —la lista que hace ese
+   desdoble está vacía—, así que quien la contestaba leía «este escenario»
+   sin tener ninguno delante y respondía sobre el que le viniera a la
+   cabeza. Ahora nombra los cuatro y pide decir de cuál habla: sin esa
+   atribución, el cuadro de vigilancia es una lista de deseos. */
+{c:"P54", b:7, t:"abierta_campos", nuc:true, nat:"fija",
+ q:"¿Qué señal observable indicaría que nos estamos acercando a uno de los escenarios?",
+ ayuda:"Una señal que se pueda mirar sin discutirla: un dato, una decisión de un tercero, "
+     + "un cambio de precio. «Aumenta la incertidumbre» no es una señal.",
+ cfg:{campos:[{clave:"escenario", etiqueta:"¿De qué escenario es señal?"},
+              {clave:"indicador", etiqueta:"Indicador"},{clave:"fuente", etiqueta:"Fuente"},
               {clave:"frecuencia", etiqueta:"Frecuencia de observación"},
               {clave:"umbral", etiqueta:"Umbral que activaría una revisión"}]}},
 {c:"P55", b:7, t:"multiple", nuc:false, nat:"derivada",
@@ -6971,6 +7726,19 @@ const TALLERES = {
         + "de la P29, y su resultado alimenta de la P48 a la P52.",
     ancla: "P63",
     tambien: ["P48", "P49", "P50"]
+  },
+  /* El cierre es la segunda fila del recorrido de escenarios, y va anclado
+     a la P53 —empezar, dejar, mantener—, que es la primera del bloque de
+     cierre. Todo lo que se acuerda en plenario sale de ahí para adelante:
+     las acciones comunes, los indicadores que se adoptan y a quién se le
+     encarga mirarlos. */
+  {
+    k: "cierre",
+    nombre: "Cierre en plenario",
+    desc: "Las acciones comunes, el cuadro de vigilancia y el mapa en la pared. "
+        + "Se hace con lo votado en P48, P50 y P53, y con las señales de la P54.",
+    ancla: "P53",
+    tambien: ["P54", "P55", "P56"]
   }]
 };
 const talleresDe = instrumento =>
