@@ -3291,48 +3291,49 @@ async function leerEscenarios(s, preguntas){
    de liderazgo: se le da lo que hay escrito, se le prohíbe inventar, y se
    le exige decir de qué escenario sale cada cosa. Lo que devuelva lo
    revisas tú, que es donde está tu trabajo. */
-function encargoEscenarios(d, fase){
-  const l = [];
+/* Un encargo POR ESCENARIO, no uno para los cuatro. En la sala cada grupo
+   está en su mesa con su propio escenario delante: darle un texto que
+   incluye lo que han escrito los otros tres es darle ruido, y además le
+   deja leer el trabajo ajeno antes de terminar el suyo. */
+function encargoEscenarios(d, fase, i){
+  const e = d.escenarios[i];
+  if(!e) return "";
+  const c = e[fase + "_campos"] || [], v = e[fase] || {};
+  const dentro = c.map(x => {
+    const t = (v[x.clave] || "").toString().trim();
+    return t ? `${x.etiqueta}\n→ ${t}` : null;
+  }).filter(Boolean);
+  if(!dentro.length) return "";
   const eje = (d.ejes.y || d.ejes.x)
-    ? `Los dos ejes del análisis son:\n· Vertical: ${d.ejes.y || "(sin definir)"}\n`
+    ? `El escenario está en el cuadrante ${e.pos} de una matriz cuyos ejes son:\n`
+      + `· Vertical: ${d.ejes.y || "(sin definir)"}\n`
       + `· Horizontal: ${d.ejes.x || "(sin definir)"}\n\n` : "";
-  d.escenarios.forEach((e, i) => {
-    const c = e[fase + "_campos"] || [], v = e[fase] || {};
-    const dentro = c.map(x => {
-      const t = (v[x.clave] || "").toString().trim();
-      return t ? `  ${x.etiqueta}\n  → ${t}` : null;
-    }).filter(Boolean);
-    if(!dentro.length) return;
-    l.push(`ESCENARIO ${i+1} · ${e.nombre || "(sin nombre)"} (${e.pos})\n`
-      + dentro.join("\n"));
-  });
-  if(!l.length) return "";
   const encargo = fase === "relato"
-    ? "Eres analista de prospectiva. Abajo tienes las notas que cuatro grupos han "
-      + "escrito sobre cuatro escenarios de futuro, uno cada grupo.\n\n"
-      + "Para CADA escenario, devuélveme:\n"
-      + "1. Un NOMBRE de dos o tres palabras. Si el grupo ya puso uno, respétalo salvo "
-      + "que sea ilegible; si lo cambias, di por qué.\n"
-      + "2. Un LEMA de una línea, en forma de titular de prensa.\n"
-      + "3. Un RELATO de entre 150 y 200 palabras, en presente, contado desde dentro "
-      + "de ese futuro.\n\n"
-      + "Reglas: no inventes ningún hecho que no esté en las notas. Si algo falta, dilo "
-      + "en una línea aparte en vez de rellenarlo. No suavices los escenarios "
-      + "incómodos. Los cuatro relatos tienen que ser distinguibles entre sí: si dos "
-      + "se parecen, avísame, porque significa que los ejes no eran independientes.\n\n"
-    : "Eres analista de estrategia. Abajo tienes lo que cuatro grupos han escrito sobre "
-      + "las implicaciones de cuatro escenarios de futuro.\n\n"
+    ? "Eres analista de prospectiva. Abajo tienes las notas que un grupo de trabajo ha "
+      + "escrito sobre UN escenario de futuro.\n\n"
+      + "Devuélveme exactamente tres cosas, cada una con su rótulo:\n"
+      + "NOMBRE: dos o tres palabras. Si el grupo ya puso uno, respétalo salvo que sea "
+      + "ilegible; si lo cambias, di por qué en una línea aparte.\n"
+      + "LEMA: una sola línea, en forma de titular de prensa.\n"
+      + "RELATO: entre 150 y 200 palabras, en presente, contado desde dentro de ese "
+      + "futuro, como si ya hubiera llegado.\n\n"
+      + "Reglas: no inventes ningún hecho que no esté en las notas. Si falta algo "
+      + "importante, dilo al final en vez de rellenarlo tú. No suavices el escenario si "
+      + "es incómodo: un escenario que no incomoda a nadie no sirve para decidir.\n\n"
+    : "Eres analista de estrategia. Abajo tienes lo que un grupo de trabajo ha escrito "
+      + "sobre las implicaciones de UN escenario de futuro.\n\n"
       + "Devuélveme:\n"
-      + "1. Por cada escenario, sus estrategias y acciones, ordenadas y sin repetir.\n"
-      + "2. Una lista de ACCIONES ROBUSTAS: las que aparecen, con otras palabras, en "
-      + "tres o cuatro escenarios. Para cada una, di en cuáles aparece y con qué "
-      + "palabras lo dijo cada grupo.\n"
-      + "3. Una lista de APUESTAS: las que solo valen en uno o dos escenarios. Di en "
-      + "cuáles, y qué habría que ver en el mundo para saber que toca activarlas.\n\n"
-      + "Reglas: no inventes ninguna acción que no esté escrita. Si dos grupos dicen lo "
-      + "mismo con distintas palabras, júntalas y enséñame las dos formulaciones. No "
-      + "conviertas en robusta una acción que solo esté en dos escenarios.\n\n";
-  return encargo + eje + l.join("\n\n");
+      + "1. Las estrategias, ordenadas de más a menos importante, sin repetir y sin "
+      + "juntar en una lo que el grupo dijo por separado.\n"
+      + "2. Las acciones concretas que se derivan de cada una, distinguiendo las que "
+      + "sirven para EVITAR que el escenario ocurra de las que sirven para MITIGAR sus "
+      + "efectos si ocurre.\n"
+      + "3. Para cada acción, si está en manos de la organización o depende de "
+      + "terceros. Si el grupo no lo dice, ponlo como pregunta abierta.\n\n"
+      + "Reglas: no inventes ninguna acción que no esté escrita. No conviertas en "
+      + "estrategia lo que es un deseo sin mecanismo detrás.\n\n";
+  return encargo + eje
+    + `ESCENARIO: ${e.nombre || "(sin nombre)"}\n\n` + dentro.join("\n\n");
 }
 
 async function mapaEscenarios(s, preguntas, volver){
@@ -3340,6 +3341,11 @@ async function mapaEscenarios(s, preguntas, volver){
     `<button class="iconbtn" id="atras">Volver</button>`)}
     <div class="card"><h1>Reuniendo lo que han escrito los grupos…</h1></div></div>`;
   if($("#atras")) $("#atras").onclick = volver;
+  // Se relee la lista: esta pantalla se abre y se recarga a mitad de un
+  // taller, y entre una cosa y otra puede haberse añadido o quitado alguna
+  // pregunta desde la consola. Con la copia vieja, «volcar» decía que la
+  // P50 no existe cuando existe.
+  try{ preguntas = await API.preguntas(s.id); }catch(e){}
   const d = await leerEscenarios(s, preguntas);
   const org = (s.variables||{}).ORGANIZACION || (s.organizacion||{}).nombre || "";
   const hoy = new Date().toLocaleDateString("es-ES",
@@ -3360,8 +3366,16 @@ async function mapaEscenarios(s, preguntas, volver){
       ${!e.relato_n ? `<p class="small">Este grupo todavía no ha escrito nada.</p>` : ""}
     </div>`;
   };
-  const enc1 = encargoEscenarios(d, "relato");
-  const enc2 = encargoEscenarios(d, "estrategias");
+  const encargos = {relato: d.escenarios.map((e,i)=>encargoEscenarios(d,"relato",i)),
+                    estrategias: d.escenarios.map((e,i)=>encargoEscenarios(d,"estrategias",i))};
+  const hay = f => encargos[f].some(Boolean);
+  // Lo que la IA ha devuelto, ya pegado. Vive en `sesion.modelo`, junto a
+  // los ejes y los nombres: es material del taller, no una respuesta.
+  const elab = (s.modelo || {}).elaborado || {};
+  const hayElab = d.escenarios.some((e,i) => (elab["e"+(i+1)]||{}).relato);
+  const botones = f => d.escenarios.map((e,i)=>
+    `<button class="btn ghost sm" data-enc="${f}:${i}" ${encargos[f][i] ? "" : "disabled"}
+       >${esc(e.nombre || ("Escenario " + (i+1)))}</button>`).join("");
 
   app().innerHTML = `<div class="wrap ancho doc">${cabecera(
     `<button class="iconbtn" id="atras">Volver</button>`)}
@@ -3382,7 +3396,7 @@ async function mapaEscenarios(s, preguntas, volver){
     </div>
 
     <div class="card informe-bloque">
-      <span class="num">01</span><h2>El mapa</h2>
+      <span class="num">01</span><h2>El mapa · lo que escribieron los grupos</h2>
       <div class="mapa-esc">
         <div class="eje eje-y"><b>↑</b> ${esc(d.ejes.y || "eje vertical sin definir")}</div>
         <div class="cuadros">${rejilla.map(cuadro).join("")}</div>
@@ -3391,18 +3405,86 @@ async function mapaEscenarios(s, preguntas, volver){
       </div>
     </div>
 
+    ${hayElab ? `<div class="card informe-bloque">
+      <span class="num">02</span><h2>El mapa del relato elaborado</h2>
+      <p class="small" style="margin-top:8px">La versión trabajada con la IA y revisada
+        por ti. Es la que se proyecta y la que va al informe; el mapa de arriba es la
+        materia prima, y conviene guardar los dos: si alguien discute un relato, la
+        respuesta está en lo que escribió su grupo.</p>
+      <div class="mapa-esc">
+        <div class="eje eje-y"><b>↑</b> ${esc(d.ejes.y || "eje vertical sin definir")}</div>
+        <div class="cuadros">${
+          [0,1,3,2].map(i => { const e = d.escenarios[i]; if(!e) return `<div class="cuad vacio"></div>`;
+            const v = elab["e"+(i+1)] || {};
+            return `<div class="cuad">
+              <span class="cuad-k">${esc(e.k)} · ${esc(e.pos)}</span>
+              <h3>${esc(v.nombre || e.nombre || "Sin nombre todavía")}</h3>
+              ${v.lema ? `<p class="lema">«${esc(v.lema)}»</p>` : ""}
+              ${v.relato ? `<div class="tramo"><p>${esc(v.relato)}</p></div>`
+                : `<p class="small">Sin relato elaborado todavía.</p>`}
+            </div>`; }).join("")}</div>
+        <div class="eje eje-x"><b>←</b> ${esc(d.ejes.x || "eje horizontal sin definir")}
+          <b>→</b></div>
+      </div>
+    </div>` : ""}
+
     <div class="card no-imprimir">
       <h2>Los encargos para la IA</h2>
-      <p class="small">Copian lo que han escrito los cuatro grupos y le piden a la IA una
-        cosa concreta. Léelos antes de pegarlos: los dos le prohíben expresamente inventar
-        nada que no esté escrito, y le exigen decir de qué escenario sale cada cosa.
-        Lo que devuelva lo revisas tú.</p>
+      <p class="small">Uno por escenario y por fase: cada grupo se lleva el suyo a su mesa
+        y no ve el de los demás. Léelos antes de pegarlos —le prohíben expresamente
+        inventar nada que no esté escrito—. Lo que devuelva lo revisas tú.</p>
+      <h3>Fase de relato</h3>
+      <div class="btnrow" style="margin-top:6px">${botones("relato")}</div>
+      <h3>Fase de estrategias</h3>
+      <div class="btnrow" style="margin-top:6px">${botones("estrategias")}</div>
+      <p class="small" id="copiado" style="margin-top:12px"></p>
+      ${!hay("relato") && !hay("estrategias") ? `<div class="aviso">Todavía no hay nada
+        escrito en las pantallas del taller. Los encargos se encienden en cuanto cada
+        grupo empiece a contestar.</div>` : ""}
+    </div>
+
+    <div class="card no-imprimir">
+      <h2>Lo que ha devuelto la IA</h2>
+      <p class="small">Pega aquí el relato de cada escenario, tal como lo hayas dado por
+        bueno. Con esto se dibuja el segundo mapa, el del relato elaborado, que es el que
+        se proyecta y se entrega. Lo de arriba son las notas en bruto del grupo; esto es
+        la versión que has revisado tú.</p>
+      ${d.escenarios.map((e,i)=>{ const v = elab["e"+(i+1)] || {};
+        return `<div class="field" style="margin-top:18px">
+        <label>${esc(e.k)} · ${esc(e.nombre || "sin nombre")}</label>
+        <div class="grid2" style="margin-top:6px">
+          <input id="el-n${i}" maxlength="70" placeholder="Nombre"
+            value="${esc(v.nombre || "")}" autocomplete="off">
+          <input id="el-l${i}" maxlength="180" placeholder="Lema o titular"
+            value="${esc(v.lema || "")}" autocomplete="off"></div>
+        <textarea id="el-r${i}" rows="5" maxlength="3000" style="margin-top:8px"
+          placeholder="El relato, de 150 a 200 palabras">${esc(v.relato || "")}</textarea>
+      </div>`; }).join("")}
       <div class="btnrow">
-        <button class="btn ghost" id="cop1" ${enc1 ? "" : "disabled"}>Fase de relato</button>
-        <button class="btn ghost" id="cop2" ${enc2 ? "" : "disabled"}>Fase de estrategias</button>
-        <span class="small" id="copiado"></span></div>
-      ${!enc1 && !enc2 ? `<div class="aviso">Todavía no hay nada escrito en las pantallas
-        del taller. Los encargos aparecen en cuanto los grupos empiecen a contestar.</div>` : ""}
+        <button class="btn" id="guardaElab">Guardar los relatos</button>
+        <span class="small" id="avisoElab"></span></div>
+    </div>
+
+    <div class="card no-imprimir">
+      <h2>Las opciones estratégicas finales</h2>
+      <p class="small">Lo que queda después de pasar las estrategias de los cuatro grupos
+        por la IA y de haberlo cerrado en plenario. Una por línea.</p>
+      <p class="small">De aquí salen <b>cinco</b> preguntas del cuestionario, y por eso la
+        lista se escribe una sola vez: la <b>P48</b> las valora en los cuatro escenarios
+        —eso es la robustez—, la <b>P49</b> les reparte recursos, la <b>P50</b> las ordena
+        por prioridad, la <b>P51</b> las coloca por valor y facilidad, y la <b>P52</b>
+        pregunta cuál sería más costoso posponer. Si cada una llevara su propia lista, las
+        cinco respuestas no se podrían cruzar entre sí, que es justo lo que hace falta.</p>
+      <div class="field"><label for="opcEstr">Una opción por línea</label>
+        <textarea id="opcEstr" rows="7" maxlength="4000"
+          placeholder="Crear una oficina de proyectos&#10;Formar a quien ya está&#10;Publicar el plan y contarlo unidad por unidad"
+          >${esc(((s.modelo||{}).opciones || []).join("\n"))}</textarea></div>
+      <div class="btnrow">
+        <button class="btn" id="volcarOpc">Volcar en P48, P49, P50, P51 y P52</button>
+        <span class="small" id="avisoOpc"></span></div>
+      <p class="note">Sustituye la lista entera en las cinco. Hazlo antes de abrirlas:
+        cambiar los elementos con respuestas dentro deja los resultados colgando de
+        nombres que ya no existen.</p>
     </div>
     <div class="pie-doc"><span>${esc(org)} · Los cuatro escenarios</span>
       <span>${esc(s.codigo)} · ${esc(hoy)}</span></div>
@@ -3411,9 +3493,58 @@ async function mapaEscenarios(s, preguntas, volver){
   $("#imprimir").onclick = () => window.print();
   $("#recargar").onclick = () => mapaEscenarios(s, preguntas, volver);
   const avisar = t => { $("#copiado").textContent = t;
-    setTimeout(()=>{ if($("#copiado")) $("#copiado").textContent = ""; }, 2500); };
-  if($("#cop1")) $("#cop1").onclick = () => { copiar(enc1); avisar("Copiado."); };
-  if($("#cop2")) $("#cop2").onclick = () => { copiar(enc2); avisar("Copiado."); };
+    setTimeout(()=>{ if($("#copiado")) $("#copiado").textContent = ""; }, 3000); };
+  app().querySelectorAll("[data-enc]").forEach(b => b.onclick = () => {
+    const [f, i] = b.dataset.enc.split(":");
+    copiar(encargos[f][+i]);
+    avisar("Copiado el encargo de «" + (d.escenarios[+i].nombre || ("Escenario " + (+i+1)))
+      + "» para la fase de " + f + ".");
+  });
+  if($("#guardaElab")) $("#guardaElab").onclick = async () => {
+    const nuevo = {};
+    d.escenarios.forEach((e,i)=>{
+      nuevo["e"+(i+1)] = {
+        nombre: ($("#el-n"+i)||{}).value || "",
+        lema:   ($("#el-l"+i)||{}).value || "",
+        relato: ($("#el-r"+i)||{}).value || ""};
+    });
+    const g = $("#guardaElab"); g.disabled = true; g.textContent = "Guardando…";
+    const mod = {...(s.modelo||{}), elaborado: nuevo};
+    try{ await API.actualizarSesion(s.id, {modelo: mod}); s.modelo = mod; }
+    catch(e){ g.disabled = false; g.textContent = "Guardar los relatos";
+      $("#avisoElab").textContent = e.message || e; return; }
+    mapaEscenarios(s, preguntas, volver);
+  };
+
+  /* Las cinco preguntas que trabajan sobre las opciones estratégicas. Cada
+     tipo lee su lista en una clave distinta —una matriz las quiere como
+     filas, un reparto de puntos como opciones, un mapa de dos ejes como
+     elementos— y por eso hace falta la tabla, no basta con un bucle. */
+  const DESTINOS_OPC = [{c:"P48", k:"filas"}, {c:"P49", k:"opciones"},
+                        {c:"P50", k:"opciones"}, {c:"P51", k:"elementos"},
+                        {c:"P52", k:"opciones"}];
+  if($("#volcarOpc")) $("#volcarOpc").onclick = async () => {
+    const lista = ($("#opcEstr").value || "").split("\n")
+      .map(x => x.trim()).filter(Boolean);
+    const av = $("#avisoOpc");
+    if(!lista.length){ av.textContent = "Escribe al menos una opción."; return; }
+    const b = $("#volcarOpc"); b.disabled = true; b.textContent = "Volcando…";
+    const mod = {...(s.modelo||{}), opciones: lista};
+    try{ await API.actualizarSesion(s.id, {modelo: mod}); s.modelo = mod; }
+    catch(e){ b.disabled = false; b.textContent = "Volcar en P48, P49, P50, P51 y P52";
+      av.textContent = e.message || e; return; }
+    const hechas = [], faltan = [];
+    for(const d of DESTINOS_OPC){
+      const p = preguntas.find(x => x.codigo === d.c);
+      if(!p){ faltan.push(d.c); continue; }
+      try{ await API.actualizarPregunta(p.id, {config: {...(p.config||{}), [d.k]: lista}});
+           p.config = {...(p.config||{}), [d.k]: lista}; hechas.push(d.c); }
+      catch(e){ faltan.push(d.c); }
+    }
+    b.disabled = false; b.textContent = "Volcar en P48, P49, P50, P51 y P52";
+    av.textContent = `${lista.length} opciones volcadas en ${hechas.join(", ") || "ninguna"}.`
+      + (faltan.length ? ` No están en esta sesión: ${faltan.join(", ")}.` : "");
+  };
   window.scrollTo({top:0});
 }
 
@@ -4789,7 +4920,7 @@ async function consolaMotor(s){
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between">
           <div><span class="phasetag">${esc((s.organizacion||{}).nombre||"")} ·
             ${esc(nombreInstrumento(s.instrumento).toLowerCase())}</span>
-            <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1></div>
+            ${tituloEditable(s)}</div>
           <span class="estado ${s.estado==="abierta"?"viva":""}">${esc(s.estado)} · ${esc(s.modo)}</span>
         </div>
         <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:20px;align-items:flex-start">
@@ -5144,6 +5275,7 @@ async function consolaMotor(s){
       </div>`;
 
     if(preguntas.length) pintarQR("qr", urlPart, 5);
+    atarTitulo(s, () => pinta());
     const bt = id => document.getElementById(id);
     const cambiarSesion = async c => { Object.assign(s, await API.actualizarSesion(s.id, c)); pinta(); };
     if(bt("abrirSesion"))  bt("abrirSesion").onclick  = () =>
@@ -5807,7 +5939,10 @@ async function consolaMotor(s){
       {config: {...(p63.config||{}), opciones: ess.map(e=>e.nombre)}});
 
     // Renumerar entero: es más simple de razonar que abrir hueco, y aquí
-    // además unas preguntas se van y otras llegan en su sitio.
+    // además unas preguntas se van y otras llegan en su sitio. Antes de
+    // numerar, el bloque del taller se lleva a su banda.
+    const ordenado = colocarTaller(final);
+    final.length = 0; final.push(...ordenado);
     const antes = new Map(preguntas.filter(p=>p.id).map(p=>[p.id, p.orden]));
     for(let i = 0; i < final.length; i++){
       const p = final[i];
@@ -6752,6 +6887,38 @@ const ESC_TALLER = [];
    limpiarlas. */
 const ESC_LEGADO = ["P36","P37","P38","P39","P40","P41","P42","P43",
                     "P44","P45","P46","P47","P48"];
+
+/* DÓNDE VA EL TALLER DENTRO DEL RECORRIDO
+   La regla, literal: nunca antes de la P31 o anteriores, y nunca después
+   de la P48 o posteriores. El bloque del taller —la P63, la P64 y las ocho
+   pantallas de los grupos— ocupa el hueco que queda entre las dos.
+
+   Y va por NÚMERO de pregunta, no por su posición en el banco: el bloque
+   lo forman preguntas cuyo código no dice nada del sitio que ocupan —la
+   P63 y la P64 se numeraron al final porque son las últimas que escribí—,
+   así que la única forma de que caigan donde tienen que caer es anclarlas
+   a las que sí llevan el número puesto. */
+const numeroP = cod => {
+  const m = /^P(\d\d)$/.exec(String(cod || ""));
+  return m ? +m[1] : null;
+};
+const esBloqueTaller = cod =>
+  cod === "P63" || cod === "P64" || esCopiaEsc(cod);
+
+function colocarTaller(lista){
+  const bloque = lista.filter(p => esBloqueTaller(p.codigo));
+  if(!bloque.length) return lista;
+  const resto = lista.filter(p => !esBloqueTaller(p.codigo));
+  // El suelo: detrás de la última P31-o-anterior que haya.
+  let corte = -1;
+  resto.forEach((p,i) => { const n = numeroP(p.codigo); if(n !== null && n <= 31) corte = i; });
+  if(corte < 0){
+    // Sin ninguna, manda el techo: delante de la primera P48-o-posterior.
+    const j = resto.findIndex(p => { const n = numeroP(p.codigo); return n !== null && n >= 48; });
+    corte = j < 0 ? resto.length - 1 : j - 1;
+  }
+  return resto.slice(0, corte+1).concat(bloque, resto.slice(corte+1));
+}
 const esLegadoEsc = cod => {
   const c = String(cod || "");
   return /E[1-4]$/.test(c) && ESC_LEGADO.includes(c.slice(0, -2));
@@ -6762,6 +6929,47 @@ const esCopiaEsc = cod => {
   const raiz = c.slice(0, -2);
   return ESC_TALLER.includes(raiz) || TALLER_ESC.some(t => t.k === raiz);
 };
+
+/* EL TÍTULO SE PUEDE CORREGIR
+   No había forma de cambiarlo: se escribía al crear la sesión y ahí se
+   quedaba. Y el título no es un dato interno —es lo primero que lee la
+   gente al escanear el QR—, así que una errata acaba en el móvil de todo
+   el mundo sin manera de arreglarla salvo rehacer la sesión y perder el
+   código repartido.
+
+   Devuelve el HTML; `atarTitulo` engancha los botones. Se usa igual en la
+   consola de cultura y en la del motor. */
+function tituloEditable(s){
+  return `<h1 style="margin:6px 0 0" id="tituloS">${esc(s.titulo)}</h1>
+    <button class="btn ghost sm no-imprimir" id="editaTit"
+      style="margin-top:8px">Corregir el título</button>
+    <div id="editaTitCaja" style="display:none;margin-top:8px">
+      <div class="field" style="margin:0"><input id="tituloNuevo" maxlength="120"
+        value="${esc(s.titulo)}" autocomplete="off"></div>
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn sm" id="guardaTit">Guardar</button>
+        <button class="btn ghost sm" id="cancelaTit">Cancelar</button>
+        <span class="small" id="avisoTit"></span></div></div>`;
+}
+function atarTitulo(s, despues){
+  const b = document.getElementById("editaTit");
+  if(!b) return;
+  const caja = document.getElementById("editaTitCaja");
+  b.onclick = () => { caja.style.display = "block"; b.style.display = "none";
+    document.getElementById("tituloNuevo").focus(); };
+  document.getElementById("cancelaTit").onclick = () => {
+    caja.style.display = "none"; b.style.display = ""; };
+  document.getElementById("guardaTit").onclick = async () => {
+    const t = document.getElementById("tituloNuevo").value.trim();
+    if(!t){ document.getElementById("avisoTit").textContent = "El título no puede quedar vacío."; return; }
+    const g = document.getElementById("guardaTit");
+    g.disabled = true; g.textContent = "Guardando…";
+    try{ await API.actualizarSesion(s.id, {titulo: t}); s.titulo = t; }
+    catch(e){ g.disabled = false; g.textContent = "Guardar";
+      document.getElementById("avisoTit").textContent = e.message || e; return; }
+    if(despues) despues();
+  };
+}
 
 function situarTalleres(instrumento, preguntas){
   const ts = talleresDe(instrumento);
@@ -7187,9 +7395,16 @@ async function consolaSesion(id){
       <div class="card">
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between">
           <div><span class="phasetag">${esc((s.organizacion||{}).nombre||"")}${s.colectivo?" · "+esc(s.colectivo):""}</span>
-            <h1 style="margin:6px 0 0">${esc(s.titulo)}</h1></div>
+            ${tituloEditable(s)}</div>
           <span class="estado ${s.estado==="abierta"?"viva":""}">${esc(s.estado)} · ${esc(s.modo)}</span>
         </div>
+        <p class="note" style="margin-top:16px">Esta consola no tiene lista de preguntas, y no
+          es un error: <b>cultura organizativa es un instrumento cerrado</b>. Sus doce
+          pantallas y sus veinticuatro ítems están fijados dentro de la aplicación, no se
+          componen aquí. Es lo que permite comparar una organización con otra y con ella
+          misma dentro de un año: en cuanto se cambia un ítem, la medida deja de ser la
+          misma medida. Los otros tres instrumentos sí se componen pregunta a pregunta,
+          porque ahí lo que se busca es otra cosa.</p>
         <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:20px;align-items:flex-start">
           <div><div class="small">Código</div><div class="codigo">${esc(s.codigo)}</div>
             <p class="small" style="margin-top:10px">Enlace para participar:<br>
@@ -7269,6 +7484,7 @@ async function consolaSesion(id){
       </div></div>`;
 
     pintarQR("qr", urlPart, 5);
+    atarTitulo(s, () => pinta());
     const btn = id => document.getElementById(id);
     if(btn("abrir")) btn("abrir").onclick = async () => {
       Object.assign(s, await API.actualizarSesion(s.id, {estado:"abierta", abierta_en:new Date().toISOString()}));
@@ -7328,8 +7544,12 @@ async function consolaSesion(id){
   const cargarResultados = async () => {
     const res = await API.resultados(s.codigo);
     const cont = document.getElementById("res"); if(!cont) return;
-    if(res.error){
-      cont.innerHTML = `<p class="small">${res.error==="muestra_insuficiente"
+    // `res` puede venir nulo: la función devuelve null cuando la sesión no
+    // tiene nada que agregar. Sin esta guarda, la consola de cultura
+    // reventaba entera —pantalla en blanco— al abrir una sesión recién
+    // creada si la respuesta tardaba o venía vacía.
+    if(!res || res.error){
+      cont.innerHTML = `<p class="small">${res && res.error==="muestra_insuficiente"
         ? `Todavía no hay respuestas suficientes: ${res.n} de ${res.minimo} mínimas. Con una o dos,
            «la media del grupo» sería la respuesta de una persona concreta.`
         : "Sin datos todavía."}</p>`;
