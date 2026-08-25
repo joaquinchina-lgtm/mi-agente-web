@@ -4860,8 +4860,13 @@ async function consolaMotor(s){
         const m = s.modelo || {}, ej = m.ejes || {}, es = m.escenarios || ESC_VACIOS;
         const hechos = es.filter(e => (e.nombre||"").trim()).length;
         const copias = preguntas.filter(p => esCopiaEsc(p.codigo)).length;
+        const viejas = preguntas.filter(p => esLegadoEsc(p.codigo)).length;
         return `<div class="card">
         <h2>El taller de escenarios</h2>
+        ${viejas ? `<div class="aviso rojo"><b>Hay ${viejas} pantallas sobrantes</b> de la
+          versión anterior del taller, cuando cada pregunta era una pantalla y salían
+          cincuenta y dos. Ahora caben en dos por escenario. Dale a <b>Generar las
+          pantallas del taller</b> y se retiran: solo las que estén sin contestar.</div>` : ""}
         <p class="small">Los dos ejes no se votan: los eliges tú mirando lo más votado en
           <b>P19</b>, <b>P20</b> y <b>P26</b> contra el mapa de impacto de la <b>P29</b>.
           El criterio duro es que sean <b>independientes</b> entre sí: si al mover uno se
@@ -5226,6 +5231,8 @@ async function consolaMotor(s){
       decirEsc(`Creadas <b>${r.creadas}</b> pantallas por escenario`
         + (r.duplicadas ? ` · <b>Limpiadas ${r.duplicadas} pantallas repetidas</b> que
              habían quedado de una generación anterior interrumpida` : "")
+        + (r.viejas ? ` · <b>Retiradas ${r.viejas} pantallas</b> de la versión anterior del
+             taller, que ahora caben en las dos plantillas` : "")
         + (r.retiradas ? `, y retiradas ${r.retiradas} preguntas genéricas que ahora
              están cuatro veces, una por escenario` : "")
         + `. La <b>P63</b> ya ofrece los cuatro nombres.`
@@ -5675,7 +5682,7 @@ async function consolaMotor(s){
     const ess = (m.escenarios || []).filter(e => e && (e.nombre||"").trim());
     if(ess.length !== 4) return {fallo:"Hacen falta los cuatro nombres de escenario "
       + "antes de generar nada. Escríbelos arriba y vuelve a darle.", creadas:0,
-      retiradas:0, duplicadas:0, bloqueadas:[]};
+      retiradas:0, duplicadas:0, viejas:0, bloqueadas:[]};
 
     /* Se relee la lista antes de nada. Si la generación anterior se quedó a
        medias —o alguien pulsó dos veces— la copia local está vieja, y
@@ -5687,7 +5694,7 @@ async function consolaMotor(s){
        primera y se van las demás, siempre que estén vacías. Si alguna tiene
        respuestas se queda donde está: mejor una pantalla repetida que una
        respuesta perdida. */
-    let duplicadas = 0;
+    let duplicadas = 0, viejas = 0;
     const vistos = new Map();
     for(const p of preguntas.slice().sort((a,b)=>(a.orden||0)-(b.orden||0))){
       const cod = p.codigo || "";
@@ -5712,9 +5719,29 @@ async function consolaMotor(s){
 
     for(const p of lista){
       const cod = p.codigo || "";
+      /* Las de la versión anterior del taller: fuera, si están vacías. Son
+         las cincuenta y dos pantallas que sustituyen las dos plantillas. */
+      if(esLegadoEsc(cod)){
+        let n = 1;
+        try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+             n = (r && r.respondidos) || 0; }catch(e){ n = 1; }
+        if(n){ bloqueadas.push(cod); final.push(p); continue; }
+        try{ await API.borrarPregunta(p.id); viejas++; }catch(e){ final.push(p); }
+        continue;
+      }
       if(esCopiaEsc(cod)){
         if(!puestas.has(cod)){ puestas.add(cod); final.push(p); }
         continue;
+      }
+      /* La matriz de robustez recupera sus cuatro columnas: la robustez se
+         lee en una sola rejilla o no se lee. */
+      if(cod === "P48" && p.tipo === "matriz_valoracion"){
+        const cols = ess.map(e => e.nombre);
+        if(JSON.stringify((p.config||{}).columnas || []) !== JSON.stringify(cols)){
+          const cfg = {...(p.config||{}), columnas: cols};
+          try{ await API.actualizarPregunta(p.id, {config: cfg}); p.config = cfg; }catch(e){}
+        }
+        final.push(p); continue;
       }
       if(!ESC_TALLER.includes(cod)){ final.push(p); continue; }
       // Con respuestas dentro, ni se desdobla ni se retira.
@@ -5790,7 +5817,8 @@ async function consolaMotor(s){
     }
     if(nuevas.length) await API.crearPreguntas(nuevas);
     for(const p of quitar) await API.borrarPregunta(p.id);
-    return {creadas: nuevas.length, retiradas: quitar.length, duplicadas, bloqueadas};
+    return {creadas: nuevas.length, retiradas: quitar.length, duplicadas, viejas,
+            bloqueadas};
   };
 
   /* Las sesiones que se montaron antes de la regla tienen sus EX al final,
@@ -6703,9 +6731,31 @@ const TALLER_ESC = [
      ayuda:"Esta vale siempre, incluso si el escenario es deseable."}]}
 ];
 
-/* La matriz de robustez sigue siendo una pregunta del banco y también se
-   copia por escenario, porque cada grupo valora el suyo. */
-const ESC_TALLER = ["P48"];
+/* Ya no se copia NINGUNA pregunta del banco por escenario. La lista se
+   queda vacía a propósito y no se borra: es el gancho por si algún día
+   vuelve a hacer falta desdoblar una.
+
+   La matriz de robustez tampoco: se quedó desdoblada en cuatro copias, y
+   cada copia valoraba un solo escenario. Eso no es una matriz de robustez,
+   es cuatro valoraciones sueltas. La robustez de una opción ES su
+   comportamiento en LOS CUATRO escenarios a la vez, leído en una sola
+   rejilla: una opción que va bien en dos y fatal en otros dos no es
+   robusta, y eso no se ve mirando cuatro pantallas por separado. Vuelve a
+   ser una sola pregunta, con los cuatro escenarios de columnas, y la
+   contesta todo el mundo al salir del taller. */
+const ESC_TALLER = [];
+
+/* Y esto es la lista de las que hubo que desdoblar antes de que el taller
+   se rehiciera en dos pantallas. Están en las sesiones que se generaron
+   con la versión anterior y ya no las usa nadie: al generar se retiran.
+   No se borran de aquí porque son las que hay que reconocer para poder
+   limpiarlas. */
+const ESC_LEGADO = ["P36","P37","P38","P39","P40","P41","P42","P43",
+                    "P44","P45","P46","P47","P48"];
+const esLegadoEsc = cod => {
+  const c = String(cod || "");
+  return /E[1-4]$/.test(c) && ESC_LEGADO.includes(c.slice(0, -2));
+};
 const esCopiaEsc = cod => {
   const c = String(cod || "");
   if(!/E[1-4]$/.test(c)) return false;
