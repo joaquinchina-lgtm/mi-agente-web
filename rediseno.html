@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es" data-menu="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rediseño de servicios · Joaquín Romero Roldán</title>
+<meta name="description" content="Rediseñar un servicio público o universitario desde quien lo usa, con inteligencia colectiva y sin interrumpir el funcionamiento diario.">
+<link rel="canonical" href="https://joaquinromero.com/rediseno.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán">
+<meta property="og:url" content="https://joaquinromero.com/rediseno.html">
+<meta property="og:title" content="Rediseño de servicios">
+<meta property="og:description" content="Un servicio se rediseña desde quien lo usa, no desde quien lo gestiona.">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff;--soft:#EAF0F1;--brandd:#22525C}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.rx-s{max-width:820px;margin:0 auto;padding:0 24px}
+.rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
+.rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.rx-hero h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;max-width:17ch}
+.rx-hero .lead{font-size:clamp(19px,2vw,23px);line-height:1.42;color:#2c3733;max-width:46ch;margin:0}
+.rx-author{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.45;color:#41504b;padding-left:15px;border-left:2px solid var(--brand)}
+.rx-rule{max-width:1120px;margin:0 auto;padding:0 24px}
+.rx-rule hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+.rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
+.rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
+.rx-s p{margin:0 0 18px}
+.rx-s p.big{font-size:21px;line-height:1.42}
+.rx-s strong{font-weight:700}
+.rx-s em{font-style:italic;color:#2c3733}
+
+/* cuatro competencias */
+.rx-core{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:720px){.rx-core{grid-template-columns:1fr 1fr}}
+.rx-core li{background:#fff;padding:26px 24px}
+.rx-core .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-core b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:20px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-core .def{display:block;font-size:16px;line-height:1.44;color:#41504b;margin:0 0 14px}
+.rx-core .sub{margin:0;padding-left:1.05em;font-size:14.5px;line-height:1.5;color:#5c6360}
+.rx-core .sub li{background:none;padding:0 0 5px}
+.rx-core .sub b{display:inline;font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;letter-spacing:0;color:var(--ink)}
+
+/* fases */
+.rx-fases{list-style:none;margin:26px 0 0;padding:0;counter-reset:f}
+.rx-fases li{counter-increment:f;position:relative;padding:0 0 26px 62px;border-left:1px solid var(--line);margin-left:15px}
+.rx-fases li:last-child{border-left-color:transparent;padding-bottom:0}
+.rx-fases li::before{content:counter(f,decimal-leading-zero);position:absolute;left:-16px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/32px 'Inter',sans-serif;text-align:center}
+.rx-fases b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-fases span{display:block;color:#41504b;font-size:16.5px;line-height:1.42}
+
+/* instrumentos */
+.rx-inst{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
+.rx-inst li{border-bottom:1px solid var(--line);padding:19px 0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){.rx-inst li{grid-template-columns:220px 1fr;gap:24px;align-items:baseline}}
+.rx-inst b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-inst span{color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-dif{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 0}
+@media(min-width:720px){.rx-dif{grid-template-columns:1fr 1fr}}
+.rx-dif > div{background:#fff;padding:24px 22px}
+.rx-dif h3{margin:0 0 8px;font-size:19px}
+.rx-dif p{margin:0;font-size:16.5px;line-height:1.42;color:#41504b}
+
+.rx-quien{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-quien span{color:#41504b;font-size:16.5px;flex:1;min-width:240px}
+
+.rx-desp{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-desp li{border-bottom:1px solid var(--line);padding:17px 0;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:baseline}
+.rx-desp b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em}
+.rx-desp span{grid-column:1/-1;color:#41504b;font-size:16px;line-height:1.42}
+.rx-desp i{font-style:normal;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:5px 9px;white-space:nowrap}
+.rx-desp i.on{color:var(--brandd);background:var(--soft);border-color:#cfe0e4}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-precio-l{margin:22px 0 0;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.rx-precio-l b{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,3vw,38px);letter-spacing:-.03em;color:var(--brand)}
+.rx-precio-l i{font-style:normal;font-size:15px;color:#5c6360}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
+
+.rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
+.rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-cta a:hover{background:var(--brandd)}
+.rx-foot{max-width:1120px;margin:64px auto 0;padding:26px 24px 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rx-foot a{color:var(--brand);text-decoration:none}
+
+</style>
+<link rel="stylesheet" href="/assets/nav.css">
+</head>
+<body>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Ideas</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+    </nav>
+    <button class="jr-burger" type="button" aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <p class="jr-menu-kicker">Navegación</p>
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
+  </nav>
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/tarjeta/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+
+
+<section class="rx-hero">
+  <p class="kick">Rediseño de servicios</p>
+  <h1>Un servicio se rediseña desde quien lo usa, no desde quien lo gestiona</h1>
+  <p class="lead">Un programa corto para repensar un servicio público o universitario con las personas que lo prestan y las que lo reciben, y dejarlo listo para desplegar. Sin parar el funcionamiento diario.</p>
+  <p class="rx-author">Es una metodología de diseño propio: la diseño, la coordino y la imparto. La he desarrollado dirigiendo el rediseño de servicios de una universidad pública desde dentro, y la he llevado después a otras organizaciones.</p>
+</section>
+<div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El programa en cifras">
+  <ul>
+    <li><b>8</b><span>semanas de programa, de principio a entregable</span></li>
+    <li><b>4</b><span>competencias que se instalan en la organización</span></li>
+    <li><b>20&ndash;25</b><span>personas líderes del servicio en la sesión central</span></li>
+    <li><b>6</b><span>meses de hoja de ruta al salir</span></li>
+  </ul>
+</section>
+
+<main class="rx-s">
+
+<h2>Cuál es el problema</h2>
+<p class="big">Casi todos los servicios públicos y universitarios están diseñados alrededor del proceso administrativo que los originó, no alrededor de la persona que los usa.</p>
+<p>Es una herencia razonable: el servicio nació para tramitar algo y se organizó como se organiza un trámite. El problema aparece cuando la organización crece y cada unidad optimiza su parte. Entonces el servicio funciona por dentro —cada silo cumple— y falla por fuera: quien lo usa tiene que recorrer cuatro ventanillas para resolver una sola cosa, y nadie es responsable del recorrido completo.</p>
+<p>La reacción habitual es reorganizar el organigrama o comprar una herramienta digital. Ninguna de las dos toca el problema, porque el problema no es de estructura ni de software: es que <strong>nadie ha mirado el servicio desde el otro lado del mostrador</strong>.</p>
+
+<h2>El punto de partida</h2>
+<p class="big">No se rediseña un servicio desde fuera. Se rediseña con las personas que lo prestan, y contrastándolo con las que lo reciben.</p>
+<p>Un rediseño impuesto se cumple mientras dura la atención de la dirección y después vuelve a su sitio. Uno construido por las personas que lo sostienen se queda, porque lo sienten propio. Por eso el método es participativo por diseño, no por cortesía: la inteligencia colectiva no es un adorno de la sesión, es el mecanismo que hace que el rediseño sobreviva.</p>
+<p>La segunda condición es de forma: el rediseño tiene que ser <em>no invasivo</em>. Una organización pública no puede parar. El método está construido en ciclos cortos y compatibles con el funcionamiento diario, y ese es un requisito de partida, no una concesión.</p>
+
+<h2>Las cuatro competencias</h2>
+<p>El programa no deja solo un servicio rediseñado: deja instaladas cuatro capacidades para que la organización pueda repetirlo sin ayuda externa.</p>
+<ol class="rx-core">
+  <li><span class="n">CORE 1</span><b>Foco centrado en el usuario</b>
+    <span class="def">Diseñar el servicio desde cero implicando a quien lo usa y a las partes interesadas.</span>
+    <ul class="sub">
+      <li><b>Escucha activa para el diagnóstico:</b> interpretar la perspectiva ajena para identificar necesidades y oportunidades, no para confirmar la propia.</li>
+      <li><b>Comprensión de tendencias sociales:</b> anticipar los cambios del entorno que van a afectar al servicio.</li>
+      <li><b>Comprensión de la experiencia de usuario:</b> entender comportamientos, motivaciones y expectativas reales.</li>
+    </ul></li>
+  <li><span class="n">CORE 2</span><b>Uso de la inteligencia colectiva</b>
+    <span class="def">Construir procesos que incorporen todas las perspectivas y sensibilidades, también las incómodas.</span>
+    <ul class="sub">
+      <li><b>Facilitación comunitaria:</b> dinamizar procesos colaborativos y alinear a un equipo núcleo.</li>
+      <li><b>Identificación de capacidades:</b> detectar las fortalezas que ya existen dentro y asignar recursos en consecuencia.</li>
+      <li><b>Comunicación e influencia:</b> articular las ideas con claridad suficiente para que se decidan.</li>
+    </ul></li>
+  <li><span class="n">CORE 3</span><b>Metodología ligera y ágil</b>
+    <span class="def">Repensar el papel del servicio de forma no invasiva y compatible con el funcionamiento diario.</span>
+    <ul class="sub">
+      <li><b>Diseño iterativo:</b> ciclos breves con retroalimentación para probar, afinar y escalar.</li>
+      <li><b>Colaboración transversal:</b> trabajar entre equipos académicos, administrativos y técnicos con responsabilidad compartida.</li>
+      <li><b>Integración <i>lean</i>:</b> incorporar la innovación a la operación diaria sin añadir complejidad.</li>
+    </ul></li>
+  <li><span class="n">CORE 4</span><b>Comunidades en torno a un laboratorio</b>
+    <span class="def">Crear un ecosistema alrededor del servicio y de un espacio propio donde el rediseño continúe.</span>
+    <ul class="sub">
+      <li><b>Mapeo del ecosistema:</b> identificar y conectar a los actores relevantes dentro y fuera.</li>
+      <li><b>Sostenibilidad y continuidad:</b> gobernanza que mantenga el ecosistema vivo cuando el programa termina.</li>
+    </ul></li>
+</ol>
+
+<h2>Cómo se trabaja</h2>
+<p>Ocho semanas, cinco sesiones y un trabajo de análisis entre medias. La secuencia sube y baja de nivel a propósito: empieza y termina en la dirección, y en el centro trabaja con quienes prestan el servicio.</p>
+<ol class="rx-fases">
+  <li><b>Arranque con la dirección</b><span>Se fijan las claves de partida, se define el modelo del servicio y se eligen sus funciones clave: responsabilidades de gestión, competencias y valores.</span></li>
+  <li><b>Evaluación de las funciones clave</b><span>Un formulario individual recoge, para cada función, una valoración numérica y una identificación de puntos fuertes y áreas de mejora. El tratamiento es agregado y anónimo, y eso es lo que permite que aparezcan las tensiones reales.</span></li>
+  <li><b>Sesión con las personas líderes del servicio</b><span>Se devuelve el modelo y los resultados agregados, se contrastan las funciones clave y se trabaja sobre los cuellos de botella y la coordinación entre unidades. Sale con propuestas concretas y responsables.</span></li>
+  <li><b>Investigación y construcción de la propuesta</b><span>Trabajo de análisis y síntesis que ordena todo lo anterior e incorpora el contexto: entorno, tendencias, regulación, oferta comparable y necesidades detectadas.</span></li>
+  <li><b>Escenarios futuros y diseño con enfoque a usuario</b><span>Dos sesiones, una con los agentes externos del ecosistema y otra con los equipos internos —no solo los líderes—, para construir escenarios y diseñar el servicio y sus programas desde la necesidad del usuario.</span></li>
+  <li><b>Validación y despliegue</b><span>Se contrasta con la dirección que el rediseño responde a lo que el servicio necesita, que es viable y que genera alineamiento. Se fijan gobernanza, indicadores y hoja de ruta.</span></li>
+</ol>
+
+<h2>Los instrumentos</h2>
+<p>Cada sesión tiene una herramienta detrás, probada y con un resultado tangible. No son dinámicas de relleno.</p>
+<ul class="rx-inst">
+  <li><b>Radar de madurez</b><span>Ocho dimensiones —liderazgo y gobernanza, cultura de innovación, capacidades, recursos, alianzas, procesos, capacidad digital y medición de impacto— puntuadas de 0 a 5 por cada participante y volcadas en un mapa colectivo. Produce un diagnóstico visual en una sola sesión.</span></li>
+  <li><b>Prospectiva de escenarios</b><span>De las incertidumbres externas a escenarios contrastados, y de ahí a las implicaciones estratégicas y a los movimientos que convienen pase lo que pase.</span></li>
+  <li><b>Evaluación de funciones clave</b><span>Valoración individual y anónima de cada función del servicio, con puntos fuertes y áreas de mejora. Convierte una conversación de pasillo en un material de trabajo.</span></li>
+  <li><b>Matriz de impacto y factibilidad</b><span>Para priorizar sin discutir: cada debilidad y cada oportunidad se sitúan en dos ejes y aparece solo lo que se puede abordar en tres a seis meses.</span></li>
+  <li><b>Mapa de actores y <i>blueprint</i> de servicio</b><span>Quién interviene, en qué momento y qué ocurre por detrás de cada punto de contacto. Es donde se ven los silos.</span></li>
+  <li><b>Hoja de ruta de seis meses</b><span>Exploración, diseño y validación mes a mes, con una actividad, un resultado y un punto de control por mes, y los recursos y riesgos escritos al lado.</span></li>
+</ul>
+
+<h2>Qué lo hace diferente</h2>
+<div class="rx-dif">
+  <div><h3>Empieza por las funciones, no por el organigrama</h3><p>El primer acuerdo no es quién depende de quién, sino qué tiene que saber hacer el servicio. Discutir cajas antes que funciones es la forma más rápida de bloquear un rediseño.</p></div>
+  <div><h3>La evaluación es anónima y agregada</h3><p>Es lo que hace que las áreas de mejora que todo el mundo conoce lleguen por fin a una mesa, sin coste personal para quien las señala.</p></div>
+  <div><h3>El usuario incluye a quien no es persona física</h3><p>En un servicio de empleo, los usuarios son las personas y también las empresas. Diseñar solo para uno de los dos lados es el origen de la mitad de los servicios que no se usan.</p></div>
+  <div><h3>No interrumpe la operación</h3><p>Ciclos cortos, sesiones acotadas y trabajo de análisis por detrás. Una administración no puede parar, y un método que exija pararla no se aplica.</p></div>
+  <div><h3>Termina en decisión, no en informe</h3><p>El entregable es un documento ejecutivo y operativo orientado a decidir: modelo, funciones, programas, condiciones de despliegue e indicadores.</p></div>
+  <div><h3>Deja capacidad instalada</h3><p>Las cuatro competencias se quedan en la organización. El objetivo declarado es que la segunda vez no haga falta llamarme.</p></div>
+</div>
+
+<h2>Para quién funciona</h2>
+<ul class="rx-quien">
+  <li><b>Administraciones públicas</b><span>Cuando un servicio debe aportar más valor a quien lo usa y la lógica de silos impide verlo entero.</span></li>
+  <li><b>Universidades</b><span>Cuando los servicios se diseñaron alrededor del procedimiento y hay que devolverlos al estudiante, al investigador y al personal.</span></li>
+  <li><b>Alianzas y redes de instituciones</b><span>Cuando varias organizaciones quieren un método común y no una consultoría distinta en cada una.</span></li>
+  <li><b>Tercer sector</b><span>Variante orientada a innovación social, con la misma estructura y otro criterio de impacto.</span></li>
+</ul>
+
+<h2>Dónde se ha desplegado</h2>
+<ul class="rx-desp">
+  <li><b>Universidad Pública de Navarra</b><i>Desde dentro</i><span>Rediseño de servicios como parte de la gerencia, entre 2016 y 2025. Es donde se construyó el método.</span></li>
+  <li><b>UNITA · Universitas Montium</b><i>Modelo común</i><span>Construcción de un modelo compartido de rediseño de servicios para las universidades de la alianza, con un programa presencial en Pamplona y sesiones en línea para prototipar un rediseño real en cada universidad.</span></li>
+</ul>
+
+<h2>Cómo se contrata</h2>
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>Un servicio concreto</b><span>Uno que importe y que esté dando problemas de verdad. No vale «los servicios» en abstracto.</span></li>
+  <li><b>La dirección, dos veces</b><span>Al principio para fijar el modelo y al final para validar. Sin eso, el rediseño no se despliega.</span></li>
+  <li><b>Las personas que lo prestan</b><span>De 20 a 25 líderes del servicio en la sesión central, y los equipos en la de diseño.</span></li>
+  <li><b>Acceso a quien lo usa</b><span>Personas y organizaciones usuarias, para contrastar fuera lo que se decide dentro.</span></li>
+  <li><b>Ocho semanas de calendario</b><span>El programa se puede espaciar, pero alargarlo más allá de un trimestre le quita la tensión que lo hace funcionar.</span></li>
+</ul>
+<h3>Orden de magnitud</h3>
+<p class="rx-precio-l"><b>Hasta 15.000 €</b> <i>+ IVA, por programa</i></p>
+<p class="rx-nota">Es un techo, no una tarifa: la horquilla se mueve con el número de sesiones, el tamaño del servicio y si hay que contrastar también con agentes externos del ecosistema. Prefiero decirlo aquí a que lo descubras en la tercera reunión.</p>
+
+<div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Redise%C3%B1o%20de%20servicios">Hablemos del servicio que quieres rediseñar</a></div>
+
+</main>
+
+<div class="rx-foot">
+  <span>Joaquín Romero Roldán · Consejero-asesor independiente</span>
+  <span><a href="/">joaquinromero.com</a></span>
+</div>
+<script src="/assets/nav.js" defer></script>
+</body></html>
