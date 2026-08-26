@@ -139,6 +139,31 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 .rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
 .rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:190px}
 .rx-quien span{color:#41504b;font-size:16.5px;flex:1}
+.rx-forma{margin:26px 0 0;padding:0;list-style:none;display:grid;gap:1px;background:var(--line);
+  border:1px solid var(--line)}
+@media(min-width:760px){.rx-forma{grid-template-columns:1fr 1fr}}
+.rx-forma li{background:#fff;padding:22px 22px}
+.rx-forma b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;
+  line-height:1.2;letter-spacing:-.02em;margin:0 0 7px}
+.rx-forma span{display:block;font-size:15.5px;line-height:1.42;color:#41504b}
+.rx-forma .ej{display:block;margin-top:8px;font-size:13px;color:#7a827e}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;
+  align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+
+.rx-precio{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-precio li{border-bottom:1px solid var(--line);padding:18px 0;display:grid;
+  grid-template-columns:1fr auto;gap:8px 20px;align-items:baseline}
+.rx-precio b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-precio i{font-style:normal;font-family:'Archivo',sans-serif;font-weight:600;font-size:20px;
+  letter-spacing:-.025em;color:var(--brand);white-space:nowrap}
+.rx-precio span{grid-column:1/-1;font-size:15px;line-height:1.4;color:#7a827e}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;
+  padding-left:15px;border-left:2px solid var(--line)}
+
 .rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
 .rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
 .rx-author{margin:20px 0 0;max-width:52ch;font-size:16.5px;line-height:1.45;color:#41504b;
@@ -407,6 +432,34 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 </ul>
 <p style="margin-top:20px">Y en diseño con otras universidades y corporaciones industriales.</p>
 <p>Cada despliegue se adapta al problema y a la organización, pero la estructura —cuatro módulos, equipos mixtos, evaluación por hitos y entregable escalable— se mantiene.</p>
+
+<h2>Cómo se contrata</h2>
+<p>El Reactor no se vende por horas ni por entregable: se contrata por edición. Lo que cambia de un despliegue a otro no es el método —cuatro módulos, equipos mixtos, evaluación por hitos y entregable escalable— sino la forma en que se encaja dentro de la organización.</p>
+
+<h3>Qué forma toma</h3>
+<ul class="rx-forma">
+  <li><b>Dentro de un programa de doctorado</b><span>Seis meses, integrado en la formación doctoral, con los doctorandos como equipo núcleo.</span><span class="ej">Universidad Pública de Navarra.</span></li>
+  <li><b>Como microcredencial oficial</b><span>Título propio universitario con reconocimiento académico, abierto a participantes de dentro y fuera de la institución.</span><span class="ej">Universidad de Oviedo, 4 ECTS.</span></li>
+  <li><b>Con equipos de investigación</b><span>Los investigadores de la organización trabajan sobre un problema propio, con el ecosistema alrededor como mentoría.</span></li>
+  <li><b>Con profesionales de varios sectores</b><span>El equipo núcleo se compone a propósito con perfiles de procedencias distintas, dentro y fuera de la organización.</span><span class="ej">Orfeón Pamplonés.</span></li>
+</ul>
+
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>Un equipo núcleo</b><span>De 10 a 25 personas, organizadas en grupos de tres a cinco de disciplinas que no suelen coincidir.</span></li>
+  <li><b>Un problema real</b><span>Uno que importe de verdad, todavía sin resolver y sin solución decidida de antemano.</span></li>
+  <li><b>Tiempo entre sesiones</b><span>El trabajo de campo ocurre fuera del aula: hablar con expertos, con operadores y con quien sufre el problema.</span></li>
+  <li><b>Acceso a su propio conocimiento</b><span>Investigadores y especialistas de la casa que acompañen a los equipos. El método activa el conocimiento que ya está dentro.</span></li>
+  <li><b>Alguien que pueda decidir</b><span>El resultado es una decisión —seguir, variar, escalar, invertir o parar—, y alguien tiene que estar en condiciones de tomarla.</span></li>
+</ul>
+
+<h3>Orden de magnitud</h3>
+<ul class="rx-precio">
+  <li><b>Universidades y centros de investigación</b><i>8.000 &ndash; 15.000 €</i><span>Según el número de equipos, la duración y la profundidad del acompañamiento entre sesiones.</span></li>
+  <li><b>Administraciones públicas</b><i>8.000 &ndash; 15.000 €</i><span>El mismo orden de magnitud, con la variante orientada a servicio público.</span></li>
+  <li><b>Industria y grandes corporaciones</b><i>en torno a 45.000 €</i><span>Alcance mayor: más equipos en paralelo y acompañamiento más intensivo.</span></li>
+</ul>
+<p class="rx-nota">Son órdenes de magnitud, no tarifas cerradas. Prefiero decirlos aquí a que descubras el precio en la tercera reunión: si el orden no encaja con lo que tu organización puede destinar, mejor saberlo hoy.</p>
 
 <div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Reactor%20de%20Innovaci%C3%B3n">Hablemos de un Reactor en tu organización</a></div>
 
