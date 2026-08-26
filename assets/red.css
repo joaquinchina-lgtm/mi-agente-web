@@ -1,0 +1,61 @@
+/* =====================================================================
+   red.css · sección «Red de colaboradores» de la portada
+   Índice con retrato pequeño: en blanco y negro, a color al pasar el
+   ratón o al abrir la ficha (que es lo que funciona en táctil).
+   ===================================================================== */
+#red{--r-ink:#16211f;--r-body:#4b5551;--r-mut:#8b938f;--r-dim:#b3bab6;
+     --r-hair:#e2e0d9;--r-brand:#32717E}
+#red .red-eyebrow{margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--r-brand)}
+#red .red-lede{margin:0 0 34px;max-width:64ch;font-size:17px;line-height:1.6;color:#5c6662}
+
+#red .red-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--r-hair)}
+#red .red-list > li{border-bottom:1px solid var(--r-hair);position:relative;transition:background .2s}
+#red .red-list > li:hover{background:#fff}
+#red .red-list > li::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--r-brand);transform:scaleY(0);transition:transform .22s}
+#red .red-list > li:hover::before,#red .red-list > li.is-open::before{transform:scaleY(1)}
+
+#red .l-head{display:grid;grid-template-columns:88px 1fr 26px;gap:22px;align-items:center;width:100%;
+  text-align:left;font:inherit;color:inherit;background:none;border:0;padding:20px 8px;cursor:pointer;
+  transition:padding .2s;-webkit-tap-highlight-color:transparent}
+#red .red-list > li:hover .l-head{padding-left:20px}
+#red .l-head:focus-visible{outline:2px solid var(--r-brand);outline-offset:-2px}
+
+#red .l-foto{width:88px;height:88px;overflow:hidden;background:#f2f1ec;border:1px solid var(--r-hair)}
+#red .l-foto img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:grayscale(1) contrast(1.02);transition:filter .45s ease}
+#red .red-list > li:hover .l-foto img,
+#red .red-list > li.is-open .l-foto img{filter:grayscale(0) contrast(1)}
+
+#red .l-n{display:block;margin:0 0 4px;font-family:'Archivo',system-ui,sans-serif;font-weight:600;
+  font-size:clamp(19px,1.8vw,23px);line-height:1.16;letter-spacing:-.024em;color:var(--r-ink)}
+#red .l-r{display:block;margin:0;font-size:14.5px;line-height:1.45;color:#6f7773;max-width:62ch}
+
+#red .l-mas{width:26px;height:26px;border:1px solid var(--r-hair);border-radius:50%;
+  display:grid;place-items:center;position:relative;transition:.2s}
+#red .l-mas::before,#red .l-mas::after{content:"";position:absolute;background:var(--r-mut);transition:.25s}
+#red .l-mas::before{width:11px;height:1.5px}
+#red .l-mas::after{width:1.5px;height:11px}
+#red .l-head:hover .l-mas,#red .red-list > li.is-open .l-mas{border-color:var(--r-brand)}
+#red .l-head:hover .l-mas::before,#red .l-head:hover .l-mas::after,
+#red .red-list > li.is-open .l-mas::before,#red .red-list > li.is-open .l-mas::after{background:var(--r-brand)}
+#red .red-list > li.is-open .l-mas::after{transform:rotate(90deg);opacity:0}
+
+#red .l-bio{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s cubic-bezier(.4,0,.2,1)}
+#red .red-list > li.is-open .l-bio{grid-template-rows:1fr}
+#red .l-bio > div{overflow:hidden}
+#red .l-bio p{margin:0;padding:0 8px 24px 118px;font-size:15.5px;line-height:1.58;
+  color:var(--r-body);max-width:78ch}
+
+#red .red-foot{margin-top:26px;font-size:14.5px;color:var(--r-mut)}
+
+@media(max-width:640px){
+  #red .l-head{grid-template-columns:64px 1fr 24px;gap:16px;padding:16px 6px}
+  #red .l-foto{width:64px;height:64px}
+  #red .l-bio p{padding-left:6px}
+  #red .red-list > li:hover .l-head{padding-left:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  #red .l-foto img,#red .l-bio,#red .l-head{transition:none}
+}
