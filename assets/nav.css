@@ -36,6 +36,19 @@
 .jr-links a:hover{color:var(--jr-ink)}
 .jr-links a[aria-current]{color:var(--jr-ink); font-weight:600}
 
+/* --- llamada a contactar, solo en escritorio ------------------------------ */
+.jr-links a.jr-contact,
+.jr-contact{
+  display:inline-flex; align-items:center; margin-left:4px;
+  font:600 13.5px/1 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.01em; color:var(--jr-brand); text-decoration:none;
+  border:1px solid var(--jr-brand); border-radius:2px; padding:9px 16px;
+  transition:background .16s ease, color .16s ease;
+}
+.jr-links a.jr-contact:hover,
+.jr-contact:hover{background:var(--jr-brand); color:#fff}
+.jr-contact:focus-visible{outline:2px solid var(--jr-brand); outline-offset:2px}
+
 /* --- icono: dos trazos desnudos que mutan a X ---------------------------- */
 .jr-burger{
   display:none; width:44px; height:44px; margin-right:-10px; padding:0;
@@ -152,6 +165,7 @@ html[data-menu="dark"] .jr-quiet{color:rgba(255,255,255,.6)}
 /* --- móvil --------------------------------------------------------------- */
 @media (max-width:767px){
   .jr-links{display:none}
+  .jr-contact{display:none}
   .jr-burger{display:inline-flex}
 }
 
