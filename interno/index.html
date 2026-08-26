@@ -6802,6 +6802,46 @@ async function consolaMotor(s){
       }
       if(limpiadas) preguntas = await API.preguntas(s.id);
 
+      /* PREGUNTAS DEL BANCO QUE CAMBIARON DESPUÉS DE MONTARSE LA SESIÓN
+
+         Corregir el banco NO corrige las sesiones que ya existen: el texto
+         de cada pregunta se copió a la fila el día que se añadió y ahí se
+         quedó. Lo descubrí mirando las cuatro sesiones de escenarios de
+         Joaquín después de arreglar la P54: en el banco decía lo nuevo y
+         en las cuatro seguía diciendo lo viejo. En la sala, la gente lee
+         la fila, no el banco.
+
+         Se refresca solo si se cumplen las TRES condiciones, porque cada
+         una tapa una forma distinta de estropear el trabajo de alguien:
+           · el texto guardado es EXACTAMENTE el viejo → nadie lo ha
+             editado a mano desde «Contenido…», así que no piso nada suyo;
+           · la pregunta no tiene respuestas → nadie contestó a la versión
+             vieja, así que no dejo respuestas colgando de un enunciado
+             que ya no existe;
+           · hay una entrada en el banco con ese código.
+         Si alguna falla, se queda como está y se dice en pantalla. */
+      const REDACCIONES_VIEJAS = {
+        P54: "¿Qué señal observable indicaría que nos estamos acercando a este escenario?"
+      };
+      const refrescadas = [], congeladas = [];
+      for(const [cod, viejo] of Object.entries(REDACCIONES_VIEJAS)){
+        const p = preguntas.find(x => x.codigo === cod);
+        if(!p || (p.titulo || "").trim() !== viejo) continue;
+        const base = BANCO.find(x => x.c === cod);
+        if(!base) continue;
+        let n = 1;
+        try{ const r = await API.resultadosPregunta(s.codigo, p.id);
+             n = (r && r.respondidos) || 0; }catch(e){ n = 1; }
+        if(n){ congeladas.push(cod); continue; }
+        try{
+          const cambios = {titulo: resolverTexto(base.q, vars),
+            ayuda: base.ayuda ? resolverTexto(base.ayuda, vars) : null,
+            config: resolverCfg(base.cfg)};
+          await API.actualizarPregunta(p.id, cambios);
+          Object.assign(p, cambios); refrescadas.push(cod);
+        }catch(e){ congeladas.push(cod); }
+      }
+
       const ess = ((s.modelo||{}).escenarios || []).filter(e => e && (e.nombre||"").trim());
       /* Y se repone SIEMPRE que falte, no solo cuando se acaba de limpiar.
          La condición anterior era «si he borrado algo y no hay P48», y en
@@ -6861,10 +6901,16 @@ async function consolaMotor(s){
         p.orden = i + 1;
       }
       if(movidas) preguntas = await API.preguntas(s.id);
-      if(limpiadas || repuesta || movidas){
+      if(limpiadas || repuesta || movidas || refrescadas.length || congeladas.length){
         avisoCarga = `<div class="aviso">`
           + (limpiadas ? `Retiradas <b>${limpiadas} pantallas</b> de la versión anterior
                del taller. ` : "")
+          + (refrescadas.length ? `Puesta al día la redacción de
+               <b>${refrescadas.join(", ")}</b>: esta sesión se montó con la versión
+               anterior del banco y conservaba el texto viejo. ` : "")
+          + (congeladas.length ? `<b>No</b> se ha podido actualizar
+               ${congeladas.join(", ")}: ya tiene respuestas, y cambiarle el enunciado
+               ahora dejaría esas respuestas contestando a otra pregunta. ` : "")
           + (repuesta ? `Repuesta la <b>P48</b> como una sola matriz de robustez${
                ess.length === 4 ? ", con los cuatro escenarios de columnas"
                                 : " (le faltan las columnas: ponles nombre a los escenarios)"
