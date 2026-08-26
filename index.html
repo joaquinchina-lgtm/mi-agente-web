@@ -1032,7 +1032,7 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
           ${esCaso && p.facts ? `<ul class="c-facts">${p.facts.map(f=>`<li><b>${esc(f[0])}</b>${esc(f[1])}</li>`).join('')}</ul>` : ''}`;
       }
       const press = (esCaso && p.press) ? `<div class="c-press"><div class="inner">
-          <span class="lbl">Repercusión en medios</span>
+          <span class="lbl">${esc(p.pressLabel || 'Repercusión en medios')}</span>
           <div class="outs">${p.press.map(m=>`<a href="${esc(m.href)}" target="_blank" rel="noopener">${esc(m.out)}</a>`).join('')}</div>
         </div></div>` : '';
       return `<li data-tags="${esc((p.tags||[]).join('|'))}" data-type="${esc(p.type)}">
