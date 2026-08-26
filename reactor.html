@@ -141,6 +141,49 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 .rx-quien span{color:#41504b;font-size:16.5px;flex:1}
 .rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
 .rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-author{margin:20px 0 0;max-width:52ch;font-size:16.5px;line-height:1.45;color:#41504b;
+  padding-left:15px;border-left:2px solid var(--brand)}
+.rx-jump{margin:22px 0 0}
+.rx-jump a{font:600 14.5px/1 'Inter',sans-serif;color:var(--brand);text-decoration:none;
+  border-bottom:1px solid rgba(50,113,126,.35);padding-bottom:3px}
+.rx-jump a:hover{border-bottom-color:var(--brand)}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);
+  border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:34px;
+  line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+.rx-desp{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-desp li{border-bottom:1px solid var(--line);padding:17px 0;display:grid;
+  grid-template-columns:1fr auto;gap:6px 18px;align-items:baseline}
+.rx-desp b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em}
+.rx-desp span{grid-column:1/-1;color:#41504b;font-size:16px;line-height:1.42}
+.rx-desp i{font-style:normal;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.13em;
+  text-transform:uppercase;color:#5c6360;border:1px solid var(--line);padding:5px 9px;white-space:nowrap}
+.rx-desp i.on{color:#22525C;background:#EAF0F1;border-color:#cfe0e4}
+
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;display:grid;gap:1px;background:var(--line);
+  border:1px solid var(--line)}
+@media(min-width:760px){.rx-sale{grid-template-columns:1fr 1fr}}
+.rx-sale li{background:#fff;padding:24px 22px}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;
+  line-height:1.2;letter-spacing:-.02em;margin:0 0 8px}
+.rx-sale span{display:block;font-size:15.5px;line-height:1.42;color:#41504b}
+.rx-sale .aut{display:block;margin-top:9px;font-size:13px;line-height:1.4;color:#7a827e}
+.rx-press{margin:13px 0 0;padding-top:12px;border-top:1px solid #eef0ef}
+.rx-press .lbl{display:block;margin-bottom:8px;font:700 10px/1 'Inter',sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;color:#9aa29e}
+.rx-press .outs{display:flex;gap:7px;flex-wrap:wrap}
+.rx-press .outs a{font:600 12.5px/1 'Inter',sans-serif;color:#41504b;border:1px solid var(--line);
+  padding:6px 10px;text-decoration:none;display:inline-flex;gap:6px;align-items:center;transition:.16s}
+.rx-press .outs a::after{content:"\2197";font-size:10px;color:#9aa29e}
+.rx-press .outs a:hover{border-color:var(--brand);color:#22525C}
+.rx-press .outs a:hover::after{color:var(--brand)}
+
 .rx-foot{max-width:1120px;margin:0 auto;padding:26px 24px 60px;border-top:1px solid var(--line);color:#5c6360;font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .rx-foot a{color:#2b6270}
 </style>
@@ -234,7 +277,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
       <a href="/#proyectos">Proyectos</a>
       <a href="/#servicios">Servicios</a>
       <a href="/#red">Red</a>
-      <a href="/#blog">Blog</a>
+      <a href="/#blog">Ideas</a>
       <a href="/interno/" rel="nofollow">Área interna</a>
     </nav>
 
@@ -262,7 +305,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
     <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
     <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
     <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
-    <a href="/#blog"      style="--i:4"><span class="num">05</span>Blog</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
   </nav>
 
   <div class="jr-menu-foot">
@@ -275,8 +318,19 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
   <p class="kick">Reactor de Innovación</p>
   <h1>Un motor para convertir conocimiento en valor</h1>
   <p class="lead">Un programa de cuatro a seis meses que pone a trabajar juntos a investigadores, empresas y responsables de decisión sobre problemas reales, hasta que dejan de ser una intuición y se convierten en algo que se puede construir.</p>
+  <p class="rx-author">Es un programa de diseño propio: lo diseño, lo coordino y lo imparto en cada edición. La dirección académica la asume siempre la universidad anfitriona.</p>
+  <p class="rx-jump"><a href="#agentes">Probar la cadena de siete agentes que recorre el método &darr;</a></p>
 </section>
 <div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El Reactor en cifras">
+  <ul>
+    <li><b>4</b><span>despliegues, uno de ellos en marcha</span></li>
+    <li><b>3</b><span>ediciones en la Universidad Pública de Navarra</span></li>
+    <li><b>4&ndash;6</b><span>meses por edición</span></li>
+    <li><b>10&ndash;25</b><span>personas en el equipo núcleo</span></li>
+  </ul>
+</section>
 
 <main class="rx-s">
 
@@ -301,13 +355,40 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 
 <h2>Qué lo hace diferente</h2>
 <div class="rx-dif">
-  <div><h3>El Board of Killers</h3><p>Un panel que evalúa cada hito con un mandato explícito: encontrar por qué esto no va a funcionar. No es un tribunal amable, sino un mecanismo que evita que un equipo dedique seis meses a una solución elegante para un problema que a nadie le duele.</p></div>
+  <div><h3>El panel que intenta tumbarlo</h3><p>Un panel que evalúa cada hito con un mandato explícito: encontrar por qué esto no va a funcionar. No es un tribunal amable, sino un mecanismo que evita que un equipo dedique seis meses a una solución elegante para un problema que a nadie le duele.</p></div>
   <div><h3>Se prototipa el problema</h3><p>Antes de construir nada hay que hacer tangible el problema: simularlo, maquetarlo o definir cómo se sabría que está resuelto. Es lo que separa este método de un taller de ideación.</p></div>
   <div><h3>Equipos deliberadamente incómodos</h3><p>Un equipo núcleo de 10 a 25 personas, organizadas en grupos de trabajo de tres a cinco, de disciplinas que no suelen coincidir. Quien genera ideas no suele ser quien las escala, y ninguno de los dos es el experto que sabe descartarlas. El método necesita los tres perfiles en la misma mesa.</p></div>
   <div><h3>Mentoría experta en investigación y transferencia</h3><p>Investigadores de la propia organización y agentes del ecosistema acompañan a los equipos. El conocimiento no viene de fuera a explicar: se activa el que ya está dentro y se conecta con el que falta.</p></div>
   <div><h3>Siete agentes de IA propios y un mapeo de recursos específico</h3><p>Una cadena de asistentes diseñada específicamente para el método, que acompaña a los equipos entre sesión y sesión. No sustituye el trabajo de campo: lo ordena y lo somete a crítica.</p></div>
   <div><h3>Deja capacidad instalada</h3><p>Al terminar, la organización no se queda con un informe: se queda con un grupo de personas que han hecho el recorrido completo y saben repetirlo. Ese es el resultado que se busca.</p></div>
 </div>
+
+<h2>Qué sale de un Reactor</h2>
+<p>La tercera edición en la Universidad Pública de Navarra se cerró en junio de 2026 con cuatro propuestas, todas ellas nacidas de un presentimiento y llevadas hasta el punto de poder decidir sobre ellas.</p>
+<ul class="rx-sale">
+  <li><b>Detección temprana de incendios forestales</b>
+    <span>Una red de sensores que combina tecnologías ya existentes en el mercado, adaptada al terreno y ampliable por tramos según las necesidades.</span>
+    <span class="aut">Paula Corella Guillamón, Aitor Ezker Galech y Anaraida García Baigorri.</span>
+    <div class="rx-press"><span class="lbl">Repercusión en medios</span><div class="outs">
+      <a href="https://www.rtve.es/play/videos/telenavarra/detectar-incendios-sensores/17202502/" target="_blank" rel="noopener">RTVE · Telenavarra</a>
+      <a href="https://www.diariodenavarra.es/noticias/navarra/2026/08/07/tres-estudiantes-doctorado-upna-proponen-sistema-sensores-adelantar-deteccion-incendios-forestales-831067-15.html" target="_blank" rel="noopener">Diario de Navarra</a>
+      <a href="https://www.cope.es/emisoras/navarra/noticias/asi-red-sensores-creada-tres-estudiantes-upna-anticipa-deteccion-incendios-forestales-tecnologias-planteamos-utilizar-existen-mercado-20260817_3420646.html" target="_blank" rel="noopener">COPE Navarra</a>
+      <a href="https://www.noticiasdenavarra.com/sociedad/2026/08/07/upna-idea-sistema-detectar-instante-incendios-forestales-11415486.html" target="_blank" rel="noopener">Noticias de Navarra</a>
+      <a href="https://navarra.okdiario.com/articulo/sociedad/radar-creado-universidad-publica-navarra-detectar-incendios-forestales-antes-que-sea-demasiado-tarde/20260808131132656390.html" target="_blank" rel="noopener">okdiario</a>
+    </div></div>
+  </li>
+  <li><b>Sistema de control de la polilla de la vid</b>
+    <span>Respuesta a una plaga cuyo comportamiento está cambiando con el clima, planteada desde los recursos del propio sector.</span>
+    <span class="aut">Unai Fernández Ortega, Amaia Gastearena Irigoyen, Cristina Goya Gárriz, Nerea Sarasa Gil y Eduardo Zudaire Belda.</span>
+  </li>
+  <li><b>Excedente alimentario en aeropuertos</b>
+    <span>Tratamiento del alimento que hoy se descarta en la operación aeroportuaria, reformulado como un problema de logística y no de residuos.</span>
+  </li>
+  <li><b>Gestión y evaluación de residuos urbanos</b>
+    <span>Medición y decisión sobre residuos urbanos en un contexto municipal, con el foco puesto en qué se puede comprobar.</span>
+  </li>
+</ul>
+<p class="rx-fuente" style="margin-top:16px;font-size:14.5px;color:#7a827e">Las cuatro propuestas y su clausura, en la <a href="https://www.unavarra.es/sites/actualidad/contents/noticias/2026/06/23/curso_reactor_innovacion_clausur.html" target="_blank" rel="noopener" style="color:#2b6270">nota de la Universidad Pública de Navarra</a>.</p>
 
 <h2>Para quién funciona</h2>
 <ul class="rx-quien">
@@ -318,7 +399,13 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 </ul>
 
 <h2>Dónde se ha desplegado</h2>
-<p>El Reactor se ha ejecutado en la <strong>Universidad Pública de Navarra</strong>, la <strong>Universidad de Oviedo</strong> y el <strong>Orfeón Pamplonés</strong>. Está en marcha en la <strong>Universidad Autónoma de Madrid</strong> y en diseño con otras universidades y corporaciones industriales.</p>
+<ul class="rx-desp">
+  <li><b>Universidad Pública de Navarra</b><i>Tres ediciones</i><span>La última se cerró en junio de 2026 con cuatro propuestas en respuesta al cambio climático.</span></li>
+  <li><b>Universidad de Oviedo</b><i>Microcredencial oficial</i><span>Como título propio de 4 ECTS —Creati.UO—, de marzo a julio de 2026.</span></li>
+  <li><b>Orfeón Pamplonés</b><i>Ejecutado</i><span>Variante para una organización cultural, con la misma estructura y otro criterio de impacto.</span></li>
+  <li><b>Universidad Autónoma de Madrid</b><i class="on">En marcha</i><span>Edición en curso.</span></li>
+</ul>
+<p style="margin-top:20px">Y en diseño con otras universidades y corporaciones industriales.</p>
 <p>Cada despliegue se adapta al problema y a la organización, pero la estructura —cuatro módulos, equipos mixtos, evaluación por hitos y entregable escalable— se mantiene.</p>
 
 <div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Reactor%20de%20Innovaci%C3%B3n">Hablemos de un Reactor en tu organización</a></div>
@@ -335,7 +422,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
     <div class="ag"><span class="n">03</span><span class="t">Personas</span><span class="d">Quién sabe, quién opera y quién lo sufre. Cómo encontrarlos y qué preguntarles para que te desmientan.</span></div>
     <div class="ag"><span class="n">04</span><span class="t">Escala</span><span class="d">Reduce el problema hasta que quepa en los recursos disponibles sin dejar de ser el mismo problema.</span></div>
     <div class="ag"><span class="n">05</span><span class="t">Impacto</span><span class="d">Qué cambia si esto funciona, para quién y con qué métrica se comprueba.</span></div>
-    <div class="ag"><span class="n">06</span><span class="t">Crítico</span><span class="d">Busca por qué esto no va a funcionar. Es el Board of Killers en versión asistente.</span></div>
+    <div class="ag"><span class="n">06</span><span class="t">Crítico</span><span class="d">Busca por qué esto no va a funcionar. Es el panel evaluador en versión asistente.</span></div>
     <div class="ag"><span class="n">07</span><span class="t">Orquestador</span><span class="d">Integra las salidas anteriores en un kit que otra persona pueda continuar.</span></div>
   </div>
   <details>
