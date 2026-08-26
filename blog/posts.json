@@ -1,0 +1,81 @@
+{
+  "_comentario": "Fuente única de la sección «Ideas, medios y casos prácticos» de la portada. Para añadir algo, copia un bloque y edítalo. El orden da igual: la web ordena por fecha descendente. Campos comunes: type (articulo | caso | medio), date (AAAA-MM-DD), title, desc, tags, href. Solo articulo/caso: img. Solo caso: role, facts (pares [cifra, texto]) y press. Solo medio: outlet, kind (Entrevista | Tribuna | Mención | Podcast), quote (frase tuya entrecomillada; sustituye a desc) y who.",
+  "_regla_medios": "En «medio» solo entran piezas que te citen, te entrevisten o lleven tu firma. Si la pieza no te nombra, no es una aparición tuya: va como press dentro del caso al que pertenece.",
+  "items": [
+    {
+      "type": "caso",
+      "date": "2026-06-23",
+      "title": "Reactor de Innovación · UPNA, tercera edición",
+      "desc": "Programa de diseño propio que convierte problemas reales en proyectos prototipables: nueve sesiones en las que doctorandos, empresas e investigadores trabajan sobre un problema real hasta dejarlo listo para prototipar. La dirección académica la asume siempre la universidad anfitriona —en la UPNA, la catedrática Cristina Bayona Sáez—.",
+      "role": "Diseño del programa, coordinación y docencia.",
+      "facts": [["3", "ediciones"], ["4", "propuestas en la última"], ["9", "sesiones por edición"]],
+      "press": [
+        { "out": "RTVE · Telenavarra", "href": "https://www.rtve.es/play/videos/telenavarra/detectar-incendios-sensores/17202502/" },
+        { "out": "Diario de Navarra", "href": "https://www.diariodenavarra.es/noticias/navarra/2026/08/07/tres-estudiantes-doctorado-upna-proponen-sistema-sensores-adelantar-deteccion-incendios-forestales-831067-15.html" },
+        { "out": "COPE Navarra", "href": "https://www.cope.es/emisoras/navarra/noticias/asi-red-sensores-creada-tres-estudiantes-upna-anticipa-deteccion-incendios-forestales-tecnologias-planteamos-utilizar-existen-mercado-20260817_3420646.html" },
+        { "out": "Noticias de Navarra", "href": "https://www.noticiasdenavarra.com/sociedad/2026/08/07/upna-idea-sistema-detectar-instante-incendios-forestales-11415486.html" },
+        { "out": "okdiario Navarra", "href": "https://navarra.okdiario.com/articulo/sociedad/radar-creado-universidad-publica-navarra-detectar-incendios-forestales-antes-que-sea-demasiado-tarde/20260808131132656390.html" }
+      ],
+      "tags": ["Innovación"],
+      "href": "/reactor.html"
+    },
+    {
+      "type": "caso",
+      "date": "2026-03-26",
+      "title": "El Reactor, replicado en la Universidad de Oviedo",
+      "desc": "El mismo programa, esta vez como microcredencial universitaria oficial de 4 ECTS —Creati.UO—, de marzo a julio de 2026.",
+      "role": "Diseño del programa, coordinación y docencia.",
+      "facts": [["4", "ECTS"]],
+      "press": [
+        { "out": "Ficha oficial · Universidad de Oviedo", "href": "https://www.uniovi.es/estudia/titulospropios/microcredenciales/oferta/-/asset_publisher/NCtkAT4jPSMb/content/id/13781207" }
+      ],
+      "tags": ["Innovación"],
+      "href": "/reactor.html"
+    },
+    {
+      "type": "articulo",
+      "date": "2026-06-08",
+      "title": "¿Qué le pasa al mundo?",
+      "desc": "Algunas claves para un mundo que está pasando de ser complicado a ser complejo.",
+      "tags": ["Innovación", "Europa"],
+      "href": "/blog/art05.html",
+      "img": "/assets/img/art05.webp"
+    },
+    {
+      "type": "articulo",
+      "date": "2026-01-09",
+      "title": "¿Qué puedes hacer tú por Europa?",
+      "desc": "Indicadores y organización de un comité para que la innovación sume a la creación de valor.",
+      "tags": ["Europa", "Innovación"],
+      "href": "/blog/art04.html",
+      "img": "/assets/img/art04.webp"
+    },
+    {
+      "type": "articulo",
+      "date": "2025-10-20",
+      "title": "¿El milagro de la normalidad?",
+      "desc": "15 años del Orfeón Pamplonés en el Carnegie Hall de Nueva York.",
+      "tags": ["Cultura"],
+      "href": "/blog/art03.html",
+      "img": "/assets/img/art03.webp"
+    },
+    {
+      "type": "articulo",
+      "date": "2025-10-14",
+      "title": "Consejos asesores en PYMEs: una palanca para crecer en valor",
+      "desc": "Un órgano no vinculante, flexible y a medida que se está consolidando como herramienta de alto impacto para ganar perspectiva más allá del día a día.",
+      "tags": ["Consejos"],
+      "href": "/blog/art02.html",
+      "img": "/assets/img/art02.webp"
+    },
+    {
+      "type": "articulo",
+      "date": "2025-10-07",
+      "title": "¿Por qué nos cuesta tanto innovar?",
+      "desc": "Algunas claves que explican un déficit histórico y que nos pueden ayudar a superarlo.",
+      "tags": ["Innovación", "Crecimiento en valor"],
+      "href": "/blog/art01.html",
+      "img": "/assets/img/art01.webp"
+    }
+  ]
+}

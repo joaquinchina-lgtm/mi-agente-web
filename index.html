@@ -690,6 +690,7 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..800;1,300..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/nav.css">
+<link rel="stylesheet" href="/assets/blog-index.css">
 </head>
 
 <body>
@@ -975,142 +976,139 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 
 <section id="blog">
   <div class="container">
-    <h2 class="section-title">Blog</h2>
-    <p class="section-sub">Ideas, proyectos y casos prácticos sobre innovación, estrategia, liderazgo, consejos asesores y otros temas de actualidad.</p>
+    <p class="b-eyebrow">Ideas</p>
+    <h2 class="section-title">Ideas, medios y casos prácticos</h2>
+    <p class="section-sub">Artículos propios, casos de trabajo real y apariciones en prensa sobre innovación, estrategia, liderazgo y consejos asesores. Escribo para defender una idea, no para rellenar.</p>
 
-    <!-- Carrusel -->
-    <div class="blog-wrap featured" aria-label="Artículos destacados">
-      <div class="slider" role="region" aria-roledescription="carrusel" aria-label="Destacados">
-        <div class="slides" id="blog-slides"><!-- lo rellena JS --></div>
-        <button class="ctrl prev" aria-label="Anterior" type="button">‹</button>
-        <button class="ctrl next" aria-label="Siguiente" type="button">›</button>
-        <div class="dots" aria-hidden="true"></div>
-      </div>
+    <div class="ftype" id="b-ftype" role="group" aria-label="Filtrar por tipo"></div>
+    <div class="ftheme" id="b-ftheme" role="group" aria-label="Filtrar por tema"></div>
+    <ol class="idx" id="b-list"></ol>
+    <p class="b-empty" id="b-empty" hidden>No hay nada con ese filtro.</p>
+    <div class="b-foot">
+      <span id="b-count"></span>
+      <a href="https://www.linkedin.com/in/joaquinromeroroldan/" target="_blank" rel="noopener">También publico en LinkedIn →</a>
     </div>
-
+    <div id="blog-peek" aria-hidden="true"><img alt=""></div>
 
   <script>
   (function () {
-    // --- 0) Manifest (fallback para file:// o si falla la lectura) ---
-    const MANIFEST = [
-  {
-    href: 'blog/art05.html',
-    title: '¿Qué le pasa al mundo?',
-    desc:  'Algunas claves para un mundo que está pasando de ser complicado a ser complejo.',
-    dateISO: '2026-06-08', dateText: '08 jun 2026',
-    tags: ['Europa','Innovación'],
-    fallbackImg: 'assets/img/art05.webp'
-  },
-  {
-    href: 'blog/art04.html',
-    title: '¿Qué puedes hacer tú por Europa',
-    desc:  'Indicadores y organización de un comité para que la innovación sume a la creación de valor.',
-    dateISO: '2026-01-09', dateText: '09 jan 2026',
-    tags: ['Europa','Innovación'],
-    fallbackImg: 'assets/img/art04.webp'
-  },
-  {
-    href: 'blog/art03.html',
-    title: '¿El milagro de la normalidad?',
-    desc:  '15 años del Orfeón Pamplonés en el Carnegie Hall de Nueva York.',
-    dateISO: '2025-10-20', dateText: '20 oct 2025',
-    tags: ['Cultura','Orfeón','Música','Innovación'],
-    fallbackImg: 'assets/img/art03.webp'
-  },
-  {
-    href: 'blog/art02.html',
-    title: 'Consejos asesores en PYMEs: una palanca para crecer en valor',
-    desc:  'La creación de un consejo asesor —órgano no vinculante, flexible y a la medida de la empresa— se está consolidando como una herramienta de alto impacto para ganar perspectiva y generar valor más allá del día a día operativo',
-    dateISO: '2025-10-14', dateText: '14 oct 2025',
-    tags: ['PYMEs','Consejos'],
-    fallbackImg: 'assets/img/art02.webp'
-  },  
-  {
-    href: 'blog/art01.html',
-    // TÍTULO y DESCRIPCIÓN que quieres ver también en local (file://)
-    title: '¿Por qué nos cuesta tanto innovar?',
-    desc:  'Algunas claves que explican un déficit histórico y que nos pueden ayudar a superarlo.',
-    dateISO: '2025-10-06', dateText: '06 oct 2025',
-    tags: ['Innovación','Crecimiento en valor'],
-    // FALLBACK que exista de verdad en /assets/img/
-    fallbackImg: 'assets/img/art01.webp'
-  }
-];
+    const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const fecha = iso => { const [a,m,d] = iso.split('-'); return `${d} ${MES[+m-1]} ${a}`; };
+    const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const TIPOS = { articulo:'Artículo', caso:'Caso práctico', medio:'En medios' };
+    const ETIQ  = { articulo:'Artículos', caso:'Casos prácticos', medio:'En los medios' };
 
-    const USE_FETCH = location.protocol !== 'file:'; // En local file:// no podemos leer otros ficheros
+    const listEl  = document.getElementById('b-list');
+    const emptyEl = document.getElementById('b-empty');
+    const cntEl   = document.getElementById('b-count');
+    const fT      = document.getElementById('b-ftype');
+    const fH      = document.getElementById('b-ftheme');
+    const peek    = document.getElementById('blog-peek');
+    if (!listEl) return;
 
-    // --- 1) Funciones para leer portada/título/desc desde cada HTML ---
-    const META_IMG = ['meta[property="og:image"]','meta[name="twitter:image"]','meta[name="thumbnail"]'];
-    const META_DESC = ['meta[property="og:description"]','meta[name="description"]'];
-    function abs(u, base){ try { return new URL(u, base).href; } catch { return null; } }
+    fetch('/blog/posts.json', {cache:'no-cache'})
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(d => arrancar((d.items || []).filter(i => i && i.type && !i.example)))
+      .catch(() => {
+        emptyEl.hidden = false;
+        emptyEl.innerHTML = 'No se ha podido cargar el listado. <a href="/blog/art05.html">Ir al último artículo →</a>';
+      });
 
-    async function readArticleInfo(url){
-      if (!USE_FETCH) return null; // en file:// saltamos
-      const r = await fetch(url, {credentials:'same-origin'});
-      if (!r.ok) throw new Error('Fetch fail '+url);
-      const html = await r.text();
-      const doc  = new DOMParser().parseFromString(html,'text/html');
-
-      // título
-      let title = doc.querySelector('meta[property="og:title"]')?.content?.trim()
-                || doc.querySelector('title')?.textContent?.trim()
-                || doc.querySelector('h1')?.textContent?.trim() || null;
-
-      // desc
-      let desc; for (const s of META_DESC){ const m=doc.querySelector(s); if(m?.content){ desc=m.content.trim(); break; } }
-
-      // imagen
-      let img; for (const s of META_IMG){ const m=doc.querySelector(s); if(m?.content){ img = abs(m.content, url); if(img) break; } }
-      if (!img) {
-        const firstImg = doc.querySelector('article img, main article img, main img, img');
-        const src = firstImg?.getAttribute('src') || firstImg?.src;
-        if (src) img = abs(src, url);
+    function fila(p, ultimoPropio){
+      const nuevo   = p === ultimoPropio;
+      const esMedio = p.type === 'medio';
+      const esCaso  = p.type === 'caso';
+      const externo = /^https?:/.test(p.href);
+      let cuerpo;
+      if (esMedio) {
+        cuerpo = `<p class="m-out">${esc(p.outlet)}<span class="ext" aria-hidden="true">↗</span></p>
+          <p class="m-t">«${esc(p.title)}»</p>
+          ${p.quote ? `<blockquote class="m-q">«${esc(p.quote)}»${p.who?`<cite>${esc(p.who)}</cite>`:''}</blockquote>`
+                    : (p.desc ? `<p class="m-d">${esc(p.desc)}</p>` : '')}`;
+      } else {
+        cuerpo = `<h3 class="a-t">${esc(p.title)}${nuevo?'<span class="a-new">Último</span>':''}</h3>
+          ${p.desc ? `<p class="a-d">${esc(p.desc)}</p>` : ''}
+          ${esCaso && p.role ? `<p class="c-role"><b>Mi papel</b>${esc(p.role)}</p>` : ''}
+          ${esCaso && p.facts ? `<ul class="c-facts">${p.facts.map(f=>`<li><b>${esc(f[0])}</b>${esc(f[1])}</li>`).join('')}</ul>` : ''}`;
       }
-      return {title, desc, img};
-    }
-
-    // --- 2) Pinta carrusel + grid con manifest, y luego “hidrata” desde HTMLs (si se puede) ---
-    const slidesEl = document.getElementById('blog-slides');
-    const gridEl   = document.getElementById('blog-grid');
-
-    function renderAll(posts){
-      // Carrusel
-      slidesEl.innerHTML = posts.map(p => `
-        <article class="slide" itemscope itemtype="https://schema.org/BlogPosting">
-          <img class="hero" src="${p.img || p.fallbackImg}" alt="Imagen destacada: ${p.title}" loading="lazy" decoding="async" itemprop="image">
-          <a href="${p.href}" class="stretched" aria-label="Abrir: ${p.title}" style="position:absolute;inset:0;display:block;text-indent:-9999px;overflow:hidden;">${p.title}</a>
-          <div class="caption">
-            <a href="${p.href}" style="color:#fff;text-decoration:none;">
-              <h3 itemprop="headline">${p.title}</h3>
-            </a>
-            <meta itemprop="datePublished" content="${p.dateISO}">
-            <meta itemprop="author" content="Joaquín Romero Roldán">
+      const press = (esCaso && p.press) ? `<div class="c-press"><div class="inner">
+          <span class="lbl">Repercusión en medios</span>
+          <div class="outs">${p.press.map(m=>`<a href="${esc(m.href)}" target="_blank" rel="noopener">${esc(m.out)}</a>`).join('')}</div>
+        </div></div>` : '';
+      return `<li data-tags="${esc((p.tags||[]).join('|'))}" data-type="${esc(p.type)}">
+        <a class="art" href="${esc(p.href)}"${externo?' target="_blank" rel="noopener"':''}${p.img?` data-img="${esc(p.img)}"`:''}>
+          <div class="a-meta">
+            <time class="a-date" datetime="${esc(p.date)}">${fecha(p.date)}</time>
+            <span class="a-kind is-${esc(p.type)}">${esc(esMedio ? (p.kind || TIPOS.medio) : TIPOS[p.type])}</span>
           </div>
-        </article>
-      `).join('');
-
-      // Activa tu JS de carrusel si lo tienes (tu archivo ya trae el script que mueve .slides). :contentReference[oaicite:1]{index=1}
+          <div>${cuerpo}</div>
+          <div class="a-tags">${(p.tags||[]).map(t=>`<i>${esc(t)}</i>`).join('')}</div>
+        </a>${press}</li>`;
     }
 
-    // Primero pintamos con manifest (instantáneo)
-    renderAll(MANIFEST);
+    function arrancar(items){
+      items.sort((a,b) => b.date.localeCompare(a.date));
+      const ultimoPropio = items.find(i => i.type !== 'medio');
+      const cuenta = t => items.filter(i => i.type === t).length;
+      const presentes = Object.keys(TIPOS).filter(t => cuenta(t) > 0);
+      const temas = [...new Set(items.flatMap(i => i.tags || []))]
+        .map(t => ({t, n: items.filter(i => (i.tags||[]).includes(t)).length}))
+        .sort((a,b) => b.n - a.n || a.t.localeCompare(b.t));
 
-    // Después intentamos “beber” de las HTMLs para título/desc/portada
-    (async () => {
-      if (!USE_FETCH) return; // en file:// nos quedamos con manifest
-      const hydrated = await Promise.all(MANIFEST.map(async m => {
-        try {
-          const info = await readArticleInfo(m.href);
-          return {
-            ...m,
-            title: info?.title || m.title,
-            desc:  info?.desc  || m.desc,
-            img:   info?.img   || m.fallbackImg
-          };
-        } catch { return m; }
-      }));
-      renderAll(hydrated);
-    })();
+      fT.innerHTML = `<button type="button" data-t="*" aria-pressed="true">Todo<sup>${items.length}</sup></button>` +
+        presentes.map(t => `<button type="button" data-t="${t}" aria-pressed="false">${ETIQ[t]}<sup>${cuenta(t)}</sup></button>`).join('');
+      fH.innerHTML = `<span class="lbl">Tema</span>` +
+        temas.map(o => `<button type="button" data-h="${esc(o.t)}" aria-pressed="false">${esc(o.t)}</button>`).join('');
+      listEl.innerHTML = items.map(p => fila(p, ultimoPropio)).join('');
+
+      let tipo = '*', tema = null;
+      function aplicar(){
+        let n = 0;
+        listEl.querySelectorAll('li').forEach(li => {
+          const ok = (tipo === '*' || li.dataset.type === tipo) &&
+                     (!tema || li.dataset.tags.split('|').includes(tema));
+          li.hidden = !ok; if (ok) n++;
+        });
+        emptyEl.hidden = n > 0;
+        cntEl.textContent = (tipo === '*' && !tema)
+          ? `${items.length} publicaciones`
+          : `${n} de ${items.length} publicaciones`;
+      }
+      fT.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return;
+        tipo = b.dataset.t;
+        fT.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        aplicar();
+      });
+      fH.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return;
+        const on = b.getAttribute('aria-pressed') === 'true';
+        tema = on ? null : b.dataset.h;
+        fH.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(!on && x === b)));
+        aplicar();
+      });
+      aplicar();
+
+      /* miniatura flotante, solo con ratón */
+      if (peek && matchMedia('(hover:hover)').matches) {
+        const img = peek.querySelector('img');
+        let raf = null, px = 0, py = 0;
+        const mover = () => { peek.style.left = px + 'px'; peek.style.top = py + 'px'; raf = null; };
+        listEl.addEventListener('mouseover', e => {
+          const a = e.target.closest('.art'); if (!a || !a.dataset.img) return;
+          img.src = a.dataset.img; peek.classList.add('on');
+        });
+        listEl.addEventListener('mouseout', e => {
+          if (e.target.closest('.art') && !(e.relatedTarget && e.relatedTarget.closest('.art'))) peek.classList.remove('on');
+        });
+        document.addEventListener('mousemove', e => {
+          if (!peek.classList.contains('on')) return;
+          px = Math.min(e.clientX + 200, innerWidth - 160);
+          py = Math.max(120, Math.min(e.clientY, innerHeight - 120));
+          if (!raf) raf = requestAnimationFrame(mover);
+        }, {passive:true});
+      }
+    }
   })();
   </script>
 </div></section>
@@ -1360,70 +1358,7 @@ Gracias.`;
     }
   })();
 </script>
-<script>
-(function(){
-  const root   = document.querySelector('#blog .slider');
-  if (!root) return;
-
-  const track  = root.querySelector('.slides');
-  const slides = Array.from(root.querySelectorAll('.slide'));
-  const prev   = root.querySelector('.prev');
-  const next   = root.querySelector('.next');
-  const dots   = root.querySelector('.dots');
-
-  let idx = 0, lock = false;
-
-  // Dots
-  slides.forEach((_, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.setAttribute('aria-label', 'Ir al destacado ' + (i+1));
-    b.addEventListener('click', () => go(i));
-    dots.appendChild(b);
-  });
-
-  function update(){
-    track.style.transform = `translateX(-${idx * 100}%)`;
-    dots.querySelectorAll('button').forEach((b,i) => b.setAttribute('aria-current', i===idx ? 'true' : 'false'));
-  }
-  function go(n){
-    if (lock) return;
-    lock = true;
-    idx = (n + slides.length) % slides.length;
-    update();
-    setTimeout(()=> lock=false, 450);
-  }
-  prev.addEventListener('click', () => go(idx - 1));
-  next.addEventListener('click', () => go(idx + 1));
-  update();
-
-  // Teclado
-  root.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft')  go(idx - 1);
-    if (e.key === 'ArrowRight') go(idx + 1);
-  });
-  root.tabIndex = 0; // foco para teclado
-
-  // Swipe táctil
-  let sx=0, dx=0;
-  track.addEventListener('touchstart', (e)=>{ sx = e.touches[0].clientX; }, {passive:true});
-  track.addEventListener('touchmove',  (e)=>{ dx = e.touches[0].clientX - sx; }, {passive:true});
-  track.addEventListener('touchend',   ()=>{ if (Math.abs(dx)>40) (dx<0? go(idx+1):go(idx-1)); sx=dx=0; });
-
-  // Auto-rotación opcional (10s). Descomenta si quieres:
-  // setInterval(()=> go(idx+1), 10000);
-
-  // GA4 (opcional): clic en controles
-  function gaEvent(action,label){
-    if (typeof gtag === 'function'){
-      gtag('event', action, { event_category:'Blog Carousel', event_label: label });
-    }
-  }
-  prev.addEventListener('click', ()=>gaEvent('carousel_prev','Prev'));
-  next.addEventListener('click', ()=>gaEvent('carousel_next','Next'));
-  dots.querySelectorAll('button').forEach((b,i)=> b.addEventListener('click', ()=>gaEvent('carousel_dot','Dot '+(i+1))));
-})();
-</script>
+<!-- carrusel del blog retirado: la sección es ahora un índice -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
