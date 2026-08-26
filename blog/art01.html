@@ -27,120 +27,11 @@
 <meta name="twitter:description" content="I+D+i: un error en la fórmula que deforma de manera crítica nuestra visión de la innovación.">
 <meta name="twitter:image" content="https://joaquinromero.com/assets/share/share-art01-1200x630.jpg">
 
-  <style>
-    :root{
-      --brand:#32717E;
-      --ink:#0e1326;
-      --muted:#6b7280;
-      --bg:#f6f7fb;
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:#111827;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-    a{color:var(--brand);text-decoration:none}
-    a:hover{text-decoration:underline}
-
-    /* ======= LECTURA ======= */
-    .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
-    .article{
-      max-width:72ch; /* columna cómoda de lectura */
-      margin:40px auto 64px;
-    }
-    .article .kicker{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
-    .article h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 6px}
-    .meta{font-size:13px;color:var(--muted);margin-bottom:14px}
-
-/* HERO responsive */
-    .hero{
-      position: relative;
-      margin: 14px 0 18px;
-      border-radius: 16px;
-      overflow: hidden;
-      width: 100%;
-      aspect-ratio: 21/9;   /* panorámico en desktop */
-      background: #fff;
-    }
-
-/* En móvil, dale más altura (mejor lectura) */
-    @media (max-width: 768px){
-      .hero{ aspect-ratio: 16/9; }  /* puedes usar 4/3 si lo prefieres */
-    }
-
-/* Imagen dentro del hero: ocupa todo, recorta bien */
-    .hero > img{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;    /* recorte elegante sin deformar */
-      display: block;
-    }
-
-/* Imágenes fluidas por si algún <img> trae width/height en el HTML */
-img{ max-width:100%; height:auto; display:block; }
-img[width], img[height]{ width:100% !important; height:auto !important; }
-
-
-    .hero figcaption{display:none}
-
-    .prose{font-size:18px;line-height:1.75}
-    .prose > p{margin:1em 0}
-    .prose h2{font-size:clamp(22px,2.6vw,28px);line-height:1.3;margin:1.6em 0 .5em}
-    .prose h3{font-size:clamp(18px,2.2vw,22px);line-height:1.4;margin:1.4em 0 .4em}
-    .prose ul, .prose ol{padding-left:1.25rem;margin:1em 0}
-    .prose blockquote{
-      margin:1.2em 0;padding:12px 14px;border-left:4px solid var(--brand);
-      background:#fff;border-radius:12px;color:#374151
-    }
-    .share{display:flex;gap:10px;align-items:center;margin-top:22px}
-    .back{margin-top:28px;font-size:14px}
-
-    /* progreso de lectura (opcional) */
-    .progress{
-      position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),#06b6d4);
-      width:0%;z-index:60
-    }
-
-    @media (max-width:720px){
-      .article{margin:24px auto 48px}
-      .hero{aspect-ratio:16/9;max-height:260px}
-      .prose{font-size:17px}
-    }
-
-/* Contenedor fluido */
-/* Contenedor más ancho en desktop */
-:root{
-  --space: clamp(12px, 2.5vw, 24px);
-  --content: min(96vw, 1200px);   /* antes 720px */
-}
-
-.container{
-  width: 100%;
-  max-width: var(--content);       /* ¡importante! puede sobreescribir un max-width viejo */
-  margin: 0 auto;
-  padding: var(--space);
-}
-
-/* Tipografía e imágenes responsive */
-img, video, iframe{ max-width:100%; height:auto; display:block; }
-figure{ margin:0; }
-h1{ font-size: clamp(1.8rem, 1.2rem + 2vw, 2.4rem); line-height:1.2; }
-p, li{ line-height:1.65; }
-
-/* Si tienes dos columnas, colapsa a una en móvil */
-.article-grid{ display:grid; grid-template-columns: 1fr; gap: var(--space); }
-@media (min-width: 1000px){
-  .article-grid{
-    grid-template-columns: minmax(0, 1fr) 340px; /* contenido + aside */
-    column-gap: clamp(20px, 4vw, 48px);
-  }
-}
-
-/* Por si usaste tamaños fijos en <img width/height> */
-img[width], img[height]{ width:100% !important; height:auto !important; }
-
-  </style>
-  <link rel="stylesheet" href="/assets/nav.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..800;1,300..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/article.css">
+<link rel="stylesheet" href="/assets/nav.css">
 </head>
 <body>
   <!-- barra de progreso -->
@@ -196,15 +87,18 @@ img[width], img[height]{ width:100% !important; height:auto !important; }
 
 <main class="article-grid container">
     <article class="article" itemscope itemtype="https://schema.org/BlogPosting">
-      <p class="kicker">Blog</p>
+      <p class="kicker"><a href="/#blog">← Ideas, medios y casos prácticos</a></p>
+      <p class="art-tags"><i>Innovación</i><i>Crecimiento en valor</i></p>
       <h1 itemprop="headline">¿Por qué nos cuesta tanto innovar?</h1>
+      <p class="standfirst">Algunas claves que explican un déficit histórico y que nos pueden ayudar a superarlo.</p>
       <p class="meta">
         <time itemprop="datePublished" datetime="2025-10-07">7 de octubre de 2025</time> ·
-        <span itemprop="author">Joaquín Romero Roldán</span>
+        <span itemprop="author">Joaquín Romero Roldán</span> &middot;
+        <span>4 min de lectura</span>
       </p>
 
       <figure class="hero">
-        <img src="../assets/img/art01.png" alt="Fregona, chupachups y futbolín" itemprop="image">
+        <img src="../assets/img/art01.webp" alt="Fregona, chupachups y futbolín" itemprop="image">
         <figcaption>Pie de foto (opcional)</figcaption>
       </figure>
 
@@ -228,7 +122,7 @@ Una empresa o institución crece más cuando se abre a la posibilidad de estar e
 <p>Los clústeres podrían ser una prometedora solución, pero todavía requieren de más impulso y, sobre todo, de avances en contenidos concretos (básicamente, enfocados a problemas) y dinámicas adecuadas que eliminen la sensación de "quedar para hablar". Porque las innovaciones se multiplican cuando ponemos en común recursos, talento y experiencia. Y las mejores soluciones surgen en las fronteras donde se cruzan disciplinas.</p>
 <p></p>
 <p><strong>3. Porque lo confundimos con el I+D</strong></p>
-<p>Tercer error: reducir innovación a I+D. La investigación y el desarrollo son cruciales, pero no bastan. El I+D ocurre en universidades, laboratorios y departamentos especializados; y es lineal: cuantos más recursos u¡invirtamos en ella, más conocimiento generarán… ahora bien, ¿es directamente aplicable en soluciones?</p>
+<p>Tercer error: reducir innovación a I+D. La investigación y el desarrollo son cruciales, pero no bastan. El I+D ocurre en universidades, laboratorios y departamentos especializados; y es lineal: cuantos más recursos invirtamos en ella, más conocimiento generarán… ahora bien, ¿es directamente aplicable en soluciones?</p>
 <p>Innovar, en cambio, es un proceso no lineal de interacciones, iteraciones y cultura compartida. Puede incluso no requerir recursos adicionales si se aprovecha bien el conocimiento ya generado (gran parte del cual duerme en cajones, se estima que más del 50% del conocimiento investigador en España está disponible).</p>
 <p>Delegarla en un departamento es cómodo: “ellos se encargan”. Pero mata su raíz: la convierte en un asunto meramente técnico, en vez de un ADN colectivo. Innovar de verdad supone que toda la organización (desde la dirección hasta la persona en primera línea) respire una actitud distinta frente al cambio.</p>
 <p></p>
@@ -263,11 +157,22 @@ Una empresa o institución crece más cuando se abre a la posibilidad de estar e
       <div class="share" aria-label="Compartir">
         <span style="color:#6b7280">Compartir:</span>
         <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://joaquinromero.com/blog/art01.html" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://twitter.com/intent/tweet?url=https://joaquinromero.com/blog/art01.html&text=Cómo%20convertir%20la%20estrategia%20en%20hábito%20semanal" target="_blank" rel="noopener">X</a>
+        <a href="https://twitter.com/intent/tweet?url=https://joaquinromero.com/blog/art01.html&text=%C2%BFPor%20qu%C3%A9%20nos%20cuesta%20tanto%20innovar%3F" target="_blank" rel="noopener">X</a>
       </div>
 
-      <p class="back"><a href="../index.html#blog">← Volver al Blog</a></p>
-    </article>
+      <nav class="next" aria-label="Otros artículos">
+        <p class="next-h">Seguir leyendo</p>
+        <div class="next-grid"><a href="art02.html"><span class="dir">Siguiente →</span><span class="t">Consejos asesores en PYMEs: una palanca para crecer en valor</span><p class="d">Un órgano no vinculante, flexible y a medida que se está consolidando como herramienta de alto impacto para ganar perspectiva más allá del día a día.</p></a></div>
+      </nav>
+
+      <aside class="art-cta">
+        <div>
+          <h2>¿Algo de esto te está pasando en tu organización?</h2>
+          <p>Acompaño a universidades, centros de I+D, industria, administraciones públicas y tercer sector a convertir problemas complejos en decisiones que se sostienen.</p>
+        </div>
+        <a href="/#servicios">Ver los servicios →</a>
+      </aside>
+</article>
   </main>
 
   <footer id="contacto">
