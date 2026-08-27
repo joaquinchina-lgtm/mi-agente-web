@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es" data-menu="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contraste de estrategia · Joaquín Romero Roldán</title>
+<meta name="description" content="Contrastar la estrategia de una organización con una visión externa: lo que dice de sí misma, lo que declara y lo que de verdad financia. Con prospectiva de escenarios y un cuadro de vigilancia temprana.">
+<link rel="canonical" href="https://joaquinromero.com/contraste.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán">
+<meta property="og:url" content="https://joaquinromero.com/contraste.html">
+<meta property="og:title" content="Contraste de estrategia para una estrategia ágil">
+<meta property="og:description" content="Una estrategia que no elige no es una estrategia. Es una declaración.">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff;--soft:#EAF0F1;--brandd:#22525C}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.rx-s{max-width:820px;margin:0 auto;padding:0 24px}
+.rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
+.rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.rx-hero h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;max-width:17ch}
+.rx-hero .lead{font-size:clamp(19px,2vw,23px);line-height:1.42;color:#2c3733;max-width:46ch;margin:0}
+.rx-author{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.45;color:#41504b;padding-left:15px;border-left:2px solid var(--brand)}
+.rx-rule{max-width:1120px;margin:0 auto;padding:0 24px}
+.rx-rule hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+.rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
+.rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
+.rx-s p{margin:0 0 18px}
+.rx-s p.big{font-size:21px;line-height:1.42}
+.rx-s strong{font-weight:700}
+.rx-s em{font-style:italic;color:#2c3733}
+
+/* los tres espejos del contraste */
+.rx-tres{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:760px){.rx-tres{grid-template-columns:repeat(3,1fr)}}
+.rx-tres li{background:#fff;padding:24px 22px}
+.rx-tres .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-tres b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-tres span{display:block;font-size:16px;line-height:1.44;color:#41504b}
+
+/* patrones que el contraste busca */
+.rx-pat{list-style:none;margin:26px 0 0;padding:0;counter-reset:pt;border-top:1px solid var(--line)}
+.rx-pat li{counter-increment:pt;border-bottom:1px solid var(--line);padding:19px 0 19px 46px;position:relative}
+.rx-pat li::before{content:counter(pt,decimal-leading-zero);position:absolute;left:0;top:20px;font:700 12px/1 'Inter',sans-serif;letter-spacing:.08em;color:var(--brand)}
+.rx-pat b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
+.rx-pat span{display:block;color:#41504b;font-size:16.5px;line-height:1.44}
+
+/* fases y bloques numerados */
+.rx-fases{list-style:none;margin:26px 0 0;padding:0;counter-reset:f}
+.rx-fases li{counter-increment:f;position:relative;padding:0 0 26px 62px;border-left:1px solid var(--line);margin-left:15px}
+.rx-fases li:last-child{border-left-color:transparent;padding-bottom:0}
+.rx-fases li::before{content:counter(f,decimal-leading-zero);position:absolute;left:-16px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/32px 'Inter',sans-serif;text-align:center}
+.rx-fases b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-fases span{display:block;color:#41504b;font-size:16.5px;line-height:1.42}
+
+/* instrumentos y columnas */
+.rx-inst{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
+.rx-inst li{border-bottom:1px solid var(--line);padding:19px 0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){.rx-inst li{grid-template-columns:220px 1fr;gap:24px;align-items:baseline}}
+.rx-inst b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-inst span{color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-dif{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 0}
+@media(min-width:720px){.rx-dif{grid-template-columns:1fr 1fr}}
+.rx-dif > div{background:#fff;padding:24px 22px}
+.rx-dif h3{margin:0 0 8px;font-size:19px}
+.rx-dif p{margin:0;font-size:16.5px;line-height:1.42;color:#41504b}
+
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-sale li{border-bottom:1px solid var(--line);padding:17px 0}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-sale span{display:block;color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-quien{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-quien span{color:#41504b;font-size:16.5px;flex:1;min-width:240px}
+
+.rx-desp{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-desp li{border-bottom:1px solid var(--line);padding:17px 0;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:baseline}
+.rx-desp b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em}
+.rx-desp span{grid-column:1/-1;color:#41504b;font-size:16px;line-height:1.42}
+.rx-desp i{font-style:normal;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:5px 9px;white-space:nowrap}
+.rx-desp i.on{color:var(--brandd);background:var(--soft);border-color:#cfe0e4}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
+.rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
+.rx-aviso b{font-weight:700}
+.rx-aviso p{margin:0 0 12px}
+.rx-aviso p:last-child{margin:0}
+
+.rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
+.rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-cta a:hover{background:var(--brandd)}
+.rx-foot{max-width:1120px;margin:64px auto 0;padding:26px 24px 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rx-foot a{color:var(--brand);text-decoration:none}
+
+</style>
+<link rel="stylesheet" href="/assets/nav.css">
+</head>
+<body>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Ideas</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+      <a class="jr-contact" href="/tarjeta/">Contactar</a>
+    </nav>
+    <button class="jr-burger" type="button" aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <p class="jr-menu-kicker">Navegación</p>
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
+  </nav>
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/tarjeta/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+
+
+<section class="rx-hero">
+  <p class="kick">Contraste de estrategia</p>
+  <h1>Una estrategia que no elige no es una estrategia</h1>
+  <p class="lead">Un contraste externo que pone a la dirección delante de sus propios dilemas, comprueba si lo que declara es lo que financia, y no se cierra hasta que hay decisiones con nombre y fecha.</p>
+  <p class="rx-author">Es un trabajo de diseño propio: lo diseño, lo coordino y lo conduzco. Nace de haber estado al otro lado —dirigiendo la gestión de una universidad pública y sentado en consejos de administración— y de haberlo aplicado después desde fuera, sin responsabilidad ejecutiva y por tanto sin nada que defender.</p>
+</section>
+<div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El contraste en cifras">
+  <ul>
+    <li><b>3</b><span>fuentes que se cruzan: lo que dice, lo que declara y lo que financia</span></li>
+    <li><b>4</b><span>escenarios de futuro contra los que se prueba cada opción</span></li>
+    <li><b>100</b><span>personas como máximo en las sesiones de inteligencia colectiva</span></li>
+    <li><b>5&ndash;6</b><span>señales de alerta temprana, cada una con nombre y fecha</span></li>
+  </ul>
+</section>
+
+<main class="rx-s">
+
+<h2>Cuál es el problema</h2>
+<p class="big">Casi ninguna organización tiene un problema de estrategia. Tiene un problema de elección: sabe formular bien las alternativas y evita quedarse con una.</p>
+<p>El plan estratégico se redacta, se aprueba y se publica. Y aun así, cuando se pone a la organización delante de las disyuntivas que ese plan supuestamente resuelve —masiva o personalizada, generalista o especializada, autónoma o alineada, centralizada o distribuida—, la respuesta que aparece una y otra vez es el punto medio. La ambivalencia se presenta como equilibrio, y suena razonable, porque nadie pierde nada.</p>
+<p>El coste llega después, y llega por dos vías. La primera es que <strong>lo que no se decide deliberadamente acaba decidiéndolo el presupuesto</strong>: el instrumento que reparte el dinero fija los ejes reales, y lo hace sin deliberación, por aritmética. La segunda es que un despliegue sobre una estrategia que no ha elegido produce trabajo técnicamente impecable sobre la pregunta equivocada.</p>
+<p>Contrastar es, exactamente, forzar esa elección antes de que la fuerce la caja.</p>
+
+<h2>Qué es un contraste y qué no es</h2>
+<p>Un contraste no es una auditoría, no es un acta de la sesión y no es una enmienda al proceso estratégico que la organización ya tiene en marcha. Tampoco es un plan alternativo escrito desde fuera: nadie que llegue de fuera conoce la institución mejor que quien la gobierna.</p>
+<p>Es otra cosa, y más incómoda: <strong>confrontar lo que la organización dice de sí misma con lo que su estrategia declara y con lo que su presupuesto financia</strong>. Tres fuentes que casi nunca se leen juntas, y cuya distancia es donde está todo el valor.</p>
+
+<ul class="rx-tres">
+  <li><span class="n">FUENTE 1</span><b>Lo que dice de sí misma</b><span>Un diagnóstico de cultura organizativa sobre seis dimensiones, en doble lectura: la cultura actual heredada y la deseada. Anónimo y agregado, para que las cosas que todo el mundo sabe lleguen por fin a una mesa.</span></li>
+  <li><span class="n">FUENTE 2</span><b>Lo que declara</b><span>El plan estratégico, la misión, los ejes y los compromisos públicos, leídos no por lo que prometen sino por las disyuntivas que dejan sin resolver.</span></li>
+  <li><span class="n">FUENTE 3</span><b>Lo que financia</b><span>El presupuesto y el instrumento que lo reparte —contrato-programa, plan plurianual, convenio—. Es el documento que dice la verdad, porque quien pone el dinero marca los ejes.</span></li>
+</ul>
+
+<h3>Los cuatro patrones que el contraste busca</h3>
+<p>No son hipótesis mías: son los patrones que aparecen con más frecuencia cuando se cruzan esas tres fuentes en una organización grande y deliberativa.</p>
+
+<ul class="rx-pat">
+  <li><b>La posición neutra</b><span>Ante una lista de dilemas, la organización se queda en el punto medio en la mayoría. Donde sí hay una postura nítida, la ha fijado el instrumento de financiación, no una deliberación.</span></li>
+  <li><b>La elección sin palanca</b><span>Cuando por fin elige, elige bien y elige lo exigente. El problema es que lo elegido no tiene dotación: el criterio débil está financiado y el fuerte no. Sin entrar en la negociación presupuestaria, la elección se queda en declaración.</span></li>
+  <li><b>La decisión externalizada</b><span>Un pacto con terceros, «escuchando a todos», «el marco ético ya existe». Cada fórmula es defendible por separado; juntas dibujan un patrón de diferir la decisión propia, y siempre hay una parte del problema que sí está bajo control de la casa.</span></li>
+  <li><b>El hueco en la casilla «quién»</b><span>La organización delibera bien y titulariza mal. La dificultad no aparece en el diagnóstico ni en las acciones: aparece al llegar al nombre del responsable. Y ese vicio de origen no se corrige después con datos.</span></li>
+</ul>
+
+<h2>Cómo se hace</h2>
+<ul class="rx-fases">
+  <li><b>Análisis previo y construcción de los dilemas</b><span>Se leen el plan, el presupuesto y el instrumento que lo financia, y se sitúa la posición real de la organización en una lista corta de dilemas construida para ella. Ese análisis es el espejo contra el que se leerá después todo lo que produzca la sesión.</span></li>
+  <li><b>La jornada de contraste</b><span>Una sesión introductoria de marco y contraste de los trabajos previos; el cuestionario de cultura en tiempo real; y un World Café de diseño con mesas por reto y rotación completa, de modo que cada participante pase por todas. A cada mesa se le pide lo mismo: elegir un criterio —paliativo o estructural—, proponer dos o tres acciones <em>con responsable</em>, y decir qué dato o qué decisión falta para poder actuar.</span></li>
+  <li><b>Prospectiva de escenarios futuros</b><span>El instrumento propio de escenarios, sobre las prioridades que la jornada haya elegido. No se abre hasta que estén cerradas las decisiones que la jornada dejó abiertas: construir escenarios sobre un déficit de titularidad no lo arregla, lo amplifica.</span></li>
+  <li><b>El cierre y el cuadro de vigilancia</b><span>Acciones comunes con nombre y plazo, adopción del cuadro de señales de alerta temprana y acta del cierre. Se saca antes de que se levante la sala.</span></li>
+</ul>
+
+<h2>El instrumento de escenarios futuros</h2>
+<p>Es la pieza más elaborada del servicio y funciona sobre una consola propia: los participantes responden desde el móvil, la sala ve los resultados en la pared, y nada se liga a personas identificadas. Recorre siete bloques.</p>
+
+<ul class="rx-fases">
+  <li><b>Pregunta focal y sistema</b><span>Sobre qué decisión y en qué horizonte se está haciendo prospectiva. Sin esto, los escenarios son literatura.</span></li>
+  <li><b>Entorno y fuerzas</b><span>Fuerzas de cambio clasificadas por ámbito, señales débiles que hoy parecen marginales, y reglas del sector que podrían romperse —con la causa de la ruptura y el sitio donde se notaría primero—. De aquí sale la lista de lo que puede darse por predeterminado.</span></li>
+  <li><b>Incertidumbres críticas</b><span>Las incertidumbres se recogen formuladas como variables neutrales («grado de centralización de las decisiones», no «exceso de centralización»), se agrupan, se votan y se sitúan en un mapa de impacto por incertidumbre.</span></li>
+  <li><b>Arquitectura de escenarios</b><span>Dos ejes y cuatro cuadrantes. Los ejes no se votan: se eligen en la preparación con un criterio duro que una votación no sabe aplicar —tienen que ser independientes entre sí, o los cuatro cuadrantes salen siendo dos—. El grupo aporta la materia prima; los ejes se eligen y se defienden.</span></li>
+  <li><b>El taller</b><span>La sala se reparte en cuatro grupos, uno por escenario, con una persona relatora que escribe lo que el grupo acuerda. Cada grupo construye el relato de su escenario y sus implicaciones, separando lo que serviría para <em>evitar</em> que ocurra de lo que serviría para <em>mitigarlo</em>: no son la misma pregunta, y juntas en una casilla la gente se salta la segunda.</span></li>
+  <li><b>Robustez</b><span>Wind tunneling: cada opción estratégica se valora en los cuatro escenarios, de perjudicial a muy valiosa. Lo que aguanta en los cuatro es lo que se puede decidir hoy. El resto es una apuesta, y conviene saber que lo es.</span></li>
+  <li><b>Prioridad y coste de esperar</b><span>Reparto de cien unidades de recursos entre las opciones, orden de prioridad para los próximos doce a veinticuatro meses, y una pregunta que ordena todo lo demás: qué decisión sería más costosa de posponer.</span></li>
+</ul>
+
+<h2>El cuadro de vigilancia temprana</h2>
+<p>Es la parte final del taller y la que decide si todo lo anterior sirve de algo. La sala escribe señales observables asociadas a cada escenario, y de ellas se adoptan unas pocas —cinco o seis, no quince—. Cada una sale con seis columnas:</p>
+
+<ul class="rx-inst">
+  <li><b>Indicador</b><span>Qué se mira exactamente.</span></li>
+  <li><b>Escenario</b><span>De cuál de los cuatro es señal. Sin esa atribución, el cuadro es una lista de deseos.</span></li>
+  <li><b>Umbral</b><span>El valor a partir del cual se activa una revisión de la estrategia. No «si empeora»: un número.</span></li>
+  <li><b>Quién lo mira</b><span>Un nombre y un apellido.</span></li>
+  <li><b>Revisión</b><span>Una fecha en el calendario, no una periodicidad genérica.</span></li>
+  <li><b>Estado hoy</b><span>Un semáforo, para tener la foto del día en que se acordó.</span></li>
+</ul>
+
+<p style="margin-top:22px">La exigencia está en la primera columna. Una señal tiene que poder mirarse sin discutirla: un dato, una decisión de un tercero, un cambio de precio. <em>«Aumenta la incertidumbre»</em> no es una señal, es una impresión.</p>
+
+<div class="rx-aviso">
+  <p><b>Y conviene decir lo que este cuadro no hace.</b> No vigila nada por sí solo. Es la foto del día del taller: un indicador cambia de estado porque alguien entra y lo cambia, y nadie vuelve a abrir una sesión de taller cinco meses después.</p>
+  <p>Lo único que sobrevive son las dos columnas de la derecha —el responsable y la fecha de revisión—, y sobreviven en la agenda de esa persona, no en una herramienta. <strong>Si nadie sale de la sala con una fecha metida en el calendario del comité, el cuadro es un adorno.</strong> Prefiero decirlo aquí que venderlo como un sistema de alerta que no es.</p>
+</div>
+
+<h2>Qué sale del contraste</h2>
+<ul class="rx-sale">
+  <li><b>Un informe de análisis y propuesta de impacto</b><span>No un acta. Recoge lo que produjo la sesión, lo contrasta con el plan, con el presupuesto y con el diagnóstico de cultura, y ordena el resultado en prioridades. Dice también, explícitamente, lo que no resuelve y por qué.</span></li>
+  <li><b>El mapa de los cuatro escenarios</b><span>Con sus nombres, sus lemas y su relato revisado, en un formato que se proyecta en la pared y se guarda en PDF.</span></li>
+  <li><b>La matriz de robustez</b><span>Qué opciones aguantan en los cuatro futuros y cuáles solo funcionan en uno.</span></li>
+  <li><b>El cuadro de vigilancia</b><span>Con responsable y fecha de revisión en cada línea.</span></li>
+  <li><b>Los riesgos de no actuar</b><span>Ordenados por proximidad temporal, no por gravedad: qué ventana se cierra primero.</span></li>
+  <li><b>La trazabilidad hacia lo siguiente</b><span>Qué material de este trabajo alimenta a qué fase posterior —modelo de liderazgo, estudios de organización, despliegue— y qué hace falta de la organización para que rinda.</span></li>
+</ul>
+
+<h2>Qué lo hace distinto</h2>
+<div class="rx-dif">
+  <div><h3>Cruza tres fuentes, no una</h3><p>Casi todo el contraste estratégico que se vende compara la estrategia consigo misma. El valor está en cruzarla con lo que la organización cree de sí y con lo que de verdad paga.</p></div>
+  <div><h3>Trabaja sobre contenido propio</h3><p>Las sesiones posteriores no arrancan de marcos genéricos, sino del material que la propia organización produjo. Eso es lo que hace que se reconozca en el resultado y no lo archive.</p></div>
+  <div><h3>Hay preguntas que no contesto</h3><p>Decidir si una organización se centraliza o se distribuye es una función de gobierno, no de asesoramiento. El contraste señala la decisión, argumenta por qué es la más determinante y la deja donde tiene que estar.</p></div>
+  <div><h3>La inteligencia colectiva no es un adorno</h3><p>Es el mecanismo. Un rumbo impuesto se cumple mientras dura la atención de la dirección; uno construido por quienes lo van a sostener se queda, porque lo sienten propio.</p></div>
+  <div><h3>No interrumpe el proceso propio</h3><p>Si la organización ya tiene en marcha su plan estratégico, el contraste no lo enmienda: lo somete a tensión y devuelve material para las fases siguientes.</p></div>
+  <div><h3>Se dice lo que no salió</h3><p>Si una mesa no nombró responsables o no puso cifra a lo que propuso, el informe lo dice con esas palabras. Un entregable que redondea los huecos es un entregable que los traslada intactos a la fase siguiente.</p></div>
+</div>
+
+<h2>Para quién funciona</h2>
+<ul class="rx-quien">
+  <li><b>Universidades y centros de I+D</b><span>Cuando hay un plan estratégico en elaboración o recién aprobado y conviene saber si elige de verdad antes de desplegarlo.</span></li>
+  <li><b>Administraciones públicas</b><span>Cuando la estrategia declarada y el instrumento presupuestario que la financia no apuntan al mismo sitio.</span></li>
+  <li><b>Organizaciones con estrategia corporativa</b><span>Cuando el consejo o la dirección necesitan una lectura externa sin agenda interna antes de comprometer inversión.</span></li>
+  <li><b>Alianzas y consorcios</b><span>Cuando varias instituciones tienen que acordar un rumbo común y cada una llega con el suyo.</span></li>
+</ul>
+
+<h2>Dónde se ha desplegado</h2>
+<ul class="rx-desp">
+  <li><b>Universidad Autónoma de Madrid</b><i>Ejecutado</i><span>Contraste externo de la definición y de los ejes estratégicos, y jornada completa de trabajo con los equipos rectoral y de gerencia para definir los proyectos tractores de la estrategia con visión a 2031.</span></li>
+  <li><b>Universidad del País Vasco / EHU</b><i class="on">En marcha</i><span>Contraste de la estrategia y del liderazgo, en una secuencia de bloques encadenados que va del rumbo institucional hasta el diseño organizativo.</span></li>
+  <li><b>Universidad Pública de Navarra</b><i>Desde dentro</i><span>Trabajo estratégico como parte de la gerencia entre 2016 y 2025. Es donde se construyó el método.</span></li>
+</ul>
+<p style="margin-top:20px">Y en diseño con otras universidades y con organizaciones industriales.</p>
+
+<h2>Cómo se contrata</h2>
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>El equipo que decide</b><span>El equipo de dirección al completo, no una delegación. La sesión no funciona si en la sala no está quien puede cerrar lo que se abra.</span></li>
+  <li><b>La documentación real</b><span>El plan estratégico y el instrumento que lo financia. Sin el segundo, el contraste es media lectura.</span></li>
+  <li><b>Una jornada completa</b><span>El trabajo de las mesas no cabe en dos horas. Lo que sale de una hoja en blanco a las dos horas de sesión son generalidades.</span></li>
+  <li><b>Acceso a los datos bloqueantes</b><span>Los que el propio contraste identifique como imprescindibles para decidir. Suelen ser pocos y suelen existir.</span></li>
+  <li><b>Disposición a leer lo que no se decidió</b><span>El informe nombra los huecos. Ese es el producto, no un efecto secundario.</span></li>
+</ul>
+
+<h3>Cómo se cierra</h3>
+<p class="rx-nota">El alcance y las condiciones se fijan en una conversación previa, a partir del tamaño de la organización, del número de sesiones y de si el contraste se queda en la jornada o encadena las fases posteriores. Cada encargo se presupuesta sobre eso.</p>
+
+<div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Contraste%20de%20estrategia">Hablemos de contrastar tu estrategia</a></div>
+
+</main>
+
+<div class="rx-foot">
+  <span>Joaquín Romero Roldán · Consejero-asesor independiente</span>
+  <span><a href="/">joaquinromero.com</a></span>
+</div>
+<script src="/assets/nav.js" defer></script>
+</body></html>
