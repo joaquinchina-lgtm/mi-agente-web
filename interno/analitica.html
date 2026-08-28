@@ -62,24 +62,25 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
   <div class="cab">
     <input id="url" type="url" placeholder="Pega aquí la URL de inserción del informe de Looker Studio" spellcheck="false">
     <button class="b p" id="guardar">Guardar</button>
-    <button class="b" id="quitar">Quitar</button>
+    <button class="b" id="quitar">Restablecer</button>
     <a class="b" href="https://analytics.google.com/" target="_blank" rel="noopener">Abrir GA4</a>
     <a class="b" href="https://lookerstudio.google.com/" target="_blank" rel="noopener">Abrir Looker</a>
   </div>
   <div class="marco" id="marco"></div>
 </div>
 
-<h2>Cómo se monta, la primera vez <span>media hora, y no hay que volver a tocarlo</span></h2>
+<h2>Qué hay dentro del informe <span>cuatro páginas, y se navegan dentro del marco</span></h2>
 <ol class="pasos">
-  <li><b>Abre Looker Studio y crea un informe</b><span>Entra en <a href="https://lookerstudio.google.com/" target="_blank" rel="noopener">lookerstudio.google.com</a> con la misma cuenta de Google que tiene el Analytics, y pulsa «Crear · Informe».</span></li>
-  <li><b>Conecta Google Analytics</b><span>En el selector de conectores elige «Google Analytics», busca la propiedad de joaquinromero.com y confírmala. Los datos aparecen solos.</span></li>
-  <li><b>Empieza por una plantilla</b><span>Looker ofrece plantillas de GA4 ya hechas: la de «Acquisition Overview» o la de «GA4 Report Template» traen visitas, páginas, países y dispositivos sin tocar nada. Cambiar de plantilla después es trivial.</span></li>
-  <li><b>Añade una página con tus eventos</b><span>Crea una segunda página del informe, mete una tabla con la dimensión «Nombre del evento» y la métrica «Recuento de eventos», y filtra por los nombres de la tabla de más abajo. Esa es la página que de verdad vas a mirar.</span></li>
-  <li><b>Publica e inserta</b><span>Arriba a la derecha, «Compartir · Insertar informe», activa «Habilitar la inserción» y copia la URL que aparece en la opción «Insertar URL».</span></li>
-  <li><b>Pégala aquí arriba y guarda</b><span>Queda registrada en este navegador. Si cambias de equipo, la vuelves a pegar: son diez segundos.</span></li>
+  <li><b>Resumen y tendencia</b><span>Usuarios activos, usuarios nuevos, porcentaje de sesiones con interacción, páginas por usuario y tiempo medio de interacción, cada uno comparado con el periodo anterior. Debajo, la curva diaria.</span></li>
+  <li><b>Dispositivo, países y ciudades</b><span>De dónde entran y con qué. Es la página que contesta si el tráfico es local, nacional o disperso.</span></li>
+  <li><b>Origen del tráfico y eventos</b><span>Buscador, enlace directo, LinkedIn o prensa, y el recuento de eventos. Aquí es donde aparecerán los eventos propios de la tabla de más abajo.</span></li>
+  <li><b>Páginas más vistas</b><span>Qué se lee y cuánto. Es la página más útil para decidir qué merece seguir escribiéndose.</span></li>
 </ol>
 
-<div class="aviso"><b>Sobre el acceso.</b> Para que el informe se vea dentro de esta página tiene que estar compartido al menos como «cualquier persona con el enlace puede ver». Si prefieres que solo lo veas tú, déjalo privado: el iframe entonces solo cargará cuando estés con tu sesión de Google abierta en ese navegador, que para uso propio es suficiente.</div>
+<div class="aviso">
+  <p style="margin:0 0 10px"><b>Cómo cambiarlo.</b> El informe es tuyo y editable: «Abrir Looker» arriba, botón «Editar», y se añaden o quitan gráficos como en una presentación. Nada de lo que hagas ahí rompe esta página, porque el marco apunta al informe, no a un gráfico concreto.</p>
+  <p style="margin:0"><b>Quién puede verlo.</b> El informe está compartido como <b>«cualquier persona con el enlace puede ver»</b>, que es lo que exige el marco para cargar. Esta página está en un repositorio público, así que quien llegue a esta URL verá tus métricas. El botón de administrador es una comodidad, no una barrera. Si algún día eso te incomoda, en Looker basta con volver el informe a «Restringido»: el marco dejará de cargar y el botón «Abrir Looker» seguirá funcionando con tu cuenta.</p>
+</div>
 
 <h2>Qué se está midiendo <span>los eventos propios, ya instrumentados</span></h2>
 <p>Además de lo que GA4 recoge de serie —visitas, páginas, tiempo de interacción, país, ciudad, dispositivo y origen del tráfico—, la web envía estos eventos propios. Son los que responden a preguntas de negocio y no de tráfico.</p>
@@ -98,6 +99,8 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
     <tr><td class="ev"><code>enlace_externo</code></td><td>Salidas a prensa, LinkedIn o fichas oficiales.</td><td>destino, origen</td></tr>
   </tbody>
 </table>
+
+<div class="aviso"><b>Falta un paso, y es de configuración.</b> Los nombres de los eventos (<code>ver_metodo</code>, <code>contacto</code>…) ya se ven en el informe. Los <b>parámetros</b> de la tercera columna, no: GA4 los recoge, pero no los ofrece como dimensión hasta que se registran uno a uno en <b>Administrar · Definiciones personalizadas · Crear dimensión personalizada</b>, con el mismo nombre exacto y ámbito «Evento». Son siete (<code>servicio</code>, <code>origen</code>, <code>via</code>, <code>porcentaje</code>, <code>pagina</code>, <code>proyecto</code>, <code>titulo</code>) y hay cupo de sobra (50). Hasta que se registren, puedes contar cuántos <code>ver_metodo</code> hay, pero no de qué servicio. Y solo cuentan desde el día en que se registran: no reconstruyen el pasado, así que cuanto antes, mejor.</div>
 
 <h3>Las cuatro preguntas que este panel debería contestar</h3>
 <p>Si el informe no responde a estas cuatro, sobra. Móntalo alrededor de ellas y no alrededor de las métricas que Looker ofrece por defecto.</p>
@@ -125,10 +128,14 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
 <script>
 (function(){
   var CLAVE="jr_looker_url";
+  /* El informe ya está montado y compartido. Esta es su URL de inserción; el
+     campo de arriba solo sirve para apuntar a otro informe sin tocar el código. */
+  var POR_DEFECTO="https://datastudio.google.com/embed/reporting/d570615b-1d64-4d3f-9420-2ca76f761382/page/kIV1C";
   var $=function(x){return document.getElementById(x);};
   function pinta(){
     var u="";
-    try{ u=localStorage.getItem(CLAVE)||""; }catch(e){}
+    try{ u=localStorage.getItem(CLAVE); }catch(e){}
+    if(u===null||u===undefined) u=POR_DEFECTO;
     $("url").value=u;
     $("marco").innerHTML = u
       ? '<iframe src="'+u.replace(/"/g,"&quot;")+'" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>'
@@ -138,12 +145,13 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
   }
   $("guardar").onclick=function(){
     var u=$("url").value.trim();
-    if(u && !/^https:\/\/lookerstudio\.google\.com\//.test(u)){
-      alert("Esa no parece la URL de inserción de Looker Studio. Tiene que empezar por https://lookerstudio.google.com/"); return; }
+    if(u && !/^https:\/\/(looker|data)studio\.google\.com\//.test(u)){
+      alert("Esa no parece la URL de inserción del informe. Tiene que empezar por https://lookerstudio.google.com/ o https://datastudio.google.com/"); return; }
     try{ localStorage.setItem(CLAVE,u); }catch(e){}
     pinta();
   };
   $("quitar").onclick=function(){ try{ localStorage.removeItem(CLAVE); }catch(e){} pinta(); };
+  $("url").placeholder="Informe conectado. Pega otra URL solo si quieres cambiarlo.";
   pinta();
 })();
 </script>
