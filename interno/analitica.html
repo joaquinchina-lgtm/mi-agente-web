@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Analítica de la web · Área interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--soft:#EAF0F1;--brandd:#22525C;--alerta:#8a6d1f}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 24px 90px}
+.kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:-.032em;margin:0 0 12px}
+.lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:64ch;margin:0 0 24px}
+h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;letter-spacing:-.024em;margin:44px 0 10px}
+h2 span{font-family:'Inter',sans-serif;font-weight:400;font-size:14px;letter-spacing:0;color:var(--muted);margin-left:8px}
+h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em;margin:26px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--brand)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:#f4f6f6;padding:1px 5px}
+
+.panel{border:1px solid var(--line);margin:22px 0 0}
+.panel .cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line);background:#fbfbfa}
+.panel .cab input{flex:1;min-width:220px;border:1px solid var(--line);padding:9px 11px;font:inherit;font-size:14px;border-radius:2px;background:#fff}
+.b{border:1px solid var(--line);background:#fff;color:#41504b;font:inherit;font-size:14px;padding:9px 14px;cursor:pointer;border-radius:2px;white-space:nowrap}
+.b:hover{border-color:var(--brand);color:var(--brand)}
+.b.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+.b.p:hover{background:var(--brandd);border-color:var(--brandd);color:#fff}
+.marco{position:relative;width:100%;height:78vh;min-height:520px;background:#fafaf9}
+.marco iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.hueco{display:flex;align-items:center;justify-content:center;height:100%;padding:34px;text-align:center;color:var(--muted);font-size:15px;line-height:1.55}
+.hueco b{display:block;color:var(--ink);font-size:17px;margin-bottom:8px;font-family:'Archivo',sans-serif;font-weight:600}
+
+.pasos{list-style:none;counter-reset:p;margin:18px 0 0;padding:0}
+.pasos li{counter-increment:p;position:relative;padding:0 0 20px 52px;border-left:1px solid var(--line);margin-left:13px}
+.pasos li:last-child{border-left-color:transparent;padding-bottom:0}
+.pasos li::before{content:counter(p);position:absolute;left:-14px;top:-2px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/28px 'Inter',sans-serif;text-align:center}
+.pasos b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:16.5px;letter-spacing:-.02em;margin:0 0 4px}
+.pasos span{display:block;color:#41504b;font-size:15px;line-height:1.46}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:14px 0 0}
+th{text-align:left;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
+td{padding:10px 10px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.ev{white-space:nowrap}
+td.ev code{background:#eef3f3;color:var(--brandd)}
+.aviso{background:var(--soft);padding:16px 18px;font-size:14.5px;line-height:1.48;color:#20302c;margin:20px 0 0}
+.pie{margin:56px 0 0;padding-top:22px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pie a{text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="kick">Área interna</p>
+<h1>Analítica de la web</h1>
+<p class="lead">Panel de Looker Studio sobre los datos de Google Analytics 4 de joaquinromero.com. Visitas, páginas más vistas, tiempo de interacción, procedencia geográfica y las interacciones que de verdad indican interés.</p>
+
+<div class="panel">
+  <div class="cab">
+    <input id="url" type="url" placeholder="Pega aquí la URL de inserción del informe de Looker Studio" spellcheck="false">
+    <button class="b p" id="guardar">Guardar</button>
+    <button class="b" id="quitar">Quitar</button>
+    <a class="b" href="https://analytics.google.com/" target="_blank" rel="noopener">Abrir GA4</a>
+    <a class="b" href="https://lookerstudio.google.com/" target="_blank" rel="noopener">Abrir Looker</a>
+  </div>
+  <div class="marco" id="marco"></div>
+</div>
+
+<h2>Cómo se monta, la primera vez <span>media hora, y no hay que volver a tocarlo</span></h2>
+<ol class="pasos">
+  <li><b>Abre Looker Studio y crea un informe</b><span>Entra en <a href="https://lookerstudio.google.com/" target="_blank" rel="noopener">lookerstudio.google.com</a> con la misma cuenta de Google que tiene el Analytics, y pulsa «Crear · Informe».</span></li>
+  <li><b>Conecta Google Analytics</b><span>En el selector de conectores elige «Google Analytics», busca la propiedad de joaquinromero.com y confírmala. Los datos aparecen solos.</span></li>
+  <li><b>Empieza por una plantilla</b><span>Looker ofrece plantillas de GA4 ya hechas: la de «Acquisition Overview» o la de «GA4 Report Template» traen visitas, páginas, países y dispositivos sin tocar nada. Cambiar de plantilla después es trivial.</span></li>
+  <li><b>Añade una página con tus eventos</b><span>Crea una segunda página del informe, mete una tabla con la dimensión «Nombre del evento» y la métrica «Recuento de eventos», y filtra por los nombres de la tabla de más abajo. Esa es la página que de verdad vas a mirar.</span></li>
+  <li><b>Publica e inserta</b><span>Arriba a la derecha, «Compartir · Insertar informe», activa «Habilitar la inserción» y copia la URL que aparece en la opción «Insertar URL».</span></li>
+  <li><b>Pégala aquí arriba y guarda</b><span>Queda registrada en este navegador. Si cambias de equipo, la vuelves a pegar: son diez segundos.</span></li>
+</ol>
+
+<div class="aviso"><b>Sobre el acceso.</b> Para que el informe se vea dentro de esta página tiene que estar compartido al menos como «cualquier persona con el enlace puede ver». Si prefieres que solo lo veas tú, déjalo privado: el iframe entonces solo cargará cuando estés con tu sesión de Google abierta en ese navegador, que para uso propio es suficiente.</div>
+
+<h2>Qué se está midiendo <span>los eventos propios, ya instrumentados</span></h2>
+<p>Además de lo que GA4 recoge de serie —visitas, páginas, tiempo de interacción, país, ciudad, dispositivo y origen del tráfico—, la web envía estos eventos propios. Son los que responden a preguntas de negocio y no de tráfico.</p>
+
+<table>
+  <thead><tr><th style="width:210px">Evento</th><th>Qué te dice</th><th style="width:170px">Parámetros</th></tr></thead>
+  <tbody>
+    <tr><td class="ev"><code>situacion_elegida</code></td><td>Cuál de las siete situaciones se reconoce más. Es tu mapa de demanda real.</td><td>situacion</td></tr>
+    <tr><td class="ev"><code>busqueda_servicios</code></td><td>Lo que se escribe en el buscador y con qué encaje. El detalle está en <a href="busquedas.html">Búsquedas de servicios</a>.</td><td>search_term, resultado, encaje</td></tr>
+    <tr><td class="ev"><code>ver_metodo</code></td><td>Qué servicio despierta interés suficiente para abrir su página. La métrica más útil de todas.</td><td>servicio, destino</td></tr>
+    <tr><td class="ev"><code>profundidad_lectura</code></td><td>Hasta dónde se lee cada página de servicio: 25, 50, 75 o 100%. Distingue una página que se lee de una que se abre.</td><td>porcentaje, pagina</td></tr>
+    <tr><td class="ev"><code>lectura_sostenida</code></td><td>Se ha pasado medio minuto en una página de servicio. Es el umbral a partir del cual alguien está leyendo de verdad.</td><td>pagina</td></tr>
+    <tr><td class="ev"><code>contacto</code></td><td>Tu conversión real: alguien va a la tarjeta o abre el correo. Con la página desde la que salió.</td><td>via, origen, etiqueta</td></tr>
+    <tr><td class="ev"><code>logo_proyecto</code></td><td>Qué cliente reciente llama la atención. Sirve para ordenar el muro de logos con criterio.</td><td>proyecto</td></tr>
+    <tr><td class="ev"><code>idea_abierta</code></td><td>Qué artículo, caso o pieza de prensa se abre desde la sección de ideas.</td><td>titulo, destino, tipo</td></tr>
+    <tr><td class="ev"><code>enlace_externo</code></td><td>Salidas a prensa, LinkedIn o fichas oficiales.</td><td>destino, origen</td></tr>
+  </tbody>
+</table>
+
+<h3>Las cuatro preguntas que este panel debería contestar</h3>
+<p>Si el informe no responde a estas cuatro, sobra. Móntalo alrededor de ellas y no alrededor de las métricas que Looker ofrece por defecto.</p>
+<table>
+  <tbody>
+    <tr><td style="width:46%"><b>¿Qué servicio interesa más?</b></td><td><code>ver_metodo</code> por servicio, cruzado con <code>situacion_elegida</code>.</td></tr>
+    <tr><td><b>¿Las páginas largas se leen o se abandonan?</b></td><td><code>profundidad_lectura</code> al 75% dividido entre las visitas a esa página.</td></tr>
+    <tr><td><b>¿Qué camino lleva al contacto?</b></td><td><code>contacto</code> por el parámetro <code>origen</code>.</td></tr>
+    <tr><td><b>¿Qué no encuentra la gente?</b></td><td><code>busqueda_servicios</code> con <code>encaje</code> igual a cero.</td></tr>
+  </tbody>
+</table>
+
+<div class="aviso">
+  <p style="margin:0 0 10px"><b>Un límite que conviene no olvidar.</b> Todo esto solo mide a quien acepta el aviso de cookies. Quien lo rechaza es invisible, y suele ser una fracción considerable del público institucional. Las cifras son buenas para comparar entre sí —qué servicio interesa más que otro— y malas como recuento absoluto.</p>
+  <p style="margin:0">Los eventos nuevos tardan hasta 24 horas en aparecer en los informes. Para comprobar ahora mismo que llegan, usa <b>Informes · Tiempo real</b> en GA4 mientras navegas por la web en otra pestaña.</p>
+</div>
+
+<div class="pie">
+  <span>Joaquín Romero Roldán · Área interna</span>
+  <span><a href="./">Volver al área interna</a> · <a href="/">joaquinromero.com</a></span>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var CLAVE="jr_looker_url";
+  var $=function(x){return document.getElementById(x);};
+  function pinta(){
+    var u="";
+    try{ u=localStorage.getItem(CLAVE)||""; }catch(e){}
+    $("url").value=u;
+    $("marco").innerHTML = u
+      ? '<iframe src="'+u.replace(/"/g,"&quot;")+'" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>'
+      : '<div class="hueco"><div><b>Todavía no hay informe conectado</b>'+
+        'Monta el informe siguiendo los seis pasos de abajo y pega aquí arriba su URL de inserción.<br>'+
+        'Mientras tanto, los datos están en GA4 y el botón «Abrir GA4» te lleva.</div></div>';
+  }
+  $("guardar").onclick=function(){
+    var u=$("url").value.trim();
+    if(u && !/^https:\/\/lookerstudio\.google\.com\//.test(u)){
+      alert("Esa no parece la URL de inserción de Looker Studio. Tiene que empezar por https://lookerstudio.google.com/"); return; }
+    try{ localStorage.setItem(CLAVE,u); }catch(e){}
+    pinta();
+  };
+  $("quitar").onclick=function(){ try{ localStorage.removeItem(CLAVE); }catch(e){} pinta(); };
+  pinta();
+})();
+</script>
+</body>
+</html>

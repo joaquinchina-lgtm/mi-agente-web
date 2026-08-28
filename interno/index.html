@@ -1465,6 +1465,7 @@ function ruta(){
   const p = params();
   if(p.get("proy")) return {vista:"proyeccion", codigo:p.get("proy")};
   if(p.get("s"))    return {vista:"participante", codigo:p.get("s")};
+  if(location.hash.startsWith("#/interno")) return {vista:"interno"};
   if(location.hash.startsWith("#/admin")) return {vista:"admin"};
   if(vueltaDeCorreo())                    return {vista:"admin"};
   return {vista:"portada"};
@@ -1475,6 +1476,7 @@ async function render(){
   try{
     if(r.vista === "participante")   await vistaParticipante(r.codigo);
     else if(r.vista === "proyeccion") await vistaProyeccion(r.codigo);
+    else if(r.vista === "interno")    vistaInterno();
     else if(r.vista === "admin")      await vistaAdmin();
     else vistaPortada();
     // La marca de «ya he reintentado» se limpia AQUÍ, cuando algo ha salido
@@ -1523,17 +1525,49 @@ function vistaPortada(){
   app().innerHTML = `<div class="wrap">${cabecera()}
     <div class="card">
       <h1>Área interna</h1>
-      <p class="lead">Herramientas de trabajo de joaquinromero.com. No están indexadas ni enlazadas desde la web pública.</p>
+      <p class="lead">Herramientas de trabajo de joaquinromero.com: consola de instrumentos para las sesiones, analítica de la web y mantenimiento del buscador.</p>
+      ${!CONFIGURADO ? `<div class="aviso rojo"><b>Modo demostración.</b> No hay base de datos
+        conectada: todo vive en <b>esta pestaña</b> y se pierde al cerrarla.
+        Por eso aquí no funciona lo de varios dispositivos a la vez —para eso hace falta la base de
+        datos—, pero sí puedes recorrer el circuito entero desde una sola ventana: crear la sesión,
+        cargar respuestas de ejemplo, proyectar y ver los resultados. Para usarlo de verdad, rellena
+        <code>CONFIG</code> arriba del archivo.</div>` : ""}
+      <div class="btnrow">
+        <button class="btn" onclick="location.hash='#/interno'">Entrar como administrador</button>
+      </div>
+      <h3>Para participar</h3>
+      <p>Escanea el código QR que se proyecta en la sala, o abre el enlace que te hayan enviado.</p>
+      <form onsubmit="event.preventDefault();const c=this.cod.value.trim();if(c)location.search='?s='+encodeURIComponent(c)">
+        <div class="grid2"><div class="field"><label for="cod">Código de sesión</label>
+          <input id="cod" name="cod" placeholder="CULT-7248" autocomplete="off"></div>
+          <div class="field" style="align-self:end"><button class="btn" type="submit">Entrar</button></div>
+        </div></form>
+    </div></div>`;
+}
 
+/* Las herramientas viven detrás del botón de administrador. Quien llega a
+   participar en una sesión no ve nada de esto: su camino es el código de
+   sesión de la portada, que queda fuera. */
+function vistaInterno(){
+  app().innerHTML = `<div class="wrap">${cabecera()}
+    <div class="card">
+      <h1>Herramientas</h1>
+      <p class="lead">Todo lo que se administra desde aquí.</p>
       <div class="hub">
         <a href="#/admin">
           <span class="et">Sesiones</span>
           <b>Consola de instrumentos</b>
           <span class="d">Herramientas de participación online para las sesiones.</span>
-          <span class="ir">Entrar como administrador &rarr;</span>
+          <span class="ir">Abrir la consola &rarr;</span>
+        </a>
+        <a href="analitica.html">
+          <span class="et">Tráfico</span>
+          <b>Analítica de la web</b>
+          <span class="d">Visitas, páginas más vistas, procedencia geográfica y las interacciones que indican interés real: qué servicio se abre y qué lleva al contacto.</span>
+          <span class="ir">Ver el panel &rarr;</span>
         </a>
         <a href="busquedas.html">
-          <span class="et">Analítica</span>
+          <span class="et">Buscador</span>
           <b>Búsquedas de servicios</b>
           <span class="d">Qué escribe la gente en el buscador de la web, qué no encuentra y qué palabras conviene añadir al diccionario.</span>
           <span class="ir">Abrir el registro &rarr;</span>
@@ -1545,21 +1579,7 @@ function vistaPortada(){
           <span class="ir">Editar el diccionario &rarr;</span>
         </a>
       </div>
-
-      ${!CONFIGURADO ? `<div class="aviso rojo" style="margin-top:18px"><b>Modo demostración.</b> No hay base de datos
-        conectada: todo vive en <b>esta pestaña</b> y se pierde al cerrarla.
-        Por eso aquí no funciona lo de varios dispositivos a la vez —para eso hace falta la base de
-        datos—, pero sí puedes recorrer el circuito entero desde una sola ventana: crear la sesión,
-        cargar respuestas de ejemplo, proyectar y ver los resultados. Para usarlo de verdad, rellena
-        <code>CONFIG</code> arriba del archivo.</div>` : ""}
-
-      <h3>Para participar</h3>
-      <p>Escanea el código QR que se proyecta en la sala, o abre el enlace que te hayan enviado.</p>
-      <form onsubmit="event.preventDefault();const c=this.cod.value.trim();if(c)location.search='?s='+encodeURIComponent(c)">
-        <div class="grid2"><div class="field"><label for="cod">Código de sesión</label>
-          <input id="cod" name="cod" placeholder="CULT-7248" autocomplete="off"></div>
-          <div class="field" style="align-self:end"><button class="btn" type="submit">Entrar</button></div>
-        </div></form>
+      <div class="btnrow"><button class="btn ghost" onclick="location.hash=''">Volver</button></div>
     </div></div>`;
 }
 
