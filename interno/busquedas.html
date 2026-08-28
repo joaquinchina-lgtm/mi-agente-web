@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Búsquedas de servicios · Área interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--soft:#EAF0F1;--brandd:#22525C;--alerta:#8a6d1f}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 24px 80px}
+.kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,42px);line-height:1.05;letter-spacing:-.033em;margin:0 0 14px}
+.lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:60ch;margin:0 0 26px}
+.aviso{background:var(--soft);padding:16px 18px;font-size:15px;line-height:1.46;color:#20302c;margin:0 0 32px}
+.aviso b{font-weight:700}
+h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.024em;margin:44px 0 14px}
+h2 span{font-family:'Inter',sans-serif;font-weight:400;font-size:14px;letter-spacing:0;color:var(--muted);margin-left:8px}
+
+.barrabtn{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+button.b{border:1px solid var(--line);background:#fff;color:#41504b;font:inherit;font-size:14px;padding:9px 14px;cursor:pointer;border-radius:2px}
+button.b:hover{border-color:var(--brand);color:var(--brand)}
+button.b.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+button.b.p:hover{background:var(--brandd);border-color:var(--brandd);color:#fff}
+button.b.d{color:#9b4a3d;border-color:#e8d5d1}
+label.b{border:1px solid var(--line);background:#fff;color:#41504b;font-size:14px;padding:9px 14px;cursor:pointer;border-radius:2px;display:inline-block}
+label.b input{display:none}
+
+.kpis{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr);margin:24px 0 0}
+@media(min-width:760px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpis div{background:#fff;padding:18px 18px 16px}
+.kpis b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:30px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 6px}
+.kpis b.warn{color:var(--alerta)}
+.kpis span{display:block;font-size:13.5px;line-height:1.35;color:#41504b}
+
+table{width:100%;border-collapse:collapse;margin:16px 0 0;font-size:14.5px}
+th{text-align:left;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);padding:0 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:#41504b}
+td.q{color:var(--ink)}
+.tag{display:inline-block;font:600 11px/1 'Inter',sans-serif;letter-spacing:.05em;padding:4px 7px;border:1px solid var(--line);color:#41504b;white-space:nowrap}
+.tag.no{color:var(--alerta);border-color:#e6dcc0;background:#fbf7ec}
+.mini{height:5px;background:var(--line);position:relative;min-width:70px;margin-top:5px}
+.mini i{position:absolute;inset:0 auto 0 0;background:var(--brand)}
+.vacio{padding:34px 0;color:var(--muted);font-size:15px}
+.scroll{overflow-x:auto}
+.pie{margin:52px 0 0;padding-top:22px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pie a{color:var(--brand);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="kick">Área interna</p>
+<h1>Qué busca la gente en tus servicios</h1>
+<p class="lead">Lector y analizador del registro de búsquedas del buscador de la home. Lee lo que hay guardado en este navegador y admite importar registros exportados desde otros.</p>
+
+<div class="aviso">
+  <p style="margin:0 0 10px"><b>Lee esto antes de sacar conclusiones.</b> El registro vive en el navegador de quien busca, así que esta página solo ve <b>las búsquedas hechas desde este equipo y este navegador</b>. Las de tus visitantes no llegan aquí: llegan a Google Analytics, como evento <code>busqueda_servicios</code> con el texto en <code>search_term</code>, y solo si la persona aceptó las cookies.</p>
+  <p style="margin:0"><b>Para qué sirve entonces:</b> para afinar el diccionario probando tú mismo las frases que oyes en las reuniones, y para analizar en frío lo que exportes de Analytics pegándolo aquí como CSV.</p>
+</div>
+
+<div class="barrabtn">
+  <button class="b p" id="recargar">Recargar</button>
+  <button class="b" id="csv">Exportar CSV</button>
+  <button class="b" id="json">Exportar JSON</button>
+  <label class="b">Importar JSON<input type="file" id="imp" accept=".json,application/json"></label>
+  <label class="b">Importar CSV de Analytics<input type="file" id="impcsv" accept=".csv,text/csv"></label>
+  <button class="b d" id="borrar">Vaciar registro</button>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>Búsquedas sin encaje <span>lo que hay que arreglar primero</span></h2>
+<div class="scroll" id="t-fallos"></div>
+
+<h2>Palabras que el diccionario no reconoce <span>candidatas a entrar en el índice</span></h2>
+<div class="scroll" id="t-desconocidas"></div>
+
+<h2>Reparto por servicio <span>qué problema trae la gente</span></h2>
+<div class="scroll" id="t-servicios"></div>
+
+<h2>Todas las búsquedas <span>de la más reciente a la más antigua</span></h2>
+<div class="scroll" id="t-todas"></div>
+
+<div class="pie">
+  <span>Joaquín Romero Roldán · Área interna</span>
+  <span><a href="/">Volver a joaquinromero.com</a></span>
+</div>
+
+</div>
+
+<script>
+(function(){
+var CLAVE="jr_busquedas_v1";
+var NOM={ "srv-0":"Reactor de innovación","srv-1":"Rediseño de servicios","srv-2":"Contraste de estrategia",
+          "srv-3":"Agenda directiva y despliegue","srv-4":"Implantación de estrategias","srv-5":"Estrategia de IA",
+          "srv-6":"Modelo de liderazgo","srv-7":"Capacitación ejecutiva","srv-8":"Liderazgo transformacional",
+          "srv-9":"Consejero independiente" };
+/* Vocabulario que el índice de la home ya conoce, en su forma normalizada.
+   Sirve para detectar qué palabras escriben los visitantes y el buscador ignora. */
+var CONOCIDAS = ("transferencia investigacion doctorado doctorando patente publicacion conocimiento impacto prototipo innovacion valorizacion investigador presentimiento reactor tesis ciencia idea "+
+ "servicio usuario tramite ventanilla atencion experiencia biblioteca matricula procedimiento silo satisfaccion queja reclamacion cola recorrido estudiante ciudadano formulario burocracia mostrador prestacion "+
+ "estrategia dilema elegir prioridad presupuesto escenario prospectiva futuro incertidumbre diagnostico contraste rumbo contrastar "+
+ "despliegue ejecucion comite seguimiento responsable indicador calendario cajon agenda reunion "+
+ "capacidad laboratorio madurez continuo escalar sostener lab repetirlo institucionalizar "+
+ "ia dato herramienta copilot chatgpt llm automatizar digital tecnologia licencia agente algoritmo "+
+ "liderazgo cultura directivo alineamiento consenso jefe mando clima artefacto lider "+
+ "formacion capacitacion curso resistencia intraemprendimiento entrenar aprender "+
+ "talento rpt plantilla perfil persona rrhh organizacion proceso jubilacion relevo dimensionamiento "+
+ "consejo consejero independiente comision compliance riesgo socio junta supervision pyme "+
+ "plan planificacion papeles papel mojado quejas colas mercado startup emprender datos directores gerentes puestos personal empleados organigrama consejos asesores familiar formar cambio resistencias").split(/\s+/);
+var VACIAS = {}; ("de la el los las un una unos unas y o u que se nos nuestra nuestro nuestros nuestras en con por para al a lo mas muy ya no si su sus del es son esta estan tenemos tiene hay como cuando donde pero e mi me te le les nada mucho poco todo todos esto eso este esa ese hace ano años vez").split(" ").forEach(function(w){VACIAS[w]=1;});
+var CONOC={}; CONOCIDAS.forEach(function(w){CONOC[w]=1;});
+
+function norm(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+  .replace(/[^a-z0-9+ ]/g," ").replace(/\s+/g," ").trim(); }
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function fecha(iso){ try{ var d=new Date(iso);
+  return d.toLocaleDateString("es-ES",{day:"2-digit",month:"short"})+" "+d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"});
+ }catch(e){ return iso; } }
+function leer(){ try{ return JSON.parse(localStorage.getItem(CLAVE)||"[]"); }catch(e){ return []; } }
+function guardar(l){ try{ localStorage.setItem(CLAVE, JSON.stringify(l)); }catch(e){} }
+function $(x){ return document.getElementById(x); }
+
+function tabla(cols, filas, vacio){
+  if(!filas.length) return '<p class="vacio">'+vacio+'</p>';
+  return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join("")+'</tr></thead><tbody>'+
+    filas.map(function(f){return '<tr>'+f.join("")+'</tr>';}).join("")+'</tbody></table>';
+}
+
+function pintar(){
+  var log = leer();
+  var n = log.length;
+  var sin = log.filter(function(x){ return !x.n || x.n===0; });
+  var baja = log.filter(function(x){ return x.n>0 && x.p<6; });
+  var pctSin = n ? Math.round(sin.length/n*100) : 0;
+
+  /* ── KPIs ── */
+  $("kpis").innerHTML =
+    '<div><b>'+n+'</b><span>búsquedas registradas en este navegador</span></div>'+
+    '<div><b class="'+(pctSin>20?"warn":"")+'">'+pctSin+'%</b><span>sin ningún encaje: el índice no las entiende</span></div>'+
+    '<div><b class="'+(n&&baja.length/n>0.35?"warn":"")+'">'+baja.length+'</b><span>con encaje dudoso, por debajo del umbral</span></div>'+
+    '<div><b>'+(n?Math.round(log.reduce(function(a,x){return a+(x.p||0);},0)/n*10)/10:0)+'</b><span>puntuación media de la primera opción</span></div>';
+
+  /* ── fallos ── */
+  var agr = {};
+  sin.concat(baja).forEach(function(x){
+    var k = norm(x.q); if(!agr[k]) agr[k]={q:x.q, c:0, p:x.p||0, sin:!x.n}; agr[k].c++; });
+  var fallos = Object.keys(agr).map(function(k){return agr[k];}).sort(function(a,b){return b.c-a.c || a.p-b.p;});
+  $("t-fallos").innerHTML = tabla(["Lo que escribieron","Veces","Encaje","Estado"],
+    fallos.slice(0,40).map(function(f){ return [
+      '<td class="q">'+esc(f.q)+'</td>',
+      '<td class="num">'+f.c+'</td>',
+      '<td class="num">'+(Math.round(f.p*10)/10)+'</td>',
+      '<td><span class="tag '+(f.sin?"no":"")+'">'+(f.sin?"sin encaje":"dudoso")+'</span></td>'];}),
+    "Ninguna búsqueda problemática. O el índice va fino, o todavía no has probado bastante.");
+
+  /* ── palabras desconocidas ── */
+  var pal = {};
+  log.forEach(function(x){ norm(x.q).split(" ").forEach(function(w){
+    if(w.length>3 && !VACIAS[w] && !CONOC[w] && !CONOC[w.replace(/(es|s)$/,"")]) pal[w]=(pal[w]||0)+1; }); });
+  var desc = Object.keys(pal).map(function(w){return {w:w,c:pal[w]};}).sort(function(a,b){return b.c-a.c;});
+  var maxp = desc.length?desc[0].c:1;
+  $("t-desconocidas").innerHTML = tabla(["Palabra","Veces",""],
+    desc.slice(0,40).map(function(d){ return [
+      '<td class="q">'+esc(d.w)+'</td>',
+      '<td class="num">'+d.c+'</td>',
+      '<td><div class="mini"><i style="width:'+Math.round(d.c/maxp*100)+'%"></i></div></td>'];}),
+    "Nada que añadir al diccionario todavía.");
+
+  /* ── reparto por servicio ── */
+  var srv = {};
+  log.forEach(function(x){ if(x.r && x.r[0]) srv[x.r[0]]=(srv[x.r[0]]||0)+1; });
+  var rep = Object.keys(srv).map(function(k){return {k:k,c:srv[k]};}).sort(function(a,b){return b.c-a.c;});
+  var maxs = rep.length?rep[0].c:1;
+  $("t-servicios").innerHTML = tabla(["Servicio","Primeras posiciones","%",""],
+    rep.map(function(r){ return [
+      '<td class="q">'+esc(NOM[r.k]||r.k)+'</td>',
+      '<td class="num">'+r.c+'</td>',
+      '<td class="num">'+Math.round(r.c/n*100)+'%</td>',
+      '<td><div class="mini"><i style="width:'+Math.round(r.c/maxs*100)+'%"></i></div></td>'];}),
+    "Sin datos.");
+
+  /* ── todas ── */
+  $("t-todas").innerHTML = tabla(["Fecha","Búsqueda","Primera opción","Encaje"],
+    log.slice().reverse().slice(0,200).map(function(x){ return [
+      '<td class="num">'+fecha(x.f)+'</td>',
+      '<td class="q">'+esc(x.q)+'</td>',
+      '<td>'+(x.r&&x.r[0] ? esc(NOM[x.r[0]]||x.r[0]) : '<span class="tag no">sin encaje</span>')+'</td>',
+      '<td class="num">'+(Math.round((x.p||0)*10)/10)+'</td>'];}),
+    "El registro está vacío. Usa el buscador de la home y vuelve aquí.");
+}
+
+/* ── descargas e importaciones ── */
+function bajar(nombre, texto, tipo){
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([texto],{type:tipo})); a.download=nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+$("csv").onclick=function(){
+  var log=leer();
+  var f=['fecha;busqueda;primera;segunda;tercera;encaje'].concat(log.map(function(x){
+    return [x.f,'"'+String(x.q).replace(/"/g,'""')+'"',
+            NOM[(x.r||[])[0]]||"", NOM[(x.r||[])[1]]||"", NOM[(x.r||[])[2]]||"", x.p||0].join(";"); }));
+  bajar("busquedas-"+new Date().toISOString().slice(0,10)+".csv","﻿"+f.join("\n"),"text/csv;charset=utf-8");
+};
+$("json").onclick=function(){ bajar("busquedas-"+new Date().toISOString().slice(0,10)+".json",
+  JSON.stringify(leer(),null,1),"application/json"); };
+$("imp").onchange=function(e){ var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader(); r.onload=function(){ try{
+    var nuevos=JSON.parse(r.result); if(!Array.isArray(nuevos)) throw 0;
+    var log=leer(), vistos={};
+    log.concat(nuevos).forEach(function(x){ if(x&&x.q) vistos[(x.f||"")+"|"+x.q]=x; });
+    var fus=Object.keys(vistos).map(function(k){return vistos[k];}).sort(function(a,b){return (a.f||"")<(b.f||"")?-1:1;});
+    guardar(fus); pintar(); alert("Importadas "+nuevos.length+" filas. Total tras fusionar: "+fus.length+".");
+  }catch(err){ alert("Ese fichero no tiene el formato esperado."); } };
+  r.readAsText(f); e.target.value=""; };
+$("impcsv").onchange=function(e){ var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader(); r.onload=function(){
+    /* Acepta una exportación de Analytics con una columna de término de búsqueda
+       y, opcionalmente, una de recuento. Cada fila entra como búsqueda sin encaje
+       calculado; lo que interesa de aquí es el texto, no la puntuación. */
+    var lineas=String(r.result).split(/\r?\n/).filter(function(l){return l.trim();});
+    var sep = (lineas[0].indexOf(";")>-1) ? ";" : ",";
+    var cab = lineas[0].toLowerCase().split(sep);
+    var iq = cab.findIndex(function(c){ return /search_term|termino|término|busqueda|búsqueda|query/.test(c); });
+    var ic = cab.findIndex(function(c){ return /event|recuento|count|sesion|usuarios/.test(c); });
+    if(iq<0) iq=0;
+    var log=leer(), add=0;
+    lineas.slice(1).forEach(function(l){
+      var p=l.split(sep); var q=(p[iq]||"").replace(/^"|"$/g,"").trim(); if(!q) return;
+      var veces = ic>=0 ? Math.max(1, parseInt(p[ic],10)||1) : 1;
+      for(var i=0;i<veces;i++){ log.push({f:new Date().toISOString(), q:q, r:[], p:0, n:0, src:"ga"}); add++; }
+    });
+    guardar(log); pintar();
+    alert("Importadas "+add+" búsquedas desde Analytics. Ojo: entran sin encaje calculado, así que aparecerán como «sin encaje» hasta que las pruebes en el buscador.");
+  };
+  r.readAsText(f); e.target.value=""; };
+$("borrar").onclick=function(){ if(confirm("Se borra el registro de este navegador. ¿Seguro?")){ guardar([]); pintar(); } };
+$("recargar").onclick=pintar;
+pintar();
+})();
+</script>
+</body>
+</html>
