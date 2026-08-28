@@ -86,7 +86,7 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
 <p>Además de lo que GA4 recoge de serie —visitas, páginas, tiempo de interacción, país, ciudad, dispositivo y origen del tráfico—, la web envía estos eventos propios. Son los que responden a preguntas de negocio y no de tráfico.</p>
 
 <table>
-  <thead><tr><th style="width:210px">Evento</th><th>Qué te dice</th><th style="width:170px">Parámetros</th></tr></thead>
+  <thead><tr><th style="width:210px">Evento</th><th>Qué te dice</th><th style="width:170px">Parámetros (ya son dimensiones)</th></tr></thead>
   <tbody>
     <tr><td class="ev"><code>situacion_elegida</code></td><td>Cuál de las siete situaciones se reconoce más. Es tu mapa de demanda real.</td><td>situacion</td></tr>
     <tr><td class="ev"><code>busqueda_servicios</code></td><td>Lo que se escribe en el buscador y con qué encaje. El detalle está en <a href="busquedas.html">Búsquedas de servicios</a>.</td><td>search_term, resultado, encaje</td></tr>
@@ -100,7 +100,7 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
   </tbody>
 </table>
 
-<div class="aviso"><b>Falta un paso, y es de configuración.</b> Los nombres de los eventos (<code>ver_metodo</code>, <code>contacto</code>…) ya se ven en el informe. Los <b>parámetros</b> de la tercera columna, no: GA4 los recoge, pero no los ofrece como dimensión hasta que se registran uno a uno en <b>Administrar · Definiciones personalizadas · Crear dimensión personalizada</b>, con el mismo nombre exacto y ámbito «Evento». Son siete (<code>servicio</code>, <code>origen</code>, <code>via</code>, <code>porcentaje</code>, <code>pagina</code>, <code>proyecto</code>, <code>titulo</code>) y hay cupo de sobra (50). Hasta que se registren, puedes contar cuántos <code>ver_metodo</code> hay, pero no de qué servicio. Y solo cuentan desde el día en que se registran: no reconstruyen el pasado, así que cuanto antes, mejor.</div>
+<div class="aviso"><b>Dimensiones personalizadas: hechas.</b> Los trece parametros de la tercera columna estan registrados en <b>Administrar &middot; Definiciones personalizadas</b> con ambito &laquo;Evento&raquo;, asi que en Looker se pueden usar como dimension y no solo contar eventos. Cuentan desde el 28 de agosto de 2026: <b>no reconstruyen el pasado</b>, y por eso se registraron antes del lanzamiento. Si alguna vez anades un parametro nuevo a <code>eventos.js</code>, hay que registrarlo aqui tambien o sera invisible. Quedan 37 huecos de los 50 que permite GA4.</div>
 
 <h3>Las cuatro preguntas que este panel debería contestar</h3>
 <p>Si el informe no responde a estas cuatro, sobra. Móntalo alrededor de ellas y no alrededor de las métricas que Looker ofrece por defecto.</p>
