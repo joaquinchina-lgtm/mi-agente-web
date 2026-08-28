@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es" data-menu="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda directiva y despliegue · Joaquín Romero Roldán</title>
+<meta name="description" content="Convertir las prioridades decididas en proyectos con dueño, meterlas en la agenda del comité y en los objetivos de quienes las sostienen, y dejar instalado el ritmo que las revisa.">
+<link rel="canonical" href="https://joaquinromero.com/agenda.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán">
+<meta property="og:url" content="https://joaquinromero.com/agenda.html">
+<meta property="og:title" content="Agenda directiva y despliegue traccionado">
+<meta property="og:description" content="Una estrategia se cumple si entra en el calendario. Lo que no está en el orden del día no se está haciendo.">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff;--soft:#EAF0F1;--brandd:#22525C}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.rx-s{max-width:820px;margin:0 auto;padding:0 24px}
+.rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
+.rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.rx-hero h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;max-width:17ch}
+.rx-hero .lead{font-size:clamp(19px,2vw,23px);line-height:1.42;color:#2c3733;max-width:46ch;margin:0}
+.rx-author{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.45;color:#41504b;padding-left:15px;border-left:2px solid var(--brand)}
+.rx-rule{max-width:1120px;margin:0 auto;padding:0 24px}
+.rx-rule hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+.rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
+.rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
+.rx-s p{margin:0 0 18px}
+.rx-s p.big{font-size:21px;line-height:1.42}
+.rx-s strong{font-weight:700}
+.rx-s em{font-style:italic;color:#2c3733}
+
+/* los tres espejos del contraste */
+.rx-tres{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:760px){.rx-tres{grid-template-columns:repeat(3,1fr)}}
+.rx-tres li{background:#fff;padding:24px 22px}
+.rx-tres .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-tres b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-tres span{display:block;font-size:16px;line-height:1.44;color:#41504b}
+
+/* patrones que el contraste busca */
+.rx-pat{list-style:none;margin:26px 0 0;padding:0;counter-reset:pt;border-top:1px solid var(--line)}
+.rx-pat li{counter-increment:pt;border-bottom:1px solid var(--line);padding:19px 0 19px 46px;position:relative}
+.rx-pat li::before{content:counter(pt,decimal-leading-zero);position:absolute;left:0;top:20px;font:700 12px/1 'Inter',sans-serif;letter-spacing:.08em;color:var(--brand)}
+.rx-pat b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
+.rx-pat span{display:block;color:#41504b;font-size:16.5px;line-height:1.44}
+
+/* fases y bloques numerados */
+.rx-fases{list-style:none;margin:26px 0 0;padding:0;counter-reset:f}
+.rx-fases li{counter-increment:f;position:relative;padding:0 0 26px 62px;border-left:1px solid var(--line);margin-left:15px}
+.rx-fases li:last-child{border-left-color:transparent;padding-bottom:0}
+.rx-fases li::before{content:counter(f,decimal-leading-zero);position:absolute;left:-16px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/32px 'Inter',sans-serif;text-align:center}
+.rx-fases b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-fases span{display:block;color:#41504b;font-size:16.5px;line-height:1.42}
+
+/* instrumentos y columnas */
+.rx-inst{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
+.rx-inst li{border-bottom:1px solid var(--line);padding:19px 0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){.rx-inst li{grid-template-columns:220px 1fr;gap:24px;align-items:baseline}}
+.rx-inst b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-inst span{color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-dif{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 0}
+@media(min-width:720px){.rx-dif{grid-template-columns:1fr 1fr}}
+.rx-dif > div{background:#fff;padding:24px 22px}
+.rx-dif h3{margin:0 0 8px;font-size:19px}
+.rx-dif p{margin:0;font-size:16.5px;line-height:1.42;color:#41504b}
+
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-sale li{border-bottom:1px solid var(--line);padding:17px 0}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-sale span{display:block;color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-quien{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-quien span{color:#41504b;font-size:16.5px;flex:1;min-width:240px}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-lista{margin:0 0 18px;padding:0;list-style:none}
+.rx-lista li{position:relative;padding:0 0 10px 22px;line-height:1.46}
+.rx-lista li:last-child{padding-bottom:0}
+.rx-lista li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;background:var(--brand)}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
+.rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
+.rx-aviso b{font-weight:700}
+.rx-aviso p{margin:0 0 12px}
+.rx-aviso p:last-child{margin:0}
+
+.rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
+.rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-cta a:hover{background:var(--brandd)}
+.rx-foot{max-width:1120px;margin:64px auto 0;padding:26px 24px 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rx-foot a{color:var(--brand);text-decoration:none}
+
+</style>
+<link rel="stylesheet" href="/assets/nav.css">
+</head>
+<body>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Ideas</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+      <a class="jr-contact" href="/tarjeta/">Contactar</a>
+    </nav>
+    <button class="jr-burger" type="button" aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <p class="jr-menu-kicker">Navegación</p>
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
+  </nav>
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/tarjeta/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+
+
+<section class="rx-hero">
+  <p class="kick">Agenda directiva y despliegue</p>
+  <h1>Una estrategia se cumple si entra en el calendario</h1>
+  <p class="lead">Convertir las prioridades decididas en proyectos con dueño, meterlas en la agenda del comité y en los objetivos de quienes las sostienen, y dejar instalado el ritmo que las revisa.</p>
+  <p class="rx-author">Es un trabajo de diseño propio: diseño, coordinación y acompañamiento. Nace de haber presidido y sufrido comités de dirección desde dentro (dirigiendo la gestión de organizaciones y sentado en consejos de administración), que es donde se aprende que el orden del día dice más de una estrategia que el plan que la enuncia.</p>
+</section>
+<div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El servicio en cifras">
+  <ul>
+    <li><b>4</b><span>piezas que se instalan y se quedan en la organización</span></li>
+    <li><b>1</b><span>calendario anual de decisiones, anclado a ventanas reales</span></li>
+    <li><b>15</b><span>minutos de revisión periódica, con formato fijo</span></li>
+    <li><b>0</b><span>seguimiento hecho por mí: el mecanismo es de la casa</span></li>
+  </ul>
+</section>
+
+<main class="rx-s">
+
+<h2>Cuál es el problema</h2>
+<p class="big">Una organización demuestra lo que prioriza de verdad en dos sitios: el orden del día de su comité y los objetivos anuales de sus directivos. Casi ninguna estrategia entra en ninguno de los dos.</p>
+<p>La consecuencia es conocida y se repite con independencia del sector: un plan bien hecho, aprobado y publicado, que a los seis meses nadie sabría decir en qué ha cambiado el trabajo de la semana. No es un problema de voluntad ni de calidad del plan. Son cuatro mecanismos concretos, y los cuatro se pueden desmontar.</p>
+
+<ul class="rx-pat">
+  <li><b>La estrategia vive en un documento y la organización vive en su calendario</b><span>El comité está colonizado por lo urgente, lo recurrente y lo que hay que aprobar. Lo estratégico se lleva los últimos quince minutos, con todo el mundo cansado y con la reunión ya larga. Si no tiene espacio protegido, no existe.</span></li>
+  <li><b>Una prioridad no es un proyecto</b><span>Una prioridad es una dirección; un proyecto tiene dueño, alcance, hitos y un momento en el que hay que decidir seguir, variar o parar. Entre las dos cosas hay un trabajo de traducción que casi nadie hace, y sin él la prioridad se evapora en cuanto la sala se vacía.</span></li>
+  <li><b>Los mandos intermedios no estaban en la sala</b><span>Son quienes tienen que cambiar lo que hacen el lunes, y llegan a la estrategia con unos objetivos anuales fijados antes de que existiera. El despliegue no muere arriba: muere en la capa que tiene que sostenerlo con el mismo tiempo de siempre.</span></li>
+  <li><b>No hay ritmo</b><span>La revisión ocurre cuando alguien se acuerda, que es la definición operativa de que no ocurre. Sin una fecha fija y un formato corto, revisar compite cada vez con lo urgente, y pierde cada vez.</span></li>
+</ul>
+
+<h2>Qué significa que un proyecto traccione</h2>
+<p>No todos los proyectos importantes traccionan. Traccionar es arrastrar a la organización detrás, y eso depende de tres condiciones que se pueden comprobar antes de arrancar.</p>
+
+<ul class="rx-tres">
+  <li><span class="n">CONDICIÓN 1</span><b>Obliga a decidir en varias áreas a la vez</b><span>Un proyecto que cabe entero dentro de una dirección se ejecuta sin cambiar nada. El que cruza dos o tres fuerza conversaciones que llevaban años sin tenerse, y esas conversaciones son la mitad del valor.</span></li>
+  <li><span class="n">CONDICIÓN 2</span><b>Tiene una victoria temprana visible</b><span>Algo comprobable en los primeros meses, que se pueda enseñar dentro y fuera. Sin ella, el proyecto entra en el punto ciego de los dieciocho meses y pierde el apoyo antes de dar resultados.</span></li>
+  <li><span class="n">CONDICIÓN 3</span><b>Su dueño está por encima de lo que tiene que mover</b><span>Asignar un proyecto transversal a quien no puede convocar a las unidades implicadas es programar su fracaso con antelación y con nombre y apellido.</span></li>
+</ul>
+
+<h2>Qué se instala</h2>
+<p>Cuatro piezas. Ninguna es un informe, y las cuatro se quedan funcionando cuando yo me voy.</p>
+
+<div class="rx-dif">
+  <div><h3>El calendario de decisiones del año</h3><p>Qué decisiones estratégicas hay que tomar, quién las toma y antes de cuándo, ancladas a las ventanas que ya existen: el ciclo presupuestario, el calendario del consejo, la negociación del marco de financiación, el cierre del ejercicio. Es el entregable que más rinde y el que casi nadie tiene.</p></div>
+  <div><h3>La cartera de proyectos que traccionan</h3><p>Cada prioridad convertida en ficha: denominación, justificación, objetivo general y específicos, ámbito y alcance, líneas, gobernanza, indicadores, hitos e impacto. Con dueño y con los puntos en los que habrá que decidir si sigue, cambia o para.</p></div>
+  <div><h3>El rediseño del orden del día</h3><p>Separar decidir de informar, un espacio protegido para lo estratégico al principio y no al final, y una regla de entrada: ningún asunto estratégico entra sin dueño y sin la decisión concreta que se pide. Es el cambio más barato de los cuatro y el de mayor efecto.</p></div>
+  <div><h3>El cuadro de vigilancia, activado</h3><p>Las señales que anticipan que algo se mueve, cada una con responsable, umbral y una fecha real en el calendario del comité. Es la pieza que convierte un cuadro decorativo en un mecanismo, y tiene apartado propio más abajo.</p></div>
+</div>
+
+<h2>El cuadro de vigilancia, activado</h2>
+<p>En el <a href="contraste.html">contraste de estrategia</a> la sala construye un cuadro de señales de alerta temprana. Ahí digo, y lo mantengo, lo que ese cuadro no hace:</p>
+
+<div class="rx-aviso">
+  <p>No vigila nada por sí solo: es la foto del día del taller, un indicador cambia de estado porque alguien entra y lo cambia, y nadie vuelve a abrir una sesión de taller cinco meses después. Lo único que sobrevive son las dos columnas de la derecha (el responsable y la fecha de revisión), y sobreviven en la agenda de esa persona, no en una herramienta.</p>
+  <p><strong>Si nadie sale de la sala con una fecha metida en el calendario del comité, el cuadro es un adorno.</strong> Prefiero decirlo aquí que venderlo como un sistema de alerta que no es.</p>
+</div>
+
+<p style="margin-top:24px">Este servicio es exactamente el trabajo de convertir ese cuadro en algo vivo, y consiste en tres cosas poco espectaculares y muy eficaces: poner un nombre propio en cada señal, meter la fecha de revisión en un calendario real, y dejar un formato de revisión de quince minutos que quepa dentro de una reunión que ya existe.</p>
+
+<h3>Con prospectiva y sin ella</h3>
+<p>El cuadro no depende de haber hecho la sesión de prospectiva. Depende de que exista algo bajo lo cual hay un supuesto que puede fallar. Cambia una sola columna:</p>
+
+<ul class="rx-inst">
+  <li><b>Con prospectiva</b><span>Cada señal cuelga de uno de los cuatro escenarios, y la pregunta que responde el cuadro es <em>¿hacia qué futuro estamos derivando?</em></span></li>
+  <li><b>Sin prospectiva</b><span>Cada señal cuelga del supuesto crítico de un proyecto tractor, y la pregunta es <em>¿sigue siendo cierto lo que dábamos por supuesto cuando decidimos esto?</em></span></li>
+</ul>
+
+<p style="margin-top:22px">Las seis columnas son las mismas en los dos casos (indicador, de qué es señal, umbral, quién lo mira, fecha de revisión y estado). Por eso este servicio funciona igual de bien después de un contraste que sobre un plan estratégico que la organización ya tenía hecho antes de conocerme.</p>
+
+<h2>Cómo se hace</h2>
+<p>Es el único de mis servicios que dura. El contraste es corto porque su trabajo es decidir; este es largo porque su trabajo es sostener. Se despliega a lo largo de un año, con sesiones acotadas y una fecha de retirada acordada desde el principio.</p>
+
+<ul class="rx-fases">
+  <li><b>Traducción de las prioridades</b><span>Trabajo de back office sobre lo que la organización ya ha decidido, y una sesión con el equipo de dirección para convertirlo en cartera: qué proyectos traccionan, cuáles no pasan las tres condiciones y qué se queda fuera a propósito.</span></li>
+  <li><b>El calendario de decisiones</b><span>Se levantan las ventanas reales del año y se sitúa en ellas cada decisión pendiente. Aquí es donde se descubre que la mitad de lo acordado no cabe en el calendario que la organización ya tiene, y hay que elegir otra vez.</span></li>
+  <li><b>El orden del día y la cadencia</b><span>Rediseño del formato del comité y de la regla de entrada de los asuntos estratégicos, y acuerdo del ritmo de revisión. Se prueba en vivo en una sesión real, no en un documento.</span></li>
+  <li><b>Bajada a mandos intermedios</b><span>Sesiones con quienes tienen que sostener cada proyecto tractor, para traducirlo a lo que cambia en su semana y para alinearlo con sus objetivos anuales. Sin esta fase el despliegue es un acuerdo entre directivos.</span></li>
+  <li><b>Revisiones trimestrales</b><span>Un número acotado de sesiones a lo largo del año, con el formato corto ya instalado. Yo participo, pero conduce la organización desde la segunda.</span></li>
+  <li><b>Retirada</b><span>La última sesión tiene por objeto comprobar que el mecanismo funciona sin mí y dejar por escrito quién sostiene cada pieza. Está en el contrato desde el primer día.</span></li>
+</ul>
+
+<h2>Qué sale</h2>
+<ul class="rx-sale">
+  <li><b>El calendario de decisiones del año</b><span>Con las ventanas reales, los responsables y las fechas límite. Es un documento de una página que se cuelga donde se ve.</span></li>
+  <li><b>Las fichas de los proyectos que traccionan</b><span>Una por proyecto, con la estructura completa y con los puntos de decisión marcados.</span></li>
+  <li><b>El orden del día tipo del comité</b><span>Con la separación entre decidir e informar y la regla de entrada de los asuntos estratégicos.</span></li>
+  <li><b>El cuadro de vigilancia activado</b><span>Con responsable, umbral y fecha en cada línea, y con esas fechas metidas en calendarios reales.</span></li>
+  <li><b>El protocolo de revisión</b><span>Qué se mira, en qué orden, en quince minutos, y qué se hace cuando una señal salta.</span></li>
+  <li><b>El mapa de quién sostiene qué al final</b><span>El documento de retirada: qué pieza queda en manos de quién cuando el encargo termina.</span></li>
+</ul>
+
+<h2>Qué lo hace distinto</h2>
+<div class="rx-dif">
+  <div><h3>El seguimiento no lo hago yo</h3><p>En cuanto un consultor hace el seguimiento, la organización deja de hacerlo, y acaba pagando una oficina de proyectos cara y sin autoridad. Yo instalo el mecanismo, acompaño mientras se coge el ritmo y me retiro con fecha.</p></div>
+  <div><h3>Este servicio sí dura</h3><p>Mis otros trabajos son cortos a propósito. Este no puede serlo: cambiar el orden del día de un comité y los objetivos de sus directivos ocurre a lo largo de un año o no ocurre. Lo digo aquí para que nadie lo descubra en la tercera reunión.</p></div>
+  <div><h3>Interviene el calendario, no la estructura</h3><p>No hay reorganización, ni organigrama nuevo, ni herramienta que comprar. Se trabaja sobre las reuniones que ya existen y sobre los objetivos que ya se fijan cada año.</p></div>
+  <div><h3>Trabaja sobre decisiones tomadas</h3><p>Si la estrategia todavía no ha elegido, esto no es lo que hace falta: hace falta un contraste antes. Desplegar una ambivalencia produce actividad, no tracción.</p></div>
+  <div><h3>Se dice lo que no se está haciendo</h3><p>Las revisiones nombran los proyectos parados y las decisiones que no se han tomado, con esas palabras. Un seguimiento que redondea los huecos es un seguimiento que los traslada intactos al trimestre siguiente.</p></div>
+  <div><h3>Si el primer ejecutivo delega esto, no funciona</h3><p>El orden del día de un comité solo lo cambia quien lo preside. No es una recomendación: es la condición de entrada.</p></div>
+</div>
+
+<h2>Para quién funciona</h2>
+<ul class="rx-quien">
+  <li><b>Industria y corporaciones</b><span>Cuando el plan está aprobado, la inversión comprometida y aun así el comité sigue dedicando su tiempo a lo de siempre.</span></li>
+  <li><b>Universidades y centros de I+D de gran tamaño</b><span>Cuando el plan estratégico convive con una estructura muy distribuida y no hay mecanismo que alinee rectorado, centros y departamentos.</span></li>
+  <li><b>Administraciones públicas</b><span>Cuando el calendario que manda es el presupuestario y las prioridades declaradas no llegan a tiempo a esa ventana.</span></li>
+  <li><b>Organizaciones que ya hicieron un contraste</b><span>Cuando existe un cuadro de vigilancia y hace falta convertirlo en un mecanismo con dueños y fechas.</span></li>
+</ul>
+
+<h2>Cómo se contrata</h2>
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>Quien preside el comité</b><span>Presente, no representado. Es la única condición sin la cual no acepto el encargo.</span></li>
+  <li><b>Una estrategia ya decidida</b><span>Con prioridades elegidas, aunque estén sin traducir. Si todavía no hay elección, el trabajo que hace falta es otro.</span></li>
+  <li><b>Acceso al calendario real</b><span>El del comité, el del consejo y el del ciclo presupuestario. Sin ellos, el calendario de decisiones es un ejercicio de escritorio.</span></li>
+  <li><b>Los mandos intermedios, una vez</b><span>Quienes van a sostener cada proyecto tractor, en una sesión de bajada. No hace falta más, pero esa hace falta.</span></li>
+  <li><b>Disposición a que las revisiones nombren lo parado</b><span>Un comité que solo quiere oír lo que avanza no necesita este trabajo, necesita un informe.</span></li>
+</ul>
+
+<h3>Cómo se cierra</h3>
+<p class="rx-nota">El alcance y las condiciones se fijan en una conversación previa, a partir del número de proyectos tractores, del tamaño del comité y de si hace falta bajar a mandos intermedios en una o en varias sesiones. Cada encargo se presupuesta sobre eso, y la fecha de retirada se acuerda antes de empezar.</p>
+
+<div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Agenda%20directiva%20y%20despliegue">Hablemos de meter tu estrategia en el calendario</a></div>
+
+</main>
+
+<div class="rx-foot">
+  <span>Joaquín Romero Roldán · Consejero-asesor independiente</span>
+  <span><a href="/">joaquinromero.com</a></span>
+</div>
+<script src="/assets/nav.js" defer></script>
+</body></html>
