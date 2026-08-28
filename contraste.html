@@ -94,6 +94,10 @@ a{color:var(--brand)}
 .rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
 .rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
 .rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-lista{margin:0 0 18px;padding:0;list-style:none}
+.rx-lista li{position:relative;padding:0 0 10px 22px;line-height:1.46}
+.rx-lista li:last-child{padding-bottom:0}
+.rx-lista li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;background:var(--brand)}
 .rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
 .rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
 .rx-aviso b{font-weight:700}
@@ -175,8 +179,11 @@ a{color:var(--brand)}
 
 <h2>Cuál es el problema</h2>
 <p class="big">Un plan estratégico puede estar impecablemente redactado y seguir sin elegir qué prioriza la organización cuando dos opciones legítimas se excluyen entre sí.</p>
-<p>Ocurre con una frecuencia que sorprende. El plan se redacta, se aprueba y se publica; y cuando después se pone al equipo directivo delante de las disyuntivas que ese plan tendría que haber resuelto —masiva o personalizada, generalista o especializada, autónoma o alineada, centralizada o distribuida—, lo que aparece con más frecuencia es el punto medio. La ambivalencia se presenta como equilibrio, suena razonable y nadie pierde nada.</p>
-<p>El coste llega después, y llega por dos vías. La primera es que <strong>lo que no se decide deliberadamente acaba decidiéndolo el presupuesto</strong>: el instrumento que reparte el dinero fija los ejes reales, y lo hace sin deliberación, por aritmética. La segunda es que un despliegue construido sobre una estrategia que no ha elegido produce trabajo técnicamente impecable sobre la pregunta equivocada.</p>
+<p>Ocurre con frecuencia: el plan se redacta, se aprueba y se publica; y cuando después se pone al equipo directivo delante de las disyuntivas que ese plan tendría que haber resuelto, lo que aparece con más frecuencia es el punto medio. La ambivalencia se presenta entonces como equilibrio, suena razonable y nadie pierde nada, pero el coste llega después, y por dos vías:</p>
+<ul class="rx-lista">
+  <li><strong>Lo que no se decide deliberadamente acaba decidiéndolo el presupuesto:</strong> el instrumento que reparte el dinero fija los ejes reales, y lo hace sin deliberación.</li>
+  <li>Un despliegue construido sobre una estrategia que no ha elegido produce trabajo técnicamente impecable sobre la pregunta equivocada.</li>
+</ul>
 <p>Contrastar es forzar esa elección mientras todavía la puede tomar quien gobierna.</p>
 
 <h2>Qué es un contraste</h2>
