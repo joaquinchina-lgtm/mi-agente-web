@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Diccionario del buscador · Área interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--soft:#EAF0F1;--brandd:#22525C;--alerta:#8a6d1f;--rojo:#9b4a3d}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:44px 24px 90px}
+.kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:-.032em;margin:0 0 12px}
+.lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:62ch;margin:0 0 24px}
+.aviso{background:var(--soft);padding:15px 17px;font-size:14.5px;line-height:1.46;color:#20302c;margin:0 0 26px}
+.aviso code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:#fff;padding:1px 5px}
+h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;letter-spacing:-.024em;margin:38px 0 4px}
+h2 span{font-family:'Inter',sans-serif;font-weight:400;font-size:14px;letter-spacing:0;color:var(--muted);margin-left:8px}
+
+.barra{position:sticky;top:0;z-index:5;background:#fff;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 0 4px}
+.b{border:1px solid var(--line);background:#fff;color:#41504b;font:inherit;font-size:14px;padding:9px 14px;cursor:pointer;border-radius:2px}
+.b:hover{border-color:var(--brand);color:var(--brand)}
+.b.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+.b.p:hover{background:var(--brandd);border-color:var(--brandd);color:#fff}
+.b.d{color:var(--rojo);border-color:#e8d5d1}
+label.b input{display:none}
+.estado{font-size:13.5px;color:var(--muted);margin-left:auto}
+.estado.sucio{color:var(--alerta);font-weight:600}
+
+.probador{border:1px solid var(--line);padding:18px;margin:22px 0 0;background:#fbfbfa}
+.probador .fila{display:flex;gap:0;border:1px solid var(--line);background:#fff}
+.probador input{flex:1;border:0;outline:0;padding:13px 14px;font:inherit;font-size:16px;background:transparent;min-width:0}
+.probador button{border:0;background:var(--ink);color:#fff;font:600 13.5px/1 'Inter',sans-serif;padding:0 18px;cursor:pointer}
+.probador ol{list-style:none;margin:14px 0 0;padding:0}
+.probador li{display:grid;grid-template-columns:1fr 92px;gap:14px;align-items:center;padding:8px 0;border-top:1px solid #eceae4;font-size:14.5px}
+.probador li b{color:var(--ink)}
+.probador .mini{height:5px;background:var(--line);position:relative}
+.probador .mini i{position:absolute;inset:0 auto 0 0;background:var(--brand)}
+.probador .nada{margin:12px 0 0;font-size:14.5px;color:var(--alerta)}
+
+.serv{border:1px solid var(--line);margin:14px 0 0}
+.serv > summary{cursor:pointer;padding:15px 18px;list-style:none;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;background:#fbfbfa}
+.serv > summary::-webkit-details-marker{display:none}
+.serv > summary b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16.5px;letter-spacing:-.02em}
+.serv > summary .fam{font:700 10px/1 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.serv > summary .n{margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.serv .cuerpo{padding:6px 18px 18px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);padding:10px 8px 8px 0;border-bottom:1px solid var(--line)}
+td{padding:6px 8px 6px 0;border-bottom:1px solid #f0efeb;vertical-align:middle}
+td input[type=text]{width:100%;border:1px solid transparent;background:none;font:inherit;font-size:14.5px;padding:6px 7px;color:var(--ink);border-radius:2px}
+td input[type=text]:focus{border-color:var(--brand);outline:0;background:#fff}
+td select{font:inherit;font-size:14px;padding:5px 6px;border:1px solid var(--line);background:#fff;border-radius:2px}
+td.acc{width:44px;text-align:right}
+.x{border:0;background:none;color:#b9b3ab;font-size:17px;line-height:1;cursor:pointer;padding:4px 6px}
+.x:hover{color:var(--rojo)}
+.nuevo{display:flex;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.nuevo input{flex:1;min-width:190px;border:1px solid var(--line);padding:9px 10px;font:inherit;font-size:14.5px;border-radius:2px}
+.nuevo select{border:1px solid var(--line);padding:9px 8px;font:inherit;font-size:14px;border-radius:2px}
+.pie{margin:56px 0 0;padding-top:22px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pie a{color:var(--brand);text-decoration:none}
+.vacio{padding:26px 0;color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="kick">Área interna</p>
+<h1>Diccionario del buscador</h1>
+<p class="lead">Aquí se edita lo que el buscador de la home entiende: los conceptos que definen cada servicio y las expresiones coloquiales que traducen a esos conceptos.</p>
+
+<div class="aviso">
+  <p style="margin:0 0 9px"><b>Cómo se publica un cambio.</b> Esta página edita en memoria y guarda un borrador en este navegador. Para que llegue a la web hay que <b>descargar el fichero</b> con «Descargar buscador.json», sustituir con él <code>assets/buscador.json</code> en tu carpeta y hacer <code>git add . &amp;&amp; git commit &amp;&amp; git push</code>.</p>
+  <p style="margin:0"><b>Peso de un concepto.</b> <b>3</b> = si aparece esto, es este servicio. <b>2</b> = apunta con claridad. <b>1</b> = solo desempata. Las expresiones de varias palabras pesan más que las sueltas, porque son más específicas.</p>
+</div>
+
+<div class="barra">
+  <button class="b p" id="descargar">Descargar buscador.json</button>
+  <button class="b" id="recargar">Recargar el publicado</button>
+  <button class="b" id="borrador">Restaurar borrador</button>
+  <label class="b">Importar JSON<input type="file" id="imp" accept=".json,application/json"></label>
+  <button class="b d" id="descartar">Descartar cambios</button>
+  <span class="estado" id="estado">—</span>
+</div>
+
+<div class="probador">
+  <form class="fila" id="pf" autocomplete="off">
+    <input id="pq" type="search" placeholder="Prueba una frase con los cambios que acabas de hacer">
+    <button type="submit">Probar</button>
+  </form>
+  <div id="pr"></div>
+</div>
+
+<h2>Conceptos por servicio <span>lo que define a cada uno</span></h2>
+<div id="servicios"></div>
+
+<h2>Expresiones coloquiales <span>lo que dice la gente → lo que el índice entiende</span></h2>
+<p class="lead" style="font-size:15.5px;margin:6px 0 0">Aquí está el 80% de la calidad del buscador. Cada frase que oigas en una primera reunión y no esté en esta tabla es una búsqueda que va a fallar.</p>
+<div id="expansiones"></div>
+
+<div class="pie">
+  <span>Joaquín Romero Roldán · Área interna</span>
+  <span><a href="./">Volver al área interna</a> · <a href="/">joaquinromero.com</a></span>
+</div>
+
+</div>
+
+<script>
+(function(){
+var RUTA="/assets/buscador.json", BORRADOR="jr_diccionario_borrador_v1";
+var D=null, sucio=false;
+
+/* ── motor idéntico al de la home, para que el probador no mienta ── */
+var VACIAS={}; ("de la el los las un una unos unas y o u que se nos nuestra nuestro nuestros nuestras en con por para al a lo mas muy ya no si su sus del es son esta estan tenemos tiene hay como cuando donde pero e mi me te le les").split(" ").forEach(function(w){VACIAS[w]=1;});
+function norm(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+  .replace(/[^a-z0-9+ ]/g," ").replace(/\s+/g," ").trim(); }
+function raiz(w){ if(w.length<=4) return w;
+  w=w.replace(/(ciones|cion|mientos|miento|adores|ador|antes|ante)$/,""); return w.replace(/(es|s)$/,""); }
+function tokens(q){ var o={}; norm(q).split(" ").forEach(function(w){ if(w&&!VACIAS[w]){o[w]=1;o[raiz(w)]=1;} }); return o; }
+function puntuar(q){
+  var nq=" "+norm(q)+" ", tk=tokens(q), extra=[];
+  for(var k in D.expansiones){ if(nq.indexOf(norm(k))>-1) extra=extra.concat(D.expansiones[k]); }
+  return D.servicios.map(function(s){
+    var pts=0, raz=[];
+    for(var con in s.c){
+      var w=s.c[con], nc=norm(con), hit=0;
+      if(nc.indexOf(" ")>-1){
+        if(nq.indexOf(nc)>-1) hit=Math.min(2.2, 1.3+0.2*(nc.split(" ").length-1));
+        else { var ps=nc.split(" ").filter(function(p){return !VACIAS[p];}), m=0;
+               ps.forEach(function(p){ if(tk[p]||tk[raiz(p)]) m++; });
+               if(ps.length && m/ps.length>=0.7) hit=0.9; }
+      } else if(tk[nc]||tk[raiz(nc)]) hit=1;
+      if(!hit){ for(var i=0;i<extra.length;i++){ if(norm(extra[i])===nc){hit=1.2;break;} } }
+      if(hit){ pts+=w*hit; raz.push({con:con,w:w*hit}); }
+    }
+    raz.sort(function(a,b){return b.w-a.w;});
+    return {s:s, pts:pts, raz:raz.slice(0,3)};
+  }).sort(function(a,b){return b.pts-a.pts;});
+}
+
+/* ── utilidades ─────────────────────────────────────────── */
+function $(x){ return document.getElementById(x); }
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function marcar(){ sucio=true; try{ localStorage.setItem(BORRADOR, JSON.stringify(D)); }catch(e){}
+  $("estado").textContent="Cambios sin publicar · borrador guardado en este navegador";
+  $("estado").className="estado sucio"; }
+function limpio(t){ sucio=false; $("estado").textContent=t; $("estado").className="estado"; }
+
+/* ── servicios ──────────────────────────────────────────── */
+function pintaServicios(){
+  $("servicios").innerHTML = D.servicios.map(function(s,si){
+    var cs = Object.keys(s.c).sort(function(a,b){ return s.c[b]-s.c[a] || a.localeCompare(b,"es"); });
+    return '<details class="serv"'+(si===0?' open':'')+'><summary>'+
+      '<span class="fam">'+esc(s.fam)+'</span><b>'+esc(s.t)+'</b>'+
+      '<span class="n">'+cs.length+' conceptos</span></summary><div class="cuerpo">'+
+      '<table><thead><tr><th>Concepto</th><th style="width:90px">Peso</th><th class="acc"></th></tr></thead><tbody>'+
+      cs.map(function(c){ return '<tr>'+
+        '<td><input type="text" value="'+esc(c)+'" data-s="'+si+'" data-c="'+esc(c)+'" data-k="con"></td>'+
+        '<td><select data-s="'+si+'" data-c="'+esc(c)+'" data-k="peso">'+
+          [1,2,3].map(function(n){return '<option value="'+n+'"'+(s.c[c]===n?' selected':'')+'>'+n+'</option>';}).join("")+
+        '</select></td>'+
+        '<td class="acc"><button class="x" data-s="'+si+'" data-c="'+esc(c)+'" data-k="borra" title="Quitar">&times;</button></td></tr>';
+      }).join("")+'</tbody></table>'+
+      '<div class="nuevo"><input type="text" placeholder="Nuevo concepto o expresión" data-s="'+si+'" data-k="nuevoTxt">'+
+      '<select data-s="'+si+'" data-k="nuevoPeso"><option value="3">peso 3</option><option value="2" selected>peso 2</option><option value="1">peso 1</option></select>'+
+      '<button class="b" data-s="'+si+'" data-k="anade">Añadir</button></div>'+
+      '</div></details>';
+  }).join("");
+}
+
+/* ── expansiones ────────────────────────────────────────── */
+function pintaExpansiones(){
+  var ks = Object.keys(D.expansiones).sort(function(a,b){return a.localeCompare(b,"es");});
+  $("expansiones").innerHTML = '<table><thead><tr><th style="width:38%">Lo que dice la gente</th>'+
+    '<th>Conceptos a los que apunta (separados por coma)</th><th class="acc"></th></tr></thead><tbody>'+
+    (ks.length ? ks.map(function(k){ return '<tr>'+
+      '<td><input type="text" value="'+esc(k)+'" data-e="'+esc(k)+'" data-k="clave"></td>'+
+      '<td><input type="text" value="'+esc(D.expansiones[k].join(", "))+'" data-e="'+esc(k)+'" data-k="valor"></td>'+
+      '<td class="acc"><button class="x" data-e="'+esc(k)+'" data-k="borraE" title="Quitar">&times;</button></td></tr>';
+    }).join("") : '<tr><td colspan="3" class="vacio">Sin expresiones.</td></tr>')+
+    '</tbody></table>'+
+    '<div class="nuevo"><input type="text" placeholder="Lo que dice la gente" id="ne-k">'+
+    '<input type="text" placeholder="conceptos, separados, por comas" id="ne-v">'+
+    '<button class="b" id="ne-add">Añadir</button></div>';
+}
+
+function pinta(){ pintaServicios(); pintaExpansiones(); }
+
+/* ── eventos, delegados ─────────────────────────────────── */
+document.addEventListener("change", function(e){
+  var t=e.target, k=t.getAttribute("data-k"); if(!k) return;
+  if(k==="peso"){ var s=D.servicios[+t.getAttribute("data-s")]; s.c[t.getAttribute("data-c")]=+t.value; marcar(); }
+});
+document.addEventListener("blur", function(e){
+  var t=e.target, k=t.getAttribute&&t.getAttribute("data-k"); if(!k) return;
+  if(k==="con"){
+    var s=D.servicios[+t.getAttribute("data-s")], viejo=t.getAttribute("data-c"), nuevo=t.value.trim();
+    if(!nuevo || nuevo===viejo) { t.value=viejo; return; }
+    var w=s.c[viejo]; delete s.c[viejo]; s.c[nuevo]=w; marcar(); pintaServicios();
+  }
+  if(k==="clave"){
+    var viejo=t.getAttribute("data-e"), nuevo=t.value.trim();
+    if(!nuevo || nuevo===viejo) { t.value=viejo; return; }
+    var v=D.expansiones[viejo]; delete D.expansiones[viejo]; D.expansiones[nuevo]=v; marcar(); pintaExpansiones();
+  }
+  if(k==="valor"){
+    var kk=t.getAttribute("data-e");
+    D.expansiones[kk]=t.value.split(",").map(function(x){return x.trim();}).filter(Boolean); marcar();
+  }
+}, true);
+document.addEventListener("click", function(e){
+  var t=e.target, k=t.getAttribute&&t.getAttribute("data-k");
+  if(k==="borra"){ var s=D.servicios[+t.getAttribute("data-s")];
+    if(confirm("¿Quitar «"+t.getAttribute("data-c")+"»?")){ delete s.c[t.getAttribute("data-c")]; marcar(); pintaServicios(); } return; }
+  if(k==="borraE"){ if(confirm("¿Quitar «"+t.getAttribute("data-e")+"»?")){ delete D.expansiones[t.getAttribute("data-e")]; marcar(); pintaExpansiones(); } return; }
+  if(k==="anade"){
+    var si=+t.getAttribute("data-s"), cont=t.parentNode;
+    var txt=cont.querySelector('[data-k="nuevoTxt"]').value.trim();
+    var pes=+cont.querySelector('[data-k="nuevoPeso"]').value;
+    if(!txt) return;
+    D.servicios[si].c[txt]=pes; marcar(); pintaServicios(); return;
+  }
+  if(t.id==="ne-add"){
+    var kk=$("ne-k").value.trim(), vv=$("ne-v").value.split(",").map(function(x){return x.trim();}).filter(Boolean);
+    if(!kk || !vv.length) return;
+    D.expansiones[kk]=vv; marcar(); pintaExpansiones(); return;
+  }
+});
+
+/* ── probador ───────────────────────────────────────────── */
+$("pf").addEventListener("submit", function(e){ e.preventDefault();
+  var q=$("pq").value.trim(); if(!q || !D) return;
+  var r=puntuar(q), top=r.filter(function(x){return x.pts>0;}).slice(0,3), max=top.length?top[0].pts:1;
+  $("pr").innerHTML = top.length
+    ? '<ol>'+top.map(function(x){ var pct=Math.max(12,Math.round(x.pts/max*100));
+        return '<li><span><b>'+esc(x.s.t)+'</b> · '+x.raz.map(function(z){return esc(z.con);}).join(", ")+'</span>'+
+               '<span><div class="mini"><i style="width:'+pct+'%"></i></div></span></li>'; }).join("")+'</ol>'
+    : '<p class="nada">Ninguna coincidencia. Esta frase hoy fallaría: añade lo que le falta abajo y vuelve a probar.</p>';
+});
+
+/* ── carga, descarga, borrador ──────────────────────────── */
+function cargar(publicado){
+  var b=null; try{ b=JSON.parse(localStorage.getItem(BORRADOR)||"null"); }catch(e){}
+  if(!publicado && b){ D=b; pinta(); marcar(); return; }
+  fetch(RUTA,{cache:"no-cache"}).then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){ D=d; pinta();
+      limpio(D.servicios.length+" servicios · "+
+        D.servicios.reduce(function(a,x){return a+Object.keys(x.c).length;},0)+" conceptos · "+
+        Object.keys(D.expansiones).length+" expresiones"); })
+    .catch(function(){ $("estado").textContent="No se ha podido leer /assets/buscador.json";
+      $("estado").className="estado sucio"; });
+}
+$("descargar").onclick=function(){
+  if(!D) return;
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,1)],{type:"application/json"}));
+  a.download="buscador.json"; document.body.appendChild(a); a.click(); a.remove();
+  alert("Descargado. Ahora sustituye con él assets/buscador.json en tu carpeta y haz commit y push.");
+};
+$("recargar").onclick=function(){ if(sucio && !confirm("Vas a perder los cambios sin publicar. ¿Seguir?")) return;
+  try{ localStorage.removeItem(BORRADOR); }catch(e){} cargar(true); };
+$("borrador").onclick=function(){ cargar(false); };
+$("descartar").onclick=function(){ if(!confirm("Se descarta el borrador de este navegador.")) return;
+  try{ localStorage.removeItem(BORRADOR); }catch(e){} cargar(true); };
+$("imp").onchange=function(e){ var f=e.target.files[0]; if(!f) return;
+  var r=new FileReader(); r.onload=function(){ try{
+    var d=JSON.parse(r.result); if(!d.servicios) throw 0; D=d; pinta(); marcar();
+  }catch(err){ alert("Ese fichero no tiene el formato esperado."); } };
+  r.readAsText(f); e.target.value=""; };
+window.addEventListener("beforeunload", function(e){ if(sucio){ e.preventDefault(); e.returnValue=""; } });
+
+cargar(false);
+})();
+</script>
+</body>
+</html>

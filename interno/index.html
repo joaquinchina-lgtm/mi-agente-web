@@ -6,7 +6,7 @@
 <!-- El área privada no debe aparecer en buscadores. No sustituye a la
      autenticación: es higiene, para que la consola no se indexe. -->
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>Diagnóstico de cultura organizativa</title>
+<title>Área interna · joaquinromero.com</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <!-- Generador de QR incrustado (qrcode-generator, MIT). No es un CDN a propósito:
      muchas redes corporativas y universitarias los filtran, y un QR en blanco
@@ -86,6 +86,16 @@ input,select,textarea{width:100%;font-family:inherit;font-size:15px;padding:11px
 .field{margin-bottom:14px}
 .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hub{display:grid;gap:12px;margin:18px 0 0}
+@media(min-width:720px){.hub{grid-template-columns:1fr 1fr}}
+.hub a{display:block;text-decoration:none;color:inherit;background:var(--surface-1);
+  border:1px solid var(--border);border-radius:var(--radius);padding:20px 20px 18px;transition:border-color .18s}
+.hub a:hover{border-color:var(--deseada)}
+.hub .et{display:block;font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-secondary);margin:0 0 9px}
+.hub b{display:block;font-size:17px;font-weight:650;line-height:1.2;margin:0 0 7px;color:var(--text-primary)}
+.hub span.d{display:block;font-size:14px;line-height:1.45;color:var(--text-secondary)}
+.hub .ir{display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--deseada)}
 @media (max-width:560px){.grid2{grid-template-columns:1fr}}
 
 /* reparto */
@@ -1512,17 +1522,37 @@ window.addEventListener("hashchange", render);
 function vistaPortada(){
   app().innerHTML = `<div class="wrap">${cabecera()}
     <div class="card">
-      <h1>Diagnóstico de cultura organizativa</h1>
-      <p class="lead">Instrumento de cuatro vectores con reparto de 100 puntos, en doce pantallas.</p>
-      ${!CONFIGURADO ? `<div class="aviso rojo"><b>Modo demostración.</b> No hay base de datos
+      <h1>Área interna</h1>
+      <p class="lead">Herramientas de trabajo de joaquinromero.com. No están indexadas ni enlazadas desde la web pública.</p>
+
+      <div class="hub">
+        <a href="#/admin">
+          <span class="et">Sesiones</span>
+          <b>Consola de instrumentos</b>
+          <span class="d">Herramientas de participación online para las sesiones.</span>
+          <span class="ir">Entrar como administrador &rarr;</span>
+        </a>
+        <a href="busquedas.html">
+          <span class="et">Analítica</span>
+          <b>Búsquedas de servicios</b>
+          <span class="d">Qué escribe la gente en el buscador de la web, qué no encuentra y qué palabras conviene añadir al diccionario.</span>
+          <span class="ir">Abrir el registro &rarr;</span>
+        </a>
+        <a href="diccionario.html">
+          <span class="et">Buscador</span>
+          <b>Diccionario del buscador</b>
+          <span class="d">Los conceptos que definen cada servicio y las expresiones coloquiales que los traducen. Con probador en vivo.</span>
+          <span class="ir">Editar el diccionario &rarr;</span>
+        </a>
+      </div>
+
+      ${!CONFIGURADO ? `<div class="aviso rojo" style="margin-top:18px"><b>Modo demostración.</b> No hay base de datos
         conectada: todo vive en <b>esta pestaña</b> y se pierde al cerrarla.
         Por eso aquí no funciona lo de varios dispositivos a la vez —para eso hace falta la base de
         datos—, pero sí puedes recorrer el circuito entero desde una sola ventana: crear la sesión,
         cargar respuestas de ejemplo, proyectar y ver los resultados. Para usarlo de verdad, rellena
         <code>CONFIG</code> arriba del archivo.</div>` : ""}
-      <div class="btnrow">
-        <button class="btn" onclick="location.hash='#/admin'">Entrar como administrador</button>
-      </div>
+
       <h3>Para participar</h3>
       <p>Escanea el código QR que se proyecta en la sala, o abre el enlace que te hayan enviado.</p>
       <form onsubmit="event.preventDefault();const c=this.cod.value.trim();if(c)location.search='?s='+encodeURIComponent(c)">

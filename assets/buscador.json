@@ -1,0 +1,459 @@
+{
+ "_doc": "Índice del buscador de servicios de la home. Se edita desde /interno/diccionario.html y se exporta a este fichero.",
+ "version": 1,
+ "servicios": [
+  {
+   "dom": "srv-0",
+   "fam": "Innovación",
+   "t": "Reactor de innovación y transferencia de conocimiento",
+   "c": {
+    "transferencia": 3,
+    "investigación": 2,
+    "i+d": 3,
+    "doctorado": 2,
+    "doctorando": 2,
+    "patente": 2,
+    "publicación": 2,
+    "conocimiento": 2,
+    "impacto": 2,
+    "prototipo": 3,
+    "problema complejo": 3,
+    "innovación": 2,
+    "spin off": 2,
+    "valorización": 2,
+    "equipo mixto": 2,
+    "investigador": 2,
+    "presentimiento": 3,
+    "no llega al mercado": 3,
+    "no llega a la sociedad": 3,
+    "reactor": 3,
+    "tesis": 2,
+    "ciencia": 2,
+    "idea": 1
+   }
+  },
+  {
+   "dom": "srv-1",
+   "fam": "Innovación",
+   "t": "Rediseño de servicios",
+   "c": {
+    "servicio": 2,
+    "usuario": 3,
+    "trámite": 3,
+    "ventanilla": 3,
+    "atención": 2,
+    "experiencia": 2,
+    "biblioteca": 2,
+    "matrícula": 2,
+    "procedimiento": 2,
+    "silo": 2,
+    "satisfacción": 2,
+    "queja": 3,
+    "reclamación": 3,
+    "cola": 2,
+    "recorrido": 2,
+    "punto de dolor": 3,
+    "estudiante": 2,
+    "ciudadano": 2,
+    "formulario": 2,
+    "burocracia": 2,
+    "rediseñar un servicio": 3,
+    "un servicio concreto": 3,
+    "mostrador": 3,
+    "prestación": 2
+   }
+  },
+  {
+   "dom": "srv-2",
+   "fam": "Estrategia",
+   "t": "Contraste de estrategia",
+   "c": {
+    "plan estratégico": 3,
+    "estrategia": 2,
+    "dilema": 3,
+    "elegir": 3,
+    "prioridad": 2,
+    "presupuesto": 2,
+    "escenario": 3,
+    "prospectiva": 3,
+    "futuro": 2,
+    "incertidumbre": 2,
+    "visión externa": 3,
+    "diagnóstico": 2,
+    "contraste": 3,
+    "rumbo": 3,
+    "a dónde vamos": 3,
+    "no elegimos": 3,
+    "punto medio": 2,
+    "ambivalencia": 2,
+    "hacer el plan": 3,
+    "revisar el plan": 3,
+    "opinion externa": 2,
+    "contrastar": 3,
+    "alerta temprana": 2
+   }
+  },
+  {
+   "dom": "srv-3",
+   "fam": "Estrategia",
+   "t": "Agenda directiva y despliegue traccionado",
+   "c": {
+    "despliegue": 3,
+    "ejecución": 3,
+    "no avanza": 3,
+    "no tracciona": 3,
+    "no se cumple": 3,
+    "comité": 3,
+    "orden del día": 3,
+    "seguimiento": 2,
+    "proyecto tractor": 3,
+    "responsable": 2,
+    "indicador": 2,
+    "calendario": 3,
+    "papel mojado": 3,
+    "cajón": 3,
+    "se queda en papel": 3,
+    "no ha cambiado nada": 3,
+    "aprobado y publicado": 3,
+    "implantar la estrategia": 2,
+    "agenda": 3,
+    "nadie hace nada": 3,
+    "quien lo hace": 2,
+    "decisión con dueño": 2,
+    "reunión": 2
+   }
+  },
+  {
+   "dom": "srv-4",
+   "fam": "Estrategia",
+   "t": "Implantación de estrategias centradas en el usuario",
+   "c": {
+    "capacidad": 3,
+    "laboratorio": 3,
+    "madurez": 3,
+    "agilidad administrativa": 3,
+    "muchos servicios": 3,
+    "continuo": 2,
+    "todos los servicios": 3,
+    "escalar": 2,
+    "sostener": 2,
+    "cultura de innovacion": 2,
+    "equipo núcleo": 3,
+    "lab": 3,
+    "de forma continua": 3,
+    "repetirlo": 2,
+    "institucionalizar": 3,
+    "procedimiento nos frena": 3,
+    "no podemos experimentar": 3
+   }
+  },
+  {
+   "dom": "srv-5",
+   "fam": "Estrategia",
+   "t": "Estrategia de IA",
+   "c": {
+    "inteligencia artificial": 3,
+    "ia": 3,
+    "dato": 3,
+    "gobierno del dato": 3,
+    "herramienta": 2,
+    "copilot": 3,
+    "chatgpt": 3,
+    "llm": 3,
+    "automatizar": 2,
+    "digital": 2,
+    "tecnología": 2,
+    "por dónde empezar con la IA": 3,
+    "licencia": 2,
+    "agente": 2,
+    "algoritmo": 2
+   }
+  },
+  {
+   "dom": "srv-6",
+   "fam": "Liderazgo",
+   "t": "Modelo de liderazgo",
+   "c": {
+    "liderazgo": 3,
+    "cultura": 3,
+    "directivo": 2,
+    "valor declarado": 2,
+    "modelo propio": 2,
+    "equipo directivo": 3,
+    "alineamiento": 3,
+    "cada uno va por su cuenta": 3,
+    "no tiran en la misma dirección": 3,
+    "consenso": 2,
+    "jefe": 2,
+    "mando": 2,
+    "clima": 2,
+    "supuesto basico": 2,
+    "artefacto": 2,
+    "función clave": 3,
+    "lider": 3
+   }
+  },
+  {
+   "dom": "srv-7",
+   "fam": "Liderazgo",
+   "t": "Programas de capacitación ejecutiva",
+   "c": {
+    "formación": 3,
+    "capacitación": 3,
+    "curso": 3,
+    "escuela de directivos": 3,
+    "gestión del cambio": 3,
+    "resistencia": 3,
+    "intraemprendimiento": 3,
+    "talento directivo": 2,
+    "entrenar": 2,
+    "aprender": 2,
+    "in house": 2,
+    "caso de uso": 2,
+    "programa formativo": 3
+   }
+  },
+  {
+   "dom": "srv-8",
+   "fam": "Liderazgo",
+   "t": "Despliegue de liderazgo transformacional",
+   "c": {
+    "talento": 3,
+    "rpt": 3,
+    "plantilla": 3,
+    "perfil": 3,
+    "carrera profesional": 3,
+    "persona": 2,
+    "recursos humanos": 3,
+    "rrhh": 3,
+    "organización": 2,
+    "proceso": 2,
+    "quick win": 2,
+    "puesto de trabajo": 3,
+    "dimensionamiento": 3,
+    "relación de puestos": 3,
+    "atracción de talento": 3,
+    "jubilación": 2,
+    "relevo": 2
+   }
+  },
+  {
+   "dom": "srv-9",
+   "fam": "Consejero",
+   "t": "Consejero independiente",
+   "c": {
+    "consejo": 3,
+    "consejero": 3,
+    "consejo asesor": 3,
+    "consejo de administración": 3,
+    "asesor externo": 3,
+    "gobierno corporativo": 3,
+    "órgano de gobierno": 3,
+    "independiente": 2,
+    "comisión": 2,
+    "compliance": 2,
+    "riesgo": 2,
+    "empresa familiar": 3,
+    "socio": 2,
+    "junta": 2,
+    "supervisión": 2,
+    "pyme": 2
+   }
+  }
+ ],
+ "expansiones": {
+  "no funciona": [
+   "no avanza"
+  ],
+  "no se hace": [
+   "no avanza"
+  ],
+  "se quedo en nada": [
+   "papel mojado"
+  ],
+  "cajon": [
+   "papel mojado"
+  ],
+  "olvidado": [
+   "papel mojado"
+  ],
+  "no ha cambiado": [
+   "no ha cambiado nada"
+  ],
+  "nadie se acuerda": [
+   "papel mojado"
+  ],
+  "no lo hace nadie": [
+   "nadie hace nada"
+  ],
+  "no pasa nada": [
+   "nadie hace nada"
+  ],
+  "estancado": [
+   "no avanza"
+  ],
+  "atascado": [
+   "no avanza",
+   "procedimiento nos frena"
+  ],
+  "burocracia": [
+   "agilidad administrativa",
+   "tramite"
+  ],
+  "papeleo": [
+   "tramite",
+   "burocracia"
+  ],
+  "trabas": [
+   "agilidad administrativa"
+  ],
+  "lento": [
+   "agilidad administrativa"
+  ],
+  "quejas": [
+   "queja"
+  ],
+  "reclamaciones": [
+   "reclamacion"
+  ],
+  "colas": [
+   "cola"
+  ],
+  "mala atencion": [
+   "atencion",
+   "queja"
+  ],
+  "publicamos": [
+   "publicacion",
+   "investigacion"
+  ],
+  "papers": [
+   "publicacion"
+  ],
+  "patentes": [
+   "patente"
+  ],
+  "no llega": [
+   "no llega al mercado"
+  ],
+  "mercado": [
+   "no llega al mercado"
+  ],
+  "spinoff": [
+   "spin off"
+  ],
+  "startup": [
+   "spin off"
+  ],
+  "emprender": [
+   "spin off"
+  ],
+  "chat gpt": [
+   "chatgpt"
+  ],
+  "copiloto": [
+   "copilot"
+  ],
+  "artificial": [
+   "inteligencia artificial"
+  ],
+  "datos": [
+   "dato"
+  ],
+  "digitalizacion": [
+   "digital"
+  ],
+  "directores": [
+   "directivo",
+   "equipo directivo"
+  ],
+  "gerentes": [
+   "directivo"
+  ],
+  "cada uno a lo suyo": [
+   "cada uno va por su cuenta"
+  ],
+  "descoordinados": [
+   "alineamiento"
+  ],
+  "no se entienden": [
+   "alineamiento"
+  ],
+  "puestos": [
+   "puesto de trabajo",
+   "rpt"
+  ],
+  "personal": [
+   "plantilla"
+  ],
+  "empleados": [
+   "plantilla"
+  ],
+  "relacion de puestos de trabajo": [
+   "rpt"
+  ],
+  "organigrama": [
+   "organizacion"
+  ],
+  "consejos": [
+   "consejo"
+  ],
+  "asesores": [
+   "consejo asesor"
+  ],
+  "familiar": [
+   "empresa familiar"
+  ],
+  "muchos servicios": [
+   "todos los servicios"
+  ],
+  "toda la casa": [
+   "todos los servicios"
+  ],
+  "cada vez de cero": [
+   "repetirlo",
+   "institucionalizar"
+  ],
+  "plan": [
+   "plan estrategico"
+  ],
+  "planificacion": [
+   "plan estrategico"
+  ],
+  "no decidimos": [
+   "no elegimos"
+  ],
+  "hacia donde": [
+   "a donde vamos",
+   "rumbo"
+  ],
+  "vision": [
+   "rumbo"
+  ],
+  "escenarios": [
+   "escenario"
+  ],
+  "futuros": [
+   "futuro",
+   "prospectiva"
+  ],
+  "tractores": [
+   "proyecto tractor"
+  ],
+  "comite de direccion": [
+   "comite"
+  ],
+  "formar": [
+   "formacion"
+  ],
+  "formacion directiva": [
+   "escuela de directivos"
+  ],
+  "cambio": [
+   "gestion del cambio"
+  ],
+  "resistencias": [
+   "resistencia"
+  ]
+ }
+}
