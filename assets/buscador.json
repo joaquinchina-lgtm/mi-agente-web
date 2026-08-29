@@ -205,7 +205,7 @@
   {
    "dom": "srv-7",
    "fam": "Liderazgo",
-   "t": "Programas de capacitación ejecutiva",
+   "t": "Aprendizaje estratégico",
    "c": {
     "formación": 3,
     "capacitación": 3,
@@ -243,7 +243,9 @@
     "desarrollo profesional": 2,
     "mentoría": 2,
     "formar a los directivos": 3,
-    "capacitación in house": 3
+    "capacitación in house": 3,
+    "capacitación ejecutiva": 3,
+    "programas de capacitación ejecutiva": 3
    }
   },
   {
