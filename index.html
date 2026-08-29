@@ -764,6 +764,46 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
   }
   medir();
   if(ro){ ro.observe(h); } else { window.addEventListener('resize', medir, {passive:true}); }
+
+  /* La marca de bajar: se apaga en cuanto alguien baja de verdad, y
+     vuelve si se regresa arriba del todo. */
+  var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Mientras el aviso de cookies esta arriba, la marca se calla: la
+     franja ya ocupa ese sitio y ademas es lo primero que hay que
+     resolver. Reaparece en cuanto se decide. */
+  (function(){
+    function mirar(){
+      var hero = document.querySelector('#home.hero');
+      var cb   = document.getElementById('cookie-banner') || document.getElementById('jr-cookies');
+      if(!hero) return;
+      var visible = !!cb && getComputedStyle(cb).display !== 'none';
+      hero.classList.toggle('jr-conbanner', visible);
+    }
+    function arrancar(){
+      mirar();
+      var cb = document.getElementById('cookie-banner');
+      if(cb && window.MutationObserver){
+        new MutationObserver(mirar).observe(cb, {attributes:true, attributeFilter:['style','class']});
+      }
+      window.setTimeout(mirar, 400);
+      window.setTimeout(mirar, 1500);
+    }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arrancar);
+    else arrancar();
+  })();
+  window.addEventListener('scroll', function(){
+    var hero = document.querySelector('#home.hero');
+    if(hero) hero.classList.toggle('jr-bajado', window.scrollY > 60);
+  }, {passive:true});
+  document.addEventListener('click', function(ev){
+    var a = ev.target.closest && ev.target.closest('#home.hero .hero-abajo');
+    if(!a) return;
+    var d = document.getElementById('etapas');
+    if(!d) return;
+    ev.preventDefault();
+    d.scrollIntoView({behavior: suave ? 'smooth' : 'auto', block:'start'});
+  });
   document.addEventListener('DOMContentLoaded', medir);
   window.addEventListener('load', medir);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
@@ -777,6 +817,7 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
     
     
   <div class="hero-text"><p class="hero-quote"><span class="hq-in"><span class="q-abre" aria-hidden="true">“</span>En tiempos de <span class="nb">Inteligencia Artificial</span> y de complejidad, la clave es la <span class="nb">competitividad por <strong>valor</strong></span>, y reside en saber <strong>conectar la <span class="nb trazo">Inteligencia Colectiva</span></strong></span></p><p class="hero-name">Joaquín Romero Roldán</p><p class="hero-role">Consejero / Asesor independiente</p><p class="hero-tag"><span>Innovación</span><span>Estrategia</span><span>Liderazgo</span><span>Consejero</span></p></div></div>
+  <a class="hero-abajo" href="#etapas" aria-label="Seguir a la trayectoria"><i aria-hidden="true"></i></a>
 </section>
 
 <!-- ===== Banner carrusel de logotipos (clientes) ===== -->
@@ -1247,14 +1288,18 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#c3d0d3}
     .accordion .panel p .cookie-btn:hover{text-decoration-color:#22525C}
 
-    /* Banner de consentimiento */
-    #cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;
+    /* Banner de consentimiento: una franja de una linea */
+    #cookie-banner{position:fixed;left:14px;right:14px;bottom:14px;z-index:9999;
       background:#fff;border:1px solid #e4e7e6;border-radius:0;
-      box-shadow:0 14px 34px rgba(22,33,31,.12);padding:20px 22px;max-width:680px;
+      box-shadow:0 12px 30px rgba(22,33,31,.11);padding:12px 16px;max-width:920px;
       margin:0 auto;display:none}
-    #cookie-banner p{margin:0 0 14px;font:400 14.5px/1.55 'Inter',system-ui,sans-serif;color:#4b5551}
+    #cookie-banner .cb-in{display:flex;align-items:center;justify-content:space-between;
+      gap:10px 20px;flex-wrap:wrap}
+    #cookie-banner p{margin:0;flex:1 1 260px;
+      font:400 13.5px/1.45 'Inter',system-ui,sans-serif;color:#4b5551}
     #cookie-banner a{color:#22525C;text-underline-offset:3px}
-    #cookie-banner .cookie-actions{margin-top:0}
+    #cookie-banner .cookie-actions{margin:0;flex:0 0 auto;gap:7px}
+    #cookie-banner .cookie-btn{padding:9px 13px;font-size:11px;letter-spacing:.1em}
 
     /* En movil el contenedor del pie no lleva margen lateral —la marca se
        lo pone ella sola—, asi que el acordeon tiene que ponerselo tambien
@@ -1265,7 +1310,12 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       .accordion .panel{font-size:14.5px;padding-bottom:22px}
       .accordion summary{padding:15px 0}
       .cookie-btn{padding:10px 14px;font-size:11.5px;letter-spacing:.1em}
-      #cookie-banner{left:12px;right:12px;bottom:12px;padding:17px 18px}
+      #cookie-banner{left:10px;right:10px;bottom:10px;padding:11px 12px}
+      #cookie-banner .cb-in{gap:9px 10px}
+      #cookie-banner p{flex:1 1 100%;font-size:12.5px;line-height:1.4}
+      #cookie-banner .cookie-actions{flex:1 1 100%;gap:6px}
+      #cookie-banner .cookie-btn{flex:1 1 0;padding:10px 4px;font-size:10.5px;
+        letter-spacing:.06em;text-align:center}
     }
   </style>
 
@@ -1377,16 +1427,18 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
   </div>
 
   <!-- Banner mínimo de consentimiento (opcional, pero recomendado en la UE) -->
-  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true">
-    <p>
-      Usamos cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (Google Analytics 4) para mejorar la experiencia.
-      Puedes aceptar, rechazar o configurar tu elección.
-      <a href="#politica-cookies">Más información</a>.
-    </p>
-    <div class="cookie-actions">
-      <button class="cookie-btn" type="button" onclick="window.setCookieConsent(false)">Rechazar</button>
-      <button class="cookie-btn" type="button" onclick="window.open('#politica-cookies', '_self')">Configurar</button>
-      <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent(true)">Aceptar</button>
+  <!-- Una franja, no un cartel: el texto y los tres botones en la misma
+       linea. Ocupaba el 40 % de la primera pantalla en movil, justo lo
+       que se acababa de despejar. Se quita tambien aria-modal, que decia
+       que el resto de la pagina estaba inerte cuando no lo esta. -->
+  <div id="cookie-banner" role="region" aria-live="polite" aria-label="Consentimiento de cookies">
+    <div class="cb-in">
+      <p>Cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (GA4). <a href="#politica-cookies">Más información</a>.</p>
+      <div class="cookie-actions">
+        <button class="cookie-btn" type="button" onclick="window.setCookieConsent(false)">Rechazar</button>
+        <button class="cookie-btn" type="button" onclick="window.open('#politica-cookies', '_self')">Configurar</button>
+        <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent(true)">Aceptar</button>
+      </div>
     </div>
   </div>
 
@@ -1557,7 +1609,7 @@ document.addEventListener("DOMContentLoaded", function () {
     min-height:calc(100vw / 1.5);min-height:min(calc(100vw / 1.5),46svh);overflow:hidden}
   #home.hero .hero-photo{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;
     object-fit:cover;object-position:76% 34%;-webkit-mask-image:none;mask-image:none}
-  #home.hero .inner{position:static;inset:auto;display:block;flex:0 0 auto;padding:26px 0 34px}
+  #home.hero .inner{position:static;inset:auto;display:block;flex:0 0 auto;padding:26px 0 58px}
   #home.hero .hero-text{width:100%;max-width:none;padding:0 22px}
   /* la cita se superpone sobre el fondo claro de la foto; aspect-ratio = 0.57 x 1.5 */
   #home.hero .hero-quote{position:absolute;top:var(--hdr);left:0;z-index:2;width:57%;aspect-ratio:auto;height:var(--jr-foto,calc(100vw / 1.5));margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
@@ -1574,6 +1626,33 @@ document.addEventListener("DOMContentLoaded", function () {
   #home.hero .hero-tag span:nth-child(even){padding-left:15px}
   #home.hero .hero-tag span:nth-child(even)::before{content:"";display:block;position:absolute;
     left:0;top:50%;width:1px;height:12px;margin-top:-6px;background:#32717E;opacity:.55}
+}
+
+/* ═══ La marca de bajar ══════════════════════════════════════════
+   Al ocupar el hero la pantalla entera ya no se asoma la seccion
+   siguiente, y con ella se fue la unica pista de que la web sigue
+   hacia abajo. Esto la devuelve sin ruido: un filete vertical con un
+   trazo que lo recorre. Se desvanece en cuanto alguien baja, y con
+   «reducir movimiento» se queda quieto. ═══════════════════════════ */
+#home.hero .hero-abajo{position:absolute;left:50%;bottom:26px;z-index:3;
+  transform:translateX(-50%);display:block;width:34px;height:38px;
+  text-decoration:none;opacity:1;transition:opacity .4s ease}
+#home.hero .hero-abajo i{position:absolute;left:50%;top:0;width:1px;height:38px;
+  margin-left:-.5px;background:rgba(22,33,31,.2);overflow:hidden;display:block}
+#home.hero .hero-abajo i::after{content:"";position:absolute;left:0;top:0;width:1px;height:13px;
+  background:#32717E;animation:jrBaja 2.4s cubic-bezier(.55,0,.35,1) infinite}
+@keyframes jrBaja{0%{transform:translateY(-14px)}55%,100%{transform:translateY(38px)}}
+#home.hero .hero-abajo:hover i{background:rgba(22,33,31,.34)}
+#home.hero .hero-abajo:focus-visible{outline:2px solid #32717E;outline-offset:4px}
+#home.hero.jr-bajado .hero-abajo,
+#home.hero.jr-conbanner .hero-abajo{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){
+  #home.hero .hero-abajo i::after{animation:none;top:auto;bottom:0;height:13px}
+}
+@media (max-width:900px){
+  #home.hero .hero-abajo{bottom:16px;height:30px}
+  #home.hero .hero-abajo i{height:30px}
+  @keyframes jrBaja{0%{transform:translateY(-13px)}55%,100%{transform:translateY(30px)}}
 }
 
 /* ===== Panel de etapas ===== */
