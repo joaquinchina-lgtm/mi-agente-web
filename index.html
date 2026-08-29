@@ -1280,6 +1280,18 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
     .cookie-btn:focus-visible{outline:2px solid #32717E;outline-offset:2px}
     .cookie-btn.primary{background:#32717E;color:#fff;border-color:#32717E}
     .cookie-btn.primary:hover{background:#22525C;border-color:#22525C;color:#fff}
+    /* Cual esta puesto ahora mismo. Sin esto los dos botones se pulsaban
+       y no pasaba nada visible: parecian rotos. */
+    .cookie-estado{margin:20px 0 0;font-size:13.5px;line-height:1.5;color:#5c6662}
+    .cookie-estado::before{content:"";display:inline-block;width:6px;height:6px;
+      background:#b3bab6;vertical-align:.16em;margin-right:9px}
+    .cookie-estado[data-estado="si"]::before{background:#32717E}
+    .cookie-estado[data-estado="no"]::before{background:#16211f}
+    .cookie-actions{margin-top:12px}
+    .cookie-btn[aria-pressed="true"]{border-color:#16211f;color:#16211f}
+    .cookie-btn[aria-pressed="true"]::after{content:"·  activo";margin-left:8px;
+      font-weight:600;letter-spacing:.06em;text-transform:none;opacity:.55}
+    .cookie-btn.primary[aria-pressed="true"]{background:#22525C;border-color:#22525C;color:#fff}
     /* El de «cambiar tu consentimiento» va en linea dentro de un parrafo:
        ahi no puede ser un boton grande, se comporta como un enlace. */
     .accordion .panel p .cookie-btn{
@@ -1417,9 +1429,10 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
           <h4>5. Contacto</h4>
           <p>Para cualquier cuestión sobre esta política, escribe a <a href="mailto:joaquin@joaquinromero.com">joaquin@joaquinromero.com</a>.</p>
 
+          <p class="cookie-estado" data-jr-estado role="status" aria-live="polite">Ahora mismo: sin decidir. No se mide nada hasta que aceptes.</p>
           <div class="cookie-actions">
-            <button class="cookie-btn" type="button" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(false)">Rechazar analíticas</button>
-            <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(true)">Aceptar analíticas</button>
+            <button class="cookie-btn" type="button" data-jr-consent="no" aria-pressed="false" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(false)">Rechazar analíticas</button>
+            <button class="cookie-btn primary" type="button" data-jr-consent="si" aria-pressed="false" onclick="window.setCookieConsent &amp;&amp; window.setCookieConsent(true)">Aceptar analíticas</button>
           </div>
         </div>
       </details>
@@ -1436,7 +1449,7 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       <p>Cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (GA4). <a href="#politica-cookies">Más información</a>.</p>
       <div class="cookie-actions">
         <button class="cookie-btn" type="button" onclick="window.setCookieConsent(false)">Rechazar</button>
-        <button class="cookie-btn" type="button" onclick="window.open('#politica-cookies', '_self')">Configurar</button>
+        <button class="cookie-btn" type="button" onclick="window.abrirPoliticaCookies &amp;&amp; window.abrirPoliticaCookies()">Configurar</button>
         <button class="cookie-btn primary" type="button" onclick="window.setCookieConsent(true)">Aceptar</button>
       </div>
     </div>
