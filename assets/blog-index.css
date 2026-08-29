@@ -3,7 +3,12 @@
    Sustituye al carrusel. Datos en /blog/posts.json
    ===================================================================== */
 #blog{--b-ink:#16211f;--b-body:#4b5551;--b-mut:#8b938f;--b-dim:#b3bab6;
-      --b-hair:#e2e0d9;--b-hair2:#e6e4de;--b-teal:#32717E;--b-teal-d:#22525C;--b-teal-soft:#EAF0F1}
+      --b-hair:#e2e0d9;--b-hair2:#e6e4de;--b-teal:#32717E;--b-teal-d:#22525C;--b-teal-soft:#EAF0F1;
+      /* Los casos practicos llevan su propio acento: un bronce apagado.
+         Es calido, del mismo tono que los filetes del sitio, y no compite
+         con el verde azulado; sirve para saber de un vistazo que una
+         entrada es un caso y no un articulo. */
+      --b-clay:#8A6A3F;--b-clay-d:#6F5330;--b-clay-soft:#F3EFE8}
 #blog .b-eyebrow{margin:0 0 14px;font-size:12px;font-weight:600;letter-spacing:.18em;
   text-transform:uppercase;color:var(--b-teal)}
 #blog .section-sub{margin:0 0 30px;max-width:64ch;font-size:17px;line-height:1.6;color:#5c6662}
@@ -49,7 +54,13 @@
 #blog .idx>li:hover .a-date{color:var(--b-teal)}
 #blog .a-kind{display:block;margin-top:5px;font-size:10.5px;font-weight:700;letter-spacing:.13em;
   text-transform:uppercase;color:var(--b-mut)}
-#blog .a-kind.is-medio,#blog .a-kind.is-caso{color:var(--b-teal-d)}
+/* Un cuadradito del color de cada familia delante del rotulo: articulo
+   en gris, medio en verde azulado, caso practico en bronce. Con eso la
+   lista se lee como una leyenda sin necesidad de explicarla. */
+#blog .a-kind::before{content:"";display:inline-block;width:5px;height:5px;
+  background:currentColor;vertical-align:.16em;margin-right:7px;opacity:.9}
+#blog .a-kind.is-medio{color:var(--b-teal-d)}
+#blog .a-kind.is-caso{color:var(--b-clay-d)}
 
 #blog .a-t{margin:0 0 8px;font-size:clamp(20px,2vw,26px);line-height:1.22;color:var(--b-ink);
   font-family:'Archivo',system-ui,sans-serif;font-weight:600;letter-spacing:-.028em}
@@ -122,3 +133,23 @@
   #blog .c-press .inner{max-width:100%}
   #blog .ftype{gap:20px}
 }
+
+/* ═══ Casos practicos ══════════════════════════════════════════════
+   Misma retorica que los articulos —filete, tipografia, aire— pero en
+   bronce. Solo cambia el acento; el ritmo de la lista no se toca. */
+/* Un filete de bronce muy palido en el canto izquierdo, permanente:
+   asi la familia se distingue de un vistazo, sin tener que leer el
+   rotulo ni pasar el raton. Al pasar por encima, el filete se llena. */
+#blog .idx>li[data-type="caso"]{box-shadow:inset 3px 0 0 #E7DBC4}
+#blog .idx>li[data-type="caso"]::before{background:var(--b-clay)}
+#blog .idx>li[data-type="caso"]:hover .a-date{color:var(--b-clay-d)}
+#blog .idx>li[data-type="caso"] .c-role{border-left-color:var(--b-clay)}
+#blog .idx>li[data-type="caso"] .c-role b{color:var(--b-clay-d)}
+#blog .idx>li[data-type="caso"] .c-facts li b{color:var(--b-clay-d)}
+#blog .idx>li[data-type="caso"] .a-new{color:var(--b-clay-d);background:var(--b-clay-soft)}
+#blog .idx>li[data-type="caso"]:hover .a-tags i{border-color:#ddd2bd}
+#blog .idx>li[data-type="caso"] .c-press .outs a:hover{border-color:var(--b-clay);color:var(--b-clay-d)}
+#blog .idx>li[data-type="caso"] .c-press .outs a:hover::after{color:var(--b-clay)}
+/* Y un fondo apenas insinuado al pasar por encima, para separarlos del
+   blanco que se queda en los articulos. */
+#blog .idx>li[data-type="caso"]:hover{background:#FCFAF6}
