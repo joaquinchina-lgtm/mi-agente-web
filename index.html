@@ -300,15 +300,7 @@
   #servicios .sit{gap:12px;padding:13px 4px}
 }
 
-/* cabecera: cuatro cajas enlazadas */
-#home.hero .hero-tag{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0}
-#home.hero .hero-tag a{display:inline-block;background:#111;color:#fff;text-decoration:none;
-  font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;
-  padding:9px 16px;transition:background .2s ease,transform .2s ease}
-#home.hero .hero-tag a:hover,#home.hero .hero-tag a:focus-visible{background:#32717E;transform:translateY(-1px)}
-#home.hero .hero-tag a:focus-visible{outline:2px solid #32717E;outline-offset:3px}
-@media (max-width:900px){ #home.hero .hero-tag{gap:6px} #home.hero .hero-tag a{padding:8px 12px;letter-spacing:.1em} }
-@media (max-width:380px){ #home.hero .hero-tag a{font-size:10.5px;padding:7px 10px;letter-spacing:.06em} }
+/* Los cuatro conceptos del hero se resuelven abajo, en el bloque del hero. */
 
 /* etapas: año + rol */
 #etapas .etapa-anio{font-size:11px;letter-spacing:.13em;color:#b8bfbb;margin-top:11px}
@@ -319,14 +311,6 @@
 
 #etapas .etapa-anio i{display:inline;font-style:normal;text-transform:none;letter-spacing:.01em;color:#c8cfca;margin-left:8px}
 
-/* (1)(2) cabecera: cuatro cajas sin enlace, 4 en línea y 2+2 en móvil */
-#home.hero .hero-tag{display:grid;grid-template-columns:repeat(4,auto);gap:8px;justify-content:center;margin:0}
-#home.hero .hero-tag span{display:block;text-align:center;background:#111;color:#fff;
-  font-size:clamp(11px,.9vw,14px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px}
-@media (max-width:900px){
-  #home.hero .hero-tag{grid-template-columns:1fr 1fr;gap:7px;max-width:340px;margin:0 auto}
-  #home.hero .hero-tag span{padding:9px 6px;letter-spacing:.08em;font-size:11.5px}
-}
 /* (3) el texto de cada etapa ocupa el ancho completo de las cuatro imágenes */
 #etapas .etapas-texto{max-width:none;margin-left:0;margin-right:0}
 #etapas .etapas-texto .e-intro{max-width:none}
@@ -341,7 +325,7 @@
   #etapas .etapa-rol{min-height:2.7em}
 }
 /* (5) banda gris a todo el ancho para las titulaciones */
-#etapas .cred-band{margin:46px 0 0;padding:26px 0;background:#EFEFEC;border-top:1px solid #e2e0d9}
+#etapas .cred-band{margin:46px 0 0;padding:26px 0;background:#f6f7fb;border-top:1px solid #e6e4de}
 #etapas .cred-band .etapas-cred{margin:0 auto;padding:0;border:0;max-width:78ch}
 #etapas{padding-bottom:0}
 /* (7) ficha de Consejero: una sola tarjeta a todo el ancho */
@@ -756,6 +740,35 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
   </div>
 </div>
 
+<script>
+/* La cabecera va en el flujo (no es fixed), asi que el hero solo puede
+   ocupar la pantalla entera si se le descuenta su alto. Ese alto cambia
+   con el ancho y con la carga de las fuentes, de modo que se publica en
+   --jr-hdr y se recalcula cuando la cabecera cambia de tamano. El valor
+   de reserva (81 px) es el del escritorio, por si el script no corre. */
+(function(){
+  var h = document.querySelector('header.jr-header');
+  if(!h) return;
+  var f = null, ro = window.ResizeObserver ? new ResizeObserver(medir) : null;
+  function medir(){
+    var r = document.documentElement.style;
+    r.setProperty('--jr-hdr', Math.round(h.getBoundingClientRect().height) + 'px');
+    /* La foto va detras de este script en el documento, asi que se
+       busca la primera vez que se puede. En movil crece para llenar la
+       pantalla y la cita se le superpone: necesita su alto exacto. */
+    if(!f){
+      f = document.querySelector('#home.hero .hero-media');
+      if(f && ro) ro.observe(f);
+    }
+    if(f) r.setProperty('--jr-foto', Math.round(f.getBoundingClientRect().height) + 'px');
+  }
+  medir();
+  if(ro){ ro.observe(h); } else { window.addEventListener('resize', medir, {passive:true}); }
+  document.addEventListener('DOMContentLoaded', medir);
+  window.addEventListener('load', medir);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
+})();
+</script>
 <section id="home" class="hero"><div class="hero-media"><img class="hero-photo" src="assets/img/hero-jrr-2400.webp" srcset="assets/img/hero-jrr-1100.webp 1100w, assets/img/hero-jrr-2400.webp 2400w" sizes="100vw" width="2400" height="1340" fetchpriority="high" decoding="async" alt="Joaquín Romero Roldán, consejero y asesor independiente"></div>
   
 
@@ -1173,28 +1186,87 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 
 <footer id="contacto">
   <style>
-    .legal-footer { padding: 36px 0; border-top:1px solid #e5e7eb; color:#374151; }
-    .legal-footer .brandline { font-size:14px; color:#6b7280; margin-bottom:14px; }
-    .accordion { border:1px solid #e5e7eb; border-radius:14px; background:#fff; overflow:hidden; }
-    .accordion details+details { border-top:1px solid #e5e7eb; }
-    .accordion summary {
-      list-style:none; cursor:pointer; padding:14px 16px; font-weight:600; outline:none;
-      display:flex; align-items:center; justify-content:space-between;
+  /* ═══ Bloque legal · aviso legal y politica de cookies ═══════════
+     Reescrito para el sistema actual: filete de un pixel, esquina
+     viva, Archivo para los titulos y Inter para el cuerpo. Antes
+     tenia esquinas de 14 px, botones en pastilla y grises frios de
+     otra epoca, que era lo unico del pie que no se parecia al resto
+     del sitio. ═══════════════════════════════════════════════════ */
+    .legal-footer{padding:44px 0 40px;border-top:1px solid #e6e4de;color:#4b5551}
+    .legal-footer .brandline{font-size:12px;font-weight:600;letter-spacing:.16em;
+      text-transform:uppercase;color:#8b938f;margin:0 0 20px}
+
+    .accordion{border-top:1px solid #e4e7e6;background:transparent}
+    .accordion details{border-bottom:1px solid #e4e7e6}
+    .accordion summary{
+      list-style:none;cursor:pointer;padding:17px 2px;outline:none;
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:600;
+      letter-spacing:.16em;text-transform:uppercase;color:#16211f;
+      transition:color .18s}
+    .accordion summary:hover{color:#22525C}
+    .accordion summary::-webkit-details-marker{display:none}
+    .accordion summary:focus-visible{outline:2px solid #32717E;outline-offset:2px}
+
+    /* El signo: un mas que se convierte en menos. Sin giros ni chevrones. */
+    .accordion .chev{position:relative;width:11px;height:11px;flex:none;font-size:0;color:#8b938f}
+    .accordion .chev::before,.accordion .chev::after{
+      content:"";position:absolute;background:currentColor;transition:transform .22s,opacity .22s}
+    .accordion .chev::before{left:0;top:5px;width:11px;height:1px}
+    .accordion .chev::after{left:5px;top:0;width:1px;height:11px}
+    .accordion details[open] .chev{color:#32717E}
+    .accordion details[open] .chev::after{transform:scaleY(0);opacity:0}
+    .accordion summary:hover .chev{color:#32717E}
+
+    .accordion .panel{padding:2px 0 26px;font-size:15px;line-height:1.62;color:#4b5551;max-width:78ch}
+    .accordion .panel h4{margin:22px 0 7px;font-family:'Archivo',system-ui,sans-serif;
+      font-weight:600;font-size:16px;letter-spacing:-.015em;color:#16211f}
+    .accordion .panel p{margin:0 0 11px}
+    .accordion .panel ul{margin:0 0 11px;padding-left:19px}
+    .accordion .panel li{margin:0 0 5px}
+    .accordion .muted{font-size:12px;font-weight:600;letter-spacing:.11em;
+      text-transform:uppercase;color:#a2a9a5}
+    .accordion a{color:#22525C;text-decoration:underline;text-decoration-thickness:1px;
+      text-underline-offset:3px;text-decoration-color:#c3d0d3}
+    .accordion a:hover{text-decoration-color:#22525C}
+
+    .cookie-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+    .cookie-btn{
+      font:600 12px/1 'Inter',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+      border:1px solid #d9dedc;color:#16211f;background:#fff;padding:11px 17px;
+      border-radius:0;cursor:pointer;transition:.16s;text-decoration:none}
+    .cookie-btn:hover{border-color:#32717E;color:#22525C}
+    .cookie-btn:focus-visible{outline:2px solid #32717E;outline-offset:2px}
+    .cookie-btn.primary{background:#32717E;color:#fff;border-color:#32717E}
+    .cookie-btn.primary:hover{background:#22525C;border-color:#22525C;color:#fff}
+    /* El de «cambiar tu consentimiento» va en linea dentro de un parrafo:
+       ahi no puede ser un boton grande, se comporta como un enlace. */
+    .accordion .panel p .cookie-btn{
+      font:inherit;letter-spacing:inherit;text-transform:none;border:0;padding:0;
+      color:#22525C;background:none;text-decoration:underline;
+      text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#c3d0d3}
+    .accordion .panel p .cookie-btn:hover{text-decoration-color:#22525C}
+
+    /* Banner de consentimiento */
+    #cookie-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;
+      background:#fff;border:1px solid #e4e7e6;border-radius:0;
+      box-shadow:0 14px 34px rgba(22,33,31,.12);padding:20px 22px;max-width:680px;
+      margin:0 auto;display:none}
+    #cookie-banner p{margin:0 0 14px;font:400 14.5px/1.55 'Inter',system-ui,sans-serif;color:#4b5551}
+    #cookie-banner a{color:#22525C;text-underline-offset:3px}
+    #cookie-banner .cookie-actions{margin-top:0}
+
+    /* En movil el contenedor del pie no lleva margen lateral —la marca se
+       lo pone ella sola—, asi que el acordeon tiene que ponerselo tambien
+       o el texto legal sale pegado al borde de la pantalla. */
+    @media (max-width:900px){
+      .legal-footer{padding:34px 0 32px}
+      .accordion{margin:0 17px}
+      .accordion .panel{font-size:14.5px;padding-bottom:22px}
+      .accordion summary{padding:15px 0}
+      .cookie-btn{padding:10px 14px;font-size:11.5px;letter-spacing:.1em}
+      #cookie-banner{left:12px;right:12px;bottom:12px;padding:17px 18px}
     }
-    .accordion summary::-webkit-details-marker { display:none; }
-    .accordion summary:focus { box-shadow:0 0 0 3px rgba(14,165,233,.15); border-radius:8px; }
-    .accordion .chev { transition: transform .2s ease; }
-    details[open] .chev { transform: rotate(180deg); }
-    .accordion .panel { padding:0 16px 16px; font-size:14px; color:#4b5563; }
-    .accordion .panel h4 { margin:12px 0 6px; font-size:15px; color:#111827; }
-    .accordion .muted { color:#6b7280; }
-    .accordion a { color: var(--brand, #32717E); text-decoration: none; }
-    .accordion a:hover { text-decoration: underline; }
-    .cookie-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .cookie-btn {
-      border:1px solid #32717E; color:#32717E; background:#fff; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600;
-    }
-    .cookie-btn.primary { background:#32717E; color:#fff; border-color:transparent; }
   </style>
 
   <div class="container legal-footer">
@@ -1305,8 +1377,8 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
   </div>
 
   <!-- Banner mínimo de consentimiento (opcional, pero recomendado en la UE) -->
-  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true" style="position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 10px 18px rgba(2,6,23,.08); padding:14px; display:none;">
-    <p style="margin:0 0 10px 0; font-size:14px; color:#374151;">
+  <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" aria-modal="true">
+    <p>
       Usamos cookies <strong>técnicas</strong> y, si aceptas, <strong>analíticas</strong> (Google Analytics 4) para mejorar la experiencia.
       Puedes aceptar, rechazar o configurar tu elección.
       <a href="#politica-cookies">Más información</a>.
@@ -1447,7 +1519,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <style>
 /* ===== Cabecera con retrato fijo — entorno de pruebas ===== */
-#home.hero{position:relative;background:#F5F5F5;min-height:min(80vh,720px);display:flex;align-items:center;overflow:hidden;padding:0}
+#home.hero{position:relative;background:#F5F5F5;min-height:calc(100vh - var(--jr-hdr,81px));min-height:calc(100svh - var(--jr-hdr,81px));display:flex;align-items:center;overflow:hidden;padding:0}
 #home.hero .hero-media{position:absolute;inset:0;z-index:0;pointer-events:none;display:flex;justify-content:flex-end;overflow:hidden}
 #home.hero .hero-photo{height:100%;width:auto;max-width:none;flex:none;object-fit:cover;object-position:100% 50%;display:block;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 170px);mask-image:linear-gradient(90deg,transparent 0,#000 170px)}
 #home.hero .inner{position:absolute;inset:0;max-width:none;width:100%;padding:0 27% 0 0;display:grid;align-items:center;z-index:1}
@@ -1455,24 +1527,53 @@ document.addEventListener("DOMContentLoaded", function () {
 #home.hero .hero-quote{font-size:clamp(19px,2.05vw,31px);line-height:1.42;font-weight:400;letter-spacing:-.005em;margin:0 0 34px;text-wrap:balance}
 #home.hero .hero-name{font-size:clamp(17px,1.35vw,21px);font-weight:600;margin:0 0 6px}
 #home.hero .hero-role{font-size:clamp(12px,.95vw,15px);font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#32717E;margin:0 0 30px}
-#home.hero .hero-tag{margin:0 auto}
-#home.hero .hero-tag span{display:inline-block;background:#111;color:#fff;font-size:clamp(11.5px,.9vw,14px);font-weight:600;letter-spacing:.15em;text-transform:uppercase;padding:9px 18px}
+/* Los cuatro conceptos. Estaban en cuatro rectangulos negros iguales,
+   que es exactamente la forma de una botonera: cualquiera diria que se
+   pinchan. Ahora son una linea de texto: filete arriba y abajo, las
+   palabras separadas por un filete vertical y un punto en el color de
+   la casa. No hay relleno, no hay caja, no hay nada que invite a
+   pulsar; se lee como lo que es, un pie de firma. */
+#home.hero .hero-tag{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+  gap:0;margin:0 auto;max-width:640px;padding:13px 0;
+  border-top:1px solid rgba(22,33,31,.18);border-bottom:1px solid rgba(22,33,31,.18);
+  font-family:'Inter',system-ui,sans-serif}
+#home.hero .hero-tag span{display:inline-block;background:none;color:#16211f;
+  font-size:clamp(10.5px,.82vw,12.5px);font-weight:600;letter-spacing:.26em;
+  text-transform:uppercase;padding:2px 0;position:relative;cursor:default}
+#home.hero .hero-tag span+span{margin-left:clamp(14px,1.7vw,26px);padding-left:clamp(14px,1.7vw,26px)}
+#home.hero .hero-tag span+span::before{content:"";position:absolute;left:0;top:50%;
+  width:1px;height:12px;margin-top:-6px;background:#32717E;opacity:.55}
 #home.hero .hero-tag i{font-style:normal;opacity:.45;padding:0 4px}
 #home.hero .hero-quote .nb{white-space:nowrap}
 @media (max-width:900px){
   /* --hdr = alto de la cabecera fija, para que no pise la foto */
-  #home.hero{display:block;min-height:0;--hdr:64px;padding-top:var(--hdr)}
-  #home.hero .hero-media{position:relative;inset:auto}
-  #home.hero .hero-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;object-position:100% 50%;-webkit-mask-image:none;mask-image:none}
-  #home.hero .inner{position:static;inset:auto;display:block;padding:24px 0 44px}
+  /* Columna: la foto arriba con su proporcion intacta y el texto
+     repartido por el hueco que queda hasta el borde de la pantalla.
+     Antes el hero media 473 px de 844 y se veia media seccion
+     siguiente nada mas aterrizar. */
+  #home.hero{display:flex;flex-direction:column;align-items:stretch;--hdr:64px;padding-top:var(--hdr);
+    min-height:calc(100vh - var(--jr-hdr,102px));min-height:calc(100svh - var(--jr-hdr,102px))}
+  #home.hero .hero-media{display:block;position:relative;inset:auto;flex:1 1 auto;
+    min-height:calc(100vw / 1.5);min-height:min(calc(100vw / 1.5),46svh);overflow:hidden}
+  #home.hero .hero-photo{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;
+    object-fit:cover;object-position:76% 34%;-webkit-mask-image:none;mask-image:none}
+  #home.hero .inner{position:static;inset:auto;display:block;flex:0 0 auto;padding:26px 0 34px}
   #home.hero .hero-text{width:100%;max-width:none;padding:0 22px}
   /* la cita se superpone sobre el fondo claro de la foto; aspect-ratio = 0.57 x 1.5 */
-  #home.hero .hero-quote{position:absolute;top:var(--hdr);left:0;z-index:2;width:57%;aspect-ratio:.855;height:auto;margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
+  #home.hero .hero-quote{position:absolute;top:var(--hdr);left:0;z-index:2;width:57%;aspect-ratio:auto;height:var(--jr-foto,calc(100vw / 1.5));margin:0;padding:12px 8px 12px 14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(12.5px,3.3vw,16px);line-height:1.32;background:linear-gradient(90deg,rgba(245,245,245,.94) 60%,rgba(245,245,245,0) 100%)}
   #home.hero .hero-name{margin-top:0}
   #home.hero .hero-role{margin-bottom:22px}
 }
-@media (max-width:380px){
-  #home.hero .hero-tag span{font-size:11px;letter-spacing:.08em;padding:8px 12px}
+@media (max-width:620px){
+  #home.hero .hero-tag{display:grid;grid-template-columns:auto auto;
+    justify-content:center;row-gap:9px;column-gap:0;max-width:none;padding:12px 0}
+  #home.hero .hero-tag span{font-size:10.5px;letter-spacing:.2em;text-align:center}
+  #home.hero .hero-tag span+span{margin-left:0;padding-left:0}
+  #home.hero .hero-tag span+span::before{display:none}
+  #home.hero .hero-tag span:nth-child(odd){padding-right:15px}
+  #home.hero .hero-tag span:nth-child(even){padding-left:15px}
+  #home.hero .hero-tag span:nth-child(even)::before{content:"";display:block;position:absolute;
+    left:0;top:50%;width:1px;height:12px;margin-top:-6px;background:#32717E;opacity:.55}
 }
 
 /* ===== Panel de etapas ===== */
@@ -1788,7 +1889,7 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
   /* La cita llevaba aspect-ratio:.855, que la hacía ~32px más alta que la foto
      (3/2). Ese sobrante caía encima de "Joaquín Romero Roldán". Se iguala a la
      altura real de la foto: ancho del viewport dividido por 1.5. */
-  #home.hero .hero-quote{ aspect-ratio: auto; height: calc(100vw / 1.5); }
+  #home.hero .hero-quote{ aspect-ratio: auto; height: var(--jr-foto, calc(100vw / 1.5)); }
 }
 </style>
 <script src="/assets/nav.js" defer></script>
