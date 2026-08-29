@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es" data-menu="dark">
+<head>
+<meta charset="utf-8">
+<script src="/assets/ga4.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Despliegue del plan de liderazgo · Joaquín Romero Roldán</title>
+<meta name="description" content="Convertir el plan de acción que sale del modelo de liderazgo en cosas que ocurren: los quick wins con responsable y presupuesto, y las decisiones de organización —plan de desarrollo del talento, reingeniería de procesos, desempeño, relación de puestos— que cambian las reglas del juego.">
+<link rel="canonical" href="https://joaquinromero.com/despliegue.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán">
+<meta property="og:url" content="https://joaquinromero.com/despliegue.html">
+<meta property="og:title" content="Despliegue del plan de liderazgo">
+<meta property="og:description" content="Escribir el modelo era la parte fácil.">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff;--soft:#EAF0F1;--brandd:#22525C}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.rx-s{max-width:820px;margin:0 auto;padding:0 24px}
+.rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
+.rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.rx-hero h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;max-width:17ch}
+.rx-hero .lead{font-size:clamp(19px,2vw,23px);line-height:1.42;color:#2c3733;max-width:46ch;margin:0}
+.rx-author{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.45;color:#41504b;padding-left:15px;border-left:2px solid var(--brand)}
+.rx-rule{max-width:1120px;margin:0 auto;padding:0 24px}
+.rx-rule hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+/* las tres lineas del plan de accion */
+.rx-tres{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:760px){.rx-tres{grid-template-columns:repeat(3,1fr)}}
+.rx-tres li{background:#fff;padding:24px 22px}
+.rx-tres .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-tres li.off .n{color:var(--muted)}
+.rx-tres b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-tres span{display:block;font-size:16px;line-height:1.44;color:#41504b}
+
+/* los efectos del problema, numerados */
+.rx-pat{list-style:none;margin:26px 0 0;padding:0;counter-reset:pt;border-top:1px solid var(--line)}
+.rx-pat li{counter-increment:pt;border-bottom:1px solid var(--line);padding:19px 0 19px 46px;position:relative}
+.rx-pat li::before{content:counter(pt,decimal-leading-zero);position:absolute;left:0;top:20px;font:700 12px/1 'Inter',sans-serif;letter-spacing:.08em;color:var(--brand)}
+.rx-pat b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
+.rx-pat span{display:block;color:#41504b;font-size:16.5px;line-height:1.44}
+
+/* lo que sale del despliegue */
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-sale li{border-bottom:1px solid var(--line);padding:17px 0}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-sale span{display:block;color:#41504b;font-size:16px;line-height:1.44}
+
+/* cautelas de metodo */
+.rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
+.rx-aviso b{font-weight:700}
+.rx-aviso p{margin:0 0 12px}
+.rx-aviso p:last-child{margin:0}
+
+.rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
+.rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
+.rx-s p{margin:0 0 18px}
+.rx-s p.big{font-size:21px;line-height:1.42}
+.rx-s strong{font-weight:700}
+.rx-s em{font-style:italic;color:#2c3733}
+
+/* fases y horizontes */
+.rx-fases{list-style:none;margin:26px 0 0;padding:0;counter-reset:f}
+.rx-fases li{counter-increment:f;position:relative;padding:0 0 26px 62px;border-left:1px solid var(--line);margin-left:15px}
+.rx-fases li:last-child{border-left-color:transparent;padding-bottom:0}
+.rx-fases li::before{content:counter(f,decimal-leading-zero);position:absolute;left:-16px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/32px 'Inter',sans-serif;text-align:center}
+.rx-fases b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-fases em{display:block;font-style:normal;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+.rx-fases span{display:block;color:#41504b;font-size:16.5px;line-height:1.42}
+
+/* listados a dos columnas: decisiones, deslinde */
+.rx-inst{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
+.rx-inst li{border-bottom:1px solid var(--line);padding:19px 0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){.rx-inst li{grid-template-columns:250px 1fr;gap:24px;align-items:baseline}}
+.rx-inst b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-inst span{color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-dif{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 0}
+@media(min-width:720px){.rx-dif{grid-template-columns:1fr 1fr}}
+.rx-dif > div{background:#fff;padding:24px 22px}
+.rx-dif h3{margin:0 0 8px;font-size:19px}
+.rx-dif p{margin:0;font-size:16.5px;line-height:1.42;color:#41504b}
+
+.rx-quien{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-quien span{color:#41504b;font-size:16.5px;flex:1;min-width:240px}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
+
+.rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
+.rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-cta a:hover{background:var(--brandd)}
+.rx-foot{max-width:1120px;margin:64px auto 0;padding:26px 24px 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rx-foot a{color:var(--brand);text-decoration:none}
+
+</style>
+<link rel="stylesheet" href="/assets/nav.css">
+</head>
+<body>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Ideas</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+      <a class="jr-contact" href="/tarjeta/">Contactar</a>
+    </nav>
+    <button class="jr-burger" type="button" aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <p class="jr-menu-kicker">Navegación</p>
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
+  </nav>
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/tarjeta/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+
+
+<section class="rx-hero">
+  <p class="kick">Despliegue del plan de liderazgo</p>
+  <h1>Escribir el modelo era la parte fácil</h1>
+  <p class="lead">El modelo de liderazgo termina en un plan de acción consensuado. Esto es lo que viene después: convertirlo en cosas que ocurren. Las acciones visibles, con responsable, coste y fecha. Y las decisiones de organización que el modelo identificó —desarrollo del talento, reingeniería de procesos, evaluación del desempeño, relación de puestos— que son las que de verdad cambian las reglas del juego.</p>
+  <p class="rx-author">Dirijo el despliegue y lo ejecuta la organización: aporto el método, las plantillas, el criterio y la conducción de las sesiones; los planes los escribe y los firma quien va a vivir con ellos. Es la fase que sigue al modelo de liderazgo, no una consultoría de organización que pueda contratarse en el vacío.</p>
+</section>
+<div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El despliegue en cifras">
+  <ul>
+    <li><b>2</b><span>líneas que se despliegan: las decisiones de organización y las acciones visibles</span></li>
+    <li><b>5</b><span>tramos del plan de desarrollo del talento, de la atracción a la sucesión</span></li>
+    <li><b>4</b><span>decisiones posibles antes de cubrir una plaza, y contratar es la última</span></li>
+    <li><b>18</b><span>meses de horizonte hasta consolidar, en tres tramos con decisión en cada uno</span></li>
+  </ul>
+</section>
+
+<main class="rx-s">
+
+<h2>Cuál es el problema</h2>
+<p class="big">Un plan de acción consensuado por todo un colectivo tiene una vida media de unos seis meses. Pasado ese tiempo, si nadie lo presupuestó y nadie puso su nombre al lado de cada acción, la organización concluye que aquello fue un ejercicio.</p>
+<p>El modelo de liderazgo hace un trabajo que casi ninguna organización hace por su cuenta: pone por escrito qué se espera de quien dirige un equipo, mide cómo se ejerce hoy y produce una batería de propuestas que los propios líderes han consensuado. El problema es que ahí termina. Lo que sale de esa sala es una lista, y una lista no es un plan.</p>
+<p>La distancia entre las dos cosas es casi siempre la misma, y son casi siempre los mismos cuatro huecos.</p>
+
+<ul class="rx-pat">
+  <li><b>El plan no tiene dueño ni tiene dinero</b><span>Las propuestas salen de una sesión colectiva, y lo colectivo no ejecuta. Una acción sin una persona con nombre, una cifra al lado y una fecha no es una acción: es una intención bien redactada.</span></li>
+  <li><b>Las acciones baratas se posponen precisamente por serlo</b><span>Son de bajo coste y bajo esfuerzo, así que no compiten con nada en el presupuesto y no entran en ninguna prioridad. Y son justamente las que demuestran que el cambio de estilo va en serio, que es lo que sostiene la tracción de todo lo demás.</span></li>
+  <li><b>Las decisiones de organización se aplazan porque tocan lo que duele</b><span>Revisar la relación de puestos, evaluar el desempeño o rediseñar un proceso tienen consecuencias sobre personas concretas. Se aceptan en abstracto durante la sesión y se aplazan en concreto al mes siguiente. Y son exactamente las que cambian las reglas: sin ellas el modelo se queda en discurso, y el discurso se agota.</span></li>
+  <li><b>Se contrata antes de rediseñar</b><span>Cuando aparece una carencia, la reacción por defecto es pedir una plaza. Casi nunca se ha mirado antes si ese rol sigue teniendo sentido, si el proceso está mal diseñado o si el trabajo se puede recombinar. Se incorpora a alguien a una organización que no se ha revisado, y el problema se reproduce con una persona más dentro.</span></li>
+</ul>
+
+<h2>El punto de partida</h2>
+<p class="big">Este servicio no inventa acciones. Ejecuta las que el modelo ya identificó. Las que no salieron de ahí, no entran.</p>
+<p>Es una limitación deliberada y conviene decirla la primera. Una acción que no ha salido del diagnóstico y de la evaluación no trae detrás ni el dato que la justifica ni el consenso que la hace ejecutable. Se puede proponer, se puede incluso tener razón al proponerla, y aun así la organización la vivirá como una idea del consultor. Las que salieron del modelo son suyas, y esa diferencia decide si se hacen o no.</p>
+<p>Por la misma razón hay que haber recorrido antes el camino: un modelo de liderazgo definido, evaluado y con un plan de acción cerrado. Si tu organización tiene el suyo propio —lo haya hecho quien lo haya hecho— y ese modelo llegó hasta la evaluación y hasta el plan, sirve como punto de partida. Si no lo hay, hay que hacerlo antes. No es una condición comercial: es que sin él no hay nada que desplegar.</p>
+
+<h2>Las dos líneas que se despliegan</h2>
+<p>El plan de acción que sale del modelo contiene siempre tres tipos de cosas, y aquí se despliegan dos. La tercera, la formación, tiene su propio camino y su propio método.</p>
+
+<ul class="rx-tres">
+  <li><span class="n">LÍNEA 1</span><b>Organización</b><span>Las decisiones que cambian las reglas del juego: plan de desarrollo del talento, reingeniería de procesos y estructuras, evaluación del desempeño, revisión de la relación de puestos. Son lentas, tienen consecuencias y son las únicas que hacen que el modelo deje de ser voluntario.</span></li>
+  <li><span class="n">LÍNEA 2</span><b>Acciones visibles</b><span>Iniciativas de bajo coste que encarnan el nuevo estilo y se notan enseguida: conocer qué hace el servicio de al lado, estancias entre unidades, reformular los encuentros de dirección, reservar un porcentaje del tiempo a proyectos de mejora propuestos por el personal. Cuestan poco y por eso van primero.</span></li>
+  <li class="off"><span class="n">LÍNEA 3</span><b>Capacitación</b><span>No se despliega aquí. Cuando el plan pide un programa formativo propio para líderes actuales y futuros, eso es <a href="aprendizaje.html">Aprendizaje estratégico</a>, un servicio con su método, su duración y su forma de contratarse.</span></li>
+</ul>
+
+<div class="rx-aviso">
+  <p><b>Por qué el orden es siempre el mismo.</b> Se priorizan primero los planes de organización que más impactan en las funciones clave peor valoradas, y se combinan con acciones visibles para mantener la tracción. No es una preferencia estética: los planes de organización tardan meses en dar señal, y una organización que no ve nada durante meses deja de creerse el proyecto. Las acciones visibles dan señal en semanas y no cambian ninguna regla por sí solas.</p>
+  <p>Una sin la otra falla de las dos maneras conocidas: mucho movimiento y ninguna regla nueva, o muchas reglas nuevas y nadie que se las crea.</p>
+</div>
+
+<h2>El plan de desarrollo del talento</h2>
+<p>Es la pieza más grande de la línea de organización y la que más veces aparece en los planes de acción, aunque casi nunca con ese nombre. Un plan de acogida, un sistema de evaluación del desempeño, un mapa de conocimiento crítico y una carrera profesional que no obligue a subir de puesto no son cuatro iniciativas sueltas: son cuatro tramos del mismo ciclo. Tratarlas por separado es lo que hace que ninguna acabe de funcionar.</p>
+
+<ol class="rx-fases">
+  <li><b>Atracción</b><span>Qué tipo de talento necesita esta organización, cuál está disponible dentro y fuera, y qué puede ofrecer de verdad a cambio. Tres preguntas que casi nunca se hacen antes de publicar un anuncio de empleo, y que determinan si el proceso va a servir para algo.</span></li>
+  <li><b>Selección</b><span>Empieza por la estrategia y por los procesos, no por el puesto vacante. Se identifican los procesos críticos, los sobredimensionados y los invisibles pero clave; se separa el puesto formal del rol real y del perfil necesario; se miran las cargas de trabajo; y solo entonces se decide si se cubre desde dentro o desde fuera, con una regla escrita antes de que aparezca el candidato.</span></li>
+  <li><b>Acogida, retribución y desempeño</b><span>Qué tiene que entender y qué tiene que aportar una persona a los treinta, a los noventa y a los ciento ochenta días. Qué se paga, qué no se paga y con qué criterio. Y qué se evalúa: qué se espera de cada rol, qué ha aportado la persona, en qué condiciones lo ha hecho y —la pregunta que suele faltar— qué decisiones se derivan de ello.</span></li>
+  <li><b>Aprendizaje</b><span>El paso del plan de formación al sistema de aprendizaje: quién traduce la estrategia en agenda de aprendizaje, cómo se aprende mientras se trabaja y qué aprendizajes se decide expresamente no priorizar. Es la bisagra con el programa de capacitación, si el plan pedía uno.</span></li>
+  <li><b>Desarrollo y sucesión</b><span>Qué significa crecer aquí sin tener que subir de puesto, qué opciones reales existen y qué se espera para acceder a ellas. Y el mapa de conocimiento crítico: qué roles no pueden quedar vacíos ni improvisados, qué pasaría si esa persona no estuviera mañana, quién podría asumirlo con la preparación adecuada y qué hay que hacer hoy para que eso sea posible.</span></li>
+</ol>
+
+<h2>Reingeniería antes de contratar</h2>
+<p class="big">El problema no suele ser la falta de talento. Suele ser el diseño del trabajo.</p>
+<p>Antes de decidir si se cubre una plaza, se mide en qué se va el tiempo de los roles críticos, repartido en tres categorías: tareas de valor estratégico, tareas necesarias pero no estratégicas, y fricción —retrabajo, burocracia y decisiones mal diseñadas—. El reparto sorprende siempre, y casi siempre en la misma dirección.</p>
+<p>Con ese dato encima de la mesa, contratar deja de ser la primera opción y pasa a ser la cuarta. Antes hay tres decisiones que tomar, una por una:</p>
+
+<ul class="rx-inst">
+  <li><b>Eliminar un rol</b><span>Cuando responde a un proceso que ya no existe o que absorbió otro. Es la decisión que nadie toma, porque no tiene beneficiario visible y sí tiene un damnificado con nombre.</span></li>
+  <li><b>Rediseñar el proceso</b><span>Cuando el rol está saturado porque el proceso obliga a un retrabajo que no aporta nada. Contratar aquí compra tiempo y consolida el mal diseño para otros diez años.</span></li>
+  <li><b>Automatizar una tarea</b><span>Cuando la carga es real pero repetitiva y trazable. Es la puerta natural a la conversación sobre inteligencia artificial, y empieza aquí —en un proceso concreto que consume horas medidas— y no en un catálogo de herramientas.</span></li>
+  <li><b>Recombinar roles</b><span>Cuando dos puestos hacen media función cada uno y ninguno de los dos la hace entera. Suele ser la decisión más barata y la que más resistencia genera.</span></li>
+</ul>
+
+<p style="margin-top:22px">Cada decisión se justifica por escrito con tres cosas: impacto en la estrategia, impacto en las personas y riesgo que se asume. Contratar sigue siendo una opción perfectamente legítima. Lo que deja de serlo es que sea la primera.</p>
+
+<h3>Puesto formal, rol real y perfil necesario</h3>
+<p>El organigrama dice una cosa, el trabajo real dice otra, y lo que hace falta para hacerlo bien dice una tercera. Poner las tres en columnas para cada proceso crítico es un ejercicio de un par de horas que descubre siempre lo mismo: roles duplicados, roles huérfanos —tareas de las que no es responsable nadie— y roles estrella, personas que sostienen un proceso entero sin que su puesto lo reconozca ni su retribución lo refleje.</p>
+<p>En una administración pública ese cuadro es el material de partida para tocar la relación de puestos con argumentos, en lugar de hacerlo con la inercia de las plazas que van quedando vacantes.</p>
+
+<div class="rx-aviso">
+  <p><b>Tres señales de mal diseño del trabajo.</b> «Los mejores siempre están saturados.» «Los procesos dependen de héroes.» «Las decisiones se retrasan sin motivo técnico.» Las tres se comentan en los pasillos de casi cualquier organización y las tres se interpretan como un problema de personas. No lo son: son síntomas de trabajo mal repartido, y se corrigen rediseñando, no contratando.</p>
+</div>
+
+<h2>Cómo se trabaja</h2>
+<p>Tres horizontes, con una decisión al final de cada uno sobre si se sigue, se ajusta o se para. La duración total depende de cuántas acciones tenga el plan y de si la línea de organización incluye o no la relación de puestos.</p>
+
+<ol class="rx-fases">
+  <li><em>0 – 3 meses</em><b>Ahora: convertir la lista en un plan</b><span>Cada acción del plan original recibe responsable, coste, fecha e indicador, o se descarta por escrito. Se lanzan dos o tres acciones visibles y se comunica el modelo y el plan a todo el colectivo de líderes, no solo al comité. Al final de este tramo la organización tiene que haber notado algo concreto.</span></li>
+  <li><em>3 – 9 meses</em><b>Corto plazo: las decisiones de organización</b><span>Arranca el plan de desarrollo del talento por los tramos que el diagnóstico señaló —habitualmente acogida, desempeño y reconocimiento— y se inicia la reingeniería de los procesos prioritarios. Si el plan pedía programa de capacitación, aquí se diseña y se pilota la primera edición.</span></li>
+  <li><em>9 – 18 meses</em><b>Consolidación: alinear lo que se decide</b><span>Desempeño, carrera y reconocimiento se vinculan a las mismas funciones clave que definió el modelo. Sin esa coherencia, el modelo convive con un sistema de incentivos que premia lo contrario y acaba perdiendo. Se establece además la revisión periódica del modelo, para que no envejezca en silencio.</span></li>
+</ol>
+
+<h2>Qué sale del despliegue</h2>
+<ul class="rx-sale">
+  <li><b>El plan ejecutable</b><span>Cada acción con responsable, coste, calendario e indicador. Es el documento que convierte un consenso en un compromiso, y el que permite pedir cuentas sin que la conversación sea personal.</span></li>
+  <li><b>El plan de desarrollo del talento</b><span>Los cinco tramos escritos y decididos por la organización: procesos críticos, cuadro de puestos-roles-perfiles, análisis de cargas, criterios de cobertura interna o externa, plan de acogida, política retributiva, sistema de evaluación del desempeño, carrera profesional y plan de sucesión.</span></li>
+  <li><b>Las decisiones de reingeniería</b><span>Qué rol se elimina, qué proceso se rediseña, qué tarea se automatiza y qué roles se recombinan, cada decisión con su justificación estratégica y su riesgo asumido. En administraciones públicas, el material de partida para la revisión de la relación de puestos.</span></li>
+  <li><b>El sistema de evaluación del desempeño</b><span>Qué se evalúa, en qué nivel —persona, rol o proceso—, cómo, y para decidir qué. Con sus riesgos escritos al lado, que es la parte que suele faltar y la que hace que estos sistemas se abandonen al segundo año.</span></li>
+  <li><b>Lo que se decide no hacer</b><span>Las propuestas del plan original que se descartan, con el motivo. Sin este documento la lista completa sobrevive indefinidamente como reproche, y cualquier avance parece insuficiente.</span></li>
+</ul>
+
+<h2>Qué lo hace distinto</h2>
+<div class="rx-dif">
+  <div><h3>Solo despliega lo que el modelo identificó</h3><p>Si una acción no salió del diagnóstico y de la evaluación, este servicio no la implanta. Renuncio deliberadamente a proponer lo que se me ocurra: sin el dato y el consenso detrás, cualquier propuesta es una idea del consultor y se ejecuta como tal.</p></div>
+  <div><h3>Contratar es la cuarta opción, no la primera</h3><p>Antes hay que decidir si el rol se elimina, si el proceso se rediseña o si la tarea se automatiza. La secuencia parece obvia escrita y casi nunca se sigue.</p></div>
+  <div><h3>Las acciones visibles van primero, y no por ser fáciles</h3><p>Van primero porque los planes de organización tardan meses en notarse y la credibilidad del proyecto no aguanta ese silencio. Es una decisión de secuencia, no de comodidad.</p></div>
+  <div><h3>El organigrama no es el mapa</h3><p>Puesto formal, rol real y perfil necesario son tres cosas distintas, y ponerlas en columnas es lo que hace aparecer los roles duplicados, los huérfanos y los que sostienen un proceso sin reconocimiento.</p></div>
+  <div><h3>Crecer sin tener que subir de puesto</h3><p>Cuando la única carrera posible es la vertical, el talento con potencial se queda sin expectativas y se va en silencio. Definir opciones reales de crecimiento horizontal es barato y casi nadie lo hace.</p></div>
+  <div><h3>Dirijo el trabajo; lo escribe la organización</h3><p>No entrego el plan de talento redactado. Lo redacta el equipo que va a mantenerlo, con mi método y mi criterio en la sala. Un plan escrito por un tercero se aplica mientras dura el contrato.</p></div>
+  <div><h3>Se documenta lo que se descarta</h3><p>Descartar una propuesta consensuada exige explicar por qué, y ese documento vale tanto como el plan. Es lo que evita que la lista original se convierta en una deuda permanente.</p></div>
+  <div><h3>Termina en decisiones, no en un informe</h3><p>Cada horizonte se cierra con una decisión de la dirección sobre si se sigue, se ajusta o se para. Un despliegue que no obliga a decidir es un despliegue que se puede posponer indefinidamente.</p></div>
+</div>
+
+<h2>Dónde termina este servicio y dónde empiezan los de al lado</h2>
+<p>Es la pregunta razonable si has leído las otras páginas: hay varios servicios que hablan de cambiar cómo funciona una organización. La frontera es nítida y conviene decirla en voz alta.</p>
+
+<ul class="rx-inst">
+  <li><b><a href="liderazgo.html">Modelo de liderazgo</a></b><span>Va antes, y es requisito. Define qué se espera de quien dirige, lo mide con todo el colectivo y produce el plan de acción. Sin ese plan, este servicio no tiene qué desplegar.</span></li>
+  <li><b><a href="aprendizaje.html">Aprendizaje estratégico</a></b><span>Es la tercera línea del mismo plan. Cuando lo que hace falta es un programa formativo propio para quienes lideran, se hace allí y no aquí.</span></li>
+  <li><b><a href="rediseno.html">Laboratorio de rediseño de servicios</a></b><span>Mira hacia fuera: rediseña un servicio concreto desde la experiencia de quien lo usa. Aquí se mira hacia dentro, a cómo está organizado el trabajo de quien lo presta.</span></li>
+  <li><b><a href="implantacion.html">Implantación de estrategias</a></b><span>Instala una capacidad permanente de rediseñar servicios, con equipo núcleo y programa anual. Este servicio no instala una capacidad nueva: ejecuta un plan concreto que ya existe, y termina.</span></li>
+  <li><b>Estrategia de IA</b><span>Automatizar una tarea aparece aquí como una de las cuatro decisiones de reingeniería, sobre un proceso concreto y con horas medidas. Decidir qué herramientas prioriza la organización y cómo gobierna sus datos es otra conversación, con servicio propio a partir de octubre de 2026.</span></li>
+</ul>
+
+<h2>Para quién funciona</h2>
+<ul class="rx-quien">
+  <li><b>Universidades</b><span>Cuando el modelo de liderazgo ya está escrito y evaluado, y la gerencia sabe que lo siguiente toca la relación de puestos y el desarrollo profesional del personal de gestión.</span></li>
+  <li><b>Administraciones públicas</b><span>Cuando la relación de puestos lleva años describiendo una organización que ya no existe, y hay que revisarla con argumentos en lugar de con la inercia de las vacantes.</span></li>
+  <li><b>Salud pública y servicios profesionales</b><span>Donde el conocimiento crítico se concentra en pocas personas y las jubilaciones previsibles a cinco o siete años no tienen todavía plan de sucesión.</span></li>
+  <li><b>Grandes organizaciones e industria</b><span>Cuando la plantilla ha crecido, los procesos se sostienen sobre personas concretas y la respuesta por defecto a cada carencia sigue siendo pedir una incorporación.</span></li>
+</ul>
+
+<h2>Cómo se contrata</h2>
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>Un plan de acción que exista</b><span>Definido, evaluado y consensuado con el colectivo. Es la materia prima del encargo; sin ella no hay encargo.</span></li>
+  <li><b>La dirección, decidiendo</b><span>Las decisiones de organización se toman, no se proponen. Si la dirección no está dispuesta a firmar la que salga, el trabajo produce un informe más.</span></li>
+  <li><b>El equipo de gestión de personas, dentro</b><span>El plan de talento lo redacta quien va a mantenerlo. Si el área de personas entra solo a validar al final, el plan no sobrevive al primer año.</span></li>
+  <li><b>Los responsables de los procesos críticos</b><span>Dos o tres personas que conozcan cómo se trabaja de verdad, no cómo está escrito que se trabaja.</span></li>
+  <li><b>Disposición a mirar la relación de puestos</b><span>No necesariamente a cambiarla: a mirarla. Si es intocable por decisión previa, media línea de organización se cae, y conviene saberlo antes de empezar y no en el mes seis.</span></li>
+  <li><b>Aceptar que algunas acciones se descartan</b><span>El plan original suele contener propuestas que no resisten el análisis de coste o de impacto. Descartarlas por escrito, y explicando por qué, es parte del trabajo.</span></li>
+</ul>
+<h3>Cómo se cierra</h3>
+<p class="rx-nota">El alcance depende de cuántas acciones tenga el plan, de si la línea de organización incluye la revisión de la relación de puestos y de cuántos procesos entran en la reingeniería. Se fija en una conversación previa sobre el plan de acción concreto, y cada encargo se presupuesta sobre eso. Si el modelo de liderazgo no está hecho todavía, la conversación es otra y empieza por ahí.</p>
+
+<div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Despliegue%20del%20plan%20de%20liderazgo">Hablemos de desplegar vuestro plan</a></div>
+
+</main>
+
+<div class="rx-foot">
+  <span>Joaquín Romero Roldán · Consejero-asesor independiente</span>
+  <span><a href="/">joaquinromero.com</a></span>
+</div>
+<script src="/assets/nav.js" defer></script>
+  <script src="/assets/eventos.js" defer></script>
+</body></html>
