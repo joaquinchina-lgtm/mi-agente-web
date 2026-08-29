@@ -100,6 +100,58 @@
     return d;
   }
 
+  /* ── 5 · Retirar el consentimiento borra de verdad ───────────
+     Poner analytics_storage en «denied» impide que se escriban
+     cookies nuevas, pero no toca las que ya estaban. Quien acepta y
+     luego se arrepiente se quedaba con el _ga y el _ga_<id> en el
+     dispositivo, que es justo el identificador del que se estaba
+     retirando el permiso. Aqui se borran a mano. Hay que probar
+     varios dominios porque GA los escribe en el dominio de segundo
+     nivel (.joaquinromero.com) y desde www no se borran si no se
+     nombra ese dominio exacto. */
+  function borrarCookiesGA(){
+    var host = location.hostname;
+    var dominios = [null, host, "." + host];
+    var partes = host.split(".");
+    if(partes.length > 2){
+      var raiz = partes.slice(-2).join(".");
+      dominios.push(raiz, "." + raiz);
+    }
+    var nombres = document.cookie.split(";").map(function(c){
+      return c.split("=")[0].trim();
+    }).filter(function(n){
+      return n && (/^_ga/.test(n) || /^_gat/.test(n) || n === "_gid");
+    });
+    nombres.forEach(function(n){
+      dominios.forEach(function(d){
+        document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" +
+                          (d ? "; domain=" + d : "");
+      });
+    });
+    return nombres;
+  }
+
+  /* ── 6 · Decir en voz alta lo que acaba de pasar ─────────────
+     Los dos botones de la politica no daban ninguna senal: se
+     pulsaban y no ocurria nada visible, asi que parecian rotos. Si
+     la pagina trae un [data-jr-estado], se escribe ahi. */
+  function pintarEstado(){
+    var caja = document.querySelector("[data-jr-estado]");
+    var pref = leer();
+    var txt = pref === "true"  ? "Ahora mismo: analíticas aceptadas."
+            : pref === "false" ? "Ahora mismo: analíticas rechazadas. Las cookies de medición se han borrado de este dispositivo."
+            : "Ahora mismo: sin decidir. No se mide nada hasta que aceptes.";
+    if(caja){
+      caja.textContent = txt;
+      caja.setAttribute("data-estado", pref === "true" ? "si" : pref === "false" ? "no" : "sin");
+    }
+    document.querySelectorAll("[data-jr-consent]").forEach(function(b){
+      var quiere = b.getAttribute("data-jr-consent") === "si";
+      b.setAttribute("aria-pressed", String(pref !== null && (pref === "true") === quiere));
+    });
+  }
+  window.pintarEstadoCookies = pintarEstado;
+
   function arrancar(){
     /* La home trae su propio banner con la política completa. */
     var banner = document.getElementById("cookie-banner");
@@ -108,8 +160,12 @@
     window.setCookieConsent = function(acepta){
       guardar(String(!!acepta));
       gtag("consent", "update", { analytics_storage: acepta ? "granted" : "denied" });
+      /* Primero se retira el permiso y despues se limpia, no al reves:
+         si se borrase antes, el tag podria volver a escribirlas. */
+      if(!acepta) borrarCookiesGA();
       var b = document.getElementById("cookie-banner") || document.getElementById("jr-cookies");
       if(b) b.style.display = "none";
+      pintarEstado();
     };
 
     window.toggleCookieBanner = function(ver){
@@ -118,6 +174,24 @@
       b = b || document.getElementById("jr-cookies");
       if(b) b.style.display = ver ? "block" : "none";
     };
+
+    /* «Configurar» llevaba al ancla de la politica, pero el bloque es
+       un <details> cerrado: se aterrizaba en un titulo plegado sin
+       nada debajo. Ahora se abre y se lleva a la vista. */
+    window.abrirPoliticaCookies = function(){
+      var d = document.getElementById("politica-cookies");
+      if(!d){ location.href = "/#politica-cookies"; return; }
+      d.open = true;
+      var s = d.querySelector("summary");
+      if(s) s.setAttribute("aria-expanded", "true");
+      d.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start"
+      });
+      pintarEstado();
+    };
+
+    pintarEstado();
 
     if(leer() !== null) return;               // ya decidió
 
