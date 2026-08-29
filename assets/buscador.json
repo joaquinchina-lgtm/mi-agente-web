@@ -175,22 +175,31 @@
    "t": "Modelo de liderazgo",
    "c": {
     "liderazgo": 3,
-    "cultura": 3,
-    "directivo": 2,
-    "valor declarado": 2,
-    "modelo propio": 2,
-    "equipo directivo": 3,
-    "alineamiento": 3,
-    "cada uno va por su cuenta": 3,
-    "no tiran en la misma dirección": 3,
-    "consenso": 2,
+    "modelo de liderazgo": 3,
+    "lider": 3,
     "jefe": 2,
     "mando": 2,
-    "clima": 2,
-    "supuesto basico": 2,
-    "artefacto": 2,
-    "función clave": 3,
-    "lider": 3
+    "mando intermedio": 3,
+    "equipo directivo": 3,
+    "directivo": 2,
+    "funcion clave": 3,
+    "competencia": 2,
+    "responsabilidad de gestion": 3,
+    "que se espera de un jefe": 3,
+    "no esta escrito que se espera": 3,
+    "evaluacion del liderazgo": 3,
+    "evaluar a los jefes": 3,
+    "capacitacion": 2,
+    "programa de capacitacion": 3,
+    "formar a los mandos": 3,
+    "dirigir equipos": 3,
+    "gestion de personas": 2,
+    "feedback": 2,
+    "ascender por antiguedad": 2,
+    "promocion interna": 2,
+    "autoridad": 2,
+    "poder": 2,
+    "expectativas": 2
    }
   },
   {
@@ -454,6 +463,36 @@
   ],
   "resistencias": [
    "resistencia"
+  ],
+  "no sabemos que esperamos de nuestros jefes": [
+   "que se espera de un jefe",
+   "funcion clave",
+   "modelo de liderazgo"
+  ],
+  "nuestros mandos no saben dirigir": [
+   "dirigir equipos",
+   "formar a los mandos",
+   "funcion clave"
+  ],
+  "ascendemos a la gente y luego no sabe llevar un equipo": [
+   "promocion interna",
+   "dirigir equipos",
+   "formar a los mandos"
+  ],
+  "queremos evaluar a los jefes": [
+   "evaluacion del liderazgo",
+   "evaluar a los jefes",
+   "funcion clave"
+  ],
+  "hace falta formacion en liderazgo": [
+   "programa de capacitacion",
+   "formar a los mandos",
+   "liderazgo"
+  ],
+  "cada jefe hace lo que le parece": [
+   "modelo de liderazgo",
+   "no esta escrito que se espera",
+   "expectativas"
   ]
  }
 }
