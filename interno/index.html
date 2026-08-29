@@ -8107,13 +8107,217 @@ function colocarEx(existentes, nuevas){
   return resto.slice(0, corte+1).concat(bloque, resto.slice(corte+1));
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   RADAR DE MADUREZ
+
+   Nace del cuestionario «Mapping your institutional readiness» del
+   taller de UNITA. Aquello eran trece diapositivas de Mentimeter: dos
+   de identificación, una de instrucciones, ocho dimensiones de cuatro
+   afirmaciones y un «gracias». Aquí se conserva la estructura, que es
+   buena, y se corrigen tres cosas que en la sala se notan:
+
+     1. El original medía el desarrollo de cada ámbito y no preguntaba
+        cuánto importa. Eso produce una lista de debilidades sin
+        jerarquía, y la organización acaba atacando lo que peor puntúa
+        aunque sea irrelevante. Va la misma pregunta que en la
+        evaluación del liderazgo: importancia aparte, misma escala,
+        para que la resta signifique algo.
+     2. La lista de universidades y de servicios estaba escrita a mano
+        dentro de la presentación. Aquí las dos preguntas nacen
+        derivadas: se rellenan al abrir la sesión con los colectivos
+        de esa organización, y el instrumento sirve para cualquiera.
+     3. El original cerraba con un «Thank you». Se cierra con dos
+        preguntas abiertas: qué desatascar primero y qué no romper.
+        Sin eso, del radar sale un gráfico y ninguna decisión.
+   ═══════════════════════════════════════════════════════════════════ */
+
+const BLOQUES_RAD = [
+  "Quién responde",
+  "Los ocho ámbitos",
+  "Qué importa y qué urge",
+  "Cierre"
+];
+
+/* La escala. El original se contradecía: la diapositiva de
+   instrucciones proponía una escala de desarrollo —«no existe
+   todavía», «incipiente», «plenamente asentado»— y cada dimensión
+   decía después «de 1 (muy en desacuerdo) a 5 (muy de acuerdo)». Como
+   los enunciados están redactados como afirmaciones, la que encaja es
+   la de acuerdo. La lectura de desarrollo se conserva en la ayuda, que
+   es donde no estorba. */
+const ESC_RAD = {min:1, max:5,
+  ancla_min:"Nada de acuerdo", ancla_med:"A medias", ancla_max:"Totalmente de acuerdo"};
+
+const AYUDA_RAD =
+  "Cinco tramos, de menos a más: 1 no existe todavía · 2 incipiente · "
++ "3 parcialmente desarrollado · 4 bien desarrollado · 5 plenamente asentado. "
++ "Se responde desde la perspectiva del propio servicio, pero mirando al conjunto.";
+
+/* Los ocho ámbitos, en el orden en que se preguntan. Se usan dos veces:
+   como títulos de las ocho pantallas y como ítems de la matriz de
+   importancia del bloque siguiente. Escribirlos una sola vez evita que
+   las dos listas se desincronicen al retocar un nombre. */
+const AMBITOS_RAD = [
+  "Dirección estratégica y respaldo institucional",
+  "Cultura de experimentación y aprendizaje",
+  "Personas y competencias",
+  "Recursos, espacios y capacidad operativa",
+  "Conexión con el exterior y alianzas",
+  "Agilidad administrativa y procedimientos",
+  "Capacidad digital y de datos",
+  "Evaluación y evidencia"
+];
+
+const BANCO_RAD = [
+/* ── Bloque 0 · Quién responde ──────────────────────────────────── */
+{c:"R01", b:0, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Desde qué institución respondes?",
+ ayuda:"Nace vacía y se rellena al abrir la sesión. En el taller de UNITA eran diez "
+     + "universidades escritas a mano dentro de la presentación; aquí se vuelca la "
+     + "lista de esa sesión y el instrumento vale para una alianza, para una sola "
+     + "casa o para un consorcio. Si solo participa una organización, quítala.",
+ cfg:{opciones:[]}},
+{c:"R02", b:0, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Desde qué servicio o área respondes?",
+ ayuda:"También derivada. Es la que permite leer el radar por servicios, que es "
+     + "donde aparecen las diferencias interesantes: casi siempre hay dos áreas de "
+     + "la misma casa que puntúan la agilidad administrativa con dos puntos de "
+     + "diferencia. Cuidado con dejar servicios de tres o cuatro personas.",
+ cfg:{opciones:[]}},
+{c:"R03", b:0, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Con cuánta perspectiva del conjunto de [ORGANIZACION] respondes?",
+ ayuda:"Esta pregunta no estaba en el original y hace falta. Un radar contestado por "
+     + "gente que solo ve su unidad no significa lo mismo que uno contestado por "
+     + "quien tiene visión transversal, y sin este dato las dos respuestas pesan "
+     + "igual. Sirve para leer el resto, no para descartar a nadie.",
+ cfg:{min:1, max:5, ancla_min:"Solo mi unidad", ancla_max:"Toda la institución"}},
+
+/* ── Bloque 1 · Los ocho ámbitos ────────────────────────────────── */
+{c:"R11", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 1 · Dirección estratégica y respaldo institucional",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Las ideas nuevas encuentran respaldo institucional aunque todavía no encajen en las estructuras existentes.",
+   "Cuando aparece un reto complejo, las responsabilidades y quién decide están lo bastante claras como para avanzar.",
+   "Las prioridades estratégicas se traducen en acciones concretas que los servicios entienden y pueden aplicar.",
+   "La dirección deja margen para experimentar sin esperar a tener certeza absoluta."]}},
+{c:"R12", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 2 · Cultura de experimentación y aprendizaje",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Las personas se sienten razonablemente seguras para probar enfoques nuevos, aunque la primera versión sea imperfecta.",
+   "Las iniciativas que salen bien no solo se celebran: se analizan para que otros puedan aprender de ellas.",
+   "Hay disposición compartida a cuestionar formas de trabajar asentadas cuando dejan de responder a lo que hace falta.",
+   "La colaboración entre unidades genera soluciones que ningún servicio habría podido diseñar por su cuenta."]}},
+{c:"R13", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 3 · Personas y competencias",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Las personas tienen oportunidades suficientes para desarrollar las competencias que exigen la incertidumbre, la complejidad y el cambio.",
+   "Los equipos combinan el conocimiento técnico con capacidades de comunicación, facilitación y resolución conjunta de problemas.",
+   "Quien lidera o coordina proyectos está preparado para manejar actores diversos y expectativas contrapuestas.",
+   "Hay talento interno suficiente para convertir ideas en iniciativas bien gestionadas."]}},
+{c:"R14", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 4 · Recursos, espacios y capacidad operativa",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Cuando surge una iniciativa prometedora, es posible conseguir algo de tiempo, espacio o recursos para explorarla.",
+   "[ORGANIZACION] dispone de espacios —físicos, digitales u organizativos— donde desarrollar proyectos transversales.",
+   "Los servicios tienen capacidad operativa para sostener proyectos de transformación sin depender solo de la voluntad de algunas personas.",
+   "Los recursos existentes se pueden reasignar con cierta flexibilidad cuando aparece una oportunidad estratégica."]}},
+{c:"R15", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 5 · Conexión con el exterior y alianzas",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "[ORGANIZACION] conecta con facilidad sus iniciativas internas con actores externos: ciudades, empresas, instituciones públicas u organizaciones sociales.",
+   "Los socios externos saben cómo relacionarse con [ORGANIZACION] y a quién dirigirse.",
+   "Los proyectos conjuntos con terceros se estructuran de forma que aportan valor a las dos partes.",
+   "[ORGANIZACION] puede actuar como socio fiable en agendas de transformación regionales o europeas."]}},
+{c:"R16", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 6 · Agilidad administrativa y procedimientos",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Los procedimientos administrativos permiten que las iniciativas nuevas avancen sin demoras ni ambigüedades innecesarias.",
+   "Cuando una iniciativa no encaja en el procedimiento estándar, se encuentra una vía responsable y conforme a norma para seguir adelante.",
+   "Los distintos servicios se coordinan con eficacia cuando un proyecto cruza varias áreas.",
+   "Las normas y los flujos internos se revisan cuando se convierten en una barrera para mejorar."]}},
+/* Este ámbito NO estaba en el original: la séptima diapositiva era una
+   copia literal de la quinta —las mismas cuatro afirmaciones sobre
+   socios externos—, así que el cuestionario decía ocho dimensiones y
+   medía siete. El hueco se rellena con capacidad digital y de datos,
+   que es el ámbito que faltaba y uno de los tres donde ir tarde sale
+   más caro. Si prefieres otro, se cambia aquí y en AMBITOS_RAD. */
+{c:"R17", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 7 · Capacidad digital y de datos",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Los sistemas de información permiten obtener los datos que hacen falta para decidir, sin tener que pedirlos a mano cada vez.",
+   "Las personas tienen las competencias digitales que su puesto exige hoy, no las que exigía hace cinco años.",
+   "Cuando se implanta una herramienta digital, se rediseña también el proceso, y no solo se forma en la herramienta.",
+   "[ORGANIZACION] tiene criterio propio sobre qué automatizar y qué no, en vez de decidirlo la herramienta disponible."]}},
+{c:"R18", b:1, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Ámbito 8 · Evaluación y evidencia",
+ ayuda:AYUDA_RAD,
+ cfg:{...ESC_RAD, items:[
+   "Los proyectos definen qué sería el éxito antes de empezar a ejecutarse.",
+   "[ORGANIZACION] recoge evidencia para saber si las iniciativas producen un cambio real.",
+   "Lo aprendido en un proyecto se comparte más allá del equipo que lo desarrolló.",
+   "La evaluación se usa para mejorar la acción futura, no solo para justificar lo ya hecho."]}},
+
+/* ── Bloque 2 · Qué importa y qué urge ──────────────────────────── */
+/* La pregunta que faltaba. Sin ella el radar dice dónde estás flojo y
+   no dice qué de lo flojo importa, que es lo único que ordena un plan.
+   Misma escala que los ocho ámbitos, a propósito: la prioridad es la
+   distancia entre las dos, y restar escalas distintas no significa
+   nada. */
+{c:"R21", b:2, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Y cuánto importa cada ámbito para lo que [ORGANIZACION] quiere conseguir en [HORIZONTE]?",
+ ayuda:"Se responde sobre los mismos ocho ámbitos que se acaban de valorar, pero "
+     + "preguntando por su importancia, no por su desarrollo. El cruce de las dos "
+     + "—crítico y flojo— es lo que ordena el plan de acción. Un ámbito con nota "
+     + "baja e importancia baja no es una prioridad: es una decisión ya tomada.",
+ cfg:{...ESC_RAD, ancla_min:"Nada importante", ancla_med:"Importante", ancla_max:"Decisivo",
+   items:AMBITOS_RAD}},
+{c:"R22", b:2, t:"ranking", nuc:false, nat:"fija",
+ q:"Si solo se pudiera trabajar en tres ámbitos este año, ¿cuáles?",
+ ayuda:"Opcional y redundante con la R21 si el grupo es grande. Vale la pena cuando "
+     + "el colectivo es pequeño y quieres forzar la elección en la sala: la matriz "
+     + "de importancia permite decir que todo importa, y esto no.",
+ cfg:{opciones:AMBITOS_RAD}},
+
+/* ── Bloque 3 · Cierre ──────────────────────────────────────────── */
+{c:"R31", b:3, t:"abierta", nuc:true, nat:"fija",
+ q:"Si solo se pudiera desatascar una cosa este año, ¿cuál sería?",
+ ayuda:"El original terminaba en «gracias». Esta pregunta es la que convierte el "
+     + "radar en una conversación: la gente nombra el atasco concreto, con su "
+     + "nombre, y eso no sale de ninguna media."},
+{c:"R32", b:3, t:"abierta", nuc:true, nat:"fija",
+ q:"¿Qué está funcionando ya y conviene no romper?",
+ ayuda:"Se pregunta a propósito después de la anterior. Un diagnóstico que solo "
+     + "recoge lo que falla deja a la dirección sin saber qué proteger cuando "
+     + "empiece a cambiar cosas."},
+{c:"R33", b:3, t:"nube", nuc:false, nat:"fija",
+ q:"Una palabra: ¿cómo describirías hoy la capacidad de [ORGANIZACION] para transformarse?",
+ ayuda:"Opcional, para cerrar en plenario. Funciona bien proyectada mientras se "
+     + "comentan los resultados: la nube y el radar dicen lo mismo y la nube lo "
+     + "dice antes."}
+];
+
+const VARIABLES_RAD = [
+  {clave:"ORGANIZACION", etiqueta:"Organización", ayuda:"Nombre de la institución, la alianza o el consorcio que se evalúa."},
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",    ayuda:"Periodo al que se refiere la lectura. Por ejemplo, 2026-2029."},
+  {clave:"COLECTIVO",    etiqueta:"Colectivo",    ayuda:"A quién se abre el radar: equipo de dirección, jefaturas de servicio, toda la plantilla."}
+];
+
 const BANCOS = {
   escenarios: {bloques: BLOQUES_ESC, banco: BANCO_ESC, variables: VARIABLES_ESC,
                nucleo: "el itinerario núcleo"},
   liderazgo:  {bloques: BLOQUES_LID, banco: BANCO_LID, variables: VARIABLES_LID,
                nucleo: "el recorrido completo"},
   evaluacion: {bloques: BLOQUES_EVA, banco: BANCO_EVA, variables: VARIABLES_EVA,
-               nucleo: "el cuestionario base"}
+               nucleo: "el cuestionario base"},
+  radar:      {bloques: BLOQUES_RAD, banco: BANCO_RAD, variables: VARIABLES_RAD,
+               nucleo: "el radar completo"}
 };
 
 // La clave del instrumento puede venir con sufijo («cultura-cvf»), así que
@@ -8149,6 +8353,13 @@ const MODULOS = [
    desc:"La segunda mitad del par. Encuesta al colectivo amplio sobre el modelo que "
       + "acordó el comité: hereda su definición, su alcance y sus funciones clave, las "
       + "enseña antes de preguntar y mide desarrollo e importancia por separado.",
+   ruta:"#/admin/sesiones"},
+  {k:"radar", nombre:"Radar de madurez", est:"activo",
+   publico:"Radar de madurez institucional",
+   desc:"Ocho ámbitos con cuatro afirmaciones cada uno, en escala de 1 a 5, y la "
+      + "importancia medida aparte para poder cruzarla con el desarrollo. Nace del "
+      + "cuestionario del taller de UNITA, en castellano y con el cierre que allí "
+      + "faltaba. Directo y survey.",
    ruta:"#/admin/sesiones"},
   {k:"contraste", nombre:"Contraste estratégico", est:"pendiente",
    desc:"Diagnóstico de estrategia con los miembros de la organización."},
