@@ -478,6 +478,7 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 .esc-fila{margin:0 0 30px}
 .esc-fila h4{margin:0 0 4px;font-size:22px;font-weight:600;color:var(--text-primary)}
 .esc-caja{position:relative}
+.esc-bloque.es-denso .esc-fila{position:relative}
 .esc-den{display:block;width:100%;height:70px}
 .esc-den path{fill:var(--deseada);opacity:.3}
 .esc-hueco{height:70px}
@@ -493,8 +494,17 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
 
 /* Siete o más: la matriz de importancia del radar y poco más. Aquí ya
    manda que quepan todas juntas, porque compararlas ES la pregunta. */
-.esc-bloque.es-denso .esc-fila{margin:0 0 12px}
-.esc-bloque.es-denso .esc-fila h4{font-size:17px;margin:0 0 2px}
+/* En modo denso el rótulo se mete DENTRO de la caja, encima de la
+   silueta, en vez de ocupar su propia línea. Son unos veinte píxeles
+   por fila y con ocho filas es la diferencia entre caber en la
+   pantalla y no caber. La silueta va al 30 % de opacidad, así que el
+   texto encima se lee sin problema; se le limita el ancho para que no
+   llegue nunca a la bola de la media. */
+.esc-bloque.es-denso .esc-fila{margin:0 0 14px}
+.esc-bloque.es-denso .esc-caja{padding-top:2px}
+.esc-bloque.es-denso .esc-fila h4{position:absolute;top:0;left:0;z-index:2;
+  font-size:16px;line-height:1.2;margin:0;max-width:62%;
+  text-shadow:0 1px 3px var(--plane)}
 .esc-bloque.es-denso .esc-den,
 .esc-bloque.es-denso .esc-hueco{height:30px}
 .esc-bloque.es-denso .esc-via{height:10px}
