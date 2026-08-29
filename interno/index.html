@@ -8330,7 +8330,7 @@ const bancoDe = instrumento =>
    `publico` es como lo ve la sala —si falta, se usa `nombre`—. La cabecera del
    participante sale de aquí, así que añadir un instrumento no obliga a tocarla. */
 const MODULOS = [
-  {k:"cultura", nombre:"Cultura organizativa", est:"activo",
+  {k:"cultura", nombre:"Cultura organizativa", est:"activo", sel:"cultura-cvf",
    publico:"Diagnóstico de cultura organizativa",
    desc:"Cuatro vectores, reparto de 100 puntos, doce pantallas. Directo y survey.",
    ruta:"#/admin/sesiones"},
@@ -8537,13 +8537,16 @@ async function panelAdmin(u){
       <form id="fs"><div class="grid2">
         <div class="field"><label for="s-org">Organización</label>
           <select id="s-org">${orgs.map(o=>`<option value="${o.id}">${esc(o.nombre)}</option>`).join("")}</select></div>
+        <!-- El desplegable sale del registro MODULOS, no de una lista escrita
+             aquí. Antes eran dos sitios: se añadió el Radar de madurez al
+             registro, se dio de alta su banco de preguntas, y aun así no se
+             podía crear una sesión porque este <select> seguía teniendo las
+             cuatro opciones de siempre. Ahora basta con marcar un instrumento
+             como «activo» arriba para que se pueda elegir aquí. El campo sel existe
+             para los que se guardan con sufijo, como «cultura-cvf». -->
         <div class="field"><label for="s-ins">Instrumento</label>
-          <select id="s-ins">
-            <option value="cultura-cvf">Cultura organizativa</option>
-            <option value="escenarios">Escenarios futuros</option>
-            <option value="liderazgo">Modelo de liderazgo</option>
-            <option value="evaluacion">Evaluación del liderazgo</option>
-          </select></div>
+          <select id="s-ins">${MODULOS.filter(m => m.est === "activo")
+            .map(m => `<option value="${esc(m.sel || m.k)}">${esc(m.nombre)}</option>`).join("")}</select></div>
         <div class="field"><label for="s-tit">Título de la sesión</label>
           <input id="s-tit" required placeholder="Equipo directivo · febrero 2026"></div>
         <div class="field"><label for="s-col">Colectivo</label>
