@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es" data-menu="dark">
+<head>
+<meta charset="utf-8">
+<script src="/assets/ga4.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aprendizaje estratégico · Joaquín Romero Roldán</title>
+<meta name="description" content="Diseño y dirección de programas de capacitación in house, a medida y construidos sobre casos de uso reales de la organización. La agenda de aprendizaje se deriva de la estrategia, no de un catálogo de cursos.">
+<link rel="canonical" href="https://joaquinromero.com/aprendizaje.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Joaquín Romero Roldán">
+<meta property="og:url" content="https://joaquinromero.com/aprendizaje.html">
+<meta property="og:title" content="Aprendizaje estratégico">
+<meta property="og:description" content="La formación se compra fuera; el aprendizaje se construye dentro.">
+<meta property="og:image" content="https://joaquinromero.com/assets/share/share-jrr-1200x630.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--paper:#fff;--soft:#EAF0F1;--brandd:#22525C}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.rx-s{max-width:820px;margin:0 auto;padding:0 24px}
+.rx-hero{max-width:1120px;margin:0 auto;padding:76px 24px 46px}
+.rx-hero .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.rx-hero h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;max-width:17ch}
+.rx-hero .lead{font-size:clamp(19px,2vw,23px);line-height:1.42;color:#2c3733;max-width:46ch;margin:0}
+.rx-author{margin:20px 0 0;max-width:54ch;font-size:16.5px;line-height:1.45;color:#41504b;padding-left:15px;border-left:2px solid var(--brand)}
+.rx-rule{max-width:1120px;margin:0 auto;padding:0 24px}
+.rx-rule hr{border:0;border-top:1px solid var(--line);margin:0}
+
+.rx-ev{max-width:1120px;margin:0 auto;padding:34px 24px 0}
+.rx-ev ul{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.rx-ev ul{grid-template-columns:repeat(4,1fr)}}
+.rx-ev li{background:#fff;padding:20px 20px 18px}
+.rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
+.rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
+
+/* las tres piezas del modelo */
+.rx-tres{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:760px){.rx-tres{grid-template-columns:repeat(3,1fr)}}
+.rx-tres li{background:#fff;padding:24px 22px}
+.rx-tres .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-tres b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-tres span{display:block;font-size:16px;line-height:1.44;color:#41504b}
+
+/* los efectos del problema, numerados */
+.rx-pat{list-style:none;margin:26px 0 0;padding:0;counter-reset:pt;border-top:1px solid var(--line)}
+.rx-pat li{counter-increment:pt;border-bottom:1px solid var(--line);padding:19px 0 19px 46px;position:relative}
+.rx-pat li::before{content:counter(pt,decimal-leading-zero);position:absolute;left:0;top:20px;font:700 12px/1 'Inter',sans-serif;letter-spacing:.08em;color:var(--brand)}
+.rx-pat b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
+.rx-pat span{display:block;color:#41504b;font-size:16.5px;line-height:1.44}
+
+/* lo que sale del programa */
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-sale li{border-bottom:1px solid var(--line);padding:17px 0}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-sale span{display:block;color:#41504b;font-size:16px;line-height:1.44}
+
+/* cautelas de metodo */
+.rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
+.rx-aviso b{font-weight:700}
+.rx-aviso p{margin:0 0 12px}
+.rx-aviso p:last-child{margin:0}
+
+.rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
+.rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
+.rx-s p{margin:0 0 18px}
+.rx-s p.big{font-size:21px;line-height:1.42}
+.rx-s strong{font-weight:700}
+.rx-s em{font-style:italic;color:#2c3733}
+
+/* cuatro competencias */
+.rx-core{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:720px){.rx-core{grid-template-columns:1fr 1fr}}
+.rx-core li{background:#fff;padding:26px 24px}
+.rx-core .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-core b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:20px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-core .def{display:block;font-size:16px;line-height:1.44;color:#41504b;margin:0 0 14px}
+.rx-core .sub{margin:0;padding-left:1.05em;font-size:14.5px;line-height:1.5;color:#5c6360}
+.rx-core .sub li{background:none;padding:0 0 5px}
+.rx-core .sub b{display:inline;font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;letter-spacing:0;color:var(--ink)}
+
+/* fases */
+.rx-fases{list-style:none;margin:26px 0 0;padding:0;counter-reset:f}
+.rx-fases li{counter-increment:f;position:relative;padding:0 0 26px 62px;border-left:1px solid var(--line);margin-left:15px}
+.rx-fases li:last-child{border-left-color:transparent;padding-bottom:0}
+.rx-fases li::before{content:counter(f,decimal-leading-zero);position:absolute;left:-16px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font:600 12px/32px 'Inter',sans-serif;text-align:center}
+.rx-fases b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-fases span{display:block;color:#41504b;font-size:16.5px;line-height:1.42}
+
+/* instrumentos */
+.rx-inst{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--line)}
+.rx-inst li{border-bottom:1px solid var(--line);padding:19px 0;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:760px){.rx-inst li{grid-template-columns:220px 1fr;gap:24px;align-items:baseline}}
+.rx-inst b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em}
+.rx-inst span{color:#41504b;font-size:16px;line-height:1.44}
+
+.rx-dif{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 0}
+@media(min-width:720px){.rx-dif{grid-template-columns:1fr 1fr}}
+.rx-dif > div{background:#fff;padding:24px 22px}
+.rx-dif h3{margin:0 0 8px;font-size:19px}
+.rx-dif p{margin:0;font-size:16.5px;line-height:1.42;color:#41504b}
+
+.rx-quien{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-quien li{border-bottom:1px solid var(--line);padding:15px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-quien b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-quien span{color:#41504b;font-size:16.5px;flex:1;min-width:240px}
+
+.rx-desp{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-desp li{border-bottom:1px solid var(--line);padding:17px 0;display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:baseline}
+.rx-desp b{font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em}
+.rx-desp span{grid-column:1/-1;color:#41504b;font-size:16px;line-height:1.42}
+.rx-desp i{font-style:normal;font:700 10.5px/1 'Inter',sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:5px 9px;white-space:nowrap}
+.rx-desp i.on{color:var(--brandd);background:var(--soft);border-color:#cfe0e4}
+
+.rx-pone{margin:24px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-pone li{border-bottom:1px solid var(--line);padding:14px 0;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.rx-pone b{font-family:'Archivo',sans-serif;font-weight:600;font-size:16px;min-width:210px}
+.rx-pone span{color:#41504b;font-size:16px;flex:1;min-width:220px}
+.rx-nota{margin:20px 0 0;font-size:15px;line-height:1.5;color:#41504b;padding-left:15px;border-left:2px solid var(--line)}
+
+.rx-cta{margin:56px 0 0;padding:30px 0 0;border-top:1px solid var(--line)}
+.rx-cta a{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 'Inter',sans-serif;letter-spacing:.02em;padding:16px 26px;border-radius:2px}
+.rx-cta a:hover{background:var(--brandd)}
+.rx-foot{max-width:1120px;margin:64px auto 0;padding:26px 24px 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rx-foot a{color:var(--brand);text-decoration:none}
+
+</style>
+<link rel="stylesheet" href="/assets/nav.css">
+</head>
+<body>
+
+<header class="jr-header">
+  <div class="jr-nav">
+    <a class="jr-brand" href="/#home">JR</a>
+    <nav class="jr-links" aria-label="Secciones del sitio">
+      <a href="/#etapas">Trayectoria</a>
+      <a href="/#proyectos">Proyectos</a>
+      <a href="/#servicios">Servicios</a>
+      <a href="/#red">Red</a>
+      <a href="/#blog">Ideas</a>
+      <a href="/interno/" rel="nofollow">Área interna</a>
+      <a class="jr-contact" href="/tarjeta/">Contactar</a>
+    </nav>
+    <button class="jr-burger" type="button" aria-expanded="false" aria-controls="jr-menu" aria-label="Abrir menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<div class="jr-scrim" hidden></div>
+
+<div class="jr-menu" id="jr-menu" role="dialog" aria-modal="true" aria-label="Menú de navegación" hidden>
+  <div class="jr-menu-top">
+    <a class="jr-brand" href="/#home">JR</a>
+    <button class="jr-burger" type="button" aria-expanded="true" aria-label="Cerrar menú">
+      <span aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <p class="jr-menu-kicker">Navegación</p>
+  <nav class="jr-menu-list" aria-label="Secciones del sitio">
+    <a href="/#etapas"    style="--i:0"><span class="num">01</span>Trayectoria</a>
+    <a href="/#proyectos" style="--i:1"><span class="num">02</span>Proyectos recientes</a>
+    <a href="/#servicios" style="--i:2"><span class="num">03</span>Servicios</a>
+    <a href="/#red"       style="--i:3"><span class="num">04</span>Red</a>
+    <a href="/#blog"      style="--i:4"><span class="num">05</span>Ideas, medios y casos prácticos</a>
+  </nav>
+  <div class="jr-menu-foot">
+    <a class="jr-cta" href="/tarjeta/">Contactar</a>
+    <a class="jr-quiet" href="/interno/" rel="nofollow">Área interna</a>
+  </div>
+</div>
+
+
+
+<section class="rx-hero">
+  <p class="kick">Aprendizaje estratégico</p>
+  <h1>La formación se compra fuera; el aprendizaje se construye dentro</h1>
+  <p class="lead">Diseño y dirección de programas de capacitación in house, hechos a medida y construidos sobre casos de uso reales de la organización. La agenda de aprendizaje no sale de un catálogo de cursos: se deriva de la estrategia, y se decide con la dirección qué hay que aprender, quién tiene que aprenderlo y qué se espera que cambie después.</p>
+  <p class="rx-author">Es una metodología de diseño propio: diseño, coordinación y ejecución. Nace de dirigir la gestión de organizaciones desde dentro, donde se comprueba que la mayor parte de lo que la gente sabe hacer no lo aprendió en ningún curso.</p>
+</section>
+<div class="rx-rule"><hr></div>
+
+<section class="rx-ev" aria-label="El método en cifras">
+  <ul>
+    <li><b>3</b><span>niveles de aprendizaje que casi ninguna organización separa</span></li>
+    <li><b>4</b><span>preguntas que ordenan cualquier plan de formación</span></li>
+    <li><b>1</b><span>caso real de la organización en cada módulo</span></li>
+    <li><b>0</b><span>horas de contenido de catálogo</span></li>
+  </ul>
+</section>
+
+<main class="rx-s">
+
+<h2>Cuál es el problema</h2>
+<p class="big">La mayoría de los planes de formación no forman: ejecutan un presupuesto. Y lo que de verdad se aprende en una organización se aprende en otro sitio, sin que nadie lo haya diseñado.</p>
+
+<ul class="rx-pat">
+  <li><b>La formación se agota en lo obligatorio</b><span>Prevención de riesgos, cumplimiento normativo y cursos sueltos que nadie conecta con nada. Se cierra el ejercicio con el presupuesto ejecutado y el indicador cumplido, y nadie sabría decir qué hace hoy la organización distinto de lo que hacía en enero.</span></li>
+  <li><b>Lo demás se aprende por imitación</b><span>Quien llega copia a quien estaba. Así se hereda lo bueno y lo malo sin ningún filtro, y a eso la organización lo llama cultura. Es aprendizaje real, pero no es aprendizaje dirigido: nadie eligió qué se transmitía.</span></li>
+  <li><b>Los tres niveles van en el mismo saco</b><span>Desarrollo del puesto, desarrollo profesional y desarrollo personal compiten por el mismo presupuesto y por las mismas horas sin que nadie haya decidido qué peso tiene cada uno. Casi siempre gana el que sabe pedirlo mejor.</span></li>
+  <li><b>El conocimiento crítico vive en cabezas concretas</b><span>No está escrito, no se transmite de forma estructurada y se va con las personas. La organización descubre lo que sabía alguien el día que se jubila.</span></li>
+  <li><b>Nadie ha escrito qué no se va a aprender</b><span>Sin esa lista se aprende un poco de todo y nada del todo, y el plan de formación acaba siendo la suma de las peticiones individuales que llegaron a tiempo.</span></li>
+</ul>
+
+<h2>El punto de partida</h2>
+<p class="big">Antes de diseñar nada hay cuatro preguntas. Casi ninguna organización tiene las cuatro respuestas, y ese es el diagnóstico.</p>
+
+<ul class="rx-sale">
+  <li><b>¿La formación está centrada en lo obligatorio y en cursos puntuales?</b><span>Si el plan se explica entero enumerando cursos, no es un plan de aprendizaje: es un calendario. Un plan de aprendizaje se explica enumerando lo que la organización tiene que saber hacer dentro de dos años y no sabe hacer hoy.</span></li>
+  <li><b>¿Qué parte del aprendizaje se produce por imitación y experiencia?</b><span>Es la parte grande y casi nunca está medida. Conviene saber cuánto de lo que se aprende aquí lo enseña la cultura, porque eso es lo que un curso no va a corregir.</span></li>
+  <li><b>¿Qué niveles de formación existen y están separados?</b><span>Desarrollo del puesto, desarrollo profesional y desarrollo personal responden a lógicas distintas, se financian distinto y se evalúan distinto. Mezclarlos es la razón más común de que un plan de formación no se note.</span></li>
+  <li><b>¿Existe un sistema de aprendizaje estratégico?</b><span>Es decir: ¿alguien traduce el plan estratégico en agenda de aprendizaje? Si la respuesta es que de eso se encarga formación, la respuesta es no.</span></li>
+</ul>
+
+<div class="rx-aviso">
+  <p><b>Los riesgos de no tener respuesta.</b> Pérdida de conocimiento tácito cuando se van las personas que lo tienen. Aprendizajes desiguales, que hacen que dos equipos de la misma casa trabajen con criterios distintos. Y falta de actualización estructurada justo en los tres ámbitos donde más caro sale ir tarde: liderazgo, procesos y digitalización.</p>
+</div>
+
+<h2>Qué es el aprendizaje estratégico</h2>
+<p>Es la diferencia entre formar y capacitar. La formación transmite un contenido que existía antes de que llegara la organización; la capacitación resuelve un problema que la organización tiene ahora. Son tres condiciones y las tres tienen que darse a la vez.</p>
+
+<ul class="rx-tres">
+  <li><span class="n">CONDICIÓN 1</span><b>In house</b><span>El aula es la organización. No se envía gente fuera a aprender por separado: se trabaja con el colectivo entero o con el tramo que corresponda, en su contexto, con su lenguaje y con sus restricciones reales encima de la mesa.</span></li>
+  <li><span class="n">CONDICIÓN 2</span><b>A medida</b><span>El contenido se escribe para este problema y para esta organización. Un módulo de gestión del cambio en una universidad y el mismo módulo en una planta industrial comparten el marco conceptual y no comparten casi nada más.</span></li>
+  <li><span class="n">CONDICIÓN 3</span><b>Sobre caso de uso real</b><span>Cada módulo trabaja sobre un problema que la organización tiene abierto de verdad. No un caso de escuela de negocios: uno de los suyos, con sus datos y sus nombres. El entregable del módulo es aplicable el lunes siguiente.</span></li>
+</ul>
+
+<p style="margin-top:22px">De ahí sale el principio que ordena todo lo demás: <b>se aprende mientras se trabaja</b>. Si el programa exige parar la organización para poder aprender, el programa está mal diseñado.</p>
+
+<h2>Los tres niveles que hay que separar</h2>
+<p>La primera decisión de cualquier plan es cuánto se dedica a cada uno de estos tres, y decirlo en voz alta. No hay un reparto correcto; hay repartos explícitos y repartos que nadie ha hecho.</p>
+
+<ul class="rx-inst">
+  <li><b>Desarrollo del puesto</b><span>Lo que alguien necesita para hacer bien el trabajo que tiene hoy. Es el nivel que la organización tiene la obligación de cubrir, y el único que se puede exigir. Suele estar mejor atendido en lo técnico y peor en todo lo demás, empezando por dirigir personas.</span></li>
+  <li><b>Desarrollo profesional</b><span>Lo que alguien necesita para el trabajo que podría tener después. Es el nivel que conecta con el plan de carrera: sin itinerarios claros, formar en este nivel genera expectativas que la organización no va a poder cumplir.</span></li>
+  <li><b>Desarrollo personal</b><span>Lo que la persona quiere aprender por su cuenta y la organización decide acompañar o no. Es legítimo y es barato en reputación interna, pero conviene no confundirlo con los dos anteriores ni financiarlo con su presupuesto.</span></li>
+</ul>
+
+<h2>Quién traduce la estrategia en aprendizaje</h2>
+<p>En la mayoría de las organizaciones nadie tiene ese encargo. Formación gestiona un catálogo, recursos humanos gestiona un presupuesto y la dirección aprueba un plan que no ha discutido. La función que falta es la que en otras casas se llama <i>Chief Learning Officer</i>, y no hace falta crear el puesto para ejercerla: hace falta que alguien haga estas cuatro cosas.</p>
+
+<ul class="rx-sale">
+  <li><b>Traduce la estrategia en agenda de aprendizaje</b><span>Si el plan estratégico dice que hay que crecer por innovación, la agenda tiene que decir quién tiene que aprender a hacer eso y para cuándo. Esa traducción no es automática y casi nunca está escrita.</span></li>
+  <li><b>Diseña contextos de aprendizaje, no contenidos</b><span>Proyectos transversales, equipos mixtos, aprendizaje entre pares y reflexión estructurada sobre la acción. El contenido se puede comprar; el contexto hay que construirlo, y es el que hace que lo aprendido se quede.</span></li>
+  <li><b>Conecta el aprendizaje con las decisiones</b><span>Un programa cuyo resultado no entra en ninguna decisión —de estructura, de promoción, de asignación de proyectos— es un programa que la organización va a dejar de financiar en cuanto haya que recortar.</span></li>
+  <li><b>Trabaja con la alta dirección, no solo con recursos humanos</b><span>La agenda de aprendizaje se decide donde se decide la estrategia. Si el interlocutor único es el departamento de formación, el programa nace ya desconectado de aquello que pretende servir.</span></li>
+</ul>
+
+<h2>Cómo se trabaja</h2>
+<p>El diseño es un trabajo corto y la ejecución es larga. La secuencia empieza en la dirección, baja al colectivo que va a aprender y vuelve a la dirección para decidir qué se hace con lo aprendido.</p>
+
+<ol class="rx-fases">
+  <li><b>De la estrategia a la agenda</b><span>Sesión con la dirección. Se lee el plan estratégico y se traduce en aprendizajes: qué tiene que saber hacer esta organización dentro de dos años que hoy no sabe hacer. Es la única sesión que no se puede delegar.</span></li>
+  <li><b>Diagnóstico del sistema actual</b><span>Las cuatro preguntas del punto de partida, aplicadas con datos: qué se está formando hoy, con qué presupuesto, en qué nivel de los tres y con qué evidencia de impacto.</span></li>
+  <li><b>Quién debe aprender qué</b><span>Cada aprendizaje estratégico se asigna a un colectivo concreto. No «los mandos», sino qué personas y por qué. Aquí es donde un modelo de liderazgo previo, si existe, ahorra la mitad del trabajo.</span></li>
+  <li><b>Cómo se aprende cada cosa</b><span>Se elige el vehículo: en el puesto, mentoría, proyecto o sesión formal. La sesión formal es una opción entre cuatro, no el punto de partida.</span></li>
+  <li><b>Qué no se prioriza</b><span>Se escribe la lista de lo que este año no se va a aprender y se comunica. Es la parte incómoda y la que hace que el plan sea un plan y no un deseo.</span></li>
+  <li><b>Diseño de los módulos sobre casos reales</b><span>Cada módulo se construye alrededor de un problema abierto de la organización, con su entregable. El caso lo aporta la casa; el marco y la conducción, yo.</span></li>
+  <li><b>Elección del profesorado</b><span>Se busca a la persona adecuada para cada módulo, dentro o fuera. Un programa serio no lo imparte una sola voz: se convoca a quien mejor puede decir cada cosa.</span></li>
+  <li><b>Ejecución y acompañamiento</b><span>Coordinación del programa, conducción de las sesiones propias y seguimiento de los entregables entre módulos, que es donde el aprendizaje se pierde si nadie lo sostiene.</span></li>
+  <li><b>Evaluación y decisiones</b><span>Asistencia, valoración y, sobre todo, qué ha entrado en alguna decisión. Con eso se decide la reedición, los módulos que se mantienen y los que se retiran.</span></li>
+</ol>
+
+<div class="rx-aviso">
+  <p><b>La tabla que ordena el plan.</b> Todo el diseño cabe en cuatro columnas, y el ejercicio de rellenarlas es el que separa un plan de formación de una lista de cursos: <b>qué aprendizaje estratégico</b>, <b>quién debe aprenderlo</b>, <b>cómo</b> —en el puesto, con mentoría o por proyecto—, y <b>qué impacto se espera</b>. Si la última columna no se puede rellenar, esa línea sobra.</p>
+  <p><b>Y una quinta casilla, debajo.</b> «Aprendizajes que NO se priorizan.» Es la que casi nadie escribe y la que hace que el resto se sostenga: sin ella, cualquier petición que llegue en marzo entra en el plan y lo desordena entero.</p>
+</div>
+
+<div class="rx-aviso">
+  <p><b>Con modelo de liderazgo previo o sin él.</b> Este programa es la continuación natural del <a href="liderazgo.html">Modelo de liderazgo</a>: cuando la organización ya ha definido qué espera de quien dirige y ha medido cómo se ejerce hoy, el diseño del programa está medio hecho, porque la brecha entre lo importante y lo desarrollado ya dice en qué hay que formar. Pero no es un requisito. Se puede contratar solo, partiendo de la estrategia, y de hecho es lo más habitual cuando el encargo no es de liderazgo sino de innovación, de gestión del cambio o de digitalización.</p>
+</div>
+
+<h2>Qué sale del programa</h2>
+<ul class="rx-sale">
+  <li><b>La agenda de aprendizaje</b><span>Qué tiene que aprender esta organización, quién, cómo y con qué impacto esperado, en una tabla que la dirección firma. Y la lista de lo que este año queda fuera.</span></li>
+  <li><b>El programa diseñado</b><span>Módulos, horas, secuencia, casos de uso, entregables y profesorado. Listo para ejecutarse, con o sin mi participación en la ejecución.</span></li>
+  <li><b>Los entregables de cada módulo</b><span>Como cada módulo se construye sobre un problema real, al terminar la organización no tiene apuntes: tiene trabajo hecho sobre sus propios asuntos.</span></li>
+  <li><b>La evidencia para decidir la reedición</b><span>Asistencia, valoración y trazabilidad de lo que entró en decisiones. Es lo que permite defender el presupuesto del año siguiente sin apelar a la fe.</span></li>
+</ul>
+
+<h2>Qué lo hace distinto</h2>
+<div class="rx-dif">
+  <div><h3>La agenda sale de la estrategia, no del catálogo</h3><p>El punto de partida no es qué cursos hay disponibles, sino qué tiene que saber hacer la organización que hoy no sabe. Es una conversación con la dirección antes que un expediente de contratación.</p></div>
+  <div><h3>Se trabaja sobre casos de uso reales</h3><p>Cada módulo tiene delante un problema abierto de la casa. Eso cambia la actitud en la sala: nadie está haciendo un ejercicio, todos están adelantando trabajo.</p></div>
+  <div><h3>Se separan los tres niveles</h3><p>Desarrollo del puesto, profesional y personal se presupuestan y se evalúan por separado. Es una decisión de gobierno, no de gestión de la formación.</p></div>
+  <div><h3>Se escribe lo que no se va a aprender</h3><p>La lista de exclusiones se comunica igual que la de contenidos. Un plan sin exclusiones no resiste el primer trimestre.</p></div>
+  <div><h3>El profesorado se elige módulo a módulo</h3><p>No imparto todo yo. Para cada bloque se busca a quien mejor puede decir esa cosa concreta, dentro o fuera de la organización, y la coordinación garantiza que las piezas hablen entre sí.</p></div>
+  <div><h3>Se diseña para aprender mientras se trabaja</h3><p>Sesiones acotadas, entregables entre módulos y trabajo sobre lo que ya está en la mesa. Si hay que parar la organización para poder aprender, el diseño está mal.</p></div>
+  <div><h3>La evaluación mira decisiones, no satisfacción</h3><p>La encuesta de satisfacción está bien y no dice gran cosa. La pregunta que importa es qué se hizo distinto después, y esa se contesta con la dirección tres meses más tarde.</p></div>
+</div>
+
+<h2>Un despliegue completo</h2>
+<p class="big">En la Universidad Pública de Navarra, el programa de capacitación fue la salida natural del modelo de liderazgo: primero se definió qué se esperaba de quien dirige y se midió cómo se ejercía, y el programa se diseñó sobre esa brecha.</p>
+<p>Se organizó como título propio de la universidad, en cinco módulos, con profesorado externo seleccionado para cada bloque y abierto a la vez al personal de administración y servicios y al personal docente e investigador, que hasta entonces se formaban por separado.</p>
+
+<ul class="rx-desp">
+  <li><b>Liderazgo transformacional</b><i>20 horas</i><span>Nuevos principios y facilitación del cambio. El módulo más largo, y a propósito: es el que fija el marco que después usan todos los demás.</span></li>
+  <li><b>Liderazgo innovador</b><i>16 horas</i><span>Cómo se dirige cuando lo que hay que conseguir todavía no existe. Reto, objetivo mayor y mirada sistémica.</span></li>
+  <li><b>Liderazgo estratégico y gestión avanzada</b><i>8 horas</i><span>La traducción del plan estratégico al ámbito de cada persona que dirige un equipo.</span></li>
+  <li><b>Liderazgo y clima laboral</b><i>8 horas</i><span>Interdependencia entre unidades y efecto del mando sobre el clima del equipo.</span></li>
+  <li><b>Liderazgo que inspire y genere equipo</b><i>12 horas</i><span>Cierre del programa, con el foco puesto en construir equipo y no solo en gestionarlo.</span></li>
+</ul>
+
+<div class="rx-aviso">
+  <p><b>Cómo salió.</b> Noventa y una inscripciones, ochenta personas titularon y la asistencia media fue del 84 %. La valoración final del programa fue de 8,18 sobre 10, con una tasa de respuesta del 52 %. Sesenta y cuatro horas lectivas repartidas en cinco módulos.</p>
+  <p><b>Y qué pasó después.</b> El programa se reeditó, se le añadieron módulos cortos de organización ágil y de gestión del cambio cada dos meses, y entró como línea propia en la planificación de los años siguientes. Ese es el indicador que de verdad importa: un programa que se repite es un programa que alguien echó de menos.</p>
+</div>
+
+<h2>Para quién funciona</h2>
+<ul class="rx-quien">
+  <li><b>Industria y corporaciones</b><span>Cuando la formación técnica está resuelta y la de gestión no, y se promociona a gente que dirige equipos sin haber aprendido a hacerlo en ningún sitio.</span></li>
+  <li><b>Universidades y centros de I+D</b><span>Cuando el personal de gestión y el personal académico se forman por separado y nunca han trabajado juntos sobre un problema común de la institución.</span></li>
+  <li><b>Administraciones públicas</b><span>Cuando el plan de formación lo marca la oferta disponible y la normativa, y no hay ningún mecanismo que lo conecte con lo que la organización se ha propuesto conseguir.</span></li>
+  <li><b>Organizaciones con mando profesional</b><span>Sanidad, educación o servicios técnicos, donde quien dirige llegó ahí por excelencia clínica, docente o técnica y nadie le ha capacitado para lo otro.</span></li>
+</ul>
+
+<h2>Cómo se contrata</h2>
+<h3>Qué pone tu organización</h3>
+<ul class="rx-pone">
+  <li><b>La dirección, al principio y al final</b><span>Al principio para traducir la estrategia en agenda de aprendizaje, y al final para decidir qué entra en decisiones. Sin esas dos sesiones el programa se convierte en un catálogo mejor redactado.</span></li>
+  <li><b>Casos de uso reales, con sus datos</b><span>Problemas abiertos de verdad, no ejemplos didácticos. Es la condición que hace que el programa produzca trabajo y no apuntes, y exige cierta disposición a enseñar las costuras.</span></li>
+  <li><b>Tiempo reconocido, no añadido</b><span>Las horas del programa y las de los entregables intermedios tienen que estar en el calendario como trabajo. Un programa que se hace fuera del horario se abandona en el tercer módulo.</span></li>
+  <li><b>Aceptar la lista de exclusiones</b><span>Decir en voz alta qué no se va a aprender este año genera alguna conversación incómoda. Es el precio de que el plan signifique algo.</span></li>
+  <li><b>Un interlocutor con capacidad de decidir</b><span>Alguien que pueda cerrar contenidos, calendario y participantes sin tener que consultar cada punto. Puede ser gerencia, dirección de personas o quien la organización designe, pero tiene que poder decidir.</span></li>
+</ul>
+<h3>Cómo se cierra</h3>
+<p class="rx-nota">El alcance se fija en una conversación previa: si el encargo es solo el diseño de la agenda y del programa, o incluye también la coordinación y la ejecución; cuántos módulos, qué colectivo y qué profesorado externo hace falta convocar. Cada encargo se presupuesta sobre eso.</p>
+
+<div class="rx-cta"><a href="mailto:joaquin@joaquinromero.com?subject=Aprendizaje%20estrat%C3%A9gico">Hablemos de vuestra agenda de aprendizaje</a></div>
+
+</main>
+
+<div class="rx-foot">
+  <span>Joaquín Romero Roldán · Consejero-asesor independiente</span>
+  <span><a href="/">joaquinromero.com</a></span>
+</div>
+<script src="/assets/nav.js" defer></script>
+  <script src="/assets/eventos.js" defer></script>
+</body></html>
