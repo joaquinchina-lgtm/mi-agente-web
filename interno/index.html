@@ -1306,10 +1306,15 @@ function marcaSala(){
 function cabecera(extra){
   const marca = enLaSala() ? marcaSala()
                            : `<b>Consola de proyectos</b> de joaquinromero.com`;
+  /* La salida a la web publica va en la cabecera, pero solo fuera de
+     sesion: a quien esta participando en una sala no se le pone delante
+     un enlace que le saca de la sesion a medias. */
+  const salida = enLaSala() ? ""
+    : `<a class="iconbtn" href="/" style="text-decoration:none;display:inline-flex;align-items:center">&larr;&nbsp;Volver a la web</a>`;
   return `<header class="top">
     <div class="brand">${marca}${
       API.demo() ? ' · <span style="color:#d03b3b">modo demostración</span>' : ''}</div>
-    <div style="display:flex;gap:8px">${extra||""}
+    <div style="display:flex;gap:8px;align-items:center">${extra||""}${salida}
       <button class="iconbtn" onclick="alternarTema()">Tema</button></div></header>`;
 }
 window.alternarTema = () => {

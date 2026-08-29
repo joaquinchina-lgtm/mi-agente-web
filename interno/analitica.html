@@ -13,6 +13,17 @@
 body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1180px;margin:0 auto;padding:44px 24px 90px}
 .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+/* Fila del rotulo: a la izquierda donde estas, a la derecha la salida.
+   El area interna no cuelga de la navegacion del sitio, asi que entrando
+   por un enlace directo no habia forma de volver a la web sin escribir
+   la direccion a mano. */
+.kick-fila{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px}
+.kick-fila .kick{margin:0}
+.a-web{font:600 11px/1 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:9px 13px;
+  white-space:nowrap;transition:color .16s,border-color .16s}
+.a-web:hover{color:var(--brandd);border-color:var(--brand)}
+.a-web span{margin-right:7px}
 h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:-.032em;margin:0 0 12px}
 .lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:64ch;margin:0 0 24px}
 h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;letter-spacing:-.024em;margin:44px 0 10px}
@@ -54,7 +65,7 @@ td.ev code{background:#eef3f3;color:var(--brandd)}
 <body>
 <div class="wrap">
 
-<p class="kick">Área interna</p>
+<div class="kick-fila"><p class="kick">Área interna</p><a class="a-web" href="./"><span aria-hidden="true">&larr;</span>Volver al área interna</a></div>
 <h1>Analítica de la web</h1>
 <p class="lead">Panel de Looker Studio sobre los datos de Google Analytics 4 de joaquinromero.com. Visitas, páginas más vistas, tiempo de interacción, procedencia geográfica y las interacciones que de verdad indican interés.</p>
 

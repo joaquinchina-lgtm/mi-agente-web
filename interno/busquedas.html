@@ -13,6 +13,17 @@
 body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:48px 24px 80px}
 .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+/* Fila del rotulo: a la izquierda donde estas, a la derecha la salida.
+   El area interna no cuelga de la navegacion del sitio, asi que entrando
+   por un enlace directo no habia forma de volver a la web sin escribir
+   la direccion a mano. */
+.kick-fila{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px}
+.kick-fila .kick{margin:0}
+.a-web{font:600 11px/1 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:9px 13px;
+  white-space:nowrap;transition:color .16s,border-color .16s}
+.a-web:hover{color:var(--brandd);border-color:var(--brand)}
+.a-web span{margin-right:7px}
 h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,42px);line-height:1.05;letter-spacing:-.033em;margin:0 0 14px}
 .lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:60ch;margin:0 0 26px}
 .aviso{background:var(--soft);padding:16px 18px;font-size:15px;line-height:1.46;color:#20302c;margin:0 0 32px}
@@ -54,7 +65,7 @@ td.q{color:var(--ink)}
 <body>
 <div class="wrap">
 
-<p class="kick">Área interna</p>
+<div class="kick-fila"><p class="kick">Área interna</p><a class="a-web" href="./"><span aria-hidden="true">&larr;</span>Volver al área interna</a></div>
 <h1>Qué busca la gente en tus servicios</h1>
 <p class="lead">Lector y analizador del registro de búsquedas del buscador de la home. Lee lo que hay guardado en este navegador y admite importar registros exportados desde otros.</p>
 
@@ -88,7 +99,7 @@ td.q{color:var(--ink)}
 
 <div class="pie">
   <span>Joaquín Romero Roldán · Área interna</span>
-  <span><a href="/">Volver a joaquinromero.com</a></span>
+  <span><a href="./">Volver al área interna</a> · <a href="/">joaquinromero.com</a></span>
 </div>
 
 </div>
