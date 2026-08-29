@@ -358,6 +358,22 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
 /* el enlace de agentes, siempre en línea propia (gana en especificidad a la regla previa) */
 #servicios .srv .srv-agentes a.srv-agentes-cta{display:block;width:100%;margin-top:10px;color:#32717E;font-weight:600}
 
+/* ═══ Ficha en preparación ═══════════════════════════════════════
+   Las fichas listas son tarjetas blancas que se levantan del fondo
+   gris de la sección. Esta todavía no se ha levantado: se queda al
+   nivel del fondo, con el título en un tono más bajo y un rótulo que
+   dice desde cuándo se podrá contratar. Se distingue de un vistazo
+   sin necesidad de leerla, y no parece un hueco ni un error. */
+#servicios .srv--preparacion{background:#f1f1ed;border-color:#e2e0d9}
+#servicios .srv-estado{margin:0 0 13px;font:600 10.5px/1.35 'Inter',system-ui,sans-serif;
+  letter-spacing:.13em;text-transform:uppercase;color:#6f7672;
+  display:flex;align-items:baseline;gap:9px}
+#servicios .srv-estado::before{content:"";width:6px;height:6px;background:#a9b0ac;
+  flex:none;position:relative;top:-1px}
+#servicios .srv--preparacion .srv-t{color:#41504b}
+#servicios .srv--preparacion .srv-m,
+#servicios .srv--preparacion .srv-agentes{border-top-color:#e2e0d9}
+
 /* el logotipo de la UAM es compacto: +20% de alto para igualar peso visual con UPNA */
 #proyectos img[src*="UAM.png"]{height:66px}
 
@@ -944,11 +960,13 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
           <p class="srv-m">Cuatro fases a lo largo de veinticuatro meses, con una decisión al final de cada una sobre si se sigue, se ajusta o se para.</p>
           <p class="srv-agentes">Rediseñar un servicio es un proyecto; poder rediseñarlos todos es una capacidad. La medición previa puede concluir que a tu institución le toca antes desatascar su ruta administrativa.<a class="srv-agentes-cta" href="implantacion.html">Ver el método</a></p>
         </article>
-        <article class="srv" data-sit="s6" id="srv-5">
+        <article class="srv srv--preparacion" data-sit="s6" id="srv-5">
+          <p class="srv-estado">En preparación · lanzamiento previsto en octubre de 2026</p>
           <h4 class="srv-t">Estrategia de IA</h4>
           <p class="srv-q"><span>Para</span> Todo tipo de organizaciones</p>
           <ul class="srv-c"><li>Gobierno del dato <i>(en colaboración con especialistas)</i></li><li>Catálogo de herramientas <i>(en colaboración especializada)</i></li><li>Elección de herramientas prioritarias <i>(en colaboración con especialistas)</i></li></ul>
           <p class="srv-m">Trabajo con equipos directivos y tecnológicos para transicionar del inventario de herramientas disponibles a la decisión sobre cuáles son prioritarias porque aportan más valor.</p>
+          <p class="srv-agentes">Estoy preparando este servicio junto a un socio especializado, para lanzarlo con lo que de verdad aporta y no antes. Si tu organización tiene esta decisión encima de la mesa ahora, no hace falta esperar a octubre.<a class="srv-agentes-cta" href="mailto:joaquin@joaquinromero.com?subject=Estrategia%20de%20IA">Escríbeme y hablamos antes</a></p>
         </article>
         </div>
       </div>
