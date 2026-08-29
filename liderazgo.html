@@ -38,6 +38,33 @@ a{color:var(--brand)}
 .rx-ev b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:32px;line-height:1;letter-spacing:-.03em;color:var(--brand);margin:0 0 7px}
 .rx-ev span{display:block;font-size:14.5px;line-height:1.35;color:#41504b}
 
+/* las tres piezas del modelo */
+.rx-tres{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+@media(min-width:760px){.rx-tres{grid-template-columns:repeat(3,1fr)}}
+.rx-tres li{background:#fff;padding:24px 22px}
+.rx-tres .n{display:block;font:700 11px/1 'Inter',sans-serif;letter-spacing:.14em;color:var(--brand);margin:0 0 11px}
+.rx-tres b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:19px;line-height:1.16;letter-spacing:-.022em;margin:0 0 9px}
+.rx-tres span{display:block;font-size:16px;line-height:1.44;color:#41504b}
+
+/* los efectos del problema, numerados */
+.rx-pat{list-style:none;margin:26px 0 0;padding:0;counter-reset:pt;border-top:1px solid var(--line)}
+.rx-pat li{counter-increment:pt;border-bottom:1px solid var(--line);padding:19px 0 19px 46px;position:relative}
+.rx-pat li::before{content:counter(pt,decimal-leading-zero);position:absolute;left:0;top:20px;font:700 12px/1 'Inter',sans-serif;letter-spacing:.08em;color:var(--brand)}
+.rx-pat b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
+.rx-pat span{display:block;color:#41504b;font-size:16.5px;line-height:1.44}
+
+/* lo que sale del programa */
+.rx-sale{margin:26px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rx-sale li{border-bottom:1px solid var(--line);padding:17px 0}
+.rx-sale b{display:block;font-family:'Archivo',sans-serif;font-weight:600;font-size:17.5px;letter-spacing:-.02em;margin:0 0 5px}
+.rx-sale span{display:block;color:#41504b;font-size:16px;line-height:1.44}
+
+/* cautelas de metodo */
+.rx-aviso{margin:24px 0 0;padding:20px 22px;background:var(--soft);font-size:16.5px;line-height:1.46;color:#20302c}
+.rx-aviso b{font-weight:700}
+.rx-aviso p{margin:0 0 12px}
+.rx-aviso p:last-child{margin:0}
+
 .rx-s h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(27px,3.4vw,40px);line-height:1.06;letter-spacing:-.032em;margin:64px 0 20px}
 .rx-s h3{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;line-height:1.12;letter-spacing:-.02em;margin:34px 0 8px}
 .rx-s p{margin:0 0 18px}
@@ -153,7 +180,7 @@ a{color:var(--brand)}
   <p class="kick">Modelo de liderazgo</p>
   <h1>Nadie puede ejercer un liderazgo que nadie ha definido</h1>
   <p class="lead">Definir con el equipo de dirección qué significa liderar en esta organización, a quién se llama líder y qué funciones clave tiene que ejercer. Medir después cómo se ejerce hoy, y salir con un programa de capacitación.</p>
-  <p class="rx-author">Es una metodología de diseño propio: diseño, coordinación y docencia. Nace de dirigir la gestión de una institución pública desde dentro, donde se aprende que casi ningún problema de mando es de talento y casi todos son de expectativa no dicha.</p>
+  <p class="rx-author">Es una metodología de diseño propio: diseño, coordinación y ejecución. Nace de dirigir la gestión de una institución pública desde dentro, donde se aprende que casi ningún problema de mando es de talento y casi todos son de expectativa no dicha.</p>
 </section>
 <div class="rx-rule"><hr></div>
 
