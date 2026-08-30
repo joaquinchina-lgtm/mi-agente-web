@@ -819,6 +819,25 @@ const CSS_RADAR = `
   gap:36px;align-items:center;margin-top:20px}
 .proy .radar-pared .fila-taller b{font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:1100px){.proy .radar-pared{grid-template-columns:1fr;gap:20px}}
+.corte-fila{display:grid;grid-template-columns:26px minmax(130px,1.1fr) minmax(90px,1.6fr) 46px;
+  gap:14px;align-items:center;padding:7px 0}
+.corte-n{font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:13px;text-align:right}
+.corte-et{font-size:15px;line-height:1.3}
+.corte-via{height:10px;background:var(--plane);border:1px solid var(--grid);position:relative}
+.corte-via i{position:absolute;left:0;top:0;bottom:0;background:var(--tono-1);display:block}
+.corte-fila b{font-variant-numeric:tabular-nums;text-align:right;font-size:17px;font-weight:650}
+.corte-fila.fuera{opacity:.52}
+.corte-fila.fuera .corte-via i{background:var(--axis)}
+.corte-linea{display:flex;align-items:center;gap:14px;margin:12px 0 6px;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:650;color:var(--tono-2)}
+.corte-linea::before,.corte-linea::after{content:"";flex:1;height:1px;background:var(--tono-2);opacity:.5}
+.corte-gr .corte-fila{grid-template-columns:34px minmax(200px,1.1fr) minmax(120px,1.4fr) 64px;padding:10px 0}
+.corte-gr .corte-et{font-size:23px}
+.corte-gr .corte-fila b{font-size:28px}
+.corte-gr .corte-n{font-size:18px}
+.corte-gr .corte-via{height:17px}
+.corte-gr .corte-linea{font-size:15px;margin:16px 0 10px}
+@media print{.corte-fila,.corte-linea{break-inside:avoid}}
 @media print{.informe-bloque svg{page-break-inside:avoid}}
 `;
 (function(){ const e = document.createElement("style"); e.textContent = CSS_RADAR;
@@ -1672,12 +1691,278 @@ function radarNSVG(ejes, series, o){
        + ' aria-label="' + esc(o.alt || "Radar de madurez por ámbito") + '">' + s + '</svg>';
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   LA LECTURA DE «ACTIVACIÓN DE EQUIPOS NÚCLEO»
+   ═══════════════════════════════════════════════════════════════════
+   Dos figuras, y las dos contestan a la misma pregunta desde lados
+   distintos: ¿el equipo que se está proponiendo tiene lo que este
+   trabajo necesita?
+
+   · EL RADAR DE CAPACIDADES cruza lo que hace falta (N21) con lo que
+     el equipo cubre hoy (N22). Mismo dibujo que el Radar de madurez y
+     a propósito: quien use los dos instrumentos con el mismo cliente
+     no tiene que aprender a leer dos gráficos.
+
+   · EL CORTE es la figura propia de este instrumento y la que suele
+     dejar callada a una sala. Los perfiles que se han votado, en
+     orden, con una línea trazada donde la propia sala ha dicho que
+     termina el equipo. Encima de la línea está el equipo que se acaba
+     de votar. Debajo está lo que se ha dicho que importa y se queda
+     fuera. En el taller de origen se votaron once perfiles para un
+     equipo de cinco: seis cosas importantes por debajo de la línea, y
+     nadie lo vio porque nadie dibujó la línea. */
+
+const NUC_NEC = "N21";   // cuánto hace falta cada capacidad
+const NUC_COB = "N22";   // cuánto la cubre el equipo propuesto
+const NUC_PER = "N31";   // perfiles votados
+const NUC_TAM = "N13";   // tamaño acordado del equipo
+
+function datosEquipos(pares){
+  const por = {};
+  (pares||[]).forEach(x => { if(x && x.p && x.p.codigo) por[x.p.codigo] = x; });
+  const cfgDe = x => (x && x.p && (x.p.config || x.p.cfg)) || {};
+  const filas = x => (x && x.r && Array.isArray(x.r.datos)) ? x.r.datos : null;
+  const idx = clave => { const m = String(clave || "").match(/^\s*(\d+)/); return m ? Number(m[1]) - 1 : -1; };
+
+  const xn = por[NUC_NEC], xc = por[NUC_COB];
+  const maxN = Number(cfgDe(xn).max) || null, maxC = Number(cfgDe(xc).max) || null;
+  const choque = !!(maxN && maxC && maxN !== maxC);
+
+  /* Los ejes salen de la lista de ítems de la pregunta que exista, no
+     de la constante: si el facilitador ha quitado una capacidad o le ha
+     cambiado el nombre, el gráfico tiene que hablar de lo que la sala
+     ha votado y no de lo que ponía en el banco. */
+  const base = (cfgDe(xn).items && cfgDe(xn).items.length ? cfgDe(xn).items
+              : cfgDe(xc).items && cfgDe(xc).items.length ? cfgDe(xc).items
+              : CAPACIDADES_NUC) || [];
+  const ejes = base.map((et, i) => ({
+    n: i + 1, titulo: et,
+    nombre: String(et).replace(/^\s*\d+\s*[·.–-]\s*/, "").trim() || String(et),
+    nec: null, cob: null, dif: null
+  }));
+  const volcar = (x, campo) => {
+    const ds = filas(x); if(!ds) return 0;
+    ds.forEach((d, k) => {
+      const i = idx(d.clave) >= 0 ? idx(d.clave) : k;
+      if(ejes[i] && isFinite(Number(d.media))) ejes[i][campo] = Number(d.media);
+    });
+    return (x.r && x.r.respondidos) || 0;
+  };
+  const nNec = choque ? 0 : volcar(xn, "nec");
+  const nCob = choque ? 0 : volcar(xc, "cob");
+  ejes.forEach(e => { if(e.nec != null && e.cob != null)
+    e.dif = Math.round((e.nec - e.cob) * 100) / 100; });
+
+  /* El corte. El tamaño se toma de la opción más votada de la N13, no
+     de la media: «cuatro coma dos personas» no es un equipo. Un empate
+     se resuelve hacia el número mayor, que es el error menos malo:
+     dejar fuera a alguien que hacía falta cuesta más que sentar a uno
+     de más. */
+  let tam = null, tamEtiq = "", tamVotos = 0, tamEmpate = false;
+  const xt = por[NUC_TAM], dt = filas(xt);
+  if(dt && dt.length){
+    const conN = dt.map(d => ({et: String(d.clave || ""), n: Number(d.n) || 0,
+                               v: (String(d.clave||"").match(/(\d+)/) || [])[1]}))
+                   .filter(x => x.v != null)
+                   .map(x => ({...x, v: Number(x.v) + (/más de/i.test(x.et) ? 1 : 0)}));
+    if(conN.length){
+      const top = Math.max(...conN.map(x => x.n));
+      const ganan = conN.filter(x => x.n === top);
+      tamEmpate = ganan.length > 1;
+      const g = ganan.reduce((a, b) => a.v >= b.v ? a : b);
+      tam = g.v; tamEtiq = g.et; tamVotos = g.n;
+    }
+  }
+
+  let perfiles = [], nPer = 0, maxPer = null;
+  const xp = por[NUC_PER], dp = filas(xp);
+  if(dp && dp.length){
+    nPer = (xp.r && xp.r.respondidos) || 0;
+    maxPer = Number(cfgDe(xp).maximo) || null;
+    perfiles = dp.map(d => ({et: String(d.clave || ""), n: Number(d.n) || 0}))
+                 .sort((a, b) => b.n - a.n);
+  }
+
+  return {ejes, min:1, max: maxN || maxC || 5, choque, maxN, maxC, nNec, nCob,
+          conNec: ejes.filter(e => e.nec != null).length,
+          conCob: ejes.filter(e => e.cob != null).length,
+          tam, tamEtiq, tamVotos, tamEmpate, perfiles, nPer, maxPer};
+}
+
+/* El corte, dibujado. Se usa en el informe y en la pared, así que sale
+   de aquí y no de ninguno de los dos. */
+function corteHTML(d, grande, limite){
+  if(!d.perfiles.length) return "";
+  const tope = Math.max(...d.perfiles.map(p => p.n)) || 1;
+  const corte = d.tam || 0;
+  /* En la pared no caben diez filas a tamaño de sala. Se enseñan las de
+     dentro y cuatro de fuera —que son las que se discuten— y se dice
+     cuántas quedan. En el informe salen todas: el papel no tiene fondo
+     de sala y el que lo lee puede pasar la hoja. */
+  const tope_filas = limite || d.perfiles.length;
+  const visibles = d.perfiles.slice(0, tope_filas);
+  const ocultas = d.perfiles.length - visibles.length;
+  let s = '<div class="corte' + (grande ? " corte-gr" : "") + '">';
+  visibles.forEach((p, i) => {
+    if(corte && i === corte)
+      s += '<div class="corte-linea"><span>línea de corte · equipo de '
+         + esc(String(corte)) + ' personas</span></div>';
+    s += '<div class="corte-fila' + (corte && i >= corte ? " fuera" : "") + '">'
+       + '<span class="corte-n">' + (i + 1) + '</span>'
+       + '<span class="corte-et">' + esc(p.et) + '</span>'
+       + '<div class="corte-via"><i style="width:'
+       + Math.round(p.n / tope * 100) + '%"></i></div>'
+       + '<b>' + p.n + '</b></div>';
+  });
+  if(ocultas > 0)
+    s += '<p class="small" style="margin-top:10px">y ' + ocultas
+       + (ocultas === 1 ? ' perfil más' : ' perfiles más')
+       + ', todos por debajo de la línea</p>';
+  return s + '</div>';
+}
+
+/* Los dos bloques del informe. Se devuelven por separado porque en
+   papel son dos páginas y en el índice, dos entradas. */
+function lecturaEquipos(pares){
+  const d = datosEquipos(pares);
+  const uno = v => v == null ? "—" : num(v, 1);
+  let cap = "", corte = "";
+
+  /* ── 1 · Las capacidades ─────────────────────────────────────── */
+  const cabC = '<span class="num">EQUIPO</span><h2>Lo que hace falta y lo que hay</h2>';
+  if(d.choque){
+    cap = '<div class="card informe-bloque">' + cabC
+      + '<div class="aviso rojo" style="margin-top:12px">No se puede cruzar: la necesidad '
+      + '(N21) está en una escala de 1 a ' + esc(String(d.maxN)) + ' y la cobertura (N22), '
+      + 'en una de 1 a ' + esc(String(d.maxC)) + '. Restar una de otra no significa nada. '
+      + 'Iguala las dos escalas en el contenido de las preguntas y vuelve aquí.</div></div>';
+  } else if(d.conNec || d.conCob){
+    const conDif = d.ejes.filter(e => e.dif != null).slice().sort((a, b) => b.dif - a.dif);
+    const tope = Math.max(0.1, ...conDif.map(e => Math.abs(e.dif)));
+    const series = [];
+    if(d.conCob) series.push({nombre:"Cobertura", color:"var(--tono-1)", relleno:true,
+                              valores: d.ejes.map(e => e.cob)});
+    if(d.conNec) series.push({nombre:"Necesidad", color:"var(--tono-2)", relleno:false,
+                              discontinua:true, valores: d.ejes.map(e => e.nec)});
+    const criticas = conDif.filter(e => e.dif >= 1).length;
+
+    cap = '<div class="card informe-bloque">' + cabC
+      + '<div class="small" style="margin-top:8px">calculado · necesidad (N21) menos '
+      + 'cobertura del equipo propuesto (N22) · escala 1–' + esc(String(d.max)) + '</div>'
+      + '<div class="kpirow" style="margin-top:18px">'
+      + (conDif.length ? '<div class="tile"><div class="lab">Lo que más falta</div>'
+          + '<div class="val word">' + esc(conDif[0].nombre) + '</div>'
+          + '<div class="sub">se necesita ' + num(conDif[0].dif, 1)
+          + ' más de lo que se cubre</div></div>' : '')
+      + (conDif.length ? '<div class="tile"><div class="lab">Lo que ya está</div>'
+          + '<div class="val word">' + esc(conDif[conDif.length-1].nombre) + '</div>'
+          + '<div class="sub">cubierta ' + uno(conDif[conDif.length-1].cob)
+          + ' sobre ' + esc(String(d.max)) + '</div></div>' : '')
+      + '<div class="tile"><div class="lab">Capacidades en descubierto</div>'
+      + '<div class="val">' + criticas + '</div>'
+      + '<div class="sub">de ' + d.ejes.length + ' · falta un punto o más</div></div>'
+      + '</div>'
+      + leyendaRadar({conImp: d.conNec}, "Cobertura", "Necesidad")
+      + '<div style="max-width:620px;margin:6px auto 0">'
+      + radarNSVG(d.ejes, series, {min:d.min, max:d.max,
+          alt:"Radar de capacidades: necesidad y cobertura del equipo núcleo"}) + '</div>'
+      + '<table class="matriz" style="margin-top:20px">'
+      + '<thead><tr><th class="et"></th><th>Cobertura</th>'
+      + (d.conNec ? '<th>Necesidad</th><th>Distancia</th><th></th>' : '') + '</tr></thead><tbody>'
+      + (conDif.length ? conDif : d.ejes).map(e => '<tr>'
+          + '<td class="et">' + esc(e.n + " · " + e.nombre) + '</td>'
+          + '<td>' + uno(e.cob) + '</td>'
+          + (d.conNec ? '<td>' + uno(e.nec) + '</td>'
+              + '<td><b>' + (e.dif == null ? "—" : (e.dif > 0 ? "+" : "") + num(e.dif, 1)) + '</b></td>'
+              + '<td style="width:34%"><div class="barmini" style="position:relative"><i style="width:'
+              + (e.dif == null ? 0 : Math.round(Math.abs(e.dif)/tope*100)) + '%;background:'
+              + (e.dif != null && e.dif >= 0 ? "var(--tono-2)" : "var(--tono-1)")
+              + '"></i></div></td>' : '')
+          + '</tr>').join("")
+      + '</tbody></table>'
+      + '<p class="small" style="margin-top:16px">' + d.nNec
+      + (d.nNec === 1 ? ' respuesta' : ' respuestas') + ' sobre la necesidad · '
+      + d.nCob + ' sobre la cobertura</p>'
+      + '<p class="small" style="margin-top:12px"><b>Cómo se lee.</b> Arriba de la tabla, '
+      + 'la capacidad que más se necesita y menos se cubre: eso no se arregla formando al '
+      + 'equipo, se arregla cambiando quién está en él. Abajo, lo que el equipo ya trae de '
+      + 'sobra — y sobrar también informa: si la capacidad mejor cubierta es la que menos '
+      + 'importa, es que el equipo se ha formado por disponibilidad y no por necesidad. Una '
+      + 'distancia negativa no es un error: es una capacidad que el equipo tiene y este '
+      + 'trabajo no le va a pedir.</p>'
+      + '</div>';
+  }
+
+  /* ── 2 · El corte ────────────────────────────────────────────── */
+  if(d.perfiles.length){
+    const dentro = d.tam ? Math.min(d.tam, d.perfiles.length) : d.perfiles.length;
+    const fuera = d.perfiles.length - dentro;
+    const votados = d.perfiles.filter(p => p.n > 0).length;
+    corte = '<div class="card informe-bloque">'
+      + '<span class="num">EQUIPO</span><h2>El corte</h2>'
+      + '<div class="small" style="margin-top:8px">perfiles votados (N31), en orden'
+      + (d.tam ? ' · la línea, en el tamaño más votado (N13)' : ' · sin tamaño acordado')
+      + '</div>'
+      + '<div class="kpirow" style="margin-top:18px">'
+      + '<div class="tile"><div class="lab">Perfiles con votos</div>'
+      + '<div class="val">' + votados + '</div>'
+      + '<div class="sub">de ' + d.perfiles.length + ' en la lista</div></div>'
+      + (d.tam ? '<div class="tile"><div class="lab">Tamaño acordado</div>'
+          + '<div class="val">' + d.tam + '</div>'
+          + '<div class="sub">' + esc(d.tamEtiq) + ' · ' + d.tamVotos
+          + (d.tamVotos === 1 ? ' voto' : ' votos')
+          + (d.tamEmpate ? ' · empate, se toma el mayor' : '') + '</div></div>' : '')
+      + (d.tam ? '<div class="tile"><div class="lab">Se quedan fuera</div>'
+          + '<div class="val">' + Math.max(0, votados - dentro) + '</div>'
+          + '<div class="sub">perfiles votados por debajo de la línea</div></div>' : '')
+      + '</div>'
+      + corteHTML(d)
+      + '<p class="small" style="margin-top:16px">' + d.nPer
+      + (d.nPer === 1 ? ' persona ha votado' : ' personas han votado')
+      + (d.maxPer ? ' · hasta ' + d.maxPer + ' perfiles cada una' : '')
+      + ' · el número de la derecha es cuántas lo han marcado</p>'
+      /* El empate que cruza la linea. Es el caso en que la figura miente
+         mas: dos perfiles con los mismos votos, uno dentro y otro fuera,
+         separados solo por el orden en que la base de datos los devolvio.
+         Decirlo aqui evita que alguien lo lea como una decision. */
+      + ((d.tam && d.perfiles[d.tam] && d.perfiles[d.tam-1]
+          && d.perfiles[d.tam].n === d.perfiles[d.tam-1].n)
+          ? '<div class="aviso rojo" style="margin-top:14px"><b>Hay un empate justo en la '
+            + 'línea.</b> «' + esc(d.perfiles[d.tam-1].et) + '» y «' + esc(d.perfiles[d.tam].et)
+            + '» tienen ' + d.perfiles[d.tam].n + ' votos cada uno, y uno ha quedado dentro y '
+            + 'otro fuera por el orden de la lista, no por la votación. Esa la tiene que '
+            + 'deshacer la sala, no el gráfico.</div>' : "")
+      + ((d.tam && fuera > 0) ? '<div class="aviso" style="margin-top:14px"><b>Esto es la '
+          + 'decisión que falta.</b> La sala ha dicho que el equipo son ' + d.tam
+          + ' personas y ha votado ' + votados + ' perfiles. Los ' + Math.max(0, votados - dentro)
+          + ' que quedan por debajo de la línea no están descartados: están sin decidir. '
+          + 'O entran por otra vía —consulta puntual, grupo ampliado, una silla que rota— o '
+          + 'alguien tendrá que decir en voz alta que se prescinde de ellos.</div>' : "")
+      + '<p class="small" style="margin-top:12px">La línea es aritmética, no un juicio: coloca '
+      + 'el corte donde la sala dijo que estaba el límite y ordena por votos. Un perfil justo '
+      + 'por debajo con casi los mismos votos que el de encima no está fuera por ninguna razón '
+      + 'de fondo — está fuera por un voto. Mira siempre los dos que rodean la línea antes de '
+      + 'dar la composición por buena.</p>'
+      + '</div>';
+  }
+
+  return {cap, corte, d};
+}
+
 /* La leyenda y la tabla se usan en el informe y en la pared, así que
    viven fuera de los dos. */
-function leyendaRadar(d){
+/* Dos rotulos porque la usan dos instrumentos: en el radar de madurez
+   la figura rellena es el desarrollo y la de trazos, la importancia; en
+   la activacion de equipos son la cobertura y la necesidad. La gramatica
+   es la misma en los dos —lo relleno es lo que hay, el trazo es lo que
+   se pide— y por eso comparten dibujo. */
+function leyendaRadar(d, rotA, rotB){
   return '<div class="legend" style="margin-top:14px">'
-    + '<span><i class="swatch" style="background:var(--tono-1)"></i>Desarrollo</span>'
-    + (d.conImp ? '<span><i class="swatch linea" style="background:var(--tono-2)"></i>Importancia</span>' : '')
+    + '<span><i class="swatch" style="background:var(--tono-1)"></i>'
+    + esc(rotA || "Desarrollo") + '</span>'
+    + (d.conImp ? '<span><i class="swatch linea" style="background:var(--tono-2)"></i>'
+        + esc(rotB || "Importancia") + '</span>' : '')
     + '</div>';
 }
 
@@ -4969,6 +5254,11 @@ async function informeSesion(s, preguntas, volver){
   const bloqueRadar = String(s.instrumento||"").split("-")[0] === "radar"
     ? lecturaRadar(partes) : "";
 
+  /* Y las dos de la activacion de equipos: el radar de capacidades y el
+     corte. Van separadas porque en papel son dos paginas. */
+  const eq = String(s.instrumento||"").split("-")[0] === "equipos"
+    ? lecturaEquipos(partes) : {cap:"", corte:""};
+
   const org = (s.organizacion || {}).nombre || "";
   const hoy = new Date().toLocaleDateString("es-ES",
     {day:"numeric", month:"long", year:"numeric"});
@@ -4999,6 +5289,8 @@ async function informeSesion(s, preguntas, volver){
       <nav class="contenido">
         <h3>Contenido</h3>
         <ol>${bloqueRadar ? `<li><b>··</b><span>Madurez e importancia, ámbito por ámbito</span></li>` : ""}${
+          eq.cap ? `<li><b>··</b><span>Lo que hace falta y lo que hay</span></li>` : ""}${
+          eq.corte ? `<li><b>··</b><span>El corte</span></li>` : ""}${
           brecha() ? `<li><b>··</b><span>Dónde está la brecha</span></li>` : ""}${
           partes.map((x,i)=>`<li><b>${String(i+1).padStart(2,"0")}</b>
             <span>${esc(tituloDe(x))}</span></li>`).join("")}</ol>
@@ -5013,6 +5305,8 @@ async function informeSesion(s, preguntas, volver){
         el navegador escribe ahí también la dirección web y la fecha del sistema.</p>
     </div>
     ${bloqueRadar}
+    ${eq.cap}
+    ${eq.corte}
     ${brecha()}
     ${partes.map((x,i) => `<div class="card informe-bloque">${bloque(x,
         String(i+1).padStart(2,"0"))}</div>`).join("")}
@@ -5055,6 +5349,10 @@ const HOJA = {i:0, giro:0};
    se vuelve a pedir cada doce, que es mas rapido de lo que cambia una
    media de doce personas. */
 const RADPARED = {datos:null, pedido:0};
+
+/* Y lo mismo para las dos pantallas de la activacion de equipos: cuatro
+   consultas para dibujarlas, y un repintado cada tres segundos. */
+const EQUPARED = {datos:null, pedido:0};
 
 async function proyeccionMotor(codigo, s){
   let timer = null;
@@ -5356,6 +5654,85 @@ async function proyeccionMotor(codigo, s){
       return;
     }
 
+    /* ── LA ACTIVACIÓN DE EQUIPOS EN LA PARED ──────────────────────
+       Dos pantallas: el radar de capacidades y el corte. Las dos con la
+       misma regla que el radar de madurez —solo si los resultados estan
+       publicados— y el mismo cache, que aqui importa mas porque son
+       cuatro consultas y no dos. */
+    if(va === "equipos" || va === "corte"){
+      const tit = va === "corte" ? "El corte" : "Capacidades del equipo núcleo";
+      if(!n.resultados_publicos){
+        app().innerHTML = `<div class="proy"><h1>${esc(tit)}</h1>
+          <p style="font-size:24px">Los resultados todavía no están publicados.</p></div>`;
+        return;
+      }
+      if(!EQUPARED.datos || Date.now() - EQUPARED.pedido > 12000){
+        EQUPARED.pedido = Date.now();
+        const ps = await API.preguntasPublicas(codigo).catch(()=>[]);
+        const pares = [];
+        for(const cod of [NUC_NEC, NUC_COB, NUC_PER, NUC_TAM]){
+          const p2 = (ps||[]).find(x => x.codigo === cod);
+          if(!p2) continue;
+          const r = await API.resultadosPregunta(codigo, p2.id).catch(()=>null);
+          pares.push({p: p2, r});
+        }
+        EQUPARED.datos = datosEquipos(pares);
+      }
+      const d = EQUPARED.datos;
+      const nada = txt => { app().innerHTML = `<div class="proy"><h1>${esc(tit)}</h1>
+        <p style="font-size:24px">${esc(txt)}</p></div>`; };
+
+      if(va === "corte"){
+        if(!d || !d.perfiles.length)
+          return nada("Todavía no hay votos de perfiles. Termina la pregunta N31 y vuelve a proyectar.");
+        const votados = d.perfiles.filter(p => p.n > 0).length;
+        const dentro = d.tam ? Math.min(d.tam, d.perfiles.length) : d.perfiles.length;
+        app().innerHTML = `<div class="proy">
+          <div class="small">${esc(n.titulo||"")}</div>
+          <h1>El corte</h1>
+          <p class="small" style="margin-top:2px;font-size:20px">${d.tam
+            ? `La sala ha dicho <b>${d.tam} personas</b> y ha votado <b>${votados} perfiles</b>.`
+            : `${votados} perfiles votados · falta acordar el tamaño del equipo.`}</p>
+          ${corteHTML(d, true, (d.tam || 5) + 4)}
+          <p class="small" style="margin-top:22px">${d.nPer}
+            ${d.nPer === 1 ? "persona ha votado" : "personas han votado"}${d.maxPer
+              ? " · hasta " + d.maxPer + " perfiles cada una" : ""}${d.tam && votados > dentro
+              ? " · lo que queda por debajo de la línea no está descartado: está sin decidir"
+              : ""}</p></div>`;
+        return;
+      }
+
+      if(!d || (!d.conNec && !d.conCob))
+        return nada("Todavía no hay resultado de las capacidades. Termina las preguntas N21 y N22.");
+      if(d.choque)
+        return nada("La necesidad y la cobertura están en escalas distintas: no se pueden cruzar.");
+      const series = [];
+      if(d.conCob) series.push({nombre:"Cobertura", color:"var(--tono-1)", relleno:true,
+                                valores: d.ejes.map(e => e.cob)});
+      if(d.conNec) series.push({nombre:"Necesidad", color:"var(--tono-2)", relleno:false,
+                                discontinua:true, valores: d.ejes.map(e => e.nec)});
+      const filas = d.ejes.slice().sort((a,b) =>
+        (b.dif == null ? -99 : b.dif) - (a.dif == null ? -99 : a.dif));
+      const uno = v => v == null ? "—" : num(v, 1);
+      app().innerHTML = `<div class="proy">
+        <div class="small">${esc(n.titulo||"")}</div>
+        <h1>Lo que hace falta y lo que hay</h1>
+        ${leyendaRadar({conImp: d.conNec}, "Cobertura", "Necesidad")}
+        <div class="radar-pared">
+          <div>${radarNSVG(d.ejes, series, {min:d.min, max:d.max, W:700, H:620, grande:true,
+            alt:"Radar de capacidades: necesidad y cobertura"})}</div>
+          <div>${filas.map(e => `<div class="fila-taller">
+            <i style="background:${e.dif != null && e.dif > 0 ? "var(--tono-2)" : "var(--tono-1)"}"></i>
+            <span>${esc(e.n + " · " + e.nombre)}</span>
+            <b>${uno(e.cob)}${d.conNec ? " → " + uno(e.nec) : ""}</b></div>`).join("")}</div>
+        </div>
+        <p class="small" style="margin-top:22px">Escala ${esc(String(d.min))}–${esc(String(d.max))} ·
+          ${d.nNec} ${d.nNec === 1 ? "respuesta" : "respuestas"} ·
+          de izquierda a derecha, lo que el equipo cubre y lo que hace falta;
+          ordenados por la distancia entre las dos</p></div>`;
+      return;
+    }
+
     if(!va.startsWith("q:")){
       const prog = await API.progreso(codigo).catch(()=>null);
       cuerpo = `<h1>Entra desde tu móvil</h1>
@@ -5619,21 +5996,15 @@ const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
    una videollamada, o mandarla al segundo monitor, sin que el cliente vea
    tu consola al lado.
 
-   Nombre fijo por sesión: si vuelves a pulsar el botón, se reutiliza la
-   ventana que ya está en el proyector en vez de abrir una segunda.
-
-   OJO con `noopener` en la lista de características: la especificación
-   obliga a devolver `null` aunque la ventana se abra bien, porque al
-   cortar el vínculo no hay handle que devolver. Estuvo aquí y hacía que
-   la detección de bloqueo se cumpliera SIEMPRE: se abría la ventana, y
-   encima la pestaña y el aviso. El aislamiento se consigue igual abajo,
-   quitándole el `opener` después de abrirla. */
+   `noopener` para que la ventana de la sala no pueda tocar esta, y un
+   nombre fijo por sesión: si vuelves a pulsar el botón, se reutiliza la
+   ventana que ya está en el proyector en vez de abrir una segunda. */
 function abrirProyeccion(codigo){
   const url = location.origin + location.pathname + "?proy=" + encodeURIComponent(codigo);
   const w = Math.min(1440, Math.round((screen.availWidth || 1440) * 0.75));
   const h = Math.min(900,  Math.round((screen.availHeight || 900) * 0.85));
   const v = window.open(url, "proy-" + String(codigo).toUpperCase(),
-    "popup=yes,width=" + w + ",height=" + h + ",left=40,top=40");
+    "popup=yes,noopener,width=" + w + ",height=" + h + ",left=40,top=40");
   // Si el navegador bloquea la ventana emergente, no se pierde el clic:
   // se abre como siempre y se dice por qué, que es mejor que no pasar nada.
   if(!v){
@@ -5641,14 +6012,7 @@ function abrirProyeccion(codigo){
     alert("Tu navegador ha bloqueado la ventana emergente, así que se ha abierto "
       + "en una pestaña.\n\nSi quieres la ventana aparte —para proyectar solo la "
       + "sala—, permite las ventanas emergentes de este sitio y vuelve a pulsar.");
-    return null;
   }
-  // La sala es del mismo origen, así que se le puede quitar el enlace de
-  // vuelta a esta ventana una vez abierta: el mismo aislamiento que daba
-  // `noopener`, sin perder la referencia que hace falta para detectar el
-  // bloqueo. Y se le da el foco, para que al repulsar salte al frente.
-  try { v.opener = null; } catch(e){}
-  try { v.focus(); } catch(e){}
   return v;
 }
 
@@ -5929,11 +6293,14 @@ async function consolaMotor(s){
           /* Publicar resultados existia solo en la consola de cultura. Los
              demas instrumentos podian recoger respuestas y no habia forma
              de ensenarlas a nadie que no fuera el facilitador. */
-          const esRad = String(s.instrumento||"").split("-")[0] === "radar";
+          const raiz = String(s.instrumento||"").split("-")[0];
+          const esRad = raiz === "radar", esEqu = raiz === "equipos";
           return `<div class="btnrow" style="margin-top:16px">
             <button class="btn ${s.resultados_publicos ? "" : "ghost "}sm" id="pubM">${
               s.resultados_publicos ? "Resultados publicados · ocultar" : "Publicar resultados"}</button>
             ${esRad ? `<button class="btn ghost sm" id="proyRadar">Proyectar el radar</button>` : ""}
+            ${esEqu ? `<button class="btn ghost sm" id="proyCap">Proyectar las capacidades</button>
+                      <button class="btn ghost sm" id="proyCorte">Proyectar el corte</button>` : ""}
           </div>
           <p class="note">${s.resultados_publicos
             ? `Los resultados agregados se pueden proyectar. Al <b>cerrar la sesión</b> se
@@ -5944,7 +6311,11 @@ async function consolaMotor(s){
                y solo por encima del mínimo de esta sesión.`}${
             esRad ? ` <b>Proyectar el radar</b> publica y lo pone en la pared de una vez: los
               ocho ámbitos con su desarrollo y su importancia, ordenados por la distancia entre
-              las dos.` : ""}</p>`;
+              las dos.` : ""}${
+            esEqu ? ` Los dos botones de proyección publican y ponen en la pared: <b>las
+              capacidades</b> cruzan lo que el equipo necesita con lo que cubre, y <b>el
+              corte</b> enseña los perfiles votados con la línea trazada en el tamaño que la
+              propia sala ha acordado. El segundo es el que abre la conversación.` : ""}</p>`;
         })()}
         ${!API.demo() && preguntas.length ? (() => {
           // Antes este botón desaparecía si la sesión estaba cerrada o si ya
@@ -6252,7 +6623,8 @@ async function consolaMotor(s){
        deja al facilitador delante de una pantalla vacía. */
     if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () => {
       const cambios = {estado:"cerrada", cerrada_en:new Date().toISOString()};
-      if(s.vista_activa !== "radar") cambios.resultados_publicos = false;
+      if(!["radar", "equipos", "corte"].includes(s.vista_activa))
+        cambios.resultados_publicos = false;
       return cambiarSesion(cambios);
     };
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
@@ -6262,6 +6634,10 @@ async function consolaMotor(s){
        facilitador pulsaria el segundo y la pared le diria que no. */
     if(bt("proyRadar")) bt("proyRadar").onclick = () =>
       cambiarSesion({resultados_publicos: true, vista_activa: "radar"});
+    if(bt("proyCap")) bt("proyCap").onclick = () =>
+      cambiarSesion({resultados_publicos: true, vista_activa: "equipos"});
+    if(bt("proyCorte")) bt("proyCorte").onclick = () =>
+      cambiarSesion({resultados_publicos: true, vista_activa: "corte"});
     const verInforme = () =>
       informeSesion(s, preguntas, async () => { preguntas = await API.preguntas(s.id); pinta(); });
     if(bt("informe"))  bt("informe").onclick  = verInforme;
@@ -8874,6 +9250,247 @@ const VARIABLES_RAD = [
   {clave:"COLECTIVO",    etiqueta:"Colectivo",    ayuda:"A quién se abre el radar: equipo de dirección, jefaturas de servicio, toda la plantilla."}
 ];
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACTIVACIÓN DE EQUIPOS NÚCLEO
+   ═══════════════════════════════════════════════════════════════════
+   Nace del taller de UNITA «Defining and activating Core Teams», y se
+   reordena bastante. Lo que había eran treinta pantallas y ningún
+   resultado: el cuestionario terminaba preguntando qué habría que
+   ajustar y la síntesis quedaba en la libreta del facilitador.
+
+   Tres cambios de fondo respecto al original:
+
+   1. NUEVE PREGUNTAS ABIERTAS PEDÍAN NOMBRES. «Quién sabe hacer esto»,
+      «quién tiene credibilidad», «quién conoce el servicio por dentro»…
+      En la pared salían cargos y personas concretas —«el rector», «yo
+      :-)», «los bibliotecarios»— escritas de forma anónima por sus
+      compañeros y proyectadas delante de todos. Eso no es un
+      diagnóstico: es una lista de nombres sin derecho a réplica. Aquí
+      se pregunta por PERFILES, no por personas, y las dos preguntas que
+      siguen siendo abiertas son de tarjetas: se agrupan y se votan, y
+      agrupar es el momento en que el facilitador retira lo que llegue
+      con nombre propio.
+
+   2. LA PARTE 1 Y LA PARTE 2 PREGUNTABAN CASI LO MISMO. Dos
+      ordenaciones de ocho capacidades, dos listas de perfiles, dos
+      preguntas de composición. La sala contesta dos veces lo mismo y
+      la segunda vez ya no piensa. Se conserva la distinción —el equipo
+      del laboratorio y el equipo de cada servicio no son el mismo
+      equipo— pero se mide una vez y se pregunta por la diferencia.
+
+   3. NO HABÍA SALIDA. El instrumento existe para responder a una
+      pregunta: ¿el equipo que estamos proponiendo tiene lo que este
+      trabajo necesita? Así que se mide dos veces la misma lista de
+      ocho capacidades —cuánto hace falta y cuánto se cubre— y la
+      distancia entre las dos es el resultado. Y se cruza el número de
+      perfiles votados con el tamaño que la propia sala ha acordado,
+      que es donde aparece la contradicción interesante: en el taller
+      original se votaron once perfiles para un equipo de cinco. */
+
+const BLOQUES_NUC = [
+  "Quién responde",
+  "Para qué existe el equipo",
+  "Qué capacidades hacen falta",
+  "Quién lo compone",
+  "El primer servicio",
+  "Cierre"
+];
+
+/* Las ocho capacidades. Se preguntan dos veces —necesidad y cobertura—
+   y por eso van escritas una sola vez: si las dos listas se
+   desincronizan, la resta deja de significar nada. Van numeradas
+   porque la proyección de una matriz ordena alfabéticamente y sin el
+   número la sala no puede casar cada barra con lo que acaba de votar. */
+const CAPACIDADES_NUC = [
+  "1 · Facilitación de procesos colaborativos",
+  "2 · Conocimiento operativo del servicio",
+  "3 · Trabajo transversal entre unidades",
+  "4 · Evidencia y análisis de datos",
+  "5 · Comunicación y relato del cambio",
+  "6 · Credibilidad institucional",
+  "7 · Prototipado y ensayo de soluciones",
+  "8 · Implicación de usuarios y estudiantes"
+];
+
+/* Los perfiles. Diez, y la pregunta deja elegir cinco: el límite es
+   parte del instrumento, no una comodidad de la interfaz. Sin límite,
+   todo el mundo marca todo y la lista deja de ordenar nada. */
+const PERFILES_NUC = [
+  "Responsable del servicio",
+  "Profesional de primera línea del servicio",
+  "Estudiante o representante de las personas usuarias",
+  "Perfil de datos, calidad o procesos",
+  "Perfil digital o de sistemas",
+  "Perfil de comunicación",
+  "Perfil académico o docente",
+  "Perfil de dirección con capacidad de decisión",
+  "Perfil de relaciones internacionales o alianzas",
+  "Agente externo: empresa, administración o entidad social"
+];
+
+const ESC_NUC = {min:1, max:5};
+
+const BANCO_NUC = [
+/* ── Bloque 0 · Quién responde ──────────────────────────────────── */
+{c:"N01", b:0, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Desde qué institución respondes?",
+ ayuda:"Nace vacía y se rellena al abrir la sesión. Si solo participa una organización, "
+     + "quítala: una pregunta con una sola opción es una pantalla perdida.",
+ cfg:{opciones:[]}},
+{c:"N02", b:0, t:"unica", nuc:true, nat:"derivada",
+ q:"¿Desde qué servicio o área respondes?",
+ ayuda:"También derivada. Es la que permite leer después si los perfiles que la sala "
+     + "propone para el equipo se parecen sospechosamente al servicio de quien vota.",
+ cfg:{opciones:[]}},
+{c:"N03", b:0, t:"escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Desde qué posición miras [ORGANIZACION]?",
+ ayuda:"No estaba en el original y hace falta. Un equipo núcleo diseñado solo por gente "
+     + "de dirección sale con perfiles de dirección, y eso se ve al cruzar esta pregunta "
+     + "con los perfiles votados. Sirve para leer el resto, no para descartar a nadie.",
+ cfg:{min:1, max:5, ancla_min:"Operación diaria del servicio",
+      ancla_max:"Dirección de la institución"}},
+
+/* ── Bloque 1 · Para qué existe el equipo ───────────────────────── */
+{c:"N11", b:1, t:"nube", nuc:true, nat:"fija", bench:true,
+ q:"Un laboratorio de rediseño de servicios que funcione. ¿Qué palabra te viene?",
+ ayuda:"Se proyecta al empezar y se vuelve a mirar al final, junto a los resultados. "
+     + "Suele decir lo mismo que el radar de capacidades, y lo dice antes.",
+ cfg:{maximo:2}},
+{c:"N12", b:1, t:"unica", nuc:true, nat:"fija", bench:true,
+ q:"¿Cuál debería ser la función principal del laboratorio de rediseño de [ORGANIZACION]?",
+ ayuda:"Una sola. La pregunta obliga a elegir a propósito: un laboratorio que hace las "
+     + "cinco cosas no es un laboratorio, es un organigrama.",
+ cfg:{opciones:[
+   "Coordinar proyectos de mejora de servicios",
+   "Crear un espacio protegido donde experimentar",
+   "Formar a los equipos de servicio en métodos de diseño",
+   "Conectar servicios, estudiantes, personal académico y agentes externos",
+   "Producir evidencia y recomendaciones para decidir"]}},
+{c:"N13", b:1, t:"unica", nuc:true, nat:"fija", bench:true,
+ q:"¿De cuántas personas debería ser el equipo núcleo?",
+ ayuda:"Esta respuesta se usa después para trazar la línea de corte sobre los perfiles "
+     + "votados. Es la pregunta que convierte una lista de deseos en un equipo. Quitada "
+     + "la opción de dos personas del original: dos personas no son un equipo, son un "
+     + "encargo con testigo.",
+ cfg:{opciones:["3 personas","4 personas","5 personas","6 personas","Más de 6 personas"]}},
+
+/* ── Bloque 2 · Qué capacidades hacen falta ─────────────────────── */
+/* El eje del instrumento. Las mismas ocho capacidades, dos veces:
+   cuánto hacen falta y cuánto las cubre el equipo que se está
+   proponiendo. La distancia entre las dos es todo el resultado. */
+{c:"N21", b:2, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"¿Cuánto necesita el equipo núcleo cada una de estas capacidades?",
+ ayuda:"De 1, prescindible, a 5, imprescindible. Se responde pensando en el trabajo que "
+     + "el equipo tiene por delante, no en las personas que se estén barajando.",
+ cfg:{...ESC_NUC, ancla_min:"Prescindible", ancla_med:"Conviene",
+      ancla_max:"Imprescindible", items:CAPACIDADES_NUC}},
+{c:"N22", b:2, t:"matriz_escala", nuc:true, nat:"fija", bench:true,
+ q:"Y el equipo que estamos proponiendo, ¿cuánto cubre hoy cada una?",
+ ayuda:"Mismas ocho capacidades y misma escala, a propósito: la prioridad es la "
+     + "distancia entre las dos, y restar escalas distintas no significa nada. Esta "
+     + "pregunta debe ir DESPUÉS de la anterior y después de haber hablado de nombres: "
+     + "si se responde antes, la sala puntúa el equipo que imagina, no el que tiene.",
+ cfg:{...ESC_NUC, ancla_min:"Nada cubierta", ancla_med:"A medias",
+      ancla_max:"Bien cubierta", items:CAPACIDADES_NUC}},
+
+/* ── Bloque 3 · Quién lo compone ────────────────────────────────── */
+{c:"N31", b:3, t:"multiple", nuc:true, nat:"fija", bench:true,
+ q:"¿Qué perfiles deberían estar representados en el equipo núcleo?",
+ ayuda:"Hasta cinco. El resultado se cruza con el tamaño acordado en la N13: si la sala "
+     + "quiere un equipo de cinco y vota nueve perfiles, eso no es un empate, es una "
+     + "decisión que todavía no se ha tomado. Es lo que pasó en el taller de origen.",
+ cfg:{maximo:5, opciones:PERFILES_NUC}},
+{c:"N32", b:3, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué función o puesto reúne hoy credibilidad suficiente para abrir puertas y quitar barreras?",
+ ayuda:"Una función por tarjeta, y funciones, no personas: «dirección de servicios», no "
+     + "el nombre de quien la ocupa. En el taller original esta pregunta era abierta y "
+     + "la pared se llenó de cargos concretos. Aquí se agrupa y se vota, y agrupar es el "
+     + "momento de retirar lo que llegue con nombre propio.",
+ cfg:{maximo_caracteres:120, maximo_aportaciones:2, votos:3}},
+{c:"N33", b:3, t:"ranking", nuc:true, nat:"fija", bench:true,
+ q:"¿Qué riesgo hay que evitar al formar el equipo? Ordena de más a menos grave.",
+ ayuda:"Siete. El primero del taller de origen fue «un equipo sin la mirada de los "
+     + "usuarios», y el segundo, «otra comisión más». Los dos se pueden comprobar "
+     + "después mirando los perfiles que la propia sala ha votado.",
+ cfg:{opciones:[
+   "Un equipo sin la mirada de quien usa el servicio",
+   "Un equipo que la casa lea como otra comisión más",
+   "Un equipo formado solo por perfiles jerárquicos",
+   "Un equipo alejado de la operación real del servicio",
+   "Un equipo demasiado grande para moverse",
+   "Un equipo sin capacidad de evaluar lo que hace",
+   "Un equipo con ganas pero sin capacidad de decidir"]}},
+
+/* ── Bloque 4 · El primer servicio ──────────────────────────────── */
+{c:"N41", b:4, t:"tarjetas", nuc:true, nat:"fija",
+ q:"¿Qué servicio de [ORGANIZACION] habría que rediseñar primero?",
+ ayuda:"Un servicio por tarjeta. Era una abierta y salía una lista con «biblioteca» "
+     + "escrito seis veces de seis maneras. Agrupando y votando se ve cuál es de verdad "
+     + "el primero, y se ve en la sala, que es donde hay que verlo.",
+ cfg:{maximo_caracteres:120, maximo_aportaciones:2, votos:3}},
+{c:"N42", b:4, t:"unica", nuc:true, nat:"fija", bench:true,
+ q:"Para rediseñar ese servicio, ¿quién debe estar en el equipo?",
+ ayuda:"La respuesta casi unánime en el taller de origen fue la mixta. Vale la pena "
+     + "hacerla igual: cuando la sala se oye decir que hace falta un equipo mixto, "
+     + "cuesta más justificar después uno que no lo es.",
+ cfg:{opciones:[
+   "Solo quien dirige el servicio",
+   "Quien dirige el servicio y la dirección de la institución",
+   "Quien dirige el servicio, el personal de primera línea y las personas usuarias",
+   "Un equipo mixto: servicio, personas usuarias, datos y alguien que pueda implantar",
+   "Personas externas a la institución"]}},
+{c:"N43", b:4, t:"matriz_escala", nuc:false, nat:"fija", bench:true,
+ q:"En el equipo de ese servicio concreto, ¿cuánto importa cada cosa?",
+ ayuda:"Dos ítems y se responde rápido. Separa las dos condiciones que en el taller de "
+     + "origen salieron por encima de todo lo demás: alguien que pueda decidir y alguien "
+     + "que trate con las personas usuarias todos los días.",
+ cfg:{...ESC_NUC, ancla_min:"Poco importante", ancla_max:"Decisivo", items:[
+   "Que haya alguien con autoridad para implantar los cambios",
+   "Que haya alguien que trate a diario con quien usa el servicio"]}},
+{c:"N44", b:4, t:"abierta", nuc:false, nat:"fija",
+ q:"Propón un equipo de tres a cinco personas para ese servicio, por perfiles.",
+ ayuda:"Por perfiles, no por nombres. Opcional: si la sala es pequeña vale la pena "
+     + "hacerlo en voz alta y no por el móvil, porque la conversación es lo valioso y "
+     + "aquí solo queda la conclusión.",
+ cfg:{maximo_caracteres:280}},
+
+/* ── Bloque 5 · Cierre ──────────────────────────────────────────── */
+{c:"N51", b:5, t:"unica", nuc:true, nat:"fija", bench:true,
+ q:"¿Cuál es la mayor debilidad del equipo que estamos proponiendo?",
+ ayuda:"Una sola, y por eso duele. En el taller de origen ganó la falta de capacidad de "
+     + "facilitación, seguida de la falta de tiempo. Ninguna de las dos se arregla "
+     + "cambiando a quién se nombra.",
+ cfg:{opciones:[
+   "No tiene capacidad de decidir",
+   "No tiene la mirada de quien usa el servicio",
+   "No conoce la operación real",
+   "No sabe evaluar lo que hace",
+   "No sabe facilitar procesos con gente distinta",
+   "No va a tener tiempo",
+   "No tiene reconocimiento en la casa",
+   "Es demasiado grande, o demasiado pequeño"]}},
+{c:"N52", b:5, t:"abierta", nuc:true, nat:"fija",
+ q:"¿Qué hay que ajustar antes de poner estos equipos en marcha?",
+ ayuda:"La última pregunta del original, y la mejor que tenía. Se conserva tal cual.",
+ cfg:{maximo_caracteres:280}},
+{c:"N53", b:5, t:"abierta", nuc:true, nat:"fija",
+ q:"En las dos próximas semanas, ¿qué vas a hacer tú para que esto arranque?",
+ ayuda:"No estaba en el original, y sin ella el taller termina en una foto. Es anónima, "
+     + "así que no compromete a nadie ante nadie; lo que produce es una lista de primeros "
+     + "pasos concretos que se proyecta al cerrar y se copia en el acta.",
+ cfg:{maximo_caracteres:220}}
+];
+
+const VARIABLES_NUC = [
+  {clave:"ORGANIZACION", etiqueta:"Organización",
+   ayuda:"Nombre de la institución, la alianza o el consorcio."},
+  {clave:"HORIZONTE",    etiqueta:"Horizonte",
+   ayuda:"Periodo en el que se espera que estos equipos trabajen. Por ejemplo, 2026-2028."},
+  {clave:"COLECTIVO",    etiqueta:"Colectivo",
+   ayuda:"A quién se abre la sesión: dirección, jefaturas de servicio, equipo ampliado."}
+];
+
 const BANCOS = {
   escenarios: {bloques: BLOQUES_ESC, banco: BANCO_ESC, variables: VARIABLES_ESC,
                nucleo: "el itinerario núcleo"},
@@ -8882,7 +9499,9 @@ const BANCOS = {
   evaluacion: {bloques: BLOQUES_EVA, banco: BANCO_EVA, variables: VARIABLES_EVA,
                nucleo: "el cuestionario base"},
   radar:      {bloques: BLOQUES_RAD, banco: BANCO_RAD, variables: VARIABLES_RAD,
-               nucleo: "el radar completo"}
+               nucleo: "el radar completo"},
+  equipos:    {bloques: BLOQUES_NUC, banco: BANCO_NUC, variables: VARIABLES_NUC,
+               nucleo: "el recorrido completo"}
 };
 
 // La clave del instrumento puede venir con sufijo («cultura-cvf»), así que
@@ -8925,6 +9544,14 @@ const MODULOS = [
       + "importancia medida aparte para poder cruzarla con el desarrollo. Nace del "
       + "cuestionario del taller de UNITA, en castellano y con el cierre que allí "
       + "faltaba. Directo y survey.",
+   ruta:"#/admin/sesiones"},
+  {k:"equipos", nombre:"Activación de equipos núcleo", est:"activo",
+   publico:"Equipos núcleo para el rediseño de servicios",
+   desc:"Quién tiene que estar en el equipo que va a rediseñar un servicio, y qué le "
+      + "falta al que se está proponiendo. Ocho capacidades medidas dos veces —lo que "
+      + "hace falta y lo que se cubre— y los perfiles votados con una línea de corte en "
+      + "el tamaño que la propia sala acuerda. Nace del taller de UNITA, en castellano y "
+      + "sin las nueve preguntas que pedían nombres de personas. Directo y survey.",
    ruta:"#/admin/sesiones"},
   {k:"contraste", nombre:"Contraste estratégico", est:"pendiente",
    desc:"Diagnóstico de estrategia con los miembros de la organización."},
