@@ -5996,15 +5996,21 @@ const idVar = clave => "v-" + String(clave).replace(/[^A-Za-z0-9]/g, "_");
    una videollamada, o mandarla al segundo monitor, sin que el cliente vea
    tu consola al lado.
 
-   `noopener` para que la ventana de la sala no pueda tocar esta, y un
-   nombre fijo por sesión: si vuelves a pulsar el botón, se reutiliza la
-   ventana que ya está en el proyector en vez de abrir una segunda. */
+   Nombre fijo por sesión: si vuelves a pulsar el botón, se reutiliza la
+   ventana que ya está en el proyector en vez de abrir una segunda.
+
+   OJO con `noopener` en la lista de características: la especificación
+   obliga a devolver `null` aunque la ventana se abra bien, porque al
+   cortar el vínculo no hay handle que devolver. Estuvo aquí y hacía que
+   la detección de bloqueo se cumpliera SIEMPRE: se abría la ventana, y
+   encima la pestaña y el aviso. El aislamiento se consigue igual abajo,
+   quitándole el `opener` después de abrirla. */
 function abrirProyeccion(codigo){
   const url = location.origin + location.pathname + "?proy=" + encodeURIComponent(codigo);
   const w = Math.min(1440, Math.round((screen.availWidth || 1440) * 0.75));
   const h = Math.min(900,  Math.round((screen.availHeight || 900) * 0.85));
   const v = window.open(url, "proy-" + String(codigo).toUpperCase(),
-    "popup=yes,noopener,width=" + w + ",height=" + h + ",left=40,top=40");
+    "popup=yes,width=" + w + ",height=" + h + ",left=40,top=40");
   // Si el navegador bloquea la ventana emergente, no se pierde el clic:
   // se abre como siempre y se dice por qué, que es mejor que no pasar nada.
   if(!v){
@@ -6012,7 +6018,14 @@ function abrirProyeccion(codigo){
     alert("Tu navegador ha bloqueado la ventana emergente, así que se ha abierto "
       + "en una pestaña.\n\nSi quieres la ventana aparte —para proyectar solo la "
       + "sala—, permite las ventanas emergentes de este sitio y vuelve a pulsar.");
+    return null;
   }
+  // La sala es del mismo origen, así que se le puede quitar el enlace de
+  // vuelta a esta ventana una vez abierta: el mismo aislamiento que daba
+  // `noopener`, sin perder la referencia que hace falta para detectar el
+  // bloqueo. Y se le da el foco, para que al repulsar salte al frente.
+  try { v.opener = null; } catch(e){}
+  try { v.focus(); } catch(e){}
   return v;
 }
 
