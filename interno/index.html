@@ -2918,7 +2918,8 @@ async function editorListas(s, pregunta, preguntas, volver){
       const lista = (await etiquetasDe(p)).slice(0, cuantas);
       $("#traer").disabled = false; $("#traer").textContent = "Traer";
       if(!lista.length){ $("#aviso").innerHTML = `<div class="aviso rojo">Esa pregunta
-        no devuelve elementos: puede que aún no llegue al mínimo de tres respuestas.</div>`; return; }
+        no devuelve elementos: puede que aún no llegue al mínimo de respuestas
+        de esta sesión.</div>`; return; }
       // Se añade a lo que ya haya escrito, sin duplicar: normalmente traes
       // seis temas y añades a mano el que la sala ha reclamado a voces.
       const ya = $("#ls-"+destino).value.split("\n").map(x=>x.trim()).filter(Boolean);
@@ -4246,8 +4247,8 @@ async function tallerFunciones(s, preguntas, volver){
          {f:"fun", n:"3", h:"Las funciones clave",
           d:`El cruce entre responsabilidades de gestión y competencias. Cinco a diez bloques
              que mezclan lo más votado de ambas listas.`,
-          vacio:`Sin evidencia todavía. Necesitas <b>L11</b> y <b>L13</b> terminadas y con al
-             menos tres respuestas.`}].map(fase => {
+          vacio:`Sin evidencia todavía. Necesitas <b>L11</b> y <b>L13</b> terminadas y con
+             respuestas suficientes para el mínimo de esta sesión.`}].map(fase => {
         const bs = principales(fase.f), ap = apoyos(fase.f);
         return `<div class="card">
         <span class="phasetag">paso ${fase.n} de 3</span>
@@ -5522,7 +5523,25 @@ async function consolaMotor(s){
           : `El resultado solo se proyecta cuando terminas la pregunta. Si lo enciendes, la sala
              ve el gráfico creciendo en directo, al estilo Mentimeter — a cambio de que las
              respuestas tardías se acomoden a las primeras.`}
-          El mínimo de tres respuestas se mantiene en los dos casos.</p>
+          ${(() => {
+            /* Antes aqui ponia «el minimo de tres respuestas» a secas. Desde
+               que cada sesion lleva el suyo, ese numero puede ser otro, y un
+               rotulo que miente sobre una salvaguarda de anonimato es peor
+               que no tenerlo. */
+            const m = Number(s.min_muestra) || 3;
+            return m === 1
+              ? `Esta sesión tiene el mínimo en <b>una respuesta</b>: se proyecta en cuanto
+                 haya alguien. Con textos libres, eso enseña en la pared lo que ha escrito
+                 una persona concreta.`
+              : `El mínimo de <b>${m} respuestas</b> se mantiene en los dos casos.`;
+          })()}</p>
+        <div class="btnrow" style="margin-top:10px">
+          <button class="btn ghost sm" id="minMuestra">Mínimo para proyectar: ${
+            Number(s.min_muestra) || 3} ${(Number(s.min_muestra)||3) === 1 ? "respuesta" : "respuestas"}</button>
+        </div>
+        <p class="note">Por debajo de ese número no se enseña el resultado ni se puede volcar
+          en otra pregunta, para no señalar a nadie. Bájalo a uno solo cuando estés ensayando
+          o cuando el grupo sea tan pequeño que el anonimato ya no dependa de esto.</p>
         ${!API.demo() && preguntas.length ? (() => {
           // Antes este botón desaparecía si la sesión estaba cerrada o si ya
           // había una sola respuesta. Desaparecer es la peor forma de decir
@@ -5690,7 +5709,7 @@ async function consolaMotor(s){
                 Sin contenido: falta rellenar ${esc(faltaContenido(p))}. Tal como está,
                 el móvil la enseñaría vacía.</div>` : ""}
               ${(p.config||{}).grupal ? `<div class="small" style="color:#c26a1b">
-                <b>Respuesta de grupo, sin mínimo de tres.</b> Se enseña aunque la
+                <b>Respuesta de grupo, sin mínimo.</b> Se enseña aunque la
                 conteste una sola persona. Aquí no se escribe nada personal.</div>` : ""}
               ${((p.config||{}).solo_si||[]).length ? `<div class="small">Solo la ven
                 ${esc([].concat(p.config.solo_si).map(c=>c.valor).join(" + "))}.</div>` : ""}
@@ -6052,6 +6071,27 @@ async function consolaMotor(s){
 
     if(bt("vivo")) bt("vivo").onclick = () =>
       cambiarSesion({resultados_en_vivo: !s.resultados_en_vivo});
+    if(bt("minMuestra")) bt("minMuestra").onclick = () => {
+      const act = Number(s.min_muestra) || 3;
+      const v = prompt("¿Cuántas respuestas hacen falta para proyectar un resultado "
+        + "y para poder volcarlo en otra pregunta?\n\n"
+        + "3 es el valor de siempre y el que protege el anonimato.\n"
+        + "1 se proyecta en cuanto responda alguien: úsalo para ensayar, o con grupos "
+        + "tan pequeños que el anonimato ya no dependa de este número.\n\n"
+        + "Las sesiones marcadas como ensayo nacen ya en 1.", String(act));
+      if(v === null) return;
+      const n = parseInt(v, 10);
+      if(!Number.isFinite(n) || n < 1 || n > 20)
+        return alert("Tiene que ser un número entre 1 y 20.");
+      if(n === act) return;
+      if(n === 1 && !s.es_prueba && !confirm(
+        "Esta sesión NO está marcada como ensayo.\n\n"
+        + "Con el mínimo en 1, la primera respuesta que entre se proyecta sola. En una "
+        + "pregunta de texto libre, eso enseña en la pared lo que ha escrito una persona "
+        + "concreta, y en una sala se sabe quién ha contestado ya.\n\n"
+        + "¿Aun así lo bajas a 1?")) return;
+      cambiarSesion({min_muestra: n});
+    };
 
     if(bt("ensayoMotor")) bt("ensayoMotor").onclick = async () => {
       const reales = prog ? prog.completos : 0;
@@ -6398,8 +6438,8 @@ async function consolaMotor(s){
                    : ""}</div>
         <p class="note">Generar crea <b>dos pantallas por escenario</b> —relato y
           estrategias— y rellena la <b>P63</b> con los cuatro nombres. Se marcan como
-          <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sin el mínimo de
-          tres. Es la única excepción del sistema y solo se pone aquí.
+          <b>respuesta de grupo</b>: se enseñan con una sola respuesta, sea cual sea el
+          mínimo de la sesión. Es la única excepción por pregunta, y solo se pone aquí.
           ${copias ? `Ahora mismo hay <b>${copias}</b> pantallas de grupo.`
                    : `Todavía no se ha generado ninguna.`}
           ${hechos < 4 ? ` Faltan <b>${4-hechos}</b> nombres.` : ""}</p>
@@ -7385,7 +7425,7 @@ const BANCO_ESC = [
 
    Las copias van marcadas como `grupal`: no las escribe una persona, las
    dicta un grupo en voz alta. Por eso se enseñan con una sola respuesta,
-   sin el mínimo de tres del resto del instrumento. */
+   sin el mínimo de respuestas que rige en el resto del instrumento. */
 {c:"P63", b:5, t:"unica", nuc:true, nat:"derivada",
  q:"¿A qué escenario te han asignado?",
  ayuda:"Se rellena al preparar el taller, con el nombre de los cuatro escenarios. "
