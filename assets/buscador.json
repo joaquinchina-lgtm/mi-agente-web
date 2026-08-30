@@ -29,7 +29,15 @@
     "reactor": 3,
     "tesis": 2,
     "ciencia": 2,
-    "idea": 1
+    "idea": 1,
+    "nos resulta cara": 3,
+    "resulta cara": 3,
+    "cara": 2,
+    "coste de la i+d": 3,
+    "retorno": 3,
+    "no vemos el retorno": 3,
+    "rentabilidad de la investigacion": 3,
+    "la i+d cuesta mucho": 3
    }
   },
   {
@@ -120,7 +128,15 @@
     "nadie hace nada": 3,
     "quien lo hace": 2,
     "decisión con dueño": 2,
-    "reunión": 2
+    "reunión": 2,
+    "estrategia aprobada": 3,
+    "plan aprobado": 3,
+    "aprobada y publicada": 3,
+    "publicada": 2,
+    "tracciona": 3,
+    "traccionar": 3,
+    "la estrategia no avanza": 3,
+    "estrategia parada": 3
    }
   },
   {
@@ -166,7 +182,13 @@
     "por dónde empezar con la IA": 3,
     "licencia": 2,
     "agente": 2,
-    "algoritmo": 2
+    "algoritmo": 2,
+    "por donde entrar": 3,
+    "por donde empezar": 3,
+    "no sabemos por donde entrar": 3,
+    "entrar en la ia": 3,
+    "empezar con la ia": 3,
+    "primeros pasos con la ia": 3
    }
   },
   {
@@ -199,7 +221,18 @@
     "promocion interna": 2,
     "autoridad": 2,
     "poder": 2,
-    "expectativas": 2
+    "expectativas": 2,
+    "equipos desalineados": 3,
+    "equipo desalineado": 3,
+    "desalineado": 3,
+    "desalineados": 3,
+    "desalineacion": 3,
+    "cada uno va por su cuenta": 3,
+    "no tiran en la misma direccion": 3,
+    "equipo directivo desalineado": 3,
+    "cada director va por su cuenta": 3,
+    "no hay rumbo comun": 2,
+    "falta de alineamiento": 3
    }
   },
   {

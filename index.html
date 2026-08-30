@@ -266,13 +266,6 @@
 #servicios .jr-chips .et{font-size:13px;color:#8b938f;margin-right:2px}
 #servicios .jr-chips button{border:1px solid #e2e0d9;background:#fff;color:#41504b;font:inherit;font-size:13px;padding:6px 11px;cursor:pointer;border-radius:2px;line-height:1.3}
 #servicios .jr-chips button:hover{border-color:#32717E;color:#32717E}
-#servicios .sit-list{border-top:1px solid #e2e0d9}
-#servicios .sit{display:flex;gap:18px;align-items:baseline;width:100%;text-align:left;font:inherit;background:none;border:0;border-bottom:1px solid #e2e0d9;padding:15px 6px;cursor:pointer;color:#2f3a36;transition:background .2s,color .2s,padding-left .2s}
-#servicios .sit:hover{background:#fff;padding-left:14px;color:#16211f}
-#servicios .sit[aria-pressed="true"]{background:#fff;padding-left:14px;color:#16211f;box-shadow:inset 3px 0 0 #32717E}
-#servicios .sit-n{font-size:11.5px;font-weight:600;letter-spacing:.1em;color:#b3bab6;flex:none;width:2em}
-#servicios .sit[aria-pressed="true"] .sit-n{color:#32717E}
-#servicios .sit-t{font-size:clamp(15.5px,1.35vw,18px);line-height:1.4}
 #servicios .sit-status{margin:22px 0 40px;font-size:14px;color:#8b938f;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 #servicios .sit-status button{background:none;border:0;padding:0;font:inherit;color:#32717E;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 #servicios .srv-fam{margin:0 0 42px}
@@ -297,7 +290,6 @@
   #servicios{padding:54px 0 50px}
   #servicios .srv-grid{grid-template-columns:1fr;gap:14px}
   #servicios .serv-lede{margin-bottom:30px}
-  #servicios .sit{gap:12px;padding:13px 4px}
 }
 
 /* Los cuatro conceptos del hero se resuelven abajo, en el bloque del hero. */
@@ -894,40 +886,31 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       </form>
       <div class="jr-chips">
         <span class="et">Prueba con:</span>
-        <button type="button" data-jrq="Aprobamos el plan estratégico y no ha cambiado nada">Un plan que no se cumple</button>
-        <button type="button" data-jrq="Tenemos muchas quejas en la atención y demasiadas ventanillas">Quejas en la atención</button>
-        <button type="button" data-jrq="Publicamos mucho pero nada llega a la sociedad ni al mercado">Investigación sin impacto</button>
-        <button type="button" data-jrq="No sabemos por dónde empezar con la inteligencia artificial">Por dónde entrar en la IA</button>
-        <button type="button" data-jrq="Cada director va por su cuenta y no hay un modelo de liderazgo compartido">Dirección desalineada</button>
-        <button type="button" data-jrq="Tenemos que renovar la RPT y no sabemos qué perfiles harán falta">Plantilla y perfiles</button>
-        <button type="button" data-jrq="Queremos montar un consejo asesor en una empresa familiar">Consejo asesor</button>
-        <button type="button" data-jrq="Hemos rediseñado un servicio y queremos poder hacerlo con todos">Hacerlo con todos</button>
+        <button type="button" data-jrq="La estrategia está aprobada y publicada pero no tracciona">La estrategia no tracciona</button>
+        <button type="button" data-jrq="Nuestra I+D nos resulta cara y no vemos el retorno">La I+D nos resulta cara</button>
+        <button type="button" data-jrq="Tenemos muchas quejas en la atención al usuario">Tenemos quejas en la atención</button>
+        <button type="button" data-jrq="Tenemos que hacer o revisar el plan estratégico">Hay que revisar el plan estratégico</button>
+        <button type="button" data-jrq="Los equipos están desalineados y cada uno va por su cuenta">Equipos desalineados</button>
+        <button type="button" data-jrq="No sabemos por dónde entrar en la inteligencia artificial">Por dónde entrar en la IA</button>
+        <button type="button" data-jrq="Qué aporta un consejo asesor a mi organización">Qué aporta un Consejo asesor</button>
       </div>
       <div class="jr-res" id="jr-res" hidden></div>
-      <p class="jr-o">O elige tu situación</p>
     </div>
 
-    <div class="sit-list" role="group" aria-label="Elige tu situación">
-      <button class="sit" type="button" data-sit="s1" aria-pressed="false"><span class="sit-n">01</span><span class="sit-t">Tenemos que hacer o revisar el plan estratégico</span></button>
-      <button class="sit" type="button" data-sit="s2" aria-pressed="false"><span class="sit-n">02</span><span class="sit-t">La estrategia está aprobada y publicada, pero no tracciona</span></button>
-      <button class="sit" type="button" data-sit="s3" aria-pressed="false"><span class="sit-n">03</span><span class="sit-t">Nuestra I+D puede ser más productiva y de más impacto</span></button>
-      <button class="sit" type="button" data-sit="s4" aria-pressed="false"><span class="sit-n">04</span><span class="sit-t">Nuestros servicios públicos deberían aportar más valor al usuario</span></button>
-      <button class="sit" type="button" data-sit="s5" aria-pressed="false"><span class="sit-n">05</span><span class="sit-t">El equipo directivo no tira en la misma dirección</span></button>
-      <button class="sit" type="button" data-sit="s6" aria-pressed="false"><span class="sit-n">06</span><span class="sit-t">No sabemos por dónde entrar en la IA</span></button>
-    <button class="sit" type="button" data-sit="s7" aria-pressed="false"><span class="sit-n">07</span><span class="sit-t">Quiero saber cómo un Consejo Asesor puede contribuir a aumentar el valor de mi organización</span></button></div>
+    
     <p class="sit-status"><span id="sit-msg">Los diez servicios, agrupados en cuatro familias.</span> <button type="button" id="sit-clear" hidden="">Ver todos</button></p>
 
     <div class="srv-wrap">
       <div class="srv-fam" id="fam-innovacion" data-fam="Innovación">
         <h3 class="srv-fam-t">Innovación</h3>
         <div class="srv-grid">
-        <article class="srv" data-sit="s3" id="srv-0">
+        <article class="srv" id="srv-0">
           <h4 class="srv-t">Reactor de innovación y transferencia de conocimiento</h4>
           <p class="srv-q"><span>Para</span> Universidades, centros de investigación, industria y tercer sector</p>
           <ul class="srv-c"><li>El problema y los presentimientos: salir a que te digan que estás equivocado</li><li>Piezas y escala: bajar el problema hasta que quepa en los recursos que ya se tienen</li><li>El espacio de oportunidades y la gestión del riesgo</li><li>Informe final y lógica de escalado, para decidir seguir, variar o parar</li></ul>
           <p class="srv-m">Cuatro módulos en 4 a 6 meses, equipos de tres a cinco personas de disciplinas distintas, y evaluación al final de cada módulo.</p>
         <p class="srv-agentes">No empiezas con una idea, empiezas con un presentimiento: un motor para convertir conocimiento en valor<a class="srv-agentes-cta" href="reactor.html">Abrir el Reactor</a></p></article>
-        <article class="srv" data-sit="s4" id="srv-1">
+        <article class="srv" id="srv-1">
           <h4 class="srv-t">Laboratorio de rediseño de servicios</h4>
           <p class="srv-q"><span>Para</span> Administraciones públicas, universidades, alianzas y redes de instituciones y tercer sector</p>
           <ul class="srv-c"><li>Arranque con la dirección: propósito, beneficiario y definición de éxito</li><li>Radar de madurez del servicio, anónimo y agregado</li><li>Escucha a quien lo usa: recorrido completo y puntos de dolor</li><li>Escenarios futuros y diseño con enfoque a usuario</li><li>Prototipo del servicio y hoja de ruta de seis meses</li></ul>
@@ -939,28 +922,28 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       <div class="srv-fam" id="fam-estrategia" data-fam="Estrategia">
         <h3 class="srv-fam-t">Estrategia</h3>
         <div class="srv-grid">
-        <article class="srv" data-sit="s1" id="srv-2">
+        <article class="srv" id="srv-2">
           <h4 class="srv-t">Contraste de estrategia: un proceso ligero para decisiones firmes</h4>
           <p class="srv-q"><span>Para</span> Industria y corporaciones, universidades y centros de I+D que elaboran planes estratégicos, y administraciones públicas</p>
           <ul class="srv-c"><li>Revisión de la estrategia, declarada o no, con equipos directivos</li><li>Trabajo de prospectiva</li><li>Talleres de posicionamiento con equipos directivos y stakeholders de alto nivel</li><li>Diseño del despliegue ágil con equipos directivos</li></ul>
           <p class="srv-m">Pocas jornadas completas con el equipo de dirección al completo. Entre una y otra no hay comité de seguimiento ni tareas para la dirección.</p>
           <p class="srv-agentes">Tres fuentes que se cruzan, cuatro escenarios de futuro y un cuadro de vigilancia con nombre y fecha en cada línea.<a class="srv-agentes-cta" href="contraste.html">Ver el método</a></p>
         </article>
-        <article class="srv" data-sit="s2" id="srv-3">
+        <article class="srv" id="srv-3">
           <h4 class="srv-t">Agenda directiva y despliegue traccionado de la estrategia</h4>
           <p class="srv-q"><span>Para</span> Industria y corporaciones, universidades y centros de I+D de gran tamaño, administraciones públicas y organizaciones que ya han hecho un contraste</p>
           <ul class="srv-c"><li>Conversión de prioridades en proyectos que traccionan</li><li>Calendario anual de decisiones, anclado a las ventanas reales</li><li>Rediseño del orden del día del comité</li><li>Activación del cuadro de vigilancia, con responsable y fecha</li></ul>
           <p class="srv-m">Sesiones con equipos directivos y con mandos intermedios a lo largo de un año.</p>
           <p class="srv-agentes">Un año de acompañamiento, con sesiones acotadas y fecha de retirada acordada desde el principio. El seguimiento no lo hago yo: lo hace la organización.<a class="srv-agentes-cta" href="agenda.html">Ver el método</a></p>
         </article>
-        <article class="srv" data-sit="s4" id="srv-4">
+        <article class="srv" id="srv-4">
           <h4 class="srv-t">Implantación de estrategias centradas en el usuario</h4>
           <p class="srv-q"><span>Para</span> Administraciones públicas, universidades, alianzas y redes de instituciones y tercer sector</p>
           <ul class="srv-c"><li>Medición previa de si la institución está en condiciones, con recomendación que puede ser negativa</li><li>Las bases que sostienen la mejora del valor de los servicios</li><li>Tres funciones que gestiona el equipo núcleo: cocreación, prototipado y capacitación</li><li>Equipo núcleo de cinco personas y regla de los tres dueños por proyecto</li><li>Programa anual: retos, sprints, clínica de problemas y jornada de muestra</li></ul>
           <p class="srv-m">Cuatro fases a lo largo de veinticuatro meses, con una decisión al final de cada una sobre si se sigue, se ajusta o se para.</p>
           <p class="srv-agentes">Rediseñar un servicio es un proyecto; poder rediseñarlos todos es una capacidad. La medición previa puede concluir que a tu institución le toca antes desatascar su ruta administrativa.<a class="srv-agentes-cta" href="implantacion.html">Ver el método</a></p>
         </article>
-        <article class="srv srv--preparacion" data-sit="s6" id="srv-5">
+        <article class="srv srv--preparacion" id="srv-5">
           <p class="srv-estado">En preparación · lanzamiento previsto en octubre de 2026</p>
           <h4 class="srv-t">Estrategia de IA</h4>
           <p class="srv-q"><span>Para</span> Todo tipo de organizaciones</p>
@@ -973,21 +956,21 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
       <div class="srv-fam" id="fam-liderazgo" data-fam="Liderazgo">
         <h3 class="srv-fam-t">Liderazgo</h3>
         <div class="srv-grid">
-        <article class="srv" data-sit="s5" id="srv-6">
+        <article class="srv" id="srv-6">
           <h4 class="srv-t">Modelo de liderazgo</h4>
           <p class="srv-q"><span>Para</span> Industria y corporaciones, universidades y centros de I+D, y administraciones públicas</p>
           <ul class="srv-c"><li>Medición de la cultura de la organización</li><li>Qué significa liderar aquí, escrito y firmado por la dirección</li><li>A quién se llama líder y en qué niveles</li><li>Elección de las funciones clave entre doce responsabilidades y dieciocho competencias</li><li>Evaluación del liderazgo actual, midiendo desarrollo e importancia por separado</li><li>Sesión de contraste con el colectivo y batería de propuestas consensuadas</li><li>Plan de despliegue y diseño del programa de capacitación</li></ul>
           <p class="srv-m">Tres sesiones presenciales y un sistema de evaluación en línea. La sesión de contraste funciona con el colectivo entero, hasta un centenar de líderes, simultáneamente.</p>
           <p class="srv-agentes">Un modelo de liderazgo no se compra hecho: se escribe con las personas que van a tener que ejercerlo. De ahí salen un plan de despliegue, un programa de capacitación y, cuando hace falta, una redefinición de estructuras.<a class="srv-agentes-cta" href="liderazgo.html">Ver el método</a></p>
         </article>
-        <article class="srv" data-sit="s5" id="srv-7">
+        <article class="srv" id="srv-7">
           <h4 class="srv-t">Aprendizaje para el liderazgo</h4>
           <p class="srv-q"><span>Para</span> Industria y corporaciones, universidades y centros de I+D, y administraciones públicas</p>
           <ul class="srv-c"><li>Traducción del plan estratégico en agenda de aprendizaje para quienes dirigen</li><li>Diseño de capacitación in house sobre casos de uso reales de la organización</li><li>Programa propio para quienes dirigen hoy y quienes van a dirigir</li><li>La lista escrita de lo que este año no se va a aprender</li><li>Módulos con entregable, profesorado elegido uno a uno y coordinación del programa</li><li>Gestión del cambio y de la innovación como casos de uso, no como asignaturas</li></ul>
           <p class="srv-m">Diseño con el equipo de dirección y ejecución con el colectivo que dirige. Se aprende mientras se trabaja: sin parar la organización.</p>
-          <p class="srv-agentes">La formación se puede comprar fuera, pero el aprendizaje se construye dentro. La agenda no sale de un catálogo de cursos, sale de lo que la organización tiene que saber hacer dentro de dos años y hoy no sabe hacer.<a class="srv-agentes-cta" href="aprendizaje.html">Ver el método</a></p>
+          <p class="srv-agentes">La formación se puede comprar fuera, pero el aprendizaje se construye dentro. La agenda no sale de un catálogo de cursos, sino de lo que la organización tiene que saber hacer dentro de dos años y hoy no sabe hacer.<a class="srv-agentes-cta" href="aprendizaje.html">Ver el método</a></p>
         </article>
-        <article class="srv" data-sit="s6" id="srv-8">
+        <article class="srv" id="srv-8">
           <h4 class="srv-t">Despliegue del plan de liderazgo</h4>
           <p class="srv-q"><span>Para</span> Universidades, organizaciones de salud pública, grandes organizaciones y administraciones públicas</p>
           <ul class="srv-c"><li>Plan de acción ejecutable: responsable, coste y fecha para cada acción</li><li>Plan de desarrollo del talento: perfiles, acogida, desempeño, carrera y sucesión</li><li>Reingeniería de procesos y estructuras, antes de contratar</li><li>Análisis y transformación de RPT, en administraciones públicas</li></ul>
@@ -996,7 +979,7 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
         </article>
         </div>
       </div>
-    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" data-sit="s7" id="srv-9"><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración, consejos asesores y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave (Innovación, Sostenibilidad) y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquin@joaquinromero.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
+    <div class="srv-fam" id="fam-consejero" data-fam="Consejero"><h3 class="srv-fam-t">Consejero</h3><div class="srv-grid srv-grid--uno"><article class="srv srv--ancho" id="srv-9"><h4 class="srv-t">Consejero independiente</h4><p class="srv-q"><span>Para</span> Consejos de administración, consejos asesores y órganos de gobierno. Miembro del Instituto de Consejeros-Administradores (IC-A)</p><ul class="srv-c"><li><b>Estrategia y creación de valor.</b> Criterio independiente en las decisiones estratégicas del consejo, con foco en la creación de valor a largo plazo.</li><li><b>Supervisión y control.</b> Riesgos y compliance, asegurando que la gestión se ajusta a la estrategia aprobada por el órgano de gobierno.</li><li><b>Comisiones y gobernanza.</b> Participación en comisiones clave (Innovación, Sostenibilidad) y buen funcionamiento del gobierno corporativo.</li></ul><p class="srv-m srv-m--cta">Contacta para conocer la iniciativa de <a href="mailto:joaquin@joaquinromero.com?subject=Consejos%20Asesores%20de%20Navarra">Consejos Asesores de Navarra</a>.</p></article></div></div></div>
 
     <p class="serv-nota"><b>Inteligencia colectiva a escala.</b> Buena parte de estos servicios se ejecutan en sesiones híbridas, presenciales u online, con grupos de hasta cien personas.</p>
     
@@ -1744,7 +1727,6 @@ h1,h2,h3,
 
 /* --- texto corrido: Inter, algo más ceñido --- */
 #servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:18px;line-height:1.5;letter-spacing:-.01em}
-#servicios .sit-t{font-size:18px;line-height:1.32;letter-spacing:-.014em}
 #servicios .srv-c,#etapas .etapas-texto .e-hitos{font-size:15px;line-height:1.48;letter-spacing:-.006em}
 #servicios .srv-q{font-size:14px;line-height:1.42;letter-spacing:-.004em}
 #servicios .srv-m,#servicios .srv-agentes{font-size:13.5px;line-height:1.42;letter-spacing:-.004em}
@@ -1763,7 +1745,6 @@ header a{font-size:15.5px}
 @media (max-width:900px){
   body{font-size:17px}
   #servicios .serv-lede,#etapas .etapas-texto .e-intro{font-size:17px}
-  #servicios .sit-t{font-size:16.5px}
   #red .feature h2,#red .feature h3{font-size:23px}
 }
 
@@ -1786,7 +1767,7 @@ header a{font-size:15.5px}
 
 #etapas .etapas-texto li,#servicios .srv li,#red li{line-height:1.30}
 #etapas .etapas-texto .e-intro{line-height:1.38}
-#servicios .srv p,#servicios .srv-m,#servicios .srv-q,#servicios .sit-d{line-height:1.32}
+#servicios .srv p,#servicios .srv-m,#servicios .srv-q{line-height:1.32}
 
 #home.hero .hero-quote .hq-in{display:block;width:100%}
 @media (max-width:900px){#home.hero .hero-quote{width:auto;right:36%;padding:12px 16px}}
@@ -1832,35 +1813,6 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
 </script>
 
 
-<script>
-(function(){
-  var sits=[].slice.call(document.querySelectorAll("#servicios .sit"));
-  var cards=[].slice.call(document.querySelectorAll("#servicios .srv"));
-  var fams=[].slice.call(document.querySelectorAll("#servicios .srv-fam"));
-  var msg=document.getElementById("sit-msg"), clr=document.getElementById("sit-clear");
-  if(!sits.length) return;
-  function aplica(id,tocarURL){
-    var n=0;
-    cards.forEach(function(c){
-      var ok = !id || (" "+c.getAttribute("data-sit")+" ").indexOf(" "+id+" ")>-1;
-      c.hidden=!ok; if(ok) n++;
-    });
-    fams.forEach(function(f){ f.hidden = !f.querySelector(".srv:not([hidden])"); });
-    sits.forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.sit===id)); });
-    if(id){ var txt=""; sits.forEach(function(b){ if(b.dataset.sit===id) txt=b.querySelector(".sit-t").textContent; });
-      msg.textContent = n + (n===1?" servicio para: ":" servicios para: ") + txt.charAt(0).toLowerCase()+txt.slice(1);
-    } else { msg.textContent = "Los diez servicios, agrupados en cuatro familias."; }
-    clr.hidden=!id;
-    if(tocarURL) history.replaceState(null,"",location.pathname+location.search+(id?"#situacion="+id:""));
-  }
-  sits.forEach(function(b){ b.addEventListener("click",function(){
-    aplica(b.getAttribute("aria-pressed")==="true" ? null : b.dataset.sit, true);
-    document.getElementById("servicios").scrollIntoView({behavior:"smooth",block:"start"});
-  }); });
-  clr.addEventListener("click",function(){ aplica(null,true); });
-  var m=/[#&]situacion=(s[1-7])/.exec(location.hash); aplica(m?m[1]:null,false);
-})();
-</script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
