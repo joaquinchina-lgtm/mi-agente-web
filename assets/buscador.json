@@ -205,7 +205,7 @@
   {
    "dom": "srv-7",
    "fam": "Liderazgo",
-   "t": "Aprendizaje estratégico",
+   "t": "Aprendizaje para el liderazgo",
    "c": {
     "formación": 3,
     "capacitación": 3,
@@ -239,7 +239,6 @@
     "se jubila y se lleva lo que sabe": 3,
     "aprendizajes desiguales": 2,
     "desarrollo del puesto": 2,
-    "desarrollo profesional": 2,
     "mentoría": 2,
     "formar a los directivos": 3,
     "capacitación in house": 3,
@@ -257,7 +256,28 @@
     "gestión de la innovación": 3,
     "intraemprendimiento": 3,
     "emprendimiento interno": 3,
-    "que la iniciativa venga de dentro": 3
+    "que la iniciativa venga de dentro": 3,
+    "aprendizaje estrategico": 3,
+    "programas de capacitacion ejecutiva": 3,
+    "capacitacion ejecutiva": 3,
+    "aprendizaje para el liderazgo": 3,
+    "capacitacion para el liderazgo": 3,
+    "formacion de directivos": 3,
+    "formar a los mandos": 3,
+    "delegar": 3,
+    "delegacion": 3,
+    "conversaciones dificiles": 3,
+    "reuniones": 2,
+    "motivar": 2,
+    "clima laboral": 3,
+    "mando intermedio": 3,
+    "jefe de equipo": 3,
+    "recien nombrado": 2,
+    "microcredencial": 3,
+    "titulo propio": 3,
+    "dirigir equipos": 3,
+    "gestion de equipos": 3,
+    "resistencias": 2
    }
   },
   {
