@@ -1931,7 +1931,16 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
   [].slice.call(document.querySelectorAll("#servicios [data-jrq]")).forEach(function(b2){
     b2.addEventListener("click", function(){ if(!LISTO) return; inp.value=b2.getAttribute("data-jrq"); mostrar(inp.value); });
   });
-  if(clr) clr.addEventListener("click", function(){ out.hidden=true; inp.value=""; });
+  /* «Ver todos» devuelve la lista completa. Antes de que desapareciera el
+     selector de situaciones, de esto se encargaba su script; ahora tiene que
+     hacerlo el buscador o las tarjetas se quedan ocultas para siempre. */
+  if(clr) clr.addEventListener("click", function(){
+    out.hidden=true; inp.value="";
+    cards.forEach(function(c){ c.hidden=false; });
+    fams.forEach(function(f2){ f2.hidden=false; });
+    if(msg) msg.textContent="Los diez servicios, agrupados en cuatro familias.";
+    clr.hidden=true;
+  });
 })();
 </script>
 
