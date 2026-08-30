@@ -5893,9 +5893,9 @@ async function consolaMotor(s){
             ${esRad ? `<button class="btn ghost sm" id="proyRadar">Proyectar el radar</button>` : ""}
           </div>
           <p class="note">${s.resultados_publicos
-            ? `Los resultados agregados se pueden proyectar. Ocúltalos cuando termines: una
-               sesión cerrada con los resultados publicados sigue enseñándolos a quien tenga
-               el enlace.`
+            ? `Los resultados agregados se pueden proyectar. Al <b>cerrar la sesión</b> se
+               ocultan solos —salvo que el radar esté en ese momento en la pared—, para que
+               nadie que se guardara el enlace de proyección los siga viendo mañana.`
             : `Mientras esté sin publicar, los resultados agregados solo los ves tú, aquí y en
                el informe. Publicar no enseña ninguna respuesta individual: enseña las medias,
                y solo por encima del mínimo de esta sesión.`}${
@@ -6197,8 +6197,21 @@ async function consolaMotor(s){
     const cambiarSesion = async c => { Object.assign(s, await API.actualizarSesion(s.id, c)); pinta(); };
     if(bt("abrirSesion"))  bt("abrirSesion").onclick  = () =>
       cambiarSesion({estado:"abierta", abierta_en:new Date().toISOString()});
-    if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () =>
-      cambiarSesion({estado:"cerrada", cerrada_en:new Date().toISOString()});
+    /* Al cerrar la sesión se ocultan los resultados. La URL de proyección
+       es pública a propósito —hay que poder abrirla en el portátil de la
+       sala sin identificarse—, así que una sesión terminada y publicada
+       sigue enseñando el agregado a cualquiera que se guardara ese
+       enlace. El estado por defecto de lo terminado pasa a ser «no
+       visible», y volver a enseñarlo es un gesto explícito.
+
+       La excepción: si el radar está justo en la pared, no se toca.
+       Quitárselo a la sala en mitad de la conversación no protege nada y
+       deja al facilitador delante de una pantalla vacía. */
+    if(bt("cerrarSesion")) bt("cerrarSesion").onclick = () => {
+      const cambios = {estado:"cerrada", cerrada_en:new Date().toISOString()};
+      if(s.vista_activa !== "radar") cambios.resultados_publicos = false;
+      return cambiarSesion(cambios);
+    };
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
     if(bt("pubM")) bt("pubM").onclick = () =>
       cambiarSesion({resultados_publicos: !s.resultados_publicos});
