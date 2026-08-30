@@ -819,6 +819,7 @@ const CSS_RADAR = `
   gap:36px;align-items:center;margin-top:20px}
 .proy .radar-pared .fila-taller b{font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:1100px){.proy .radar-pared{grid-template-columns:1fr;gap:20px}}
+.proy-pz{position:fixed;inset:0;padding:0;margin:0;max-width:none;height:100vh;height:100svh}
 .corte-fila{display:grid;grid-template-columns:26px minmax(130px,1.1fr) minmax(90px,1.6fr) 46px;
   gap:14px;align-items:center;padding:7px 0}
 .corte-n{font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:13px;text-align:right}
@@ -5733,6 +5734,26 @@ async function proyeccionMotor(codigo, s){
       return;
     }
 
+    /* ── UNA PIZARRA DE MESA EN LA PARED ───────────────────────────
+       Se reutiliza la propia pagina en modo solo lectura dentro de un
+       marco. Volver a dibujar el lienzo aqui habria significado meter
+       Excalidraw tambien en la consola, y la consola es un archivo suelto
+       sin compilar: eso es justamente lo que no queremos. */
+    if(va.startsWith("pz:")){
+      const clave = va.slice(3).replace(/[^a-z0-9]/gi, "").toLowerCase() || "e1";
+      const src = location.origin + location.pathname.replace(/[^/]*$/, "")
+        + "pizarra.html?s=" + encodeURIComponent(codigo) + "&g=" + clave + "&ro=1";
+      /* Solo se rehace el marco si cambia la mesa: repintarlo cada tres
+         segundos recargaria Excalidraw entero delante de la sala. */
+      if(window.__pzActual !== src){
+        window.__pzActual = src;
+        app().innerHTML = `<div class="proy proy-pz">
+          <iframe src="${esc(src)}" title="Pizarra de la mesa"
+            style="border:0;width:100%;height:100%;display:block"></iframe></div>`;
+      }
+      return;
+    }
+
     if(!va.startsWith("q:")){
       const prog = await API.progreso(codigo).catch(()=>null);
       cuerpo = `<h1>Entra desde tu móvil</h1>
@@ -6434,6 +6455,47 @@ async function consolaMotor(s){
             : "Escríbelas en el contenido de cada pregunta, o crea la encuesta enlazada a un taller."}</div>`}
       </div>`;})() : ""}
 
+      ${(() => {
+        /* LAS PIZARRAS DE MESA.
+           Un lienzo por grupo, cada uno en el portatil de su mesa. No hay
+           sincronizacion entre aparatos y es deliberado: si cada uno dibuja
+           en su movil, la mesa deja de hablar, y el debate por mesa es lo
+           que esto existe para sostener. */
+        if(String(s.instrumento||"").split("-")[0] !== "escenarios") return "";
+        const m = s.modelo || {};
+        const base = location.origin + location.pathname.replace(/[^/]*$/, "") + "pizarra.html";
+        const mesas = [1,2,3,4].map(i => {
+          const el = (m.elaborado || {})["e"+i] || {};
+          const es = (m.escenarios || [])[i-1] || {};
+          return {i, clave:"e"+i,
+                  nombre: (el.nombre || es.nombre || "").trim(),
+                  url: base + "?s=" + encodeURIComponent(s.codigo) + "&g=e" + i};
+        });
+        return `<div class="card">
+          <h2>Las pizarras de mesa</h2>
+          <p class="small">Un lienzo por grupo. Se abre en el portátil de cada mesa con su
+            enlace, y se guarda solo cada pocos segundos. <b>No hay sincronización entre
+            aparatos</b>: una pantalla por mesa, que es lo que hace que la mesa hable. Si
+            abres la misma mesa en dos equipos, gana el último que guarde.</p>
+          <div class="lista">${mesas.map(x => `<div class="it">
+            <div><b>Mesa ${x.i}</b>${x.nombre ? " · " + esc(x.nombre) : ""}
+              <div class="small" style="word-break:break-all">${esc(x.url)}</div></div>
+            <div class="btnrow" style="margin:0">
+              <button class="btn ghost sm" onclick="copiar('${esc(x.url)}')">Copiar</button>
+              <button class="btn ghost sm" onclick="window.open('${esc(x.url)}','pz-${esc(x.clave)}')">Abrir</button>
+              <button class="btn ghost sm" data-proypz="${esc(x.clave)}">Proyectar</button>
+            </div></div>`).join("")}</div>
+          <p class="note">«Proyectar» pone esa pizarra en la pared <b>en solo lectura</b> y se
+            refresca sola cada pocos segundos: la sala ve avanzar a la mesa sin poder tocarla.
+            Al cerrar la sesión las pizarras dejan de guardarse: lo dibujado se conserva, pero
+            ya no se puede cambiar desde un enlace que alguien tenga guardado.</p>
+          <p class="note">Las mesas guardan además una copia en su propio navegador. Si la wifi
+            de la sala se cae, la mesa sigue trabajando y al volver la conexión se sube lo más
+            reciente. Lo que <b>no</b> conviene es pegar imágenes: viajan dentro del dibujo y
+            hay un tope de cuatro megas por pizarra.</p>
+        </div>`;
+      })()}
+
       <div class="card">
         <h2>Variables del ejercicio</h2>
         <p class="small">Se sustituyen en el enunciado <b>al añadir la pregunta</b>, no al mostrarla:
@@ -6641,6 +6703,8 @@ async function consolaMotor(s){
       return cambiarSesion(cambios);
     };
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
+    app().querySelectorAll("[data-proypz]").forEach(b => b.onclick = () =>
+      cambiarSesion({vista_activa: "pz:" + b.dataset.proypz}));
     if(bt("pubM")) bt("pubM").onclick = () =>
       cambiarSesion({resultados_publicos: !s.resultados_publicos});
     /* Publica y proyecta en el mismo gesto: si fueran dos botones, el
