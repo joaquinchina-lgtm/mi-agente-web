@@ -670,6 +670,14 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   .matriz th{font-size:8.5pt;letter-spacing:.06em}
   .matriz td{font-size:13pt;padding:8px 6px}
   .matriz td.et{font-size:10.5pt;width:32%}
+  /* Una tabla larga se parte, y la segunda página no puede salir con
+     columnas de cifras sin rótulo. El navegador repite la cabecera si es
+     un thead de verdad y se le pide explícitamente. */
+  .matriz thead{display:table-header-group}
+  .matriz tbody tr{break-inside:avoid}
+  /* Y el radar entero en una página: partido por la mitad no es un
+     gráfico, son dos medias lunas. */
+  .informe-bloque svg{break-inside:avoid}
 
   /* Los sellos del semáforo, en papel. El navegador no imprime fondos por
      omisión —y a una impresora de oficina en blanco y negro le da igual lo
@@ -1722,9 +1730,13 @@ function lecturaRadar(pares){
     + radarNSVG(d.ejes, series, {min:d.min, max:d.max,
         alt:"Radar de los ocho ámbitos: desarrollo e importancia"}) + '</div>'
 
+    /* thead y tbody de verdad, no una fila de th sueltos: en papel la
+       tabla se parte y la segunda página salía con cuatro columnas de
+       cifras sin decir de qué eran. Con thead, el navegador repite la
+       cabecera en cada página. */
     + '<table class="matriz" style="margin-top:20px">'
-    + '<tr><th class="et"></th><th>Desarrollo</th>'
-    + (d.conImp ? '<th>Importancia</th><th>Distancia</th><th></th>' : '') + '</tr>'
+    + '<thead><tr><th class="et"></th><th>Desarrollo</th>'
+    + (d.conImp ? '<th>Importancia</th><th>Distancia</th><th></th>' : '') + '</tr></thead><tbody>'
     + (conDif.length ? conDif : d.ejes).map(e => '<tr>'
         + '<td class="et">' + esc(e.n + " · " + e.nombre) + '</td>'
         + '<td>' + uno(e.mad) + '</td>'
@@ -1738,7 +1750,7 @@ function lecturaRadar(pares){
             + (e.dif != null && e.dif >= 0 ? "var(--tono-2)" : "var(--tono-1)")
             + '"></i></div></td>' : '')
         + '</tr>').join("")
-    + '</table>'
+    + '</tbody></table>'
 
     + '<p class="small" style="margin-top:16px">' + d.conMad + ' de 8 ámbitos con desarrollo'
     + (d.conImp ? ' · ' + d.conImp + ' con importancia' : ' · sin la pregunta de importancia (R21), '
@@ -4896,7 +4908,8 @@ async function informeSesion(s, preguntas, volver){
       <p class="small" style="margin-top:8px">Importancia menos desarrollo, función por
         función. Arriba, lo que más importa y menos hay.</p>
       <table class="matriz" style="margin-top:16px">
-        <tr><th class="et"></th><th>Desarrollo</th><th>Importancia</th><th>Brecha</th><th></th></tr>
+        <thead><tr><th class="et"></th><th>Desarrollo</th><th>Importancia</th>
+          <th>Brecha</th><th></th></tr></thead><tbody>
         ${filas.map(f=>`<tr>
           <td class="et">${esc(f.clave)}</td>
           <td>${f.des.toFixed(1)}</td>
@@ -4909,7 +4922,7 @@ async function informeSesion(s, preguntas, volver){
               // codifica el signo. El signo va además escrito al lado
               // —«+2,2», «−0,2»—, así que el color es ayuda, no dato.
               f.dif >= 0 ? "var(--tono-2)" : "var(--tono-1)"}"></i></div></td></tr>`).join("")}
-      </table>
+      </tbody></table>
       <p class="small" style="margin-top:16px">Brecha positiva: importa más de lo que hay
         —por ahí se empieza—. Brecha negativa o cerca de cero: o ya está resuelto, o esa
         función pesa menos en el modelo de lo que pensaba el comité que la redactó. Las dos
@@ -5010,7 +5023,24 @@ async function informeSesion(s, preguntas, volver){
     </div>`;
 
   $("#atras").onclick = volver;
-  $("#imprimir").onclick = () => window.print();
+  /* El navegador nombra el PDF con el título del documento. Con el título
+     de siempre, todos los informes se descargaban llamándose «Consola de
+     proyectos · joaquinromero.com», y en la carpeta de un cliente con tres
+     sesiones no hay forma de saber cuál es cuál sin abrirlos. Se cambia
+     justo para imprimir y se devuelve después, tanto si el diálogo se
+     acepta como si se cancela. */
+  $("#imprimir").onclick = () => {
+    const antes = document.title;
+    const limpio = t => String(t || "").replace(/[\/\\:*?"<>|]+/g, " ")
+                                       .replace(/\s+/g, " ").trim();
+    const fecha = new Date().toISOString().slice(0, 10);
+    document.title = limpio([org, s.titulo, s.codigo, fecha].filter(Boolean)
+      .join(" - ")) || antes;
+    const devolver = () => { document.title = antes; };
+    window.addEventListener("afterprint", devolver, {once:true});
+    window.print();
+    setTimeout(devolver, 4000);
+  };
   $("#recargar").onclick = () => informeSesion(s, preguntas, volver);
   window.scrollTo({top:0});
 }
