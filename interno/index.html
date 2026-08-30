@@ -5656,7 +5656,20 @@ async function consolaMotor(s){
       </div>
 
       <div class="card">
-        <h2>Preguntas de esta sesión <span class="estado">${preguntas.length}</span></h2>
+        <!-- Antes aqui solo salia el total. Con diecinueve filas y diecisiete
+             cerradas, habia que ir leyendo una a una para caer en que el movil
+             apenas veia dos preguntas: mas de uno lo ha dado por un fallo del
+             cuestionario. El recuento lo dice de un vistazo. -->
+        <h2>Preguntas de esta sesión <span class="estado">${preguntas.length}</span>${(()=>{
+          const n = e => preguntas.filter(p => p.estado === e).length;
+          const partes = [["abierta","abiertas"],["cerrada","cerradas"],["terminada","terminadas"]]
+            .map(([k,t]) => n(k) ? n(k) + " " + t : null).filter(Boolean);
+          return partes.length > 1
+            ? ` <span class="small" style="font-weight:400">· ${partes.join(" · ")}</span>` : "";
+        })()}</h2>
+        ${preguntas.length && !preguntas.some(p=>p.estado==="abierta") ? `<div class="aviso">
+          <b>Ninguna pregunta está abierta.</b> El móvil solo enseña la pantalla de espera
+          hasta que abras alguna.</div>` : ""}
         ${/* El parte de la reparación de arranque —pantallas viejas retiradas,
               P48 repuesta, orden recolocado— habla de ESTA lista, así que se
               lee aquí. No en la pantalla del taller: quien abre la consola y
@@ -5759,6 +5772,7 @@ async function consolaMotor(s){
             </div>` : ""}
           <div class="btnrow"${s.modo === "survey" ? ` style="display:none"` : ""}>
             <button class="btn" id="avanzar">Terminar esta y abrir la siguiente ▶</button>
+            <button class="btn ghost" id="abrirTodasD">Abrir todas · para ensayar</button>
             <button class="btn ghost" id="terminarTodasD">Terminar todas</button>
             <button class="btn ghost" type="button"
               onclick="abrirProyeccion('${esc(s.codigo)}')">Abrir proyección</button>
@@ -5974,7 +5988,10 @@ async function consolaMotor(s){
       generarAbiertas("tres");
     };
 
-    if(bt("abrirTodas")) bt("abrirTodas").onclick = async () => {
+    /* El mismo trabajo para los dos botones: el de survey, donde abrir todo
+       es lo normal, y el de directo, donde es la excepcion y por eso avisa
+       antes. Uno solo de los dos existe en cada pantalla. */
+    const abrirTodasLasPreguntas = async () => {
       /* Último filtro antes de repartir el enlace. En una evaluación sin
          una sola pantalla por función, el cuestionario se responde entero
          y no recoge un comentario: se descubre al leer los resultados, que
@@ -5999,6 +6016,18 @@ async function consolaMotor(s){
         + "NO se han abierto estas, porque les falta contenido y en el móvil saldrían "
         + "vacías:\n\n" + rotas.map(p=>(p.codigo||"") + " " + p.titulo).join("\n"));
     };
+    if(bt("abrirTodas")) bt("abrirTodas").onclick = abrirTodasLasPreguntas;
+    if(bt("abrirTodasD")) bt("abrirTodasD").onclick = async () => {
+      const cerradas = preguntas.filter(p => p.estado === "cerrada").length;
+      if(!cerradas) return alert("No queda ninguna pregunta cerrada.");
+      if(!confirm("Se van a abrir " + cerradas + " preguntas de golpe.\n\n"
+        + "En directo lo normal es abrirlas de una en una: quien está en la sala ve la "
+        + "que tú abres y ninguna más. Si las abres todas, cada persona podrá ir por su "
+        + "cuenta y se pierde el ritmo de la sesión.\n\n"
+        + "Es lo que quieres si estás ensayando tú solo. ¿Sigo?")) return;
+      await abrirTodasLasPreguntas();
+    };
+
     const terminarTodas = async () => {
       const abiertas = preguntas.filter(p => p.estado === "abierta");
       if(!abiertas.length){ alert("No hay ninguna pregunta abierta."); return; }
@@ -8632,6 +8661,19 @@ async function panelAdmin(u){
         <div class="field"><label for="s-cod">Código</label>
           <input id="s-cod" placeholder="se genera solo" autocomplete="off"></div>
       </div>
+      <!-- Hasta ahora una sesion solo pasaba a ensayo por un camino: pulsar
+           «Rellenar con respuestas de ensayo», que mete doce respuestas
+           falsas. Si lo que querias era probar tu solo, con una respuesta
+           de verdad, no habia forma de decirlo. Con esta casilla se marca
+           al crearla, y el disparador de la base le baja el minimo a uno. -->
+      <label class="field" for="s-ensayo"
+        style="display:flex;gap:10px;align-items:flex-start;margin-top:4px">
+        <input id="s-ensayo" type="checkbox" style="margin-top:3px;width:auto">
+        <span><b>Es una sesión de ensayo</b>
+          <span class="small" style="display:block">Para probar tú, o para enseñar la
+            consola. Basta <b>una</b> respuesta para proyectar y para volcar, en vez de
+            tres. No entra en el benchmark entre clientes, y eso no se puede deshacer
+            después.</span></span></label>
       <div id="origen" class="hide">
         <div class="field"><label for="s-org-ses">Sesión de origen · de dónde salen las funciones clave</label>
           <select id="s-org-ses">
@@ -8702,6 +8744,7 @@ async function panelAdmin(u){
     const s = {organizacion_id:$("#s-org").value, titulo:$("#s-tit").value.trim(),
       colectivo:$("#s-col").value.trim()||null, modo, codigo:cod,
       instrumento: $("#s-ins") ? $("#s-ins").value : "cultura-cvf",
+      es_prueba: !!($("#s-ensayo") && $("#s-ensayo").checked),
       n_convocados: $("#s-n").value ? parseInt($("#s-n").value,10) : null};
     if(s.instrumento === "evaluacion" && $("#s-org-ses") && $("#s-org-ses").value)
       s.origen_id = $("#s-org-ses").value;
