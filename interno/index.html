@@ -678,6 +678,7 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   /* Y el radar entero en una página: partido por la mitad no es un
      gráfico, son dos medias lunas. */
   .informe-bloque svg{break-inside:avoid}
+  .informe-bloque img{break-inside:avoid;max-height:150mm;object-fit:contain}
 
   /* Los sellos del semáforo, en papel. El navegador no imprime fondos por
      omisión —y a una impresora de oficina en blanco y negro le da igual lo
@@ -1245,6 +1246,13 @@ const API = {
     }
     const { data, error } = await sb.rpc("resultados_sesion", {p_codigo:codigo});
     if(error) throw error; return data;
+  },
+  /* Las pizarras de una sesion. Devuelve una fila por mesa con su
+     escena y, si la mesa lleva un rato trabajando, una imagen. */
+  async pizarraSesion(codigo){
+    if(this.demo()) return [];
+    const { data, error } = await sb.rpc("pizarra_sesion", {p_codigo: codigo});
+    if(error) throw error; return data || [];
   },
   async inventario(){
     if(this.demo()){
@@ -5137,6 +5145,13 @@ async function informeSesion(s, preguntas, volver){
     }
   }
 
+  /* Las pizarras de mesa, para el informe. Se piden aparte porque no
+     son respuestas de nadie: son el entregable de cada grupo. */
+  let pizarras = [];
+  if(String(s.instrumento||"").split("-")[0] === "escenarios"){
+    try{ pizarras = await API.pizarraSesion(s.codigo) || []; }catch(e){}
+  }
+
   const conDatos = partes.filter(x => (x.r && x.r.datos)
     || (x.rt && ((x.rt.grupos||[]).length || (x.rt.tarjetas||[]).length))).length;
 
@@ -5260,6 +5275,32 @@ async function informeSesion(s, preguntas, volver){
   const eq = String(s.instrumento||"").split("-")[0] === "equipos"
     ? lecturaEquipos(partes) : {cap:"", corte:""};
 
+  /* Un bloque por mesa: la imagen de lo que dibujaron y, debajo, el
+     texto de cada zona. La imagen es el ambiente; el texto es lo que se
+     puede citar en una reunion tres semanas despues. */
+  const bloquesPizarra = (pizarras || []).map(f => {
+    const z = zonasDeEscena(f.escena);
+    const svg = (f.escena || {}).svg;
+    if(!z && !svg) return "";
+    const conTexto = z ? Object.keys(z).filter(k => z[k].texto) : [];
+    if(!conTexto.length && !svg) return "";
+    const k = String(f.clave || "").toUpperCase();
+    return `<div class="card informe-bloque">
+      <span class="num">MESA ${esc(k)}</span><h2>La pizarra de la mesa ${esc(k)}</h2>
+      <div class="small" style="margin-top:8px">${f.actualizado_en
+        ? "última anotación: " + esc(new Date(f.actualizado_en).toLocaleString("es-ES",
+            {day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"}))
+        : "sin fecha"}</div>
+      ${svg ? `<div style="margin-top:16px">${imagenPizarra(svg, "Pizarra de la mesa " + k)}</div>`
+            : `<div class="aviso" style="margin-top:12px">No hay imagen guardada de esta pizarra:
+               la mesa escribió menos de un minuto, que es cada cuánto se guarda la imagen.</div>`}
+      ${conTexto.length ? `<div style="margin-top:20px">${conTexto.map(a => `
+        <h3 style="margin-top:16px">${esc(z[a].titulo)}</h3>
+        <p style="white-space:pre-wrap;margin-top:4px">${esc(z[a].texto)}</p>`).join("")}</div>`
+        : `<p class="small" style="margin-top:16px">Sin texto dentro de las zonas.</p>`}
+    </div>`;
+  }).filter(Boolean);
+
   const org = (s.organizacion || {}).nombre || "";
   const hoy = new Date().toLocaleDateString("es-ES",
     {day:"numeric", month:"long", year:"numeric"});
@@ -5289,7 +5330,9 @@ async function informeSesion(s, preguntas, volver){
       </dl>
       <nav class="contenido">
         <h3>Contenido</h3>
-        <ol>${bloqueRadar ? `<li><b>··</b><span>Madurez e importancia, ámbito por ámbito</span></li>` : ""}${
+        <ol>${bloquesPizarra.map((_, i) => `<li><b>··</b><span>La pizarra de la mesa ${
+            esc(String((pizarras[i]||{}).clave||"").toUpperCase())}</span></li>`).join("")}${
+          bloqueRadar ? `<li><b>··</b><span>Madurez e importancia, ámbito por ámbito</span></li>` : ""}${
           eq.cap ? `<li><b>··</b><span>Lo que hace falta y lo que hay</span></li>` : ""}${
           eq.corte ? `<li><b>··</b><span>El corte</span></li>` : ""}${
           brecha() ? `<li><b>··</b><span>Dónde está la brecha</span></li>` : ""}${
@@ -5305,6 +5348,7 @@ async function informeSesion(s, preguntas, volver){
         <b>Más opciones</b> la casilla «Encabezados y pies de página»; ten en cuenta que
         el navegador escribe ahí también la dirección web y la fecha del sistema.</p>
     </div>
+    ${bloquesPizarra.join("")}
     ${bloqueRadar}
     ${eq.cap}
     ${eq.corte}
@@ -5338,6 +5382,62 @@ async function informeSesion(s, preguntas, volver){
   };
   $("#recargar").onclick = () => informeSesion(s, preguntas, volver);
   window.scrollTo({top:0});
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LEER LAS ZONAS DE UNA PIZARRA
+   ═══════════════════════════════════════════════════════════════════
+   La plantilla de cada mesa nace con marcos de Excalidraw, y cada marco
+   lleva su clave en `customData.zona`. Lo que se escribe dentro queda
+   apuntado al marco —`frameId`—, asi que sacar el texto de cada zona es
+   agrupar por marco y ordenar por posicion.
+
+   La clave viaja en el propio dibujo y no aqui: si maniana cambias las
+   zonas de la plantilla, esto sigue funcionando sin tocar nada. Lo que
+   la consola decide es solo a que campo del modelo baja cada clave.
+
+   Tres cuidados que no son opcionales:
+   · Las pistas grises de la plantilla se saltan: son instrucciones, no
+     respuestas, y colarlas en el relato seria ridiculo.
+   · El texto metido dentro de una forma —una nota adhesiva— cuelga de
+     la forma, no del marco, asi que se mira tambien el contenedor.
+   · Y si algo no tiene marco apuntado —llego arrastrado de otra parte,
+     o lo dibujo una version anterior— se cae a la geometria. */
+function zonasDeEscena(escena){
+  const els = (escena && escena.elements) || [];
+  const marcos = els.filter(e => e.type === "frame" && e.customData && e.customData.zona);
+  if(!marcos.length) return null;
+  const porId = {}; els.forEach(e => { porId[e.id] = e; });
+  const dentro = (e, m) => {
+    const cx = e.x + (e.width || 0) / 2, cy = e.y + (e.height || 0) / 2;
+    return cx >= m.x && cx <= m.x + m.width && cy >= m.y && cy <= m.y + m.height;
+  };
+  const salida = {};
+  marcos.forEach(m => {
+    const textos = els.filter(e => {
+      if(e.type !== "text" || e.isDeleted) return false;
+      if(e.customData && e.customData.pista) return false;
+      const cont = e.containerId ? porId[e.containerId] : null;
+      const fid = e.frameId || (cont && cont.frameId) || null;
+      return fid ? fid === m.id : dentro(cont || e, m);
+    }).sort((a, b) => (a.y - b.y) || (a.x - b.x));
+    salida[m.customData.zona] = {
+      titulo: String(m.name || m.customData.zona).replace(/^\s*\d+\s*·\s*/, ""),
+      texto: textos.map(t => String(t.text || "").trim()).filter(Boolean).join("\n")
+    };
+  });
+  return salida;
+}
+
+/* El SVG que guarda la mesa viene de la base de datos, y a la base de
+   datos puede escribir cualquiera que tenga el codigo de la sesion. Asi
+   que NO se inyecta como HTML: se mete dentro de una imagen, donde un
+   script no se ejecuta. Cuesta lo mismo y cierra la puerta. */
+function imagenPizarra(svg, alt){
+  if(!svg || svg.length > 900000) return "";
+  return '<img alt="' + esc(alt || "Pizarra de la mesa") + '" src="data:image/svg+xml;charset=utf-8,'
+       + encodeURIComponent(svg).replace(/'/g, "%27").replace(/"/g, "%22")
+       + '" style="width:100%;height:auto;display:block;border:1px solid var(--border)">';
 }
 
 /* Qué hoja del modelo cerrado está en la pared, cuándo giró por última vez
@@ -6469,7 +6569,7 @@ async function consolaMotor(s){
           const es = (m.escenarios || [])[i-1] || {};
           return {i, clave:"e"+i,
                   nombre: (el.nombre || es.nombre || "").trim(),
-                  url: base + "?s=" + encodeURIComponent(s.codigo) + "&g=e" + i};
+                  url: base + "?s=" + encodeURIComponent(s.codigo) + "&g=e" + i + "&p=esc"};
         });
         return `<div class="card">
           <h2>Las pizarras de mesa</h2>
@@ -6489,6 +6589,12 @@ async function consolaMotor(s){
             refresca sola cada pocos segundos: la sala ve avanzar a la mesa sin poder tocarla.
             Al cerrar la sesión las pizarras dejan de guardarse: lo dibujado se conserva, pero
             ya no se puede cambiar desde un enlace que alguien tenga guardado.</p>
+          <div class="btnrow"><button class="btn" id="volcarPz">Volcar lo escrito en las pizarras</button></div>
+          <div id="avisoPz"></div>
+          <p class="note"><b>Volcar</b> lee el texto de cada zona de cada mesa y lo baja al
+            relato de su escenario: el nombre y el titular a su sitio, y las tres zonas
+            largas al relato. Lo dibujado alrededor de las zonas se queda como dibujo. Pide
+            confirmación antes de pisar un relato que ya tuviera texto.</p>
           <p class="note">Las mesas guardan además una copia en su propio navegador. Si la wifi
             de la sala se cae, la mesa sigue trabajando y al volver la conexión se sube lo más
             reciente. Lo que <b>no</b> conviene es pegar imágenes: viajan dentro del dibujo y
@@ -6705,6 +6811,63 @@ async function consolaMotor(s){
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
     app().querySelectorAll("[data-proypz]").forEach(b => b.onclick = () =>
       cambiarSesion({vista_activa: "pz:" + b.dataset.proypz}));
+    if(bt("volcarPz")) bt("volcarPz").onclick = async () => {
+      const di = t => { const c = $("#avisoPz"); if(c) c.innerHTML = t; };
+      di(`<div class="aviso">Leyendo las pizarras…</div>`);
+      try{
+        const filas = await API.pizarraSesion(s.codigo);
+        const mod = {...(s.modelo || {})};
+        const elab = {...(mod.elaborado || {})};
+        const crudo = {...(mod.pizarra || {})};
+        const hechas = [], pisadas = [], vacias = [];
+        const pendiente = [];
+        (filas || []).forEach(f => {
+          const z = zonasDeEscena(f.escena);
+          const k = String(f.clave || "").toLowerCase();
+          if(!z || !/^e[1-9]$/.test(k)) return;
+          const algo = Object.values(z).some(x => x.texto);
+          if(!algo){ vacias.push(k); return; }
+          pendiente.push({k, z});
+          if((elab[k] || {}).relato) pisadas.push(k);
+        });
+        if(!pendiente.length){
+          di(`<div class="aviso rojo"><b>No hay nada escrito todavía.</b> Las mesas tienen la
+            plantilla, pero ninguna zona tiene texto${vacias.length
+              ? " (" + vacias.length + (vacias.length===1 ? " pizarra vacía" : " pizarras vacías") + ")" : ""}.</div>`);
+          return;
+        }
+        if(pisadas.length && !confirm("Vas a sobrescribir el relato ya escrito de "
+            + pisadas.length + (pisadas.length === 1 ? " escenario" : " escenarios")
+            + " (" + pisadas.join(", ").toUpperCase() + ").\n\nLo que hay ahora se pierde y se "
+            + "sustituye por lo que han escrito las mesas. ¿Seguimos?")){
+          di(`<div class="aviso">Volcado cancelado. No se ha tocado nada.</div>`);
+          return;
+        }
+        pendiente.forEach(({k, z}) => {
+          crudo[k] = {};
+          Object.keys(z).forEach(a => { crudo[k][a] = z[a].texto; });
+          const v = {...(elab[k] || {})};
+          if(z.nombre && z.nombre.texto)
+            v.nombre = z.nombre.texto.split("\n")[0].slice(0, 120);
+          if(z.titular && z.titular.texto)
+            v.lema = z.titular.texto.split("\n").join(" ").slice(0, 240);
+          const partes = [];
+          ["verdad", "ganan", "senales"].forEach(a => {
+            if(z[a] && z[a].texto) partes.push(z[a].titulo + "\n" + z[a].texto); });
+          if(partes.length) v.relato = partes.join("\n\n");
+          elab[k] = v;
+          hechas.push(k);
+        });
+        mod.elaborado = elab; mod.pizarra = crudo;
+        Object.assign(s, await API.actualizarSesion(s.id, {modelo: mod}));
+        di(`<div class="aviso"><b>Volcadas ${hechas.length}
+          ${hechas.length === 1 ? "mesa" : "mesas"}</b> (${esc(hechas.join(", ").toUpperCase())}).
+          Ya salen en el mapa de escenarios, en la proyección y en el informe.${vacias.length
+            ? " Quedan " + vacias.length + " sin escribir nada." : ""}</div>`);
+      }catch(e){
+        di(`<div class="aviso rojo">No se ha podido volcar: ${esc(e.message || String(e))}</div>`);
+      }
+    };
     if(bt("pubM")) bt("pubM").onclick = () =>
       cambiarSesion({resultados_publicos: !s.resultados_publicos});
     /* Publica y proyecta en el mismo gesto: si fueran dos botones, el
