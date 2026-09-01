@@ -678,7 +678,6 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--
   /* Y el radar entero en una página: partido por la mitad no es un
      gráfico, son dos medias lunas. */
   .informe-bloque svg{break-inside:avoid}
-  .informe-bloque img{break-inside:avoid;max-height:150mm;object-fit:contain}
 
   /* Los sellos del semáforo, en papel. El navegador no imprime fondos por
      omisión —y a una impresora de oficina en blanco y negro le da igual lo
@@ -822,9 +821,6 @@ const CSS_RADAR = `
 @media (max-width:1100px){.proy .radar-pared{grid-template-columns:1fr;gap:20px}}
 .qr-vacio{max-width:210px;font-size:12.5px;line-height:1.45;color:var(--text-muted);
   border:1px dashed var(--border);padding:12px 14px;background:none}
-.qr-mesa{flex:0 0 auto;margin-left:14px}
-.qr-mesa svg{width:96px;height:96px;display:block}
-.proy-pz{position:fixed;inset:0;padding:0;margin:0;max-width:none;height:100vh;height:100svh}
 .corte-fila{display:grid;grid-template-columns:26px minmax(130px,1.1fr) minmax(90px,1.6fr) 46px;
   gap:14px;align-items:center;padding:7px 0}
 .corte-n{font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:13px;text-align:right}
@@ -1250,13 +1246,6 @@ const API = {
     }
     const { data, error } = await sb.rpc("resultados_sesion", {p_codigo:codigo});
     if(error) throw error; return data;
-  },
-  /* Las pizarras de una sesion. Devuelve una fila por mesa con su
-     escena y, si la mesa lleva un rato trabajando, una imagen. */
-  async pizarraSesion(codigo){
-    if(this.demo()) return [];
-    const { data, error } = await sb.rpc("pizarra_sesion", {p_codigo: codigo});
-    if(error) throw error; return data || [];
   },
   async inventario(){
     if(this.demo()){
@@ -5149,12 +5138,6 @@ async function informeSesion(s, preguntas, volver){
     }
   }
 
-  /* Las pizarras de mesa, para el informe. Se piden aparte porque no
-     son respuestas de nadie: son el entregable de cada grupo. */
-  let pizarras = [];
-  if(String(s.instrumento||"").split("-")[0] === "escenarios"){
-    try{ pizarras = await API.pizarraSesion(s.codigo) || []; }catch(e){}
-  }
 
   const conDatos = partes.filter(x => (x.r && x.r.datos)
     || (x.rt && ((x.rt.grupos||[]).length || (x.rt.tarjetas||[]).length))).length;
@@ -5279,31 +5262,6 @@ async function informeSesion(s, preguntas, volver){
   const eq = String(s.instrumento||"").split("-")[0] === "equipos"
     ? lecturaEquipos(partes) : {cap:"", corte:""};
 
-  /* Un bloque por mesa: la imagen de lo que dibujaron y, debajo, el
-     texto de cada zona. La imagen es el ambiente; el texto es lo que se
-     puede citar en una reunion tres semanas despues. */
-  const bloquesPizarra = (pizarras || []).map(f => {
-    const z = zonasDeEscena(f.escena);
-    const svg = (f.escena || {}).svg;
-    if(!z && !svg) return "";
-    const conTexto = z ? Object.keys(z).filter(k => z[k].texto) : [];
-    if(!conTexto.length && !svg) return "";
-    const k = String(f.clave || "").toUpperCase();
-    return `<div class="card informe-bloque">
-      <span class="num">MESA ${esc(k)}</span><h2>La pizarra de la mesa ${esc(k)}</h2>
-      <div class="small" style="margin-top:8px">${f.actualizado_en
-        ? "última anotación: " + esc(new Date(f.actualizado_en).toLocaleString("es-ES",
-            {day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"}))
-        : "sin fecha"}</div>
-      ${svg ? `<div style="margin-top:16px">${imagenPizarra(svg, "Pizarra de la mesa " + k)}</div>`
-            : `<div class="aviso" style="margin-top:12px">No hay imagen guardada de esta pizarra:
-               la mesa escribió menos de un minuto, que es cada cuánto se guarda la imagen.</div>`}
-      ${conTexto.length ? `<div style="margin-top:20px">${conTexto.map(a => `
-        <h3 style="margin-top:16px">${esc(z[a].titulo)}</h3>
-        <p style="white-space:pre-wrap;margin-top:4px">${esc(z[a].texto)}</p>`).join("")}</div>`
-        : `<p class="small" style="margin-top:16px">Sin texto dentro de las zonas.</p>`}
-    </div>`;
-  }).filter(Boolean);
 
   const org = (s.organizacion || {}).nombre || "";
   const hoy = new Date().toLocaleDateString("es-ES",
@@ -5334,9 +5292,7 @@ async function informeSesion(s, preguntas, volver){
       </dl>
       <nav class="contenido">
         <h3>Contenido</h3>
-        <ol>${bloquesPizarra.map((_, i) => `<li><b>··</b><span>La pizarra de la mesa ${
-            esc(String((pizarras[i]||{}).clave||"").toUpperCase())}</span></li>`).join("")}${
-          bloqueRadar ? `<li><b>··</b><span>Madurez e importancia, ámbito por ámbito</span></li>` : ""}${
+        <ol>${bloqueRadar ? `<li><b>··</b><span>Madurez e importancia, ámbito por ámbito</span></li>` : ""}${
           eq.cap ? `<li><b>··</b><span>Lo que hace falta y lo que hay</span></li>` : ""}${
           eq.corte ? `<li><b>··</b><span>El corte</span></li>` : ""}${
           brecha() ? `<li><b>··</b><span>Dónde está la brecha</span></li>` : ""}${
@@ -5352,7 +5308,6 @@ async function informeSesion(s, preguntas, volver){
         <b>Más opciones</b> la casilla «Encabezados y pies de página»; ten en cuenta que
         el navegador escribe ahí también la dirección web y la fecha del sistema.</p>
     </div>
-    ${bloquesPizarra.join("")}
     ${bloqueRadar}
     ${eq.cap}
     ${eq.corte}
@@ -5388,61 +5343,6 @@ async function informeSesion(s, preguntas, volver){
   window.scrollTo({top:0});
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   LEER LAS ZONAS DE UNA PIZARRA
-   ═══════════════════════════════════════════════════════════════════
-   La plantilla de cada mesa nace con marcos de Excalidraw, y cada marco
-   lleva su clave en `customData.zona`. Lo que se escribe dentro queda
-   apuntado al marco —`frameId`—, asi que sacar el texto de cada zona es
-   agrupar por marco y ordenar por posicion.
-
-   La clave viaja en el propio dibujo y no aqui: si maniana cambias las
-   zonas de la plantilla, esto sigue funcionando sin tocar nada. Lo que
-   la consola decide es solo a que campo del modelo baja cada clave.
-
-   Tres cuidados que no son opcionales:
-   · Las pistas grises de la plantilla se saltan: son instrucciones, no
-     respuestas, y colarlas en el relato seria ridiculo.
-   · El texto metido dentro de una forma —una nota adhesiva— cuelga de
-     la forma, no del marco, asi que se mira tambien el contenedor.
-   · Y si algo no tiene marco apuntado —llego arrastrado de otra parte,
-     o lo dibujo una version anterior— se cae a la geometria. */
-function zonasDeEscena(escena){
-  const els = (escena && escena.elements) || [];
-  const marcos = els.filter(e => e.type === "frame" && e.customData && e.customData.zona);
-  if(!marcos.length) return null;
-  const porId = {}; els.forEach(e => { porId[e.id] = e; });
-  const dentro = (e, m) => {
-    const cx = e.x + (e.width || 0) / 2, cy = e.y + (e.height || 0) / 2;
-    return cx >= m.x && cx <= m.x + m.width && cy >= m.y && cy <= m.y + m.height;
-  };
-  const salida = {};
-  marcos.forEach(m => {
-    const textos = els.filter(e => {
-      if(e.type !== "text" || e.isDeleted) return false;
-      if(e.customData && e.customData.pista) return false;
-      const cont = e.containerId ? porId[e.containerId] : null;
-      const fid = e.frameId || (cont && cont.frameId) || null;
-      return fid ? fid === m.id : dentro(cont || e, m);
-    }).sort((a, b) => (a.y - b.y) || (a.x - b.x));
-    salida[m.customData.zona] = {
-      titulo: String(m.name || m.customData.zona).replace(/^\s*\d+\s*·\s*/, ""),
-      texto: textos.map(t => String(t.text || "").trim()).filter(Boolean).join("\n")
-    };
-  });
-  return salida;
-}
-
-/* El SVG que guarda la mesa viene de la base de datos, y a la base de
-   datos puede escribir cualquiera que tenga el codigo de la sesion. Asi
-   que NO se inyecta como HTML: se mete dentro de una imagen, donde un
-   script no se ejecuta. Cuesta lo mismo y cierra la puerta. */
-function imagenPizarra(svg, alt){
-  if(!svg || svg.length > 900000) return "";
-  return '<img alt="' + esc(alt || "Pizarra de la mesa") + '" src="data:image/svg+xml;charset=utf-8,'
-       + encodeURIComponent(svg).replace(/'/g, "%27").replace(/"/g, "%22")
-       + '" style="width:100%;height:auto;display:block;border:1px solid var(--border)">';
-}
 
 /* Qué hoja del modelo cerrado está en la pared, cuándo giró por última vez
    y si ya se ató el teclado. Fuera de `proyeccionMotor` porque su `pinta`
@@ -5838,25 +5738,6 @@ async function proyeccionMotor(codigo, s){
       return;
     }
 
-    /* ── UNA PIZARRA DE MESA EN LA PARED ───────────────────────────
-       Se reutiliza la propia pagina en modo solo lectura dentro de un
-       marco. Volver a dibujar el lienzo aqui habria significado meter
-       Excalidraw tambien en la consola, y la consola es un archivo suelto
-       sin compilar: eso es justamente lo que no queremos. */
-    if(va.startsWith("pz:")){
-      const clave = va.slice(3).replace(/[^a-z0-9]/gi, "").toLowerCase() || "e1";
-      const src = location.origin + location.pathname.replace(/[^/]*$/, "")
-        + "pizarra.html?s=" + encodeURIComponent(codigo) + "&g=" + clave + "&ro=1";
-      /* Solo se rehace el marco si cambia la mesa: repintarlo cada tres
-         segundos recargaria Excalidraw entero delante de la sala. */
-      if(window.__pzActual !== src){
-        window.__pzActual = src;
-        app().innerHTML = `<div class="proy proy-pz">
-          <iframe src="${esc(src)}" title="Pizarra de la mesa"
-            style="border:0;width:100%;height:100%;display:block"></iframe></div>`;
-      }
-      return;
-    }
 
     if(!va.startsWith("q:")){
       const prog = await API.progreso(codigo).catch(()=>null);
@@ -6561,54 +6442,6 @@ async function consolaMotor(s){
             : "Escríbelas en el contenido de cada pregunta, o crea la encuesta enlazada a un taller."}</div>`}
       </div>`;})() : ""}
 
-      ${(() => {
-        /* LAS PIZARRAS DE MESA.
-           Un lienzo por grupo, cada uno en el portatil de su mesa. No hay
-           sincronizacion entre aparatos y es deliberado: si cada uno dibuja
-           en su movil, la mesa deja de hablar, y el debate por mesa es lo
-           que esto existe para sostener. */
-        if(String(s.instrumento||"").split("-")[0] !== "escenarios") return "";
-        const m = s.modelo || {};
-        const base = location.origin + location.pathname.replace(/[^/]*$/, "") + "pizarra.html";
-        const mesas = [1,2,3,4].map(i => {
-          const el = (m.elaborado || {})["e"+i] || {};
-          const es = (m.escenarios || [])[i-1] || {};
-          return {i, clave:"e"+i,
-                  nombre: (el.nombre || es.nombre || "").trim(),
-                  url: base + "?s=" + encodeURIComponent(s.codigo) + "&g=e" + i + "&p=esc"};
-        });
-        return `<div class="card">
-          <h2>Las pizarras de mesa</h2>
-          <p class="small">Un lienzo por grupo. Se abre en el portátil de cada mesa con su
-            enlace, y se guarda solo cada pocos segundos. <b>No hay sincronización entre
-            aparatos</b>: una pantalla por mesa, que es lo que hace que la mesa hable. Si
-            abres la misma mesa en dos equipos, gana el último que guarde.</p>
-          <div class="lista">${mesas.map(x => `<div class="it">
-            <div><b>Mesa ${x.i}</b>${x.nombre ? " · " + esc(x.nombre) : ""}
-              <div class="small" style="word-break:break-all">${esc(x.url)}</div></div>
-            <div class="btnrow" style="margin:0">
-              <button class="btn ghost sm" onclick="copiar('${esc(x.url)}')">Copiar</button>
-              <button class="btn ghost sm" onclick="window.open('${esc(x.url)}','pz-${esc(x.clave)}')">Abrir</button>
-              <button class="btn ghost sm" data-proypz="${esc(x.clave)}">Proyectar</button>
-            </div>
-            <div class="qr qr-mesa" id="qr-${esc(x.clave)}" data-qrpz="${esc(x.url)}"></div></div>`).join("")}</div>
-          <div class="btnrow"><button class="btn ghost" id="hojaPz">Hoja para imprimir con los cuatro QR</button></div>
-          <p class="note">«Proyectar» pone esa pizarra en la pared <b>en solo lectura</b> y se
-            refresca sola cada pocos segundos: la sala ve avanzar a la mesa sin poder tocarla.
-            Al cerrar la sesión las pizarras dejan de guardarse: lo dibujado se conserva, pero
-            ya no se puede cambiar desde un enlace que alguien tenga guardado.</p>
-          <div class="btnrow"><button class="btn" id="volcarPz">Volcar lo escrito en las pizarras</button></div>
-          <div id="avisoPz"></div>
-          <p class="note"><b>Volcar</b> lee el texto de cada zona de cada mesa y lo baja al
-            relato de su escenario: el nombre y el titular a su sitio, y las tres zonas
-            largas al relato. Lo dibujado alrededor de las zonas se queda como dibujo. Pide
-            confirmación antes de pisar un relato que ya tuviera texto.</p>
-          <p class="note">Las mesas guardan además una copia en su propio navegador. Si la wifi
-            de la sala se cae, la mesa sigue trabajando y al volver la conexión se sube lo más
-            reciente. Lo que <b>no</b> conviene es pegar imágenes: viajan dentro del dibujo y
-            hay un tope de cuatro megas por pizarra.</p>
-        </div>`;
-      })()}
 
       <div class="card">
         <h2>Variables del ejercicio</h2>
@@ -6817,115 +6650,6 @@ async function consolaMotor(s){
       return cambiarSesion(cambios);
     };
     if(bt("espera")) bt("espera").onclick = () => cambiarSesion({vista_activa:"espera"});
-    app().querySelectorAll("[data-proypz]").forEach(b => b.onclick = () =>
-      cambiarSesion({vista_activa: "pz:" + b.dataset.proypz}));
-
-    /* Un QR por mesa. Copiar cuatro direcciones a cuatro portatiles es
-       cinco minutos de sala y alguna errata; escanear es inmediato. Se
-       pintan despues de dibujar la tarjeta, cuando los huecos existen. */
-    app().querySelectorAll("[data-qrpz]").forEach(d =>
-      pintarQR(d.id, d.dataset.qrpz, 3));
-
-    /* Y la hoja para dejar impresa encima de cada mesa. Se abre en una
-       ventana aparte y se imprime desde ahi: montar esto dentro de la
-       consola obligaria a esconder media pantalla al imprimir. */
-    if(bt("hojaPz")) bt("hojaPz").onclick = () => {
-      const base = location.origin + location.pathname.replace(/[^/]*$/, "") + "pizarra.html";
-      const m = s.modelo || {};
-      const tarjetas = [1,2,3,4].map(i => {
-        const el = (m.elaborado || {})["e"+i] || {};
-        const es = (m.escenarios || [])[i-1] || {};
-        const url = base + "?s=" + encodeURIComponent(s.codigo) + "&g=e" + i + "&p=esc";
-        let svg = "";
-        try{ const q = qrcode(0, "M"); q.addData(url); q.make();
-             svg = q.createSvgTag({cellSize:6, margin:2, scalable:false}); }catch(e){}
-        return `<div class="m">
-          <div class="et">Mesa ${i}${(el.nombre || es.nombre) ? " · " + esc(el.nombre || es.nombre) : ""}</div>
-          <div class="q">${svg}</div>
-          <div class="u">${esc(url)}</div></div>`;
-      }).join("");
-      const w = window.open("", "hoja-pz-" + s.codigo, "width=900,height=1100");
-      if(!w){ alert("El navegador ha bloqueado la ventana. Permite las ventanas emergentes "
-        + "de este sitio y vuelve a pulsar."); return; }
-      w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8">
-        <title>Pizarras de mesa · ${esc(s.codigo)}</title><style>
-        body{font:14px/1.4 system-ui,sans-serif;color:#111;margin:22mm 18mm}
-        h1{font-size:20px;margin:0 0 4px} .sub{color:#666;margin:0 0 26px;font-size:13px}
-        .rej{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-        .m{border:1px solid #ddd;padding:16px;text-align:center;break-inside:avoid}
-        .et{font-weight:700;margin-bottom:10px}
-        .q svg{width:150px;height:150px}
-        .u{font-size:9.5px;color:#777;word-break:break-all;margin-top:10px}
-        .pie{margin-top:26px;font-size:12px;color:#666}
-        @media print{@page{margin:16mm} body{margin:0}}
-        </style></head><body>
-        <h1>${esc(s.titulo)}</h1>
-        <p class="sub">${esc(s.codigo)} · una pizarra por mesa · escanea el QR de tu mesa
-          desde el portátil o la tableta que vais a compartir</p>
-        <div class="rej">${tarjetas}</div>
-        <p class="pie">Cada mesa trabaja en <b>una sola pantalla</b>: es lo que hace que la
-          mesa hable en vez de mirar cada uno la suya. Lo que escribáis se guarda solo.</p>
-        </body></html>`);
-      w.document.close();
-      setTimeout(() => { try{ w.focus(); w.print(); }catch(e){} }, 400);
-    };
-    if(bt("volcarPz")) bt("volcarPz").onclick = async () => {
-      const di = t => { const c = $("#avisoPz"); if(c) c.innerHTML = t; };
-      di(`<div class="aviso">Leyendo las pizarras…</div>`);
-      try{
-        const filas = await API.pizarraSesion(s.codigo);
-        const mod = {...(s.modelo || {})};
-        const elab = {...(mod.elaborado || {})};
-        const crudo = {...(mod.pizarra || {})};
-        const hechas = [], pisadas = [], vacias = [];
-        const pendiente = [];
-        (filas || []).forEach(f => {
-          const z = zonasDeEscena(f.escena);
-          const k = String(f.clave || "").toLowerCase();
-          if(!z || !/^e[1-9]$/.test(k)) return;
-          const algo = Object.values(z).some(x => x.texto);
-          if(!algo){ vacias.push(k); return; }
-          pendiente.push({k, z});
-          if((elab[k] || {}).relato) pisadas.push(k);
-        });
-        if(!pendiente.length){
-          di(`<div class="aviso rojo"><b>No hay nada escrito todavía.</b> Las mesas tienen la
-            plantilla, pero ninguna zona tiene texto${vacias.length
-              ? " (" + vacias.length + (vacias.length===1 ? " pizarra vacía" : " pizarras vacías") + ")" : ""}.</div>`);
-          return;
-        }
-        if(pisadas.length && !confirm("Vas a sobrescribir el relato ya escrito de "
-            + pisadas.length + (pisadas.length === 1 ? " escenario" : " escenarios")
-            + " (" + pisadas.join(", ").toUpperCase() + ").\n\nLo que hay ahora se pierde y se "
-            + "sustituye por lo que han escrito las mesas. ¿Seguimos?")){
-          di(`<div class="aviso">Volcado cancelado. No se ha tocado nada.</div>`);
-          return;
-        }
-        pendiente.forEach(({k, z}) => {
-          crudo[k] = {};
-          Object.keys(z).forEach(a => { crudo[k][a] = z[a].texto; });
-          const v = {...(elab[k] || {})};
-          if(z.nombre && z.nombre.texto)
-            v.nombre = z.nombre.texto.split("\n")[0].slice(0, 120);
-          if(z.titular && z.titular.texto)
-            v.lema = z.titular.texto.split("\n").join(" ").slice(0, 240);
-          const partes = [];
-          ["verdad", "ganan", "senales"].forEach(a => {
-            if(z[a] && z[a].texto) partes.push(z[a].titulo + "\n" + z[a].texto); });
-          if(partes.length) v.relato = partes.join("\n\n");
-          elab[k] = v;
-          hechas.push(k);
-        });
-        mod.elaborado = elab; mod.pizarra = crudo;
-        Object.assign(s, await API.actualizarSesion(s.id, {modelo: mod}));
-        di(`<div class="aviso"><b>Volcadas ${hechas.length}
-          ${hechas.length === 1 ? "mesa" : "mesas"}</b> (${esc(hechas.join(", ").toUpperCase())}).
-          Ya salen en el mapa de escenarios, en la proyección y en el informe.${vacias.length
-            ? " Quedan " + vacias.length + " sin escribir nada." : ""}</div>`);
-      }catch(e){
-        di(`<div class="aviso rojo">No se ha podido volcar: ${esc(e.message || String(e))}</div>`);
-      }
-    };
     if(bt("pubM")) bt("pubM").onclick = () =>
       cambiarSesion({resultados_publicos: !s.resultados_publicos});
     /* Publica y proyecta en el mismo gesto: si fueran dos botones, el
