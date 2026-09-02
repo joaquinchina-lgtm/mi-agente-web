@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- El área privada no debe aparecer en buscadores. No sustituye a la
+     autenticación: es higiene, para que la consola no se indexe. -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Memoria del Reactor · Área interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{--ink:#16211f;--muted:#5c6360;--brand:#32717E;--line:#e4e7e6;--soft:#EAF0F1;--brandd:#22525C;--alerta:#8a6d1f;--rojo:#9b4a3d;--verde:#2f6b4f}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.48;letter-spacing:-.008em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:44px 24px 90px}
+.kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.kick-fila{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px}
+.kick-fila .kick{margin:0}
+.a-web{font:600 11px/1 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:9px 13px;white-space:nowrap;transition:color .16s,border-color .16s}
+.a-web:hover{color:var(--brandd);border-color:var(--brand)}
+.a-web span{margin-right:7px}
+h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:-.032em;margin:0 0 12px}
+.lead{font-size:18px;line-height:1.44;color:#2c3733;max-width:62ch;margin:0 0 24px}
+.aviso{background:var(--soft);padding:15px 17px;font-size:14.5px;line-height:1.46;color:#20302c;margin:0 0 26px}
+.aviso code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:#fff;padding:1px 5px}
+h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:21px;letter-spacing:-.024em;margin:38px 0 6px}
+h2 span{font-family:'Inter',sans-serif;font-weight:400;font-size:14px;letter-spacing:0;color:var(--muted);margin-left:8px}
+p.ayuda{font-size:14.5px;color:var(--muted);margin:0 0 14px;max-width:70ch}
+
+.b{border:1px solid var(--line);background:#fff;color:#41504b;font:inherit;font-size:14px;padding:9px 14px;cursor:pointer;border-radius:2px}
+.b:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+.b.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+.b.p:hover:not(:disabled){background:var(--brandd);border-color:var(--brandd);color:#fff}
+.b.si{color:var(--verde);border-color:#cfe0d6}
+.b.no{color:var(--rojo);border-color:#e8d5d1}
+.b:disabled{opacity:.45;cursor:default}
+
+.caja{border:1px solid var(--line);padding:18px;background:#fbfbfa;margin:0 0 6px}
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label.campo{display:block;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+label.campo input,label.campo select,label.campo textarea{width:100%;margin-top:5px;border:1px solid var(--line);background:#fff;padding:10px 11px;font:inherit;font-size:15px;color:var(--ink);border-radius:2px}
+label.campo textarea{min-height:64px;resize:vertical}
+.acciones{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+
+.fila-buscar{display:flex;border:1px solid var(--line);background:#fff}
+.fila-buscar input{flex:1;border:0;outline:0;padding:13px 14px;font:inherit;font-size:16px;background:transparent;min-width:0}
+.fila-buscar button{border:0;background:var(--ink);color:#fff;font:600 13.5px/1 'Inter',sans-serif;padding:0 18px;cursor:pointer}
+
+ol.lista{list-style:none;margin:14px 0 0;padding:0}
+ol.lista li{border-top:1px solid #eceae4;padding:12px 0}
+.tit{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.tit b{font-size:15.5px}
+.uni{font:600 11px/1 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--brandd);border:1px solid var(--line);padding:4px 7px}
+.meta{font-size:13.5px;color:var(--muted);margin-top:3px}
+.meta a{color:var(--brandd)}
+.lin{font-size:14px;color:#3d4844;margin-top:6px;max-width:78ch}
+.mini{height:5px;background:var(--line);position:relative;width:88px;display:inline-block;vertical-align:middle}
+.mini i{position:absolute;inset:0 auto 0 0;background:var(--brand)}
+
+.firma{margin-top:10px;display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.firma input{flex:1;min-width:240px;border:1px solid var(--line);padding:9px 11px;font:inherit;font-size:14.5px;border-radius:2px}
+.sello{font-size:13.5px;margin-top:6px}
+.sello b{color:var(--ink)}
+.v-sirve{color:var(--verde);font-weight:600}
+.v-no{color:var(--rojo);font-weight:600}
+
+.estado{font-size:13.5px;color:var(--muted)}
+.estado.mal{color:var(--rojo);font-weight:600}
+.estado.bien{color:var(--verde);font-weight:600}
+.vacio{font-size:14.5px;color:var(--muted);margin:14px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="kick-fila"><p class="kick">Área interna</p><a class="a-web" href="./"><span aria-hidden="true">&larr;</span>Volver al área interna</a></div>
+<h1>Memoria del Reactor</h1>
+<p class="lead">Busca capacidades de I+D, propón conexiones con un escenario y fírmalas. La máquina propone; la conexión sólo existe cuando una persona la firma con nombre y motivo.</p>
+
+<div class="aviso">
+  <p style="margin:0 0 9px"><b>Un descarte vale tanto como un acierto.</b> «No sirve, porque trabajan zoonosis animal y no exposición humana» es conocimiento que hoy se pierde al acabar la edición. Fírmalo igual.</p>
+  <p style="margin:0"><b>Esta página no tiene autenticación</b>, como el resto de <code>/interno/</code>. Cualquiera con la clave publicable puede firmar. Antes de abrirla a participantes hay que poner una puerta.</p>
+</div>
+
+<h2>Quién firma</h2>
+<p class="ayuda">Se guarda sólo en este navegador. Sin nombre, la base rechaza la firma.</p>
+<div class="caja">
+  <div class="campos">
+    <label class="campo">Nombre y apellido
+      <input id="firmante" placeholder="Begoña Vicente" autocomplete="name">
+    </label>
+  </div>
+</div>
+
+<h2>Escenario<span>sobre el que se firma</span></h2>
+<div class="caja">
+  <div class="campos">
+    <label class="campo">Escenarios existentes
+      <select id="sel-escenario"><option value="">— ninguno todavía —</option></select>
+    </label>
+  </div>
+  <div class="acciones">
+    <button class="b" id="btn-nuevo">Crear escenario nuevo</button>
+    <span class="estado" id="est-escenario"></span>
+  </div>
+
+  <div id="form-nuevo" hidden style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px">
+    <div class="campos">
+      <label class="campo">Organización
+        <select id="n-org"></select>
+      </label>
+      <label class="campo">Módulo
+        <select id="n-modulo">
+          <option value="1">M1 · Propuesta inicial</option>
+          <option value="2" selected>M2 · Hipótesis organizacional</option>
+          <option value="3">M3 · Problema-tecnología</option>
+          <option value="4">M4 · Propuesta final</option>
+        </select>
+      </label>
+      <label class="campo">Visibilidad
+        <select id="n-vis">
+          <option value="cliente" selected>Cliente — no se acumula entre organizaciones</option>
+          <option value="metodo">Método — material reutilizable</option>
+        </select>
+      </label>
+    </div>
+    <div class="campos" style="margin-top:12px">
+      <label class="campo" style="grid-column:1/-1">Declaración del problema
+        <textarea id="n-decl" placeholder="No somos capaces de anticipar los impactos encadenados de eventos climáticos extremos en Navarra"></textarea>
+      </label>
+      <label class="campo" style="grid-column:1/-1">Título del escenario
+        <input id="n-tit" placeholder="Sistema de alerta temprana salud-clima">
+      </label>
+    </div>
+    <div class="acciones">
+      <button class="b p" id="btn-crear">Crear</button>
+      <button class="b" id="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<h2>Buscar capacidades<span id="n-recursos"></span></h2>
+<p class="ayuda">Escribe el problema con sus palabras, no palabras clave sueltas. La búsqueda une los términos con O y ordena por relevancia y por cuántos términos cubre cada grupo. «Términos» dice cuántos de tu consulta aparecen en esa ficha.</p>
+<div class="fila-buscar">
+  <input id="q" placeholder="ola de calor salud pública epidemiología clima vulnerabilidad urbana" autocomplete="off">
+  <button id="btn-buscar">Buscar</button>
+</div>
+<div class="acciones">
+  <button class="b" id="btn-proponer" disabled>Proponer los resultados al escenario</button>
+  <span class="estado" id="est-buscar"></span>
+</div>
+<ol class="lista" id="resultados"></ol>
+
+<h2>Conexiones del escenario<span id="n-conexiones"></span></h2>
+<ol class="lista" id="conexiones"></ol>
+<p class="vacio" id="sin-conexiones">Elige un escenario para ver sus conexiones.</p>
+
+</div>
+
+<script>
+const CONFIG = {
+  SUPABASE_URL:  "https://hugtfjbuzltvhysrjlxv.supabase.co",
+  // Clave publicable. NUNCA pongas aquí la clave `service_role`.
+  SUPABASE_ANON: "sb_publishable_y_q6WtW5rfR5A_LOE7-Q0g_OXeRjcW0"
+};
+const db = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON);
+
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const estado = (el, txt, clase) => { const e = $(el); e.textContent = txt; e.className = 'estado' + (clase ? ' ' + clase : ''); };
+
+let escenarioActual = null;
+let ultimaConsulta = '';
+
+// El nombre del firmante se recuerda en este navegador. Es una comodidad, no
+// una identidad: la base sólo guarda el texto que se escriba aquí.
+try {
+  const g = localStorage.getItem('mr_firmante');
+  if (g) $('#firmante').value = g;
+} catch (e) {}
+$('#firmante').addEventListener('input', () => {
+  try { localStorage.setItem('mr_firmante', $('#firmante').value); } catch (e) {}
+});
+
+function firmante() {
+  const v = $('#firmante').value.trim();
+  if (!v) { $('#firmante').focus(); throw new Error('Escribe tu nombre antes de firmar.'); }
+  return v;
+}
+
+async function cargarEscenarios(seleccionar) {
+  const { data, error } = await db.rpc('mr_escenarios');
+  if (error) return estado('#est-escenario', 'No se han podido leer los escenarios: ' + error.message, 'mal');
+  const sel = $('#sel-escenario');
+  sel.innerHTML = '<option value="">— elige un escenario —</option>';
+  (data || []).forEach(e => {
+    const o = document.createElement('option');
+    o.value = e.escenario_id;
+    o.textContent = `M${e.modulo} · ${e.titulo} — ${e.organizacion}` +
+      (e.firmadas ? ` (${e.firmadas} firmadas)` : e.propuestas ? ` (${e.propuestas} sin firmar)` : '');
+    sel.appendChild(o);
+  });
+  if (seleccionar) sel.value = seleccionar;
+  escenarioActual = sel.value || null;
+  estado('#est-escenario', (data || []).length + ' escenario(s)');
+  await cargarConexiones();
+  sincronizarBotones();
+}
+
+async function cargarOrganizaciones() {
+  const { data, error } = await db.rpc('mr_organizaciones');
+  const sel = $('#n-org');
+  sel.innerHTML = '';
+  if (error || !data || !data.length) {
+    sel.innerHTML = '<option value="">— no hay organizaciones —</option>';
+    return;
+  }
+  data.forEach(o => {
+    const op = document.createElement('option');
+    op.value = o.id; op.textContent = o.nombre; sel.appendChild(op);
+  });
+}
+
+// Por RPC y no leyendo la tabla: PostgREST devuelve 401 "permission denied for
+// table recurso" porque la política RLS no basta sin GRANT, y prefiero no
+// conceder SELECT sobre tablas a la clave publicable. Comprobado el 02/09/2026.
+async function contarRecursos() {
+  const { data, error } = await db.rpc('mr_total_recursos');
+  if (!error && data != null) $('#n-recursos').textContent = Number(data).toLocaleString('es-ES') + ' en el catálogo';
+}
+
+function sincronizarBotones() {
+  $('#btn-proponer').disabled = !(escenarioActual && ultimaConsulta);
+}
+
+$('#sel-escenario').addEventListener('change', async () => {
+  escenarioActual = $('#sel-escenario').value || null;
+  sincronizarBotones();
+  await cargarConexiones();
+});
+
+$('#btn-nuevo').addEventListener('click', () => { $('#form-nuevo').hidden = false; $('#n-decl').focus(); });
+$('#btn-cancelar').addEventListener('click', () => { $('#form-nuevo').hidden = true; });
+
+$('#btn-crear').addEventListener('click', async () => {
+  const org = $('#n-org').value;
+  if (!org) return estado('#est-escenario', 'Hace falta una organización.', 'mal');
+  estado('#est-escenario', 'Creando…');
+  const { data, error } = await db.rpc('mr_crear_escenario', {
+    p_organizacion_id: org,
+    p_declaracion: $('#n-decl').value,
+    p_titulo: $('#n-tit').value,
+    p_modulo: parseInt($('#n-modulo').value, 10),
+    p_visibilidad: $('#n-vis').value
+  });
+  if (error) return estado('#est-escenario', error.message, 'mal');
+  $('#form-nuevo').hidden = true;
+  $('#n-decl').value = ''; $('#n-tit').value = '';
+  await cargarEscenarios(data);
+  estado('#est-escenario', 'Escenario creado.', 'bien');
+});
+
+async function buscar() {
+  const q = $('#q').value.trim();
+  if (!q) return;
+  estado('#est-buscar', 'Buscando…');
+  const { data, error } = await db.rpc('buscar_recursos', { consulta: q, limite: 20 });
+  if (error) { estado('#est-buscar', error.message, 'mal'); return; }
+  ultimaConsulta = q;
+  sincronizarBotones();
+  const ol = $('#resultados');
+  ol.innerHTML = '';
+  if (!data || !data.length) {
+    estado('#est-buscar', 'Ningún grupo coincide. Prueba con menos jerga y más palabras del problema.', 'mal');
+    return;
+  }
+  const max = data[0].score || 1;
+  data.forEach(r => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<div class="tit"><span class="uni">${esc(r.universidad)}</span><b>${esc(r.nombre)}</b></div>` +
+      `<div class="meta">${r.responsable ? esc(r.responsable) + ' · ' : ''}${r.area ? esc(r.area) + ' · ' : ''}` +
+      `${r.terminos} término(s) · <span class="mini"><i style="width:${Math.round(100 * r.score / max)}%"></i></span>` +
+      `${r.url ? ' · <a href="' + esc(r.url) + '" target="_blank" rel="noopener">ficha</a>' : ''}</div>` +
+      (r.lineas ? `<div class="lin">${esc(r.lineas)}</div>` : '');
+    ol.appendChild(li);
+  });
+  estado('#est-buscar', data.length + ' resultado(s)');
+}
+
+$('#btn-buscar').addEventListener('click', buscar);
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+$('#btn-proponer').addEventListener('click', async () => {
+  if (!escenarioActual || !ultimaConsulta) return;
+  estado('#est-buscar', 'Proponiendo…');
+  const { data, error } = await db.rpc('proponer_conexiones', {
+    p_escenario_id: escenarioActual, p_consulta: ultimaConsulta, p_limite: 10
+  });
+  if (error) return estado('#est-buscar', error.message, 'mal');
+  estado('#est-buscar', data + ' propuesta(s) nueva(s). Sin firmar no valen nada.', 'bien');
+  await cargarConexiones();
+});
+
+async function cargarConexiones() {
+  const ol = $('#conexiones');
+  ol.innerHTML = '';
+  if (!escenarioActual) {
+    $('#sin-conexiones').hidden = false;
+    $('#sin-conexiones').textContent = 'Elige un escenario para ver sus conexiones.';
+    $('#n-conexiones').textContent = '';
+    return;
+  }
+  const { data, error } = await db.rpc('mr_conexiones', { p_escenario_id: escenarioActual });
+  if (error) {
+    $('#sin-conexiones').hidden = false;
+    $('#sin-conexiones').textContent = 'No se han podido leer: ' + error.message;
+    return;
+  }
+  if (!data || !data.length) {
+    $('#sin-conexiones').hidden = false;
+    $('#sin-conexiones').textContent = 'Todavía no hay conexiones. Busca capacidades y propónlas.';
+    $('#n-conexiones').textContent = '';
+    return;
+  }
+  $('#sin-conexiones').hidden = true;
+  const firmadas = data.filter(c => c.firmado_por).length;
+  $('#n-conexiones').textContent = `${firmadas} firmada(s) de ${data.length}`;
+
+  data.forEach(c => {
+    const li = document.createElement('li');
+    const cab =
+      `<div class="tit"><span class="uni">${esc(c.universidad)}</span><b>${esc(c.recurso)}</b></div>` +
+      `<div class="meta">${c.responsable ? esc(c.responsable) : ''}` +
+      `${c.url ? (c.responsable ? ' · ' : '') + '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">ficha</a>' : ''}</div>`;
+    if (c.firmado_por) {
+      const cls = c.veredicto === 'sirve' ? 'v-sirve' : 'v-no';
+      li.innerHTML = cab +
+        `<div class="sello"><span class="${cls}">${c.veredicto === 'sirve' ? 'Sirve' : 'No sirve'}</span> — ` +
+        `${esc(c.razon)}<br><b>${esc(c.firmado_por)}</b>, ${new Date(c.firmado_en).toLocaleDateString('es-ES')}</div>`;
+    } else {
+      li.innerHTML = cab +
+        (c.lineas ? `<div class="lin">${esc(c.lineas)}</div>` : '') +
+        `<div class="firma">` +
+        `<input placeholder="Por qué sirve, o por qué no" data-razon="${c.id}">` +
+        `<button class="b si" data-firmar="${c.id}" data-v="sirve">Sirve</button>` +
+        `<button class="b no" data-firmar="${c.id}" data-v="no_sirve">No sirve</button>` +
+        `</div><div class="estado" data-est="${c.id}"></div>`;
+    }
+    ol.appendChild(li);
+  });
+
+  ol.querySelectorAll('[data-firmar]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.firmar;
+      const est = ol.querySelector(`[data-est="${id}"]`);
+      const razon = ol.querySelector(`[data-razon="${id}"]`).value.trim();
+      let quien;
+      try { quien = firmante(); }
+      catch (e) { est.textContent = e.message; est.className = 'estado mal'; return; }
+      est.textContent = 'Firmando…'; est.className = 'estado';
+      const { error } = await db.rpc('firmar_conexion', {
+        p_conexion_id: id, p_veredicto: btn.dataset.v, p_razon: razon, p_firmante: quien
+      });
+      if (error) { est.textContent = error.message; est.className = 'estado mal'; return; }
+      await cargarConexiones();
+      await cargarEscenarios(escenarioActual);
+    });
+  });
+}
+
+(async function inicio() {
+  await Promise.all([cargarOrganizaciones(), contarRecursos()]);
+  await cargarEscenarios();
+})();
+</script>
+</body>
+</html>
