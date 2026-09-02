@@ -26,7 +26,7 @@
   --marca:#32717E; --marca-fuerte:#22525C; --marca-suave:#EAF0F1;
   --si:#2f6b4f; --no:#9b4a3d; --aviso:#8a6d1f;
   --codigo:#f2f2ef;
-  --cab-fondo:#16211f; --cab-texto:#f4f4f1; --cab-hover:#22312e;
+  --cab-fondo:#4a4945; --cab-texto:#f7f7f4; --cab-hover:#5b5a55;
 }
 @media (prefers-color-scheme: dark){:root:where(:not([data-theme="light"])){
   color-scheme:dark;
@@ -383,8 +383,25 @@ Identifica piezas en cuatro categorías:
 2. PIEZAS TECNOLÓGICAS (sensores low-cost, modelos predictivos simples, APIs abiertas, plataformas de datos abiertos)
 3. PIEZAS DE CONOCIMIENTO (papers sobre umbrales, protocolos existentes, estudios de vulnerabilidad)
 4. PIEZAS AUXILIARES (contactos para acceso a datos, software de visualización)
-PARA CADA PIEZA indica: qué ilustra sobre el problema, a qué escala podemos usarla (mesa/piloto/comunidad), qué nos revelaría sobre el siguiente paso a mayor escala.
-OUTPUT ESPERADO: Tabla con columnas: Pieza | Categoría | Escala inicial | Qué revela | Siguiente escala.
+ESCALA: usa esta escalera de diez peldaños, del más pequeño al más grande. Elige el peldaño MÁS BAJO en el que la pieza ya revele algo:
+1. Mesa — una tarde, con lo que ya tienes encima de la mesa.
+2. Maqueta — un solo caso, con datos de juguete o simulados.
+3. Banco de pruebas — datos reales, en entorno controlado.
+4. Una persona — un usuario, un paciente, un expediente.
+5. Un equipo — una unidad, un servicio, un aula.
+6. Un centro — una organización entera, una sede.
+7. Una comunidad — un barrio, una comarca, un colectivo.
+8. Piloto territorial — una región o una red de centros.
+9. Proceso permanente — integrado en la operación diaria de alguien.
+10. Sistema — política pública, norma o estándar.
+
+COSTE: para cada pieza estima el coste y el esfuerzo de usarla en su escala inicial, en una de tres bandas: BAJO (días de trabajo y nada de dinero), MEDIO (semanas o compra menor), ALTO (meses, contrataciones o inversión). Si puedes, añade una cifra aproximada en euros o en días-persona.
+
+PARA CADA PIEZA indica también: qué ilustra sobre el problema y qué nos revelaría sobre el siguiente peldaño.
+
+Da entre 8 y 12 piezas, no menos, repartidas entre las cuatro categorías.
+
+OUTPUT ESPERADO: Tabla con columnas: Pieza | Categoría | Escala inicial | Coste | Qué revela | Siguiente escala.
 Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
 
 <script type="text/plain" id="sys-personas">Eres un especialista en diseñar conversaciones genuinas para validar (mejor: refutar) supuestos sobre problemas complejos. Tu objetivo NO es buscar aprobación: es diseñar preguntas que hagan visible por qué nuestra definición del problema podría estar equivocada.
@@ -579,9 +596,18 @@ async function runStage(id, withMatices){
   let system = sysPrompt(id);
   let input = buildInput(a);
   if(withMatices){
-    input += '\n\n=== SALIDA PREVIA A REVISAR ===\n' + (state.outputs[id] || '(sin salida previa)')
-          + '\n\n=== MATICES DEL USUARIO (incorpóralos obligatoriamente) ===\n' + (state.matices[id] || '(sin matices)');
-    system += '\n\nIMPORTANTE: reescribe tu OUTPUT ESPERADO incorporando los matices del usuario, manteniendo el resto coherente. Responde en español.';
+    /* Los matices van los ULTIMOS y repetidos en el system: puestos en medio del
+       contexto, el modelo los trataba como un comentario mas y devolvia
+       practicamente la misma tabla. */
+    const mat = (state.matices[id] || '').trim();
+    input += '\n\n=== SALIDA PREVIA (la que hay que corregir) ===\n' + (state.outputs[id] || '(sin salida previa)')
+          + '\n\n=== INSTRUCCION DEL USUARIO ===\n' + (mat || '(sin matices)')
+          + '\n\nAplica esa instrucción. No devuelvas la misma tabla con otras palabras.';
+    system += '\n\nESTÁS REESCRIBIENDO UNA SALIDA ANTERIOR.'
+          + (mat ? ('\nLa instrucción del usuario es: «' + mat + '».'
+              + '\nEsa instrucción MANDA sobre tus criterios por defecto. Si dice que priorice algo, ordena el resultado por ese criterio y descarta lo que no lo cumpla; si dice que descarte algo, no lo incluyas. '
+              + 'Al final, en una línea que empiece por "Cambios:", di qué has cambiado respecto a la salida anterior y por qué. Si no has cambiado nada, dilo y explica por qué la instrucción no era aplicable.') : '')
+          + '\nMantén el formato del OUTPUT ESPERADO. Responde en español.';
   } else {
     system += '\n\nResponde en español con EXACTAMENTE el OUTPUT ESPERADO de este asistente.';
   }
