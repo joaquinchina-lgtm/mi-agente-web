@@ -141,8 +141,20 @@ ol.lista li{border-top:1px solid #eceae4;padding:12px 0}
   </div>
 </div>
 
+<h2>Piezas del agente<span id="n-piezas"></span></h2>
+<p class="ayuda">Pega aquí la salida del <b>agente 02 Piezas</b>, tal como la devuelve. Se normaliza a las cuatro categorías del método y se traduce cada pieza al idioma del catálogo: la pieza está escrita como lo que el equipo necesita, y el catálogo como lo que un grupo sabe hacer. Las auxiliares se marcan como no buscables.</p>
+<div class="caja">
+  <textarea id="piezas-texto" style="width:100%;min-height:120px;border:1px solid var(--line);padding:11px;font:inherit;font-size:14.5px;border-radius:2px" placeholder="Pieza | Categoría | Escala inicial | Qué revela | Siguiente escala&#10;Series históricas de temperatura, humedad y precipitación (AEMET) | Datos | Mesa | ..."></textarea>
+  <div class="acciones">
+    <button class="b p" id="btn-traducir">Normalizar y traducir</button>
+    <button class="b" id="btn-guardar-piezas" disabled>Guardar en el escenario</button>
+    <span class="estado" id="est-piezas"></span>
+  </div>
+</div>
+<ol class="lista" id="piezas"></ol>
+
 <h2>Buscar capacidades<span id="n-recursos"></span></h2>
-<p class="ayuda">Escribe el problema con sus palabras, no palabras clave sueltas. La búsqueda une los términos con O y ordena por relevancia y por cuántos términos cubre cada grupo. «Términos» dice cuántos de tu consulta aparecen en esa ficha.</p>
+<p class="ayuda">Escribe términos de <b>disciplina o capacidad</b>, no el enunciado del problema. Medido sobre un problema real del Reactor: sus palabras más discriminantes eran verbos —anticipar, provocar, explicar— que no aparecen en ninguna ficha. Cada término pesa por lo raro que es en el catálogo, y la puntuación va de 0 a 1. «Términos» dice cuántos de tu consulta aparecen en esa ficha.</p>
 <div class="fila-buscar">
   <input id="q" placeholder="ola de calor salud pública epidemiología clima vulnerabilidad urbana" autocomplete="off">
   <button id="btn-buscar">Buscar</button>
@@ -171,6 +183,31 @@ const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const estado = (el, txt, clase) => { const e = $(el); e.textContent = txt; e.className = 'estado' + (clase ? ' ' + clase : ''); };
 
+// El motor de agentes de reactor.html ya llama a este backend. Se reutiliza tal
+// cual: ni clave de API nueva, ni función intermedia, ni coste añadido.
+const BACKEND = "https://jr-gpt-backend-1.onrender.com";
+
+const SYS_PIEZAS = `Recibes la salida del "agente Piezas" del Reactor de Innovación: una tabla o lista de piezas con nombre, categoría, escala inicial, qué revela y siguiente escala. El formato varía.
+
+Tu trabajo es doble.
+
+1. NORMALIZAR cada pieza a: nombre, categoria, escala, que_revela, siguiente_escala.
+   - categoria: exactamente una de datos, tecnologica, conocimiento, auxiliar.
+   - escala: exactamente una de mesa, comunidad, piloto, proceso.
+   - Si el original no lo dice, deduce la más razonable.
+
+2. TRADUCIR cada pieza a términos con los que buscarla en un catálogo de grupos de investigación de universidades españolas. El catálogo está escrito como LO QUE UN GRUPO SABE HACER (nombres de grupo, departamentos, líneas de investigación), no como LO QUE UN EQUIPO NECESITA. Traduce de lo segundo a lo primero.
+   - "Papers sobre umbrales térmicos de mortalidad" no se busca por "papers" ni por "umbrales": se busca por "epidemiologia ambiental mortalidad calor series temporales".
+   - "Sensores low-cost de temperatura" se busca por "instrumentacion sensores ambientales teledeteccion termica microclima".
+   - Entre 3 y 7 términos, en minúscula, sin verbos, sin topónimos, sin marcas ni nombres de software.
+   - Añade el sinónimo académico cuando la pieza use lenguaje coloquial: "isla de calor" también es "clima urbano" y "termografia".
+
+3. MARCAR buscar: false cuando ningún grupo de investigación puede aportar esa pieza: software genérico, permisos, comités éticos, contactos institucionales. En esas, terminos va vacío.
+
+Responde SOLO con JSON válido, sin texto alrededor:
+{"piezas":[{"nombre":"...","categoria":"datos","escala":"mesa","que_revela":"...","siguiente_escala":"...","terminos":"...","buscar":true}]}`;
+
+let piezasPropuestas = null;
 let escenarioActual = null;
 let ultimaConsulta = '';
 
@@ -206,6 +243,7 @@ async function cargarEscenarios(seleccionar) {
   escenarioActual = sel.value || null;
   estado('#est-escenario', (data || []).length + ' escenario(s)');
   await cargarConexiones();
+  await cargarPiezas();
   sincronizarBotones();
 }
 
@@ -238,7 +276,9 @@ function sincronizarBotones() {
 $('#sel-escenario').addEventListener('change', async () => {
   escenarioActual = $('#sel-escenario').value || null;
   sincronizarBotones();
+  $('#btn-guardar-piezas').disabled = !(escenarioActual && piezasPropuestas);
   await cargarConexiones();
+  await cargarPiezas();
 });
 
 $('#btn-nuevo').addEventListener('click', () => { $('#form-nuevo').hidden = false; $('#n-decl').focus(); });
@@ -303,6 +343,113 @@ $('#btn-proponer').addEventListener('click', async () => {
   estado('#est-buscar', data + ' propuesta(s) nueva(s). Sin firmar no valen nada.', 'bien');
   await cargarConexiones();
 });
+
+$('#btn-traducir').addEventListener('click', async () => {
+  const texto = $('#piezas-texto').value.trim();
+  if (texto.length < 40) return estado('#est-piezas', 'Pega la salida del agente: hacen falta al menos 40 caracteres.', 'mal');
+  estado('#est-piezas', 'Traduciendo con el agente…');
+  $('#btn-traducir').disabled = true;
+  try {
+    const r = await fetch(BACKEND + '/api/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: SYS_PIEZAS, message: texto.slice(0, 12000), model: 'gpt-4o-mini', temperature: 0.2 })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || d.error) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
+    const t = String(d.reply || '');
+    // El modelo puede envolver el JSON en un bloque de código pese a la
+    // instrucción: se recorta entre la primera llave y la última.
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    let piezas = null;
+    try { piezas = JSON.parse(t.slice(a, b + 1)).piezas; } catch (e) { piezas = null; }
+    if (!Array.isArray(piezas) || !piezas.length) throw new Error('El agente no ha devuelto piezas utilizables.');
+    // Los enum del esquema no se negocian con el modelo.
+    const CAT = ['datos','tecnologica','conocimiento','auxiliar'], ESC = ['mesa','comunidad','piloto','proceso'];
+    piezasPropuestas = piezas.map(p => ({
+      nombre: String(p.nombre || '').slice(0, 300),
+      categoria: CAT.includes(p.categoria) ? p.categoria : 'auxiliar',
+      escala: ESC.includes(p.escala) ? p.escala : 'mesa',
+      que_revela: String(p.que_revela || ''), siguiente_escala: String(p.siguiente_escala || ''),
+      terminos: String(p.terminos || '')
+    })).filter(p => p.nombre.length > 2);
+    pintarPropuestas();
+    $('#btn-guardar-piezas').disabled = !escenarioActual;
+    estado('#est-piezas', piezasPropuestas.length + ' pieza(s). Revisa los términos antes de guardar.' +
+      (escenarioActual ? '' : ' Elige un escenario para poder guardarlas.'), 'bien');
+  } catch (e) {
+    estado('#est-piezas', String(e.message || e), 'mal');
+  } finally { $('#btn-traducir').disabled = false; }
+});
+
+function pintarPropuestas() {
+  const ol = $('#piezas'); ol.innerHTML = '';
+  (piezasPropuestas || []).forEach((p, i) => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<div class="tit"><span class="uni">${esc(p.categoria)}</span><b>${esc(p.nombre)}</b>` +
+      `<span class="meta">escala ${esc(p.escala)}</span></div>` +
+      (p.que_revela ? `<div class="lin">${esc(p.que_revela)}</div>` : '') +
+      `<div class="firma"><input data-term="${i}" value="${esc(p.terminos)}" ` +
+      `placeholder="sin términos: esta pieza no la aporta un grupo de investigación"></div>`;
+    ol.appendChild(li);
+  });
+  ol.querySelectorAll('[data-term]').forEach(inp => {
+    inp.addEventListener('input', () => { piezasPropuestas[+inp.dataset.term].terminos = inp.value; });
+  });
+  $('#n-piezas').textContent = (piezasPropuestas || []).length + ' sin guardar';
+}
+
+$('#btn-guardar-piezas').addEventListener('click', async () => {
+  if (!escenarioActual || !piezasPropuestas) return;
+  estado('#est-piezas', 'Guardando…');
+  const { error } = await db.rpc('mr_guardar_piezas', {
+    p_escenario_id: escenarioActual, p_piezas: piezasPropuestas
+  });
+  if (error) return estado('#est-piezas', error.message, 'mal');
+  piezasPropuestas = null;
+  $('#piezas-texto').value = '';
+  $('#btn-guardar-piezas').disabled = true;
+  estado('#est-piezas', 'Piezas guardadas.', 'bien');
+  await cargarPiezas();
+});
+
+async function cargarPiezas() {
+  if (piezasPropuestas) return;
+  const ol = $('#piezas'); ol.innerHTML = '';
+  if (!escenarioActual) { $('#n-piezas').textContent = ''; return; }
+  const { data, error } = await db.rpc('mr_piezas', { p_escenario_id: escenarioActual });
+  if (error) return estado('#est-piezas', error.message, 'mal');
+  $('#n-piezas').textContent = (data || []).length + ' guardada(s)';
+  (data || []).forEach(p => {
+    const li = document.createElement('li');
+    const buscable = (p.terminos || '').trim().length > 0;
+    li.innerHTML =
+      `<div class="tit"><span class="uni">${esc(p.categoria)}</span><b>${esc(p.nombre)}</b>` +
+      `<span class="meta">escala ${esc(p.escala_inicial)}` +
+      (p.firmadas ? ` · <b>${p.firmadas} firmada(s)</b>` : p.propuestas ? ` · ${p.propuestas} sin firmar` : '') +
+      `</span></div>` +
+      (p.terminos ? `<div class="lin">${esc(p.terminos)}</div>`
+                  : `<div class="meta">Sin términos: ningún grupo de investigación aporta esta pieza.</div>`) +
+      (buscable ? `<div class="acciones"><button class="b" data-buscar-pieza="${p.id}" data-t="${esc(p.terminos)}">Buscar quién la tiene</button>` +
+                  `<button class="b p" data-prop-pieza="${p.id}" data-t="${esc(p.terminos)}">Proponer al escenario</button>` +
+                  `</div>` : '');
+    ol.appendChild(li);
+  });
+  ol.querySelectorAll('[data-buscar-pieza]').forEach(b => b.addEventListener('click', () => {
+    $('#q').value = b.dataset.t; buscar(); $('#q').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }));
+  ol.querySelectorAll('[data-prop-pieza]').forEach(b => b.addEventListener('click', async () => {
+    // El aviso va al estado general y no a la fila: cargarPiezas() vuelve a
+    // pintar la lista y se llevaría por delante cualquier mensaje de la fila.
+    estado('#est-piezas', 'Proponiendo…');
+    const { data, error } = await db.rpc('proponer_conexiones', {
+      p_escenario_id: escenarioActual, p_consulta: b.dataset.t, p_limite: 10, p_pieza_id: b.dataset.propPieza
+    });
+    if (error) return estado('#est-piezas', error.message, 'mal');
+    await cargarConexiones(); await cargarPiezas();
+    estado('#est-piezas', data + ' propuesta(s) nueva(s) para esa pieza. Sin firmar no valen nada.', 'bien');
+  }));
+}
 
 async function cargarConexiones() {
   const ol = $('#conexiones');
