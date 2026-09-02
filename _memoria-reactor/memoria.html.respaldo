@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- El área privada no debe aparecer en buscadores. No sustituye a la
+     autenticación: es higiene, para que la consola no se indexe. -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Memoria del Reactor · Área interna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{ color-scheme: light; }
+*{ box-sizing:border-box; }
+body{
+  margin:0; background:#f6f7f9; color:#1c2024;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5; font-size:15px;
+}
+.wrap{ max-width:880px; margin:0 auto; padding:20px 18px 80px; }
+h1{ font-size:21px; margin:0 0 4px; }
+.sub{ color:#5b6470; font-size:13.5px; margin:0 0 16px; }
+.banner{ background:#eef3ff; border:1px solid #cdddff; border-radius:10px; padding:12px 14px; font-size:13px; color:#2a3a5c; margin-bottom:18px; }
+.banner b{ color:#1b2a4a; }
+.problema-box{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; padding:14px; margin-bottom:18px; }
+.problema-box label{ font-weight:600; font-size:13.5px; display:block; margin-bottom:6px; }
+textarea{ width:100%; border:1px solid #d4d8df; border-radius:8px; padding:9px 10px; font-family:inherit; font-size:13.5px; resize:vertical; color:#1c2024; background:#fff; }
+.progress{ height:7px; background:#e4e7ec; border-radius:5px; overflow:hidden; margin:14px 0 22px; }
+.progress > div{ height:100%; width:0; background:#3b82f6; transition:width .3s; }
+.stage{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; margin-bottom:14px; overflow:hidden; border-left:5px solid var(--c,#999); }
+.stage-head{ display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; user-select:none; }
+.dot{ width:11px; height:11px; border-radius:50%; background:#cfd4db; flex:0 0 auto; }
+.dot.done{ background:#16a34a; }
+.stage-num{ font-weight:700; font-size:12px; color:#fff; background:var(--c,#999); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.stage-title{ font-weight:650; font-size:15px; flex:1; }
+.stage-status{ font-size:12px; color:#8a929c; }
+.chev{ transition:transform .2s; color:#9aa1ab; font-size:13px; }
+.stage.open .chev{ transform:rotate(90deg); }
+.stage-body{ display:none; padding:0 14px 14px; }
+.stage.open .stage-body{ display:block; }
+.deps{ font-size:12.5px; color:#5b6470; margin:2px 0 12px; }
+.deps b{ color:#1c2024; }
+.deps .miss{ color:#c2410c; }
+.btnrow{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; align-items:center; }
+button{ font-family:inherit; font-size:13px; border-radius:8px; padding:8px 12px; cursor:pointer; border:1px solid #d4d8df; background:#fff; color:#1c2024; font-weight:550; }
+button:hover{ background:#f2f4f7; }
+button.primary{ background:#2563eb; border-color:#2563eb; color:#fff; }
+button.primary:hover{ background:#1d4ed8; }
+button:disabled{ opacity:.55; cursor:default; }
+.out-label{ font-size:12.5px; font-weight:600; color:#444c56; margin:12px 0 5px; }
+.matiz-wrap{ background:#fff8ec; border:1px solid #f3e2bf; border-radius:9px; padding:11px 12px; margin-top:12px; }
+.matiz-wrap .out-label{ margin-top:0; color:#8a5a00; }
+.matiz-hint{ font-size:11.5px; color:#9a7b3a; margin:0 0 7px; }
+details.prompt{ margin:10px 0 0; }
+details.prompt summary{ font-size:12px; color:#7a828d; cursor:pointer; }
+details.prompt pre{ white-space:pre-wrap; font-size:11.5px; background:#f4f5f7; border-radius:8px; padding:10px; color:#3a414b; max-height:240px; overflow:auto; margin:6px 0 0; }
+.toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#1c2024; color:#fff; font-size:13px; padding:9px 16px; border-radius:9px; opacity:0; transition:opacity .25s; pointer-events:none; z-index:200; }
+.toast.show{ opacity:1; }
+.topbar{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.thinking{ font-size:12.5px; color:#2563eb; }
+.footer-note{ font-size:11.5px; color:#9aa1ab; margin-top:24px; text-align:center; }
+.runall{ background:#0f172a; border-color:#0f172a; color:#fff; }
+.runall:hover{ background:#1e293b; }
+.gen-dash-wrap{ text-align:center; margin:24px 0 6px; }
+.gen-dash{ background:#7c3aed; border-color:#7c3aed; color:#fff; font-size:14px; padding:11px 22px; }
+.gen-dash:hover{ background:#6d28d9; }
+.dash-overlay{ position:fixed; inset:0; background:#f6f7f9; z-index:100; overflow:auto; display:none; }
+.dash-overlay.show{ display:block; }
+.dash-inner{ max-width:1000px; margin:0 auto; padding:24px 22px 80px; }
+.dash-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
+.dash-title{ font-size:23px; font-weight:700; margin:0; }
+.dash-problem{ background:#fff; border:1px solid #e2e5ea; border-left:5px solid #2563eb; border-radius:12px; padding:15px 18px; margin:14px 0 20px; font-size:15px; }
+.dash-problem .lbl{ font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:#7a828d; font-weight:700; margin-bottom:6px; }
+.pipeline{ display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin:0 0 22px; }
+.pipe-chip{ display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #e2e5ea; border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; }
+.pipe-chip .pdot{ width:9px; height:9px; border-radius:50%; }
+.pipe-arrow{ color:#c2c7cf; font-size:13px; }
+.stats{ display:flex; gap:12px; margin:0 0 22px; flex-wrap:wrap; }
+.stat{ background:#fff; border:1px solid #e2e5ea; border-radius:12px; padding:12px 16px; flex:1; min-width:120px; }
+.stat .num{ font-size:25px; font-weight:700; }
+.stat .cap{ font-size:12px; color:#7a828d; }
+.dcard{ background:#fff; border:1px solid #e2e5ea; border-radius:14px; margin-bottom:16px; overflow:hidden; border-top:4px solid var(--c,#999); }
+.dcard-head{ display:flex; align-items:center; gap:10px; padding:14px 18px 6px; }
+.dcard-head .n{ width:26px;height:26px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;background:var(--c,#999);}
+.dcard-head h3{ margin:0; font-size:16.5px; }
+.dcard-body{ padding:4px 18px 16px; font-size:13.5px; color:#26303a; }
+.dcard-body table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:12px; }
+.dcard-body th,.dcard-body td{ border:1px solid #e2e5ea; padding:6px 9px; text-align:left; vertical-align:top; }
+.dcard-body th{ background:#f4f5f7; font-weight:650; }
+.dcard-body h4{ margin:14px 0 4px; font-size:13.5px; color:#1c2024; }
+.dcard-body ul,.dcard-body ol{ margin:8px 0; padding-left:20px; }
+.dcard-body li{ margin:3px 0; }
+.dcard-body p{ margin:8px 0; }
+.dcard-body code{ background:#f0f1f4; padding:1px 4px; border-radius:4px; font-size:12px; }
+.dcard-empty{ color:#a3a9b2; font-style:italic; padding:0 18px 16px; font-size:13px; }
+.dmatiz{ background:#fff8ec; border:1px solid #f3e2bf; border-radius:9px; padding:9px 12px; margin:0 18px 16px; font-size:12.5px; color:#7a5a14; }
+@media print{ .dash-noprint{ display:none !important; } body{ background:#fff; } }
+.attach-btn{ font-size:12.5px; padding:6px 11px; }
+</style>
+<style>
+#agentes{background:#101614;color:#e8ecea;margin:84px 0 0;padding:74px 0 84px}
+#agentes .in{max-width:1120px;margin:0 auto;padding:0 24px}
+#agentes .kick{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8fb3ae;margin:0 0 16px}
+#agentes h2{font-family:'Archivo',sans-serif;font-weight:600;font-size:clamp(28px,3.6vw,44px);line-height:1.04;letter-spacing:-.032em;margin:0 0 18px;color:#fff;max-width:20ch}
+#agentes .lead{max-width:56ch;color:#b9c4c0;font-size:17.5px;line-height:1.5;margin:0 0 34px}
+#agentes .cadena{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;background:#232b28;border:1px solid #232b28;margin:0 0 32px}
+#agentes .ag{background:#101614;padding:20px 16px}
+#agentes .ag .n{font:600 11px/1 'Inter',sans-serif;color:#7d968f;letter-spacing:.1em;display:block;margin:0 0 9px}
+#agentes .ag .t{font-family:'Archivo',sans-serif;font-weight:600;font-size:15.5px;letter-spacing:-.01em;color:#fff;display:block;margin:0 0 6px}
+#agentes .ag .d{font-size:13.5px;line-height:1.38;color:#a3b2ad;display:block}
+#agentes details{border-top:1px solid #232b28;padding-top:28px}
+#agentes summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:11px;font:600 15px/1 'Inter',sans-serif;color:#101614;background:#e8ecea;padding:15px 24px;border-radius:2px}
+#agentes summary::-webkit-details-marker{display:none}
+#agentes summary:hover{background:#fff}
+#agentes summary .ar{transition:transform .2s}
+#agentes details[open] summary .ar{transform:rotate(90deg)}
+#agentes .aviso{margin:16px 0 0;font-size:14px;color:#a3b2ad;max-width:60ch}
+#agentes .app{margin:34px 0 0;background:#f6f7f9;border-radius:3px;color:#1c2024}
+#agentes .app .wrap{max-width:none;padding:18px 20px 30px}
+#agentes .app h1{font-family:'Archivo',sans-serif;font-weight:600;font-size:22px;letter-spacing:-.02em}
+</style>
+<style>
+/* ===== Consola de agentes: estetica oscura tecnica ===== */
+#agentes .kick,#agentes .ag .n{font-family:'IBM Plex Mono',ui-monospace,monospace}
+#agentes h2,#agentes .ag .t{font-family:'Space Grotesk','Archivo',sans-serif;letter-spacing:-.02em}
+#agentes .cadena{background:#1b2320;border-color:#1b2320}
+#agentes summary{font-family:'Space Grotesk',sans-serif;letter-spacing:.01em}
+
+#agentes .app{background:#0a0e0d;border:1px solid #1e2724;border-radius:4px;color:#d7dedb;
+  font-family:'Space Grotesk',system-ui,sans-serif}
+#agentes .app .wrap{max-width:none;padding:26px 24px 34px}
+#agentes .app .topbar{border-bottom:1px solid #1e2724;padding-bottom:16px;margin-bottom:20px}
+#agentes .app h1{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;color:#fff;letter-spacing:.01em}
+#agentes .app .sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#7f938d}
+#agentes .app .banner{background:#0f1614;border:1px solid #1e2724;border-radius:3px;color:#9fb0ab;font-size:13px}
+#agentes .app .banner b{color:#dfe7e4}
+#agentes .app .problema-box{background:#0f1614;border:1px solid #1e2724;border-radius:3px}
+#agentes .app label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8aa39c;font-weight:500}
+#agentes .app textarea{background:#060909;border:1px solid #232e2a;color:#e6ecea;border-radius:3px;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px;line-height:1.55}
+#agentes .app textarea:focus{outline:none;border-color:#3f7f77;box-shadow:0 0 0 3px rgba(63,127,119,.16)}
+#agentes .app textarea::placeholder{color:#5d6d69}
+#agentes .app .progress{background:#1b2320}
+#agentes .app .stage{background:#0f1614;border:1px solid #1e2724;border-radius:3px;margin-bottom:12px}
+#agentes .app .stage-head{border-bottom:1px solid #1a2320}
+#agentes .app .stage-num{background:#3f7f77;color:#04100e;font-family:'IBM Plex Mono',monospace;font-weight:600}
+#agentes .app .stage-title{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.08em;color:#fff;font-size:13.5px}
+#agentes .app .stage-status,#agentes .app .deps,#agentes .app .matiz-hint,#agentes .app .out-label,#agentes .app .miss{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;color:#7f938d}
+#agentes .app .chev{color:#7f938d}
+#agentes .app button{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.02em;border-radius:3px;
+  background:#131c19;border:1px solid #26332f;color:#d7dedb}
+#agentes .app button:hover{background:#1a2723;border-color:#3f7f77}
+#agentes .app button.primary,#agentes .app button.runall{background:#3f7f77;border-color:#3f7f77;color:#04100e}
+#agentes .app button.primary:hover,#agentes .app button.runall:hover{background:#4d9990;border-color:#4d9990}
+#agentes .app details.prompt summary{background:transparent;color:#7f938d;padding:6px 0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em}
+#agentes .app details.prompt summary:hover{background:transparent;color:#b9c4c0}
+#agentes .app pre{background:#060909;border:1px solid #1e2724;color:#9fb0ab;border-radius:3px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.5}
+#agentes .app .thinking{color:#4d9990;font-family:'IBM Plex Mono',monospace;font-size:11px}
+#agentes .app .dot{filter:saturate(.8)}
+#agentes .app a{color:#5fb3a9}
+
+#agentes .app .stage-status,#agentes .app .deps,#agentes .app .matiz-hint,#agentes .app .out-label,#agentes .app .miss{color:#9db0aa}
+#agentes .app details.prompt summary{color:#9db0aa}
+#agentes .app .thinking{color:#6fc4b8}
+#agentes .app button.primary,#agentes .app button.runall{background:#5aa79e;border-color:#5aa79e;color:#02100d}
+#agentes .app button.primary:hover,#agentes .app button.runall:hover{background:#6cbcb2;border-color:#6cbcb2}
+#agentes .app .stage-num{background:#5aa79e;color:#02100d}
+
+#agentes .app .matiz-wrap{background:#141d1a;border:1px solid #2a3833;border-radius:3px}
+#agentes .app .matiz-wrap .out-label,#agentes .app .matiz-hint{color:#a8bab4}
+#agentes .app .matiz-wrap textarea{background:#080c0b;border-color:#2a3833}
+</style>
+<style>
+.wrap-i{max-width:1080px;margin:0 auto;padding:30px 24px 0}
+.kick-fila{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 10px}
+.kick-i{font:600 12px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#5c6360;margin:0}
+.a-web{font:600 11px/1 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#5c6360;text-decoration:none;border:1px solid #e4e7e6;padding:9px 13px;white-space:nowrap}
+.a-web:hover{color:#22525C;border-color:#32717E}
+.aviso-i{background:#EAF0F1;padding:14px 16px;font-size:14.5px;line-height:1.45;color:#20302c;margin:0 0 18px;max-width:1080px}
+.mapeo-btn{border-color:#32717E !important;color:#22525C !important;font-weight:600}
+.mp-panel{position:fixed;inset:0;background:rgba(12,18,17,.55);z-index:60;display:none;overflow:auto;padding:26px 16px}
+.mp-panel.on{display:block}
+.mp-caja{max-width:940px;margin:0 auto;background:#fff;padding:24px 26px 32px;border-radius:3px}
+.mp-caja h2{font-family:'Archivo',sans-serif;font-size:22px;margin:0 0 4px}
+.mp-cerrar{float:right;border:1px solid #e4e7e6;background:#fff;font:inherit;font-size:14px;padding:7px 12px;cursor:pointer}
+.mp-fila{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.mp-fila select,.mp-fila input{border:1px solid #e4e7e6;padding:9px 11px;font:inherit;font-size:14.5px;min-width:200px}
+.mp-b{border:1px solid #e4e7e6;background:#fff;color:#41504b;font:inherit;font-size:14px;padding:9px 14px;cursor:pointer}
+.mp-b.p{background:#16211f;color:#fff;border-color:#16211f}
+.mp-b:disabled{opacity:.45;cursor:default}
+.mp-est{font-size:13.5px;color:#5c6360}
+.mp-est.mal{color:#9b4a3d;font-weight:600}
+.mp-est.bien{color:#2f6b4f;font-weight:600}
+.mp-pieza{border-top:1px solid #eceae4;padding:13px 0}
+.mp-cat{font:600 10.5px/1 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#22525C;border:1px solid #e4e7e6;padding:4px 7px;margin-right:9px}
+.mp-pieza b{font-size:15px}
+.mp-meta{font-size:13px;color:#5c6360;margin-top:3px}
+.mp-term{width:100%;margin-top:7px;border:1px solid #e4e7e6;padding:8px 10px;font:inherit;font-size:14px}
+.mp-res{margin:9px 0 0 0;padding:0;list-style:none}
+.mp-res li{border-top:1px dotted #e4e7e6;padding:9px 0;font-size:14px}
+.mp-res .uni{font:600 10.5px/1 'Inter',sans-serif;letter-spacing:.1em;color:#22525C;margin-right:8px}
+.mp-firma{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.mp-firma input{flex:1;min-width:220px;border:1px solid #e4e7e6;padding:7px 10px;font:inherit;font-size:13.5px}
+.mp-si{color:#2f6b4f;border-color:#cfe0d6}
+.mp-no{color:#9b4a3d;border-color:#e8d5d1}
+.mp-sello{font-size:13.5px;margin-top:6px}
+.mp-sello .s{color:#2f6b4f;font-weight:600}
+.mp-sello .n{color:#9b4a3d;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="wrap-i">
+  <div class="kick-fila"><p class="kick-i">Área interna</p><a class="a-web" href="./"><span aria-hidden="true">&larr;</span> Volver al área interna</a></div>
+  <div class="aviso-i">
+    <p style="margin:0 0 8px"><b>Esta es la cadena completa, en privado.</b> Es el mismo motor que la página pública, con su propio historial: lo que hagas aquí no toca lo de <code>reactor.html</code>.</p>
+    <p style="margin:0"><b>En la etapa 02 Piezas</b>, junto a «Adjuntar archivo», tienes <b>Mapeo de recursos de I+D</b>: busca en 7.795 grupos de investigación de 38 universidades quién tiene cada pieza, y deja constancia firmada de lo que sirve y de lo que no.</p>
+  </div>
+</div>
+
+<div class="app">
+<div class="wrap">
+
+
+  <div class="topbar">
+    <div>
+      <h1>Reactor de Innovación</h1>
+      <p class="sub">Problema → Piezas → Personas → Escala → Impacto → Crítico → Orquestador</p>
+    </div>
+    <button onclick="resetAll()">Reiniciar</button>
+  </div>
+
+  <div class="banner">
+    Cadena de 7 asistentes. Cada etapa recibe <b>solo</b> las salidas que su agente declara (es un grafo, no una fila).
+    Tras generar una salida puedes escribir <b>matices</b>: viajan al siguiente asistente, y puedes <b>regenerar la propia etapa</b> incorporándolos.
+    Tus respuestas se registran de forma anónima para mejorar la herramienta.
+  </div>
+
+  <div class="problema-box">
+    <label for="problema">Problema o intuición inicial</label>
+    <textarea id="problema" rows="3" placeholder="Describe un problema complejo o una intuición. No pienses todavía en soluciones."></textarea>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="runall" onclick="runAll()">⏩ Ejecutar toda la cadena</button>
+      <button class="attach-btn" onclick="pickFile('problema')">Adjuntar archivo</button>
+      <span class="thinking" id="think-all" style="display:none">ejecutando cadena…</span>
+    </div>
+  </div>
+
+  <div class="progress"><div id="bar"></div></div>
+
+  <div id="stages"></div>
+
+  <div class="gen-dash-wrap">
+    <button class="gen-dash" onclick="buildDashboard()">Generar dashboard visual</button>
+  </div>
+
+  <p class="footer-note">Agentes de IA diseñados por Joaquín Romero Roldán (en pruebas). Verifica siempre las respuestas.</p>
+</div>
+
+<div class="dash-overlay" id="dash"><div class="dash-inner" id="dash-inner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ====== PROMPTS DE LOS AGENTES ====== -->
+
+</div><!-- cierra .app: en reactor.html se cierra despues de los prompts -->
+
+<script type="text/plain" id="sys-problema">Eres un especialista en estructuración de problemas complejos. Tu trabajo es CONVERTIR un presentimiento vago en un problema estructurado con tres características: Solucionable, Reconocible, Verificable. NO propones soluciones. Tu tarea es definir el problema de forma que podamos reconocer cuándo está resuelto.
+TU TAREA - Responde A1 y A2:
+A1. ¿QUÉ DEBERÍA HACER POSIBLE UNA SOLUCIÓN? (Define qué capacidad nueva tendríamos si el problema estuviera resuelto.)
+A2. ¿CÓMO VERIFICARÍAS QUE EL PROBLEMA ESTÁ RESUELTO? (Evita proponer solución. Define el criterio de verificación.)
+B. ESCRIBE UNA DECLARACIÓN DE PROBLEMA GENERAL que incluya A1 y A2. Cuanto más general, mejor; pero sé PRECISO, no vago.
+OUTPUT ESPERADO:
+1. Declaración del problema (1-2 oraciones)
+2. Lo que una solución debería hacer posible (capacidad nueva)
+3. Verificador: cómo sabemos que está resuelto (métrica concreta)
+4. Variantes del problema que también podrían ser válidas (lista de 3)
+Termina SIEMPRE con una CABECERA DE TRASPASO con: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-piezas">Eres un especialista en identificar "piezas" para maquetar problemas complejos a escala reducida. Una pieza es cualquier recurso que permite ilustrar el problema a menor escala y revelar qué podemos hacer a mayor escala.
+Identifica piezas en cuatro categorías:
+1. PIEZAS DE DATOS (qué información tenemos o podemos conseguir)
+2. PIEZAS TECNOLÓGICAS (sensores low-cost, modelos predictivos simples, APIs abiertas, plataformas de datos abiertos)
+3. PIEZAS DE CONOCIMIENTO (papers sobre umbrales, protocolos existentes, estudios de vulnerabilidad)
+4. PIEZAS AUXILIARES (contactos para acceso a datos, software de visualización)
+PARA CADA PIEZA indica: qué ilustra sobre el problema, a qué escala podemos usarla (mesa/piloto/comunidad), qué nos revelaría sobre el siguiente paso a mayor escala.
+OUTPUT ESPERADO: Tabla con columnas: Pieza | Categoría | Escala inicial | Qué revela | Siguiente escala.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-personas">Eres un especialista en diseñar conversaciones genuinas para validar (mejor: refutar) supuestos sobre problemas complejos. Tu objetivo NO es buscar aprobación: es diseñar preguntas que hagan visible por qué nuestra definición del problema podría estar equivocada.
+PRINCIPIOS: nunca cuestionario; busca que te digan "estás equivocado"; no estereotipes; comparte información para recibir feedback.
+PERFILES CLAVE: 1) EXPERTOS TÉCNICOS, 2) OPERADORES DE PRIMERA LÍNEA, 3) PERSONAS AFECTADAS.
+Para cada perfil diseña: A) CÓMO ENCONTRARLOS (eventos, contactos en cadena, lugares naturales); B) GUION DE CONVERSACIÓN (5-7 preguntas abiertas máximo); C) QUÉ BUSCAS REFUTAR; D) SEÑALES DE "ESTÁS EQUIVOCADO" que queremos oír.
+OUTPUT ESPERADO: por cada perfil (3 mínimo): perfil + cómo encontrarlos; guion de conversación; supuesto clave a refutar; cómo usaremos lo que digan para redefinir el problema.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-escala">Eres un especialista en "escalar hacia abajo": reducir problemas complejos a versiones que se puedan probar en mesa, laboratorio o comunidad pequeña, sin perder la esencia del problema original.
+PRINCIPIOS: si no puedes resolver el problema, encuentra uno más sencillo que lo ilumine; reduce tamaño de comunidad (5 → 50 → 500); cada pieza es una representación a escala de una realidad mayor.
+Diseña 3 PRUEBAS DE CONCEPTO secuenciales:
+PRUEBA 1: REPRODUCIR EL PROBLEMA (Mesa/Laboratorio) — demostrar que podemos simular el fenómeno clave.
+PRUEBA 2: SIMULAR EL IMPACTO (Comunidad pequeña) — demostrar que podemos predecir/construir lo que la solución debería hacer posible.
+PRUEBA 3: VERIFICAR ESCALABILIDAD (Piloto) — probar en condiciones realistas, identificar fallos que solo aparecen a esta escala.
+PARA CADA PRUEBA: recursos exactos (tiempo, dinero, personas, datos); supuestos que la hacen viable; criterio de éxito para pasar a la siguiente; qué aprenderíamos que no sabemos ahora.
+OUTPUT ESPERADO: Tabla de 3 pruebas con: Objetivo | Escala | Recursos | Supuestos | Éxito | Aprendizaje.
+Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
+
+<script type="text/plain" id="sys-impacto">Eres un especialista en definir cómo verificar que un problema está resuelto, centrándote en qué NUEVOS LOGROS habilita la solución para la comunidad, no solo en reducir daño.
+PRINCIPIO CLAVE: el impacto se deriva de que la comunidad que experimenta el problema sea capaz de alcanzar nuevas metas después de que lo hayas resuelto.
+TU TAREA - Diseña el sistema de verificación:
+1. VERIFICADOR PRINCIPAL (métrica concreta, método de medición, umbral crítico).
+2. INDICADORES DE NUEVOS LOGROS (qué puede hacer ahora la comunidad que no podía antes).
+3. VERIFICADORES POR ESCALA (mesa / comunidad / piloto).
+4. SEÑALES DE ALERTA TEMPRANA (qué nos dice que NO funciona antes del fracaso total).
+OUTPUT ESPERADO: verificador principal (fórmula/métrica); 3 nuevos logros habilitados; tabla de verificadores por escala; 5 señales de alerta temprana con acción correctiva.
+Termina con una CABECERA DE TRASPASO: hallazgos_clave, pendiente.</script>
+
+<script type="text/plain" id="sys-critico">Eres un especialista en demostrar que las propuestas están equivocadas. No eres negativo sin más: identificas puntos ciegos, sesgos y suposiciones no verificadas que podrían hacer fracasar el proyecto. Ojalá encuentres errores: detrás de cada "estás equivocado" hay información valiosa.
+Refuta sistemáticamente:
+1. REFUTACIÓN DEL PROBLEMA (reframing completo).
+2. REFUTACIÓN DE LAS PIEZAS.
+3. REFUTACIÓN DE LAS PERSONAS (sesgo de selección).
+4. REFUTACIÓN DEL ESCALADO.
+5. REFUTACIÓN DEL IMPACTO (métricas engañosas, impactos secundarios negativos).
+6. ESCENARIOS DE FRACASO: 3 escenarios donde esto fracasa completamente; para cada uno qué lo desencadena y cómo lo detectamos temprano.
+OUTPUT ESPERADO: mínimo 5 refutaciones sustanciales (una por categoría), cada una con argumento + implicación + cómo corregirlo; 3 escenarios de fracaso con señales de alerta temprana; recomendación final: ¿Seguir? ¿Pivotar? ¿Ampliar? ¿Abandonar?</script>
+
+<script type="text/plain" id="sys-orquestador">Toma todos los outputs anteriores y produce el KIT DE INNOVACIÓN FINAL:
+1. PROBLEMA RE-DEFINIDO (incorporando refutaciones)
+2. PIEZAS ACTUALIZADAS (añadiendo las que faltaban, quitando las que no sirven)
+3. PERSONAS CLAVE PRIORITARIAS (máximo 3 perfiles para empezar)
+4. RUTA DE ESCALADO AJUSTADA (con puntos de decisión claros)
+5. VERIFICADORES DE IMPACTO (métricas finales)
+6. DECISIÓN: ¿Seguimos adelante? Condiciones para continuar.
+PRÓXIMOS PASOS CONCRETOS:
+- Esta semana: [acción específica]
+- Próximas 2 semanas: [acción específica]
+- Mes 2: [acción específica]</script>
+
+
+<script>
+
+// ===== CONFIGURACIÓN: tu backend en Render =====
+const BACKEND = "https://jr-gpt-backend-1.onrender.com";
+
+const AGENTS = [
+  { id:'problema',    name:'PROBLEMA',    c:'#2563eb', deps:[] },
+  { id:'piezas',      name:'PIEZAS',      c:'#16a34a', deps:['problema'] },
+  { id:'personas',    name:'PERSONAS',    c:'#ca8a04', deps:['problema','piezas'] },
+  { id:'escala',      name:'ESCALA',      c:'#ea580c', deps:['problema','piezas','personas'] },
+  { id:'impacto',     name:'IMPACTO',     c:'#dc2626', deps:['problema','escala'] },
+  { id:'critico',     name:'CRÍTICO',     c:'#334155', deps:['problema','piezas','personas','escala','impacto'] },
+  { id:'orquestador', name:'ORQUESTADOR', c:'#7c3aed', deps:['problema','piezas','personas','escala','impacto','critico'] },
+];
+const LABEL = Object.fromEntries(AGENTS.map(a=>[a.id,a.name]));
+const KEY = 'reactor-interno-v1';
+let state = load();
+
+// Identificador de sesión (anónimo) para agrupar las respuestas de un mismo usuario
+let SESSION = localStorage.getItem('reactor-interno-sesion');
+if(!SESSION){ SESSION = 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); localStorage.setItem('reactor-interno-sesion', SESSION); }
+
+// Modelo por etapa: refuerzo en las dos etapas de razonamiento duro
+function modelFor(id){ return (id==='critico' || id==='orquestador') ? 'gpt-4o' : 'gpt-4o-mini'; }
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s){ s.matices=s.matices||{}; s.outputs=s.outputs||{}; return s; } }catch(e){}
+  return { problema:'', outputs:{}, matices:{} };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function sysPrompt(id){ return document.getElementById('sys-'+id).textContent.trim(); }
+
+function buildInput(agent){
+  const parts = [];
+  parts.push('=== PROBLEMA / INTUICIÓN INICIAL ===\n' + (state.problema || '(vacío)'));
+  agent.deps.forEach(d=>{
+    const o = state.outputs[d];
+    if(o && o.trim()){
+      parts.push('=== SALIDA DEL AGENTE '+LABEL[d]+' ===\n'+o.trim());
+      const m = state.matices[d];
+      if(m && m.trim()) parts.push('=== MATICES DEL USUARIO SOBRE '+LABEL[d]+' (tenlos muy en cuenta) ===\n'+m.trim());
+    }
+  });
+  return parts.join('\n\n');
+}
+function missingDeps(agent){ return agent.deps.filter(d=> !(state.outputs[d] && state.outputs[d].trim())); }
+
+// ===== Llamadas al backend =====
+async function callAgent(systemPrompt, inputText, model){
+  const r = await fetch(BACKEND + "/api/ask", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ system: systemPrompt, message: inputText, model: model, temperature: 0.3 })
+  });
+  let data;
+  try{ data = await r.json(); }catch(e){ throw new Error("Respuesta no válida del servidor (HTTP "+r.status+")"); }
+  if(!r.ok || data.error) throw new Error((data && data.error && data.error.message) || ("HTTP "+r.status));
+  return data.reply || "";
+}
+async function saveResponse(rec){
+  try{
+    await fetch(BACKEND + "/api/save", {
+      method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(rec)
+    });
+  }catch(e){ console.warn("No se pudo guardar la respuesta:", e); }
+}
+
+function render(){
+  const root = document.getElementById('stages');
+  root.innerHTML = '';
+  AGENTS.forEach((a,i)=>{
+    const done = !!(state.outputs[a.id] && state.outputs[a.id].trim());
+    const miss = missingDeps(a);
+    const depTxt = a.deps.length
+      ? 'Recibe: ' + a.deps.map(d=> miss.includes(d) ? '<span class="miss">'+LABEL[d]+' (pendiente)</span>' : '<b>'+LABEL[d]+'</b>').join(' + ') + ' &nbsp;+&nbsp; sus matices'
+      : 'Recibe: solo el problema inicial.';
+    const el = document.createElement('div');
+    el.className = 'stage'; el.style.setProperty('--c', a.c);
+    el.innerHTML = `
+      <div class="stage-head" onclick="toggle(this)">
+        <span class="stage-num">${i+1}</span>
+        <span class="dot ${done?'done':''}"></span>
+        <span class="stage-title">${a.name}</span>
+        <span class="stage-status">${done?'✓ hecho':'pendiente'}</span>
+        <span class="chev">▶</span>
+      </div>
+      <div class="stage-body">
+        <div class="deps">${depTxt}</div>
+        <div class="btnrow">
+          <button class="primary" id="run-${a.id}" onclick="runStage('${a.id}',false)">Ejecutar</button>
+          <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">Regenerar con matices</button>
+          <span class="thinking" id="think-${a.id}" style="display:none">pensando…</span>
+        </div>
+        <div class="out-label">Salida del asistente (editable):</div>
+        <textarea id="out-${a.id}" rows="7" oninput="onOut('${a.id}',this.value)" placeholder="Aún sin salida.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
+        <div class="matiz-wrap">
+          <div class="out-label">✏️ Matices para esta salida</div>
+          <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
+          <textarea id="mat-${a.id}" rows="3" oninput="onMat('${a.id}',this.value)" placeholder="Ej.: céntrate en el ámbito rural; descarta la variante 2; prioriza coste bajo…">${escapeHtml(state.matices[a.id]||'')}</textarea>
+          <div style="margin-top:7px"><button class="attach-btn" onclick="pickFile('mat-${a.id}')">Adjuntar archivo</button>${a.id==='piezas'?' <button class="attach-btn mapeo-btn" onclick="abrirMapeo()">Mapeo de recursos de I+D</button>':''}</div>
+        </div>
+        <details class="prompt"><summary>Ver instrucciones de este asistente</summary><pre>${escapeHtml(sysPrompt(a.id))}</pre></details>
+      </div>`;
+    root.appendChild(el);
+  });
+  updateBar();
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+function toggle(head){ head.parentElement.classList.toggle('open'); }
+function updateBar(){
+  const n = AGENTS.filter(a=> state.outputs[a.id] && state.outputs[a.id].trim()).length;
+  document.getElementById('bar').style.width = Math.round(n/AGENTS.length*100)+'%';
+}
+function stageEl(id){ return document.querySelectorAll('.stage')[AGENTS.findIndex(a=>a.id===id)]; }
+function onOut(id,val){
+  state.outputs[id]=val; save();
+  const head = stageEl(id), done = !!val.trim();
+  head.querySelector('.dot').classList.toggle('done',done);
+  head.querySelector('.stage-status').textContent = done?'✓ hecho':'pendiente';
+  updateBar();
+}
+function onMat(id,val){ state.matices[id]=val; save(); }
+
+async function runStage(id, withMatices){
+  const a = AGENTS.find(x=>x.id===id);
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  const miss = missingDeps(a);
+  if(!withMatices && miss.length && !confirm('Faltan salidas de: '+miss.map(d=>LABEL[d]).join(', ')+'. ¿Ejecutar igualmente con contexto incompleto?')) return;
+  const btn = document.getElementById('run-'+id), rbtn = document.getElementById('regen-'+id);
+  const think = document.getElementById('think-'+id), box = document.getElementById('out-'+id);
+  btn.disabled=true; rbtn.disabled=true; think.style.display='inline';
+
+  let system = sysPrompt(id);
+  let input = buildInput(a);
+  if(withMatices){
+    input += '\n\n=== SALIDA PREVIA A REVISAR ===\n' + (state.outputs[id] || '(sin salida previa)')
+          + '\n\n=== MATICES DEL USUARIO (incorpóralos obligatoriamente) ===\n' + (state.matices[id] || '(sin matices)');
+    system += '\n\nIMPORTANTE: reescribe tu OUTPUT ESPERADO incorporando los matices del usuario, manteniendo el resto coherente. Responde en español.';
+  } else {
+    system += '\n\nResponde en español con EXACTAMENTE el OUTPUT ESPERADO de este asistente.';
+  }
+  try{
+    box.value = '⏳ Consultando al modelo…';
+    const text = await callAgent(system, input, modelFor(id));
+    state.outputs[id]=text; save();
+    box.value=text; onOut(id,text);
+    saveResponse({ sesion:SESSION, problema:state.problema, etapa:a.name, salida:text, matices:state.matices[id]||'' });
+    toast(a.name+(withMatices?' regenerado con matices.':' ejecutado.'));
+  }catch(e){
+    box.value = '⚠️ ERROR al ejecutar:\n' + (e && e.message ? e.message : String(e));
+    toast('Error (lo he escrito en la caja).');
+  }
+  finally{ btn.disabled=false; rbtn.disabled=false; think.style.display='none'; }
+}
+
+async function runAll(){
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  const think = document.getElementById('think-all'); think.style.display='inline';
+  for(const a of AGENTS){ await runStage(a.id,false); }
+  think.style.display='none'; toast('Cadena completa.');
+}
+
+function resetAll(){
+  if(!confirm('¿Borrar el problema, las salidas y los matices?')) return;
+  state = { problema:'', outputs:{}, matices:{} }; save();
+  document.getElementById('problema').value='';
+  render();
+}
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ===== Dashboard visual =====
+function mdInline(s){ return escapeHtml(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>'); }
+function splitRow(l){ let s=l.trim(); if(s.startsWith('|')) s=s.slice(1); if(s.endsWith('|')) s=s.slice(0,-1); return s.split('|').map(x=>x.trim()); }
+function isSep(l){ return !!l && l.indexOf('|')!==-1 && /^[\s:\-\|]+$/.test(l); }
+function mdToHtml(md){
+  if(!md || !md.trim()) return '';
+  const lines = md.replace(/\r/g,'').split('\n');
+  const out=[]; let i=0, list=null;
+  const closeL=()=>{ if(list){ out.push('</'+list+'>'); list=null; } };
+  while(i<lines.length){
+    const l=lines[i], t=l.trim();
+    if(t.indexOf('|')!==-1 && isSep(lines[i+1]||'')){
+      closeL();
+      const header=splitRow(l); i+=2; const rows=[];
+      while(i<lines.length && lines[i].indexOf('|')!==-1 && lines[i].trim()!==''){ rows.push(splitRow(lines[i])); i++; }
+      out.push('<table><thead><tr>'+header.map(h=>'<th>'+mdInline(h)+'</th>').join('')+'</tr></thead><tbody>'
+        + rows.map(r=>'<tr>'+r.map(c=>'<td>'+mdInline(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>');
+      continue;
+    }
+    if(t===''){ closeL(); i++; continue; }
+    let m;
+    if(m=t.match(/^#{1,6}\s+(.*)$/)){ closeL(); out.push('<h4>'+mdInline(m[1])+'</h4>'); i++; continue; }
+    if(m=t.match(/^[-*]\s+(.*)$/)){ if(list!=='ul'){ closeL(); out.push('<ul>'); list='ul'; } out.push('<li>'+mdInline(m[1])+'</li>'); i++; continue; }
+    if(m=t.match(/^\d+[.)]\s+(.*)$/)){ if(list!=='ol'){ closeL(); out.push('<ol>'); list='ol'; } out.push('<li>'+mdInline(m[1])+'</li>'); i++; continue; }
+    closeL(); out.push('<p>'+mdInline(t)+'</p>'); i++;
+  }
+  closeL();
+  return out.join('\n');
+}
+let _resumenCache = { src:'', txt:'' };
+async function buildDashboard(){
+  const done = AGENTS.filter(a=>state.outputs[a.id]&&state.outputs[a.id].trim()).length;
+  const conMat = AGENTS.filter(a=>state.matices[a.id]&&state.matices[a.id].trim()).length;
+  let h='';
+  h += '<div class="dash-top dash-noprint"><h1 class="dash-title">Dashboard · Reactor de Innovación</h1>'
+     + '<div style="display:flex;gap:8px"><button onclick="window.print()">Imprimir / PDF</button>'
+     + '<button onclick="closeDashboard()">Cerrar</button></div></div>';
+  const _prob = state.problema || '';
+  const _needsSum = !!_prob && (_prob.length > 600 || _prob.indexOf('[Contenido de') !== -1);
+  const _lbl = _needsSum ? 'Problema / intuición (resumen)' : 'Problema / intuición';
+  const _probHtml = _needsSum ? '<span id="dash-prob-text">⏳ Resumiendo el contenido adjunto…</span>' : escapeHtml(_prob || '(sin definir)');
+  h += '<div class="dash-problem"><div class="lbl">'+_lbl+'</div>'+ _probHtml +'</div>';
+  h += '<div class="pipeline">';
+  AGENTS.forEach((a,idx)=>{
+    const d = state.outputs[a.id]&&state.outputs[a.id].trim();
+    h += '<span class="pipe-chip"><span class="pdot" style="background:'+(d?'#16a34a':'#cfd4db')+'"></span>'+a.name+'</span>';
+    if(idx<AGENTS.length-1) h += '<span class="pipe-arrow">→</span>';
+  });
+  h += '</div>';
+  h += '<div class="stats">'
+     + '<div class="stat"><div class="num">'+done+'/'+AGENTS.length+'</div><div class="cap">etapas completadas</div></div>'
+     + '<div class="stat"><div class="num">'+Math.round(done/AGENTS.length*100)+'%</div><div class="cap">de la cadena</div></div>'
+     + '<div class="stat"><div class="num">'+conMat+'</div><div class="cap">etapas con matices</div></div>'
+     + '</div>';
+  AGENTS.forEach((a,idx)=>{
+    const out = state.outputs[a.id]||'';
+    h += '<div class="dcard" style="--c:'+a.c+'">';
+    h += '<div class="dcard-head"><span class="n">'+(idx+1)+'</span><h3>'+a.name+'</h3></div>';
+    if(out.trim()){
+      h += '<div class="dcard-body">'+mdToHtml(out)+'</div>';
+      if(state.matices[a.id]&&state.matices[a.id].trim())
+        h += '<div class="dmatiz"><b>Matices:</b> '+escapeHtml(state.matices[a.id])+'</div>';
+    } else {
+      h += '<div class="dcard-empty">Sin salida todavía.</div>';
+    }
+    h += '</div>';
+  });
+  document.getElementById('dash-inner').innerHTML = h;
+  const d = document.getElementById('dash'); d.classList.add('show'); d.scrollTop=0;
+  if(_needsSum) fillResumen(_prob);
+}
+async function fillResumen(prob){
+  let el = document.getElementById('dash-prob-text');
+  if(!el) return;
+  if(_resumenCache.src === prob && _resumenCache.txt){ el.textContent = _resumenCache.txt; return; }
+  try{
+    const sys = 'Eres un resumidor. Resume en español, de forma clara y breve (máximo 6 frases), el problema y el contenido de los archivos adjuntos que aparecen abajo. No inventes nada que no esté en el texto. Devuelve solo el resumen, sin preámbulos.';
+    const txt = await callAgent(sys, prob, 'gpt-4o-mini');
+    _resumenCache = { src: prob, txt: txt };
+    el = document.getElementById('dash-prob-text');
+    if(el) el.textContent = txt;
+  }catch(e){
+    el = document.getElementById('dash-prob-text');
+    if(el) el.textContent = (prob.length > 600 ? prob.slice(0, 600) + '… [resumen no disponible]' : prob);
+  }
+}
+function closeDashboard(){ document.getElementById('dash').classList.remove('show'); }
+
+// ===== Adjuntar archivos: extracción de texto en el navegador =====
+const MAX_PALABRAS = 6000; // tope para no disparar tokens/coste
+
+function pickFile(targetId){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.pdf,.docx,.pptx,.txt,.md';
+  inp.onchange = () => { if(inp.files && inp.files[0]) attachTo(targetId, inp.files[0]); };
+  inp.click();
+}
+
+async function extractPdf(file){
+  if(typeof pdfjsLib === 'undefined') throw new Error('pdf.js no cargó (¿sin conexión?)');
+  if(!pdfjsLib.GlobalWorkerOptions.workerSrc)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const out = [];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    out.push(tc.items.map(i => i.str).join(' '));
+  }
+  return out.join('\n');
+}
+async function extractDocx(file){
+  if(typeof mammoth === 'undefined') throw new Error('mammoth no cargó (¿sin conexión?)');
+  const buf = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({ arrayBuffer: buf });
+  return res.value || '';
+}
+async function extractPptx(file){
+  if(typeof JSZip === 'undefined') throw new Error('JSZip no cargó (¿sin conexión?)');
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const slides = Object.keys(zip.files)
+    .filter(n => /ppt\/slides\/slide\d+\.xml$/.test(n))
+    .sort((a,b) => (+a.match(/slide(\d+)/)[1]) - (+b.match(/slide(\d+)/)[1]));
+  const out = [];
+  for(const n of slides){
+    const xml = await zip.files[n].async('string');
+    const texts = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m => m[1]);
+    if(texts.length) out.push(texts.join(' '));
+  }
+  return out.join('\n');
+}
+async function extractFile(file){
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if(ext === 'pdf')  return await extractPdf(file);
+  if(ext === 'docx') return await extractDocx(file);
+  if(ext === 'pptx') return await extractPptx(file);
+  if(ext === 'txt' || ext === 'md') return await file.text();
+  if(ext === 'doc' || ext === 'ppt')
+    throw new Error('Formato antiguo .'+ext+' no soportado. Guárdalo como .docx/.pptx.');
+  throw new Error('Formato no soportado: .'+ext);
+}
+
+async function attachTo(targetId, file){
+  const ta = document.getElementById(targetId);
+  if(!ta) return;
+  toast('Extrayendo «'+file.name+'»…');
+  try{
+    let text = (await extractFile(file) || '').replace(/\s+\n/g,'\n').trim();
+    if(!text){ toast('No se extrajo texto (¿PDF escaneado/imagen?).'); return; }
+    const words = text.split(/\s+/);
+    let truncated = false;
+    if(words.length > MAX_PALABRAS){ text = words.slice(0, MAX_PALABRAS).join(' '); truncated = true; }
+    const cab = '[Contenido de '+file.name + (truncated ? ' · recortado a '+MAX_PALABRAS+' de '+words.length+' palabras' : '') + ']:';
+    ta.value = (ta.value ? ta.value.trimEnd()+'\n\n' : '') + cab + '\n' + text;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.scrollTop = ta.scrollHeight;
+    toast('Añadido «'+file.name+'»'+(truncated?' (recortado)':'')+'.');
+  }catch(e){
+    toast('Error: '+(e && e.message ? e.message : e));
+  }
+}
+
+// init
+const pEl = document.getElementById('problema');
+pEl.value = state.problema || '';
+pEl.addEventListener('input', e=>{ state.problema=e.target.value; save(); });
+render();
+document.querySelector('.stage') && document.querySelector('.stage').classList.add('open');
+
+</script>
+<script>
+/* ===========================================================================
+   Capa de Memoria del Reactor sobre la cadena de agentes.
+
+   No toca el motor: se engancha por el botón que la etapa 02 Piezas pinta
+   junto al de adjuntar. Usa `state`, `save()` y `escapeHtml()` del motor, que
+   viven en el mismo ámbito global.
+
+   Qué hace: coge la salida del agente Piezas, la normaliza y la traduce al
+   idioma del catálogo de I+D, la guarda como piezas del escenario, y por cada
+   pieza busca quién la tiene. La máquina propone; una persona firma.
+   =========================================================================== */
+
+const MR = {
+  URL:  "https://hugtfjbuzltvhysrjlxv.supabase.co",
+  // Clave publicable. NUNCA pongas aquí la clave `service_role`.
+  ANON: "sb_publishable_y_q6WtW5rfR5A_LOE7-Q0g_OXeRjcW0"
+};
+const db = supabase.createClient(MR.URL, MR.ANON);
+const esc = t => (typeof escapeHtml === 'function' ? escapeHtml(String(t ?? ''))
+  : String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+
+let mpPiezas = null;   // piezas traducidas, aún sin guardar
+let mpGuardadas = [];  // piezas ya en la base
+
+const SYS_MAPEO = `Recibes la salida del agente Piezas del Reactor de Innovación: una tabla o lista de piezas con nombre, categoría, escala inicial, qué revela y siguiente escala. El formato varía.
+
+Haces dos cosas.
+
+1. NORMALIZAR cada pieza a: nombre, categoria, escala, que_revela, siguiente_escala.
+   - categoria: exactamente una de datos, tecnologica, conocimiento, auxiliar.
+   - escala: exactamente una de mesa, comunidad, piloto, proceso.
+   - Si el original no lo dice, deduce la más razonable.
+
+2. TRADUCIR cada pieza a términos con los que buscarla en un catálogo de grupos de investigación de universidades españolas. El catálogo está escrito como LO QUE UN GRUPO SABE HACER (nombres de grupo, departamentos, líneas de investigación), no como LO QUE UN EQUIPO NECESITA. Traduce de lo segundo a lo primero.
+   - "Papers sobre umbrales térmicos de mortalidad" no se busca por "papers" ni por "umbrales": se busca por "epidemiologia ambiental mortalidad calor series temporales".
+   - "Sensores low-cost de temperatura" se busca por "instrumentacion sensores ambientales teledeteccion termica microclima".
+   - Entre 3 y 7 términos, minúscula, sin verbos, sin topónimos, sin marcas ni nombres de software.
+   - Añade el sinónimo académico si la pieza usa lenguaje coloquial: "isla de calor" también es "clima urbano" y "termografia".
+
+3. MARCAR buscar: false cuando ningún grupo de investigación puede aportar esa pieza: software genérico, permisos, comités éticos, contactos institucionales. En esas, terminos va vacío.
+
+Responde SOLO con JSON válido, sin texto alrededor:
+{"piezas":[{"nombre":"...","categoria":"datos","escala":"mesa","que_revela":"...","siguiente_escala":"...","terminos":"...","buscar":true}]}`;
+
+/* --- armazón del panel ------------------------------------------------- */
+function mpPanel() {
+  let p = document.getElementById('mp');
+  if (p) return p;
+  p = document.createElement('div');
+  p.id = 'mp'; p.className = 'mp-panel';
+  p.innerHTML = `<div class="mp-caja">
+    <button class="mp-cerrar" onclick="cerrarMapeo()">Cerrar</button>
+    <h2>Mapeo de recursos de I+D</h2>
+    <p style="margin:2px 0 0;font-size:14.5px;color:#5c6360">
+      7.795 grupos de 38 universidades públicas. La máquina propone; la conexión
+      sólo existe cuando una persona la firma con nombre y motivo. Un descarte
+      razonado vale tanto como un acierto: es lo que hoy se pierde al acabar la edición.</p>
+    <div class="mp-fila">
+      <label class="mp-est">Firma:</label>
+      <input id="mp-firmante" placeholder="Nombre y apellido" autocomplete="name">
+      <label class="mp-est">Organización:</label>
+      <select id="mp-org"></select>
+      <button class="mp-b" id="mp-crear">Crear escenario desde el problema</button>
+    </div>
+    <div class="mp-fila">
+      <button class="mp-b p" id="mp-leer" disabled>Leer las piezas de la etapa 02</button>
+      <button class="mp-b" id="mp-guardar" disabled>Guardar en la Memoria</button>
+      <span class="mp-est" id="mp-est"></span>
+    </div>
+    <div id="mp-lista"></div>
+  </div>`;
+  document.body.appendChild(p);
+  p.addEventListener('click', e => { if (e.target === p) cerrarMapeo(); });
+
+  const g = document.getElementById('mp-firmante');
+  try { g.value = localStorage.getItem('mr_firmante') || ''; } catch (e) {}
+  g.addEventListener('input', () => { try { localStorage.setItem('mr_firmante', g.value); } catch (e) {} });
+
+  document.getElementById('mp-crear').addEventListener('click', crearEscenario);
+  document.getElementById('mp-leer').addEventListener('click', leerPiezas);
+  document.getElementById('mp-guardar').addEventListener('click', guardarPiezas);
+  return p;
+}
+
+const mpEst = (t, c) => { const e = document.getElementById('mp-est'); e.textContent = t; e.className = 'mp-est' + (c ? ' ' + c : ''); };
+function firmante() {
+  const v = document.getElementById('mp-firmante').value.trim();
+  if (!v) { document.getElementById('mp-firmante').focus(); throw new Error('Escribe tu nombre antes de firmar.'); }
+  return v;
+}
+
+async function abrirMapeo() {
+  mpPanel().classList.add('on');
+  const orgs = await db.rpc('mr_organizaciones');
+  const sel = document.getElementById('mp-org');
+  sel.innerHTML = '';
+  (orgs.data || []).forEach(o => { const x = document.createElement('option'); x.value = o.id; x.textContent = o.nombre; sel.appendChild(x); });
+  if (state.escenarioId) {
+    document.getElementById('mp-crear').textContent = 'Escenario ya creado';
+    document.getElementById('mp-crear').disabled = true;
+    document.getElementById('mp-leer').disabled = false;
+    mpEst('Escenario en curso.');
+    await pintarGuardadas();
+  } else {
+    mpEst(state.outputs.problema ? 'Crea el escenario a partir del problema de la etapa 01.'
+                                 : 'Primero ejecuta la etapa 01 Problema.', state.outputs.problema ? '' : 'mal');
+  }
+}
+function cerrarMapeo() { const p = document.getElementById('mp'); if (p) p.classList.remove('on'); }
+
+async function crearEscenario() {
+  const decl = (state.outputs.problema || '').trim();
+  if (!decl) return mpEst('No hay salida de la etapa 01 Problema.', 'mal');
+  const org = document.getElementById('mp-org').value;
+  if (!org) return mpEst('Hace falta una organización.', 'mal');
+  mpEst('Creando…');
+  // La declaración es la primera parte de la salida del agente: lo demás son
+  // variantes y verificadores, que ya viven en el texto de la etapa.
+  const titulo = decl.split('\n').map(x => x.trim()).filter(Boolean)[1] || 'Escenario 1';
+  const { data, error } = await db.rpc('mr_crear_escenario', {
+    p_organizacion_id: org, p_declaracion: decl.slice(0, 4000),
+    p_titulo: titulo.slice(0, 200), p_modulo: 2, p_visibilidad: 'cliente'
+  });
+  if (error) return mpEst(error.message, 'mal');
+  state.escenarioId = data; save();
+  document.getElementById('mp-crear').disabled = true;
+  document.getElementById('mp-crear').textContent = 'Escenario ya creado';
+  document.getElementById('mp-leer').disabled = false;
+  mpEst('Escenario creado. Ahora lee las piezas.', 'bien');
+}
+
+async function leerPiezas() {
+  const txt = (state.outputs.piezas || '').trim();
+  if (txt.length < 40) return mpEst('La etapa 02 Piezas todavía no tiene salida.', 'mal');
+  mpEst('Traduciendo las piezas al idioma del catálogo…');
+  document.getElementById('mp-leer').disabled = true;
+  try {
+    const r = await fetch(BACKEND + '/api/ask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: SYS_MAPEO, message: txt.slice(0, 12000), model: 'gpt-4o-mini', temperature: 0.2 })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || d.error) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
+    const t = String(d.reply || '');
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    let ps = null;
+    try { ps = JSON.parse(t.slice(a, b + 1)).piezas; } catch (e) { ps = null; }
+    if (!Array.isArray(ps) || !ps.length) throw new Error('El agente no ha devuelto piezas utilizables.');
+    const CAT = ['datos', 'tecnologica', 'conocimiento', 'auxiliar'], ESC = ['mesa', 'comunidad', 'piloto', 'proceso'];
+    mpPiezas = ps.map(p => ({
+      nombre: String(p.nombre || '').slice(0, 300),
+      categoria: CAT.includes(p.categoria) ? p.categoria : 'auxiliar',
+      escala: ESC.includes(p.escala) ? p.escala : 'mesa',
+      que_revela: String(p.que_revela || ''), siguiente_escala: String(p.siguiente_escala || ''),
+      terminos: String(p.terminos || '')
+    })).filter(p => p.nombre.length > 2);
+    pintarPropuestas();
+    document.getElementById('mp-guardar').disabled = false;
+    mpEst(mpPiezas.length + ' pieza(s). Revisa los términos antes de guardar.', 'bien');
+  } catch (e) { mpEst(String(e.message || e), 'mal'); }
+  finally { document.getElementById('mp-leer').disabled = false; }
+}
+
+function pintarPropuestas() {
+  const L = document.getElementById('mp-lista'); L.innerHTML = '';
+  mpPiezas.forEach((p, i) => {
+    const d = document.createElement('div'); d.className = 'mp-pieza';
+    d.innerHTML = `<span class="mp-cat">${esc(p.categoria)}</span><b>${esc(p.nombre)}</b>
+      <div class="mp-meta">escala ${esc(p.escala)}${p.que_revela ? ' · ' + esc(p.que_revela) : ''}</div>
+      <input class="mp-term" data-t="${i}" value="${esc(p.terminos)}"
+        placeholder="sin términos: ningún grupo de investigación aporta esta pieza">`;
+    L.appendChild(d);
+  });
+  L.querySelectorAll('[data-t]').forEach(inp =>
+    inp.addEventListener('input', () => { mpPiezas[+inp.dataset.t].terminos = inp.value; }));
+}
+
+async function guardarPiezas() {
+  if (!state.escenarioId || !mpPiezas) return;
+  mpEst('Guardando…');
+  const { error } = await db.rpc('mr_guardar_piezas', { p_escenario_id: state.escenarioId, p_piezas: mpPiezas });
+  if (error) return mpEst(error.message, 'mal');
+  mpPiezas = null;
+  document.getElementById('mp-guardar').disabled = true;
+  await pintarGuardadas();
+  mpEst('Piezas guardadas. Ahora busca quién tiene cada una.', 'bien');
+}
+
+async function pintarGuardadas() {
+  const L = document.getElementById('mp-lista'); L.innerHTML = '';
+  const { data, error } = await db.rpc('mr_piezas', { p_escenario_id: state.escenarioId });
+  if (error) return mpEst(error.message, 'mal');
+  mpGuardadas = data || [];
+  mpGuardadas.forEach(p => {
+    const buscable = (p.terminos || '').trim().length > 0;
+    const d = document.createElement('div'); d.className = 'mp-pieza';
+    d.innerHTML = `<span class="mp-cat">${esc(p.categoria)}</span><b>${esc(p.nombre)}</b>
+      <div class="mp-meta">escala ${esc(p.escala_inicial)}${p.firmadas ? ' · <b>' + p.firmadas + ' firmada(s)</b>' : p.propuestas ? ' · ' + p.propuestas + ' sin firmar' : ''}</div>
+      ${buscable ? `<div class="mp-meta">${esc(p.terminos)}</div>
+        <div class="mp-fila" style="margin:8px 0 0">
+          <button class="mp-b" data-buscar="${p.id}" data-q="${esc(p.terminos)}">Buscar quién la tiene</button>
+        </div>`
+      : `<div class="mp-meta">Sin términos: ningún grupo de investigación aporta esta pieza.</div>`}
+      <div id="mp-r-${p.id}"></div>`;
+    L.appendChild(d);
+  });
+  L.querySelectorAll('[data-buscar]').forEach(b =>
+    b.addEventListener('click', () => buscarPieza(b.dataset.buscar, b.dataset.q)));
+  for (const p of mpGuardadas) if (p.propuestas || p.firmadas) await pintarConexiones(p.id);
+}
+
+async function buscarPieza(piezaId, q) {
+  const cont = document.getElementById('mp-r-' + piezaId);
+  cont.innerHTML = '<p class="mp-est">Buscando y proponiendo…</p>';
+  const { data, error } = await db.rpc('proponer_conexiones', {
+    p_escenario_id: state.escenarioId, p_consulta: q, p_limite: 8, p_pieza_id: piezaId
+  });
+  if (error) { cont.innerHTML = '<p class="mp-est mal">' + esc(error.message) + '</p>'; return; }
+  await pintarConexiones(piezaId);
+  mpEst(data + ' propuesta(s) nueva(s) para esa pieza. Sin firmar no valen nada.', 'bien');
+}
+
+async function pintarConexiones(piezaId) {
+  const cont = document.getElementById('mp-r-' + piezaId);
+  if (!cont) return;
+  const { data, error } = await db.rpc('mr_conexiones', { p_escenario_id: state.escenarioId });
+  if (error) { cont.innerHTML = '<p class="mp-est mal">' + esc(error.message) + '</p>'; return; }
+  const mias = (data || []).filter(c => c.pieza_id === piezaId);
+  if (!mias.length) { cont.innerHTML = ''; return; }
+  cont.innerHTML = '<ul class="mp-res">' + mias.map(c => {
+    const cab = `<span class="uni">${esc(c.universidad)}</span><b>${esc(c.recurso)}</b>
+      <div class="mp-meta">${c.responsable ? esc(c.responsable) : ''}${c.url ? (c.responsable ? ' · ' : '') + '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">ficha</a>' : ''}</div>`;
+    if (c.firmado_por) {
+      return `<li>${cab}<div class="mp-sello"><span class="${c.veredicto === 'sirve' ? 's' : 'n'}">${c.veredicto === 'sirve' ? 'Sirve' : 'No sirve'}</span> — ${esc(c.razon)}<br><b>${esc(c.firmado_por)}</b>, ${new Date(c.firmado_en).toLocaleDateString('es-ES')}</div></li>`;
+    }
+    return `<li>${cab}<div class="mp-firma">
+      <input data-razon="${c.id}" placeholder="Por qué sirve, o por qué no">
+      <button class="mp-b mp-si" data-firmar="${c.id}" data-v="sirve" data-p="${piezaId}">Sirve</button>
+      <button class="mp-b mp-no" data-firmar="${c.id}" data-v="no_sirve" data-p="${piezaId}">No sirve</button>
+    </div></li>`;
+  }).join('') + '</ul>';
+
+  cont.querySelectorAll('[data-firmar]').forEach(b => b.addEventListener('click', async () => {
+    let quien;
+    try { quien = firmante(); } catch (e) { return mpEst(e.message, 'mal'); }
+    const razon = cont.querySelector(`[data-razon="${b.dataset.firmar}"]`).value.trim();
+    mpEst('Firmando…');
+    const { error } = await db.rpc('firmar_conexion', {
+      p_conexion_id: b.dataset.firmar, p_veredicto: b.dataset.v, p_razon: razon, p_firmante: quien
+    });
+    if (error) return mpEst(error.message, 'mal');
+    await pintarConexiones(b.dataset.p);
+    mpEst('Firmada.', 'bien');
+  }));
+}
+
+</script>
+</body>
+</html>
