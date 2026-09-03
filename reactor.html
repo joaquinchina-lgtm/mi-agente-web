@@ -282,6 +282,29 @@ body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-app
 #agentes .app .matiz-wrap{background:#141d1a;border:1px solid #2a3833;border-radius:3px}
 #agentes .app .matiz-wrap .out-label,#agentes .app .matiz-hint{color:#a8bab4}
 #agentes .app .matiz-wrap textarea{background:#080c0b;border-color:#2a3833}
+
+/* Salidas de los asistentes: vista legible (tablas de verdad, sin asteriscos) */
+.conmuta{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-left:10px;vertical-align:middle}
+.conmuta button{background:#fff;border:0;border-right:1px solid var(--line);color:var(--muted);font:inherit;font-size:12px;padding:4px 10px;cursor:pointer}
+.conmuta button:last-child{border-right:0}
+.conmuta button.act{background:var(--ink);color:#fff}
+.salida{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;
+  font-size:14.5px;line-height:1.6;color:var(--ink);overflow-x:auto}
+.salida:empty::before{content:"Aún sin salida.";color:var(--muted);font-style:italic}
+.salida h1,.salida h2,.salida h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em;margin:18px 0 6px;color:var(--ink)}
+.salida h1:first-child,.salida h2:first-child,.salida h3:first-child{margin-top:0}
+.salida p{margin:0 0 10px}
+.salida ul,.salida ol{margin:0 0 10px;padding-left:22px}
+.salida li{margin:0 0 4px}
+.salida code{background:#f1f4f3;padding:1px 5px;border-radius:4px;font-size:13px}
+.salida table{border-collapse:collapse;width:100%;margin:4px 0 14px;font-size:13.5px;table-layout:fixed}
+.salida th,.salida td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;word-break:break-word;overflow-wrap:anywhere}
+.salida th{background:#f4f7f6;font-weight:600;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.salida tr:nth-child(even) td{background:#fafbfb}
+.salida hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.salida details{margin-top:10px;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fafbfb}
+.salida summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+.salida details pre{white-space:pre-wrap;word-break:break-word;font-size:12.5px;margin:8px 0 0}
 </style>
   <link rel="stylesheet" href="/assets/nav.css">
 </head>
@@ -635,8 +658,8 @@ function render(){
           <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">Regenerar con matices</button>
           <span class="thinking" id="think-${a.id}" style="display:none">pensando…</span>
         </div>
-        <div class="out-label">Salida del asistente (editable):</div>
-        <textarea id="out-${a.id}" rows="7" oninput="onOut('${a.id}',this.value)" placeholder="Aún sin salida.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
+        <div class="out-label">Salida del asistente<span class="conmuta"><button type="button" class="act" id="vb-${a.id}" onclick="verModo('${a.id}','ver')">Leer</button><button type="button" id="eb-${a.id}" onclick="verModo('${a.id}','editar')">Editar</button></span></div><div class="salida" id="ver-${a.id}"></div>
+        <textarea id="out-${a.id}" rows="7" style="display:none" oninput="onOut('${a.id}',this.value)" placeholder="Aún sin salida.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
         <div class="matiz-wrap">
           <div class="out-label">✏️ Matices para esta salida</div>
           <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
@@ -656,7 +679,7 @@ function updateBar(){
   document.getElementById('bar').style.width = Math.round(n/AGENTS.length*100)+'%';
 }
 function stageEl(id){ return document.querySelectorAll('.stage')[AGENTS.findIndex(a=>a.id===id)]; }
-function onOut(id,val){
+function onOut(id,val){ if(window.pintarSalida) pintarSalida(id);
   state.outputs[id]=val; save();
   const head = stageEl(id), done = !!val.trim();
   head.querySelector('.dot').classList.toggle('done',done);
@@ -709,6 +732,7 @@ function resetAll(){
   state = { problema:'', outputs:{}, matices:{} }; save();
   document.getElementById('problema').value='';
   render();
+pintarTodas();
 }
 let toastT;
 function toast(msg){
@@ -885,6 +909,118 @@ async function attachTo(targetId, file){
 const pEl = document.getElementById('problema');
 pEl.value = state.problema || '';
 pEl.addEventListener('input', e=>{ state.problema=e.target.value; save(); });
+
+/* ---- Presentacion de las salidas (mismo renderizador que el area interna) ----
+   Antes la salida solo se veia como texto plano dentro del textarea: por eso
+   las tablas no eran tablas y los asteriscos quedaban a la vista. */
+const esFilaTabla = l => (l.match(/\|/g)||[]).length >= 2;
+const esSeparador = l => /^[\s|:-]+$/.test(l) && l.includes('-');
+function escSalida(t){ return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function enLinea(t){
+  return escSalida(t)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/(https?:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function aHtml(txt){
+  const lineas = String(txt||'').replace(/\r/g,'').split('\n');
+  const out=[]; let i=0, lista=null;
+  const cierraLista=()=>{ if(lista){ out.push('</'+lista+'>'); lista=null; } };
+  while(i<lineas.length){
+    const l = lineas[i], t = l.trim();
+    if(!t){
+      /* Una linea en blanco entre dos puntos de la misma lista NO la cierra:
+         antes cada punto abria su propio <ol> y todos salian numerados "1.". */
+      let j=i+1; while(j<lineas.length && !lineas[j].trim()) j++;
+      const sig = j<lineas.length ? lineas[j].trim() : '';
+      const sigue = lista && ((lista==='ol' && /^\d+[.)]\s/.test(sig)) || (lista==='ul' && /^[-*•]\s/.test(sig)));
+      if(!sigue) cierraLista();
+      i++; continue;
+    }
+
+    // tabla: dos o mas lineas seguidas con barras
+    if(esFilaTabla(t) && i+1<lineas.length && (esFilaTabla(lineas[i+1].trim())||esSeparador(lineas[i+1].trim()))){
+      cierraLista();
+      const filas=[];
+      while(i<lineas.length && esFilaTabla(lineas[i].trim())){
+        const f=lineas[i].trim();
+        if(!esSeparador(f)) filas.push(f.replace(/^\||\|$/g,'').split('|').map(c=>c.trim()));
+        i++;
+      }
+      if(filas.length){
+        out.push('<table><thead><tr>'+filas[0].map(c=>'<th>'+enLinea(c)+'</th>').join('')+'</tr></thead><tbody>');
+        for(const f of filas.slice(1)) out.push('<tr>'+f.map(c=>'<td>'+enLinea(c)+'</td>').join('')+'</tr>');
+        out.push('</tbody></table>');
+      }
+      continue;
+    }
+    // regla horizontal
+    if(/^(-{3,}|_{3,}|\*{3,})$/.test(t)){ cierraLista(); out.push('<hr>'); i++; continue; }
+    // titulos markdown
+    let m = t.match(/^(#{1,6})\s+(.*)$/);
+    if(m){ cierraLista(); const n=Math.min(m[1].length+1,4); out.push(`<h${n}>`+enLinea(m[2])+`</h${n}>`); i++; continue; }
+    // titulos del tipo "1. DECLARACION DEL PROBLEMA" o "A) ALGO"
+    if(/^(\d+\.|[A-Z]\))\s+[^a-z]{4,}$/.test(t)){ cierraLista(); out.push('<h3>'+enLinea(t)+'</h3>'); i++; continue; }
+    // vinetas
+    m = t.match(/^[-*•]\s+(.*)$/);
+    if(m){ if(lista!=='ul'){ cierraLista(); out.push('<ul>'); lista='ul'; } out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+    // numeradas: si la linea numerada esta AISLADA (ni viene de una lista abierta
+    // ni le sigue otra numerada) es un titulo de apartado, no un punto de lista.
+    // Asi "1. Declaracion del problema" sale en negrita y sin el numero.
+    m = t.match(/^\d+[.)]\s+(.*)$/);
+    if(m){
+      if(lista==='ol'){ out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+      let j=i+1; while(j<lineas.length && !lineas[j].trim()) j++;
+      const sig = j<lineas.length ? lineas[j].trim() : '';
+      if(/^\d+[.)]\s/.test(sig)){ cierraLista(); out.push('<ol>'); lista='ol'; out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+      cierraLista();
+      out.push('<h3>'+enLinea(m[1].replace(/\s*[.:]\s*$/,''))+'</h3>');
+      i++; continue;
+    }
+    // parrafo: junta lineas seguidas
+    cierraLista();
+    const par=[t]; i++;
+    while(i<lineas.length){
+      const s2=lineas[i].trim();
+      if(!s2||esFilaTabla(s2)||/^[-*•]\s/.test(s2)||/^\d+[.)]\s/.test(s2)||/^#{1,6}\s/.test(s2)) break;
+      par.push(s2); i++;
+    }
+    out.push('<p>'+enLinea(par.join(' '))+'</p>');
+  }
+  cierraLista();
+  return out.join('\n');
+}
+
+function partirTraspaso(txt){
+  const t = String(txt||'');
+  const m = t.match(/\n[ \t]*-{2,}[ \t]*TRASPASO[ \t]*-{2,}[ \t]*\n/i);
+  if(!m) return [t, ''];
+  const i = t.indexOf(m[0]);
+  return [t.slice(0, i), t.slice(i)];
+}
+function pintarSalida(id){
+  const v=document.getElementById('ver-'+id), b=document.getElementById('out-'+id);
+  if(!v||!b) return;
+  const val = b.value.trim();
+  if(!val){ v.innerHTML=''; return; }
+  const par = partirTraspaso(val);
+  v.innerHTML = aHtml(par[0]) + (par[1].trim()
+    ? '<details class="prompt traspaso"><summary>Cabecera de traspaso — lo que recibe la etapa siguiente</summary><pre>'+escapeHtml(par[1].trim())+'</pre></details>'
+    : '');
+}
+function verModo(id, modo){
+  const v=document.getElementById('ver-'+id), b=document.getElementById('out-'+id);
+  const bv=document.getElementById('vb-'+id), be=document.getElementById('eb-'+id);
+  if(!v||!b) return;
+  const editar = modo==='editar';
+  v.style.display = editar?'none':'';
+  b.style.display = editar?'':'none';
+  bv.classList.toggle('act',!editar); be.classList.toggle('act',editar);
+  if(editar) b.focus(); else pintarSalida(id);
+}
+function pintarTodas(){ AGENTS.forEach(a=>pintarSalida(a.id)); }
+
 render();
 document.querySelector('.stage') && document.querySelector('.stage').classList.add('open');
 </script>
