@@ -1444,12 +1444,12 @@ function pintarIncidencias(){
     if(!box || (state.outputs[a.id]||'').trim()) return;
     let txt = '';
     if(interrumpida === a.id){
-      txt = '⏸️ ESTA ETAPA SE QUEDO A MEDIAS.\n\nSe lanzo y la pagina se recargo o se cerro antes de que volviera la respuesta, '
-          + 'asi que el resultado se perdio. Vuelve a pulsar Ejecutar en esta etapa.';
+      txt = '\u23f8\ufe0f ESTA ETAPA SE QUED\u00d3 A MEDIAS.\n\nSe lanz\u00f3 y la p\u00e1gina se recarg\u00f3 o se cerr\u00f3 antes de que volviera la respuesta, '
+          + 'as\u00ed que el resultado se perdi\u00f3. Vuelve a pulsar Ejecutar en esta etapa.';
     } else if(state.errores && state.errores[a.id]){
       const e = state.errores[a.id];
       const cuando = e.ts ? new Date(e.ts).toLocaleString('es-ES') : '';
-      txt = '⚠️ ESTA ETAPA FALLO' + (cuando ? ' el '+cuando : '') + '.\n\n' + (e.msg||'')
+      txt = '\u26a0\ufe0f ESTA ETAPA FALL\u00d3' + (cuando ? ' el '+cuando : '') + '.\n\n' + (e.msg||'')
           + '\n\nVuelve a pulsar Ejecutar en esta etapa; cuando tenga salida, sigue con las que falten.';
     }
     if(txt){ box.value = txt; pintarSalida(a.id); }
