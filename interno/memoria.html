@@ -1218,7 +1218,15 @@ function aHtml(txt){
   const cierraLista=()=>{ if(lista){ out.push('</'+lista+'>'); lista=null; } };
   while(i<lineas.length){
     const l = lineas[i], t = l.trim();
-    if(!t){ cierraLista(); i++; continue; }
+    if(!t){
+      /* Una linea en blanco entre dos puntos de la misma lista NO la cierra:
+         antes cada punto abria su propio <ol> y todos salian numerados "1.". */
+      let j=i+1; while(j<lineas.length && !lineas[j].trim()) j++;
+      const sig = j<lineas.length ? lineas[j].trim() : '';
+      const sigue = lista && ((lista==='ol' && /^\d+[.)]\s/.test(sig)) || (lista==='ul' && /^[-*•]\s/.test(sig)));
+      if(!sigue) cierraLista();
+      i++; continue;
+    }
 
     // tabla: dos o mas lineas seguidas con barras
     if(esFilaTabla(t) && i+1<lineas.length && (esFilaTabla(lineas[i+1].trim())||esSeparador(lineas[i+1].trim()))){
@@ -1246,9 +1254,19 @@ function aHtml(txt){
     // vinetas
     m = t.match(/^[-*•]\s+(.*)$/);
     if(m){ if(lista!=='ul'){ cierraLista(); out.push('<ul>'); lista='ul'; } out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
-    // numeradas
+    // numeradas: si la linea numerada esta AISLADA (ni viene de una lista abierta
+    // ni le sigue otra numerada) es un titulo de apartado, no un punto de lista.
+    // Asi "1. Declaracion del problema" sale en negrita y sin el numero.
     m = t.match(/^\d+[.)]\s+(.*)$/);
-    if(m){ if(lista!=='ol'){ cierraLista(); out.push('<ol>'); lista='ol'; } out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+    if(m){
+      if(lista==='ol'){ out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+      let j=i+1; while(j<lineas.length && !lineas[j].trim()) j++;
+      const sig = j<lineas.length ? lineas[j].trim() : '';
+      if(/^\d+[.)]\s/.test(sig)){ cierraLista(); out.push('<ol>'); lista='ol'; out.push('<li>'+enLinea(m[1])+'</li>'); i++; continue; }
+      cierraLista();
+      out.push('<h3>'+enLinea(m[1].replace(/\s*[.:]\s*$/,''))+'</h3>');
+      i++; continue;
+    }
     // parrafo: junta lineas seguidas
     cierraLista();
     const par=[t]; i++;
