@@ -1059,7 +1059,7 @@ async function buildDashboard(){
   const conMat = AGENTS.filter(a=>state.matices[a.id]&&state.matices[a.id].trim()).length;
   let h='';
   h += '<div class="dash-top dash-noprint"><h1 class="dash-title">Dashboard · Reactor de Innovación</h1>'
-     + '<div style="display:flex;gap:8px"><button onclick="window.print()">Imprimir / PDF</button>'
+     + '<div style="display:flex;gap:8px"><button onclick="imprimirDashboard()">Imprimir / PDF</button>'
      + '<button onclick="closeDashboard()">Cerrar</button></div></div>';
   const _prob = state.problema || '';
   const _needsSum = !!_prob && (_prob.length > 600 || _prob.indexOf('[Contenido de') !== -1);
@@ -1095,6 +1095,85 @@ async function buildDashboard(){
   const d = document.getElementById('dash'); d.classList.add('show'); d.scrollTop=0;
   if(_needsSum) fillResumen(_prob);
 }
+/* El dashboard se imprimia con window.print() sobre la propia pagina: como el
+   panel es un overlay fijo con scroll, Chrome solo sacaba la primera pantalla y
+   las tablas se cortaban. Ahora se arma un documento aparte, como ya se hacia
+   con la memoria firmada, con sus margenes, su cabecera y su pie repetidos. */
+function imprimirDashboard(){
+  const cuerpo = document.getElementById('dash-inner');
+  if(!cuerpo || !cuerpo.innerHTML.trim()){ toast('Genera antes el dashboard.'); return; }
+  const clon = cuerpo.cloneNode(true);
+  clon.querySelectorAll('.dash-noprint').forEach(e=>e.remove());
+  const hoy = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+  const w = window.open('', '_blank');
+  if(!w){ toast('El navegador ha bloqueado la ventana de impresión.'); return; }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8">
+<title>Reactor de Innovación · ${hoy}</title>
+<style>
+  @page{ size:A4 portrait; margin:26mm 18mm 24mm; }
+  *{ box-sizing:border-box }
+  html,body{ margin:0; padding:0; background:#fff; color:#16181a;
+    font:11pt/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact }
+  /* cabecera y pie repetidos en todas las paginas */
+  .cab, .pie{ position:fixed; left:0; right:0; color:#6b7075; font-size:8.5pt; letter-spacing:.01em }
+  .cab{ top:-16mm; display:flex; justify-content:space-between; align-items:baseline;
+        gap:12px; border-bottom:.5pt solid #c9ced3; padding-bottom:2.5mm }
+  .cab b{ color:#16181a; font-weight:600; letter-spacing:-.01em }
+  .pie{ bottom:-15mm; display:flex; justify-content:space-between;
+        border-top:.5pt solid #c9ced3; padding-top:2.5mm }
+  h1{ font-size:18pt; letter-spacing:-.025em; margin:0 0 3mm }
+  h2{ font-size:13pt; margin:0 0 2mm }
+  h3{ font-size:11.5pt; margin:0 0 1.5mm; break-after:avoid; page-break-after:avoid }
+  p{ margin:0 0 2.2mm; orphans:3; widows:3 }
+  ul,ol{ margin:0 0 2.5mm; padding-left:6mm }
+  li{ margin:0 0 1mm; break-inside:avoid }
+  .dash-problem{ background:#f2f4f6; border:.5pt solid #dde1e5; border-radius:2px;
+    padding:3mm 4mm; margin:0 0 5mm; font-size:10pt; break-inside:avoid }
+  .dash-problem .lbl{ text-transform:uppercase; letter-spacing:.08em; font-size:7.5pt;
+    color:#6b7075; margin-bottom:1.5mm }
+  .pipeline{ margin:0 0 4mm; font-size:8.5pt; color:#6b7075 }
+  .pipe-chip{ white-space:nowrap } .pdot{ display:none }
+  .pipe-arrow{ margin:0 2px }
+  .stats{ display:flex; gap:6mm; margin:0 0 6mm; border-top:.5pt solid #dde1e5;
+    border-bottom:.5pt solid #dde1e5; padding:3mm 0 }
+  .stat .num{ font-size:15pt; font-weight:600; letter-spacing:-.02em }
+  .stat .cap{ font-size:8pt; color:#6b7075 }
+  .dcard{ margin:0 0 6mm; padding:0 0 0 4mm; border-left:2pt solid #c9ced3;
+    break-inside:auto; page-break-inside:auto }
+  .dcard-head{ display:flex; align-items:baseline; gap:2.5mm; margin:0 0 2mm;
+    break-after:avoid; page-break-after:avoid }
+  .dcard-head .n{ font-size:8pt; color:#6b7075 }
+  .dcard-head h3{ margin:0; font-size:12pt; letter-spacing:-.015em }
+  .dmatiz{ background:#f7f4ec; border:.5pt solid #e6dfcc; padding:2.5mm 3mm;
+    font-size:9.5pt; margin-top:2mm; break-inside:avoid }
+  .dcard-empty{ color:#8b9096; font-style:italic; font-size:9.5pt }
+  /* tablas: que quepan y que no se corten a mitad de fila */
+  table{ width:100%; table-layout:fixed; border-collapse:collapse;
+    font-size:8pt; margin:0 0 3mm; break-inside:auto }
+  thead{ display:table-header-group }
+  tr{ break-inside:avoid; page-break-inside:avoid }
+  th,td{ border:.5pt solid #c9ced3; padding:1.6mm 2mm; text-align:left;
+    vertical-align:top; word-break:break-word; overflow-wrap:anywhere; hyphens:auto }
+  th{ background:#eef1f3; font-weight:600; font-size:7.5pt;
+    text-transform:uppercase; letter-spacing:.03em }
+  pre{ white-space:pre-wrap; word-break:break-word; font-size:8pt;
+    background:#f2f4f6; padding:2mm; border-radius:2px }
+  code{ font-size:8.5pt; background:#f2f4f6; padding:0 1mm }
+  details{ break-inside:avoid } summary{ font-size:9pt; color:#6b7075 }
+  a{ color:inherit; text-decoration:none }
+</style></head><body>
+<div class="cab"><span><b>Joaquín Romero Roldán</b> · Reactor de Innovación</span>
+  <span>joaquinromero.com · joaquin@joaquinromero.com · +34 606 522 663</span></div>
+<div class="pie"><span>Reactor de Innovación · método Pérez-Breva</span><span>${hoy}</span></div>
+<h1>Reactor de Innovación</h1>
+${clon.innerHTML}
+</body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>{ w.print(); }, 400);
+}
+
 async function fillResumen(prob){
   let el = document.getElementById('dash-prob-text');
   if(!el) return;
