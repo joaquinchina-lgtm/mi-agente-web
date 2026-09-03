@@ -321,7 +321,7 @@ function alternarTema(){
 <div class="wrap-i">
   <div class="kick-fila"><p class="kick-i">Área interna</p><div class="acciones-cab"><button class="iconbtn" onclick="alternarTema()" title="Cambiar entre claro y oscuro">Tema</button><a class="a-web" href="./"><span aria-hidden="true">&larr;</span> Volver al área interna</a></div></div>
   <div class="aviso-i">
-    <p style="margin:0 0 8px"><b>Esta es la cadena completa, en privado.</b> Es el mismo motor que la página pública, con su propio historial: lo que hagas aquí no toca lo de <code>reactor.html</code>.</p>
+    <p style="margin:0 0 8px"><b>Esta es la cadena completa, en privado.</b> Los siete asistentes viven en ChatGPT; esta página encadena sus salidas, las guarda y las conecta con el catálogo de I+D. Lo que hagas aquí no toca lo de <code>reactor.html</code>.</p>
     <p style="margin:0"><b>En la etapa 02 Piezas</b>, junto a «Adjuntar archivo», tienes <b>Mapeo de recursos de I+D</b>: busca en 8.122 grupos de investigación de 40 universidades quién tiene cada pieza, y deja constancia firmada de lo que sirve y de lo que no.</p>
   </div>
 </div>
@@ -339,19 +339,18 @@ function alternarTema(){
   </div>
 
   <div class="banner">
-    Cadena de 7 asistentes. Cada etapa recibe <b>solo</b> las salidas que su agente declara (es un grafo, no una fila).
-    Tras generar una salida puedes escribir <b>matices</b>: viajan al siguiente asistente, y puedes <b>regenerar la propia etapa</b> incorporándolos.
-    Nada de lo que escribas sale de tu navegador salvo la consulta al modelo: esta página ya no registra las respuestas.
+    <b>Los siete asistentes se ejecutan en sus GPT de ChatGPT</b>, no aquí: allí corren con el modelo bueno y con sus instrucciones, y no hay dos versiones que se desincronicen.
+    Esta página es la memoria: en cada etapa, <b>copia</b> lo que hay que pegarle, <b>abre</b> su GPT, y <b>pega</b> la salida de vuelta. Cada etapa recibe solo lo que su agente declara (es un grafo, no una fila).
+    Nada de lo que escribas sale de tu navegador.
   </div>
 
   <div class="problema-box">
     <label for="problema">Problema o intuición inicial</label>
     <textarea id="problema" rows="3" placeholder="Describe un problema complejo o una intuición. No pienses todavía en soluciones."></textarea>
     <div class="btnrow" style="margin-top:10px">
-      <button class="primary" onclick="ejecutarPrimero()">▶ Ejecutar solo el primer asistente</button>
-      <button class="runall" onclick="runAll()">⏩ Ejecutar toda la cadena</button>
+      <button class="primary" onclick="copiarContexto('problema')">1 · Copiar el problema para el GPT</button>
+      <button onclick="abrirGpt('problema')">2 · Abrir el GPT PROBLEMA &nearr;</button>
       <button class="attach-btn" onclick="pickFile('problema')">Adjuntar archivo</button>
-      <span class="thinking" id="think-all" style="display:none">ejecutando cadena…</span>
     </div>
   </div>
 
@@ -494,14 +493,15 @@ PRÓXIMOS PASOS CONCRETOS:
 const BACKEND = "https://jr-gpt-backend-1.onrender.com";
 
 const MAPEABLES_IDS = ['problema','piezas'];
+const GPT = 'https://chatgpt.com/g/';
 const AGENTS = [
-  { id:'problema',    name:'PROBLEMA',    c:'#2563eb', deps:[] },
-  { id:'piezas',      name:'PIEZAS',      c:'#16a34a', deps:['problema'] },
-  { id:'personas',    name:'PERSONAS',    c:'#ca8a04', deps:['problema','piezas'] },
-  { id:'escala',      name:'ESCALA',      c:'#ea580c', deps:['problema','piezas','personas'] },
-  { id:'impacto',     name:'IMPACTO',     c:'#dc2626', deps:['problema','escala'] },
-  { id:'critico',     name:'CRÍTICO',     c:'#334155', deps:['problema','piezas','personas','escala','impacto'] },
-  { id:'orquestador', name:'ORQUESTADOR', c:'#7c3aed', deps:['problema','piezas','personas','escala','impacto','critico'] },
+  { id:'problema',    name:'PROBLEMA',    c:'#2563eb', deps:[],                                                                  gpt:'g-6992dfd553088191bbb0d36356a76a52' },
+  { id:'piezas',      name:'PIEZAS',      c:'#16a34a', deps:['problema'],                                                         gpt:'g-6992e21a995c819183b90ff715bd81bb' },
+  { id:'personas',    name:'PERSONAS',    c:'#ca8a04', deps:['problema','piezas'],                                                gpt:'g-6992e2c780888191b613d29d4da7e5c7' },
+  { id:'escala',      name:'ESCALA',      c:'#ea580c', deps:['problema','piezas','personas'],                                     gpt:'g-6992e4f39c0c8191a9096558375e1886' },
+  { id:'impacto',     name:'IMPACTO',     c:'#dc2626', deps:['problema','escala'],                                                gpt:'g-6992eb7261748191b7a32f6d6c86d8e9' },
+  { id:'critico',     name:'CRÍTICO',     c:'#334155', deps:['problema','piezas','personas','escala','impacto'],                   gpt:'g-6992ed691f508191aded1528809c20f3' },
+  { id:'orquestador', name:'ORQUESTADOR', c:'#7c3aed', deps:['problema','piezas','personas','escala','impacto','critico'],         gpt:'g-6992f13f1d5c8191bf76cac1326ff35e' },
 ];
 const LABEL = Object.fromEntries(AGENTS.map(a=>[a.id,a.name]));
 const KEY = 'reactor-interno-v1';
@@ -578,25 +578,27 @@ function render(){
       <div class="stage-body">
         <div class="deps">${depTxt}</div>
         <div class="btnrow">
-          <button class="primary" id="run-${a.id}" onclick="runStage('${a.id}',false)">Ejecutar</button>
-          <button id="regen-${a.id}" onclick="runStage('${a.id}',true)">Regenerar con matices</button>
-          <span class="thinking" id="think-${a.id}" style="display:none">pensando…</span>
+          <button class="primary" onclick="copiarContexto('${a.id}')">1 · Copiar lo que hay que pegarle</button>
+          <button onclick="abrirGpt('${a.id}')">2 · Abrir el GPT ${a.name} &nearr;</button>
         </div>
-        <div class="out-label">Salida del asistente
+        <div class="out-label">3 · Salida del GPT (pégala aquí)
           <span class="conmuta">
             <button type="button" class="act" id="vb-${a.id}" onclick="verModo('${a.id}','ver')">Leer</button>
             <button type="button" id="eb-${a.id}" onclick="verModo('${a.id}','editar')">Editar</button>
           </span>
         </div>
         <div class="salida" id="ver-${a.id}"></div>
-        <textarea id="out-${a.id}" rows="12" style="display:none" oninput="onOut('${a.id}',this.value)" placeholder="Aún sin salida.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
+        <textarea id="out-${a.id}" rows="12" style="display:none" oninput="onOut('${a.id}',this.value)" placeholder="Pega aquí, tal cual, lo que te haya devuelto el GPT. En cuanto lo pegues queda guardado y pasa a las etapas siguientes.">${escapeHtml(state.outputs[a.id]||'')}</textarea>
         <div class="matiz-wrap">
-          <div class="out-label">✏️ Matices para esta salida</div>
-          <p class="matiz-hint">Lo que escribas aquí viajará al siguiente asistente junto a esta salida, y se usa al “Regenerar con matices”.</p>
+          <div class="out-label">✏️ Matices y notas sobre esta salida</div>
+          <p class="matiz-hint">Lo que escribas aquí viaja al siguiente asistente junto a esta salida, y se copia con el botón 1. Para corregir una etapa, pídeselo al GPT en la propia conversación y vuelve a pegar la salida.</p>
           <textarea id="mat-${a.id}" rows="3" oninput="onMat('${a.id}',this.value)" placeholder="Ej.: céntrate en el ámbito rural; descarta la variante 2; prioriza coste bajo…">${escapeHtml(state.matices[a.id]||'')}</textarea>
           <div style="margin-top:7px"><button class="attach-btn" onclick="pickFile('mat-${a.id}')">Adjuntar archivo</button>${MAPEABLES_IDS.includes(a.id)?` <button class="attach-btn mapeo-btn" onclick="abrirMapeo('${a.id}')">Mapeo de recursos de I+D</button>`:''}</div>
         </div>
-        <details class="prompt"><summary>Ver instrucciones de este asistente</summary><pre>${escapeHtml(sysPrompt(a.id))}</pre></details>
+        <details class="prompt"><summary>¿Dónde están las instrucciones de este asistente?</summary><pre>Este asistente ya no se ejecuta en esta página: se ejecuta en su GPT de ChatGPT, con el modelo bueno y con las instrucciones que tenga allí.
+
+Para verlas o cambiarlas: abrir el GPT ${a.name} y entrar en Configurar.
+${GPT}${a.gpt}</pre></details>
       </div>`;
     root.appendChild(el);
   });
@@ -617,6 +619,29 @@ function onOut(id,val){
   updateBar();
 }
 function onMat(id,val){ state.matices[id]=val; save(); }
+
+function abrirGpt(id){
+  const a = AGENTS.find(x=>x.id===id);
+  window.open(GPT + a.gpt, '_blank', 'noopener');
+}
+function copiarContexto(id){
+  const a = AGENTS.find(x=>x.id===id);
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  const miss = missingDeps(a);
+  const txt = buildInput(a);
+  const ok = ()=> toast('Copiado. Pégalo en el GPT ' + a.name + (miss.length ? ' (faltan salidas de: '+miss.map(d=>LABEL[d]).join(', ')+')' : '') + '.');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok).catch(()=>copiaManual(txt,ok));
+  } else { copiaManual(txt, ok); }
+}
+function copiaManual(txt, ok){
+  const t = document.createElement('textarea');
+  t.value = txt; t.style.position='fixed'; t.style.left='-9999px';
+  document.body.appendChild(t); t.select();
+  try{ document.execCommand('copy'); ok(); }
+  catch(e){ toast('No he podido copiar; selecciona el texto a mano.'); }
+  document.body.removeChild(t);
+}
 
 async function runStage(id, withMatices){
   const a = AGENTS.find(x=>x.id===id);
