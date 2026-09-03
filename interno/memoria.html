@@ -945,11 +945,16 @@ function onOut(id,val){
 }
 function onMat(id,val){ state.matices[id]=val; save(); }
 
-async function runStage(id, withMatices){
+async function runStage(id, withMatices, enCadena){
   const a = AGENTS.find(x=>x.id===id);
-  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
+  if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return false; }
   const miss = missingDeps(a);
-  if(!withMatices && miss.length && !confirm('Faltan salidas de: '+miss.map(d=>LABEL[d]).join(', ')+'. ¿Ejecutar igualmente con contexto incompleto?')) return;
+  /* En cadena no se pregunta: si falta una salida anterior, se para. Antes se
+     seguia adelante con el hueco y cada etapa repetia la pregunta. */
+  if(!withMatices && miss.length){
+    if(enCadena) return false;
+    if(!confirm('Faltan salidas de: '+miss.map(d=>LABEL[d]).join(', ')+'. ¿Ejecutar igualmente con contexto incompleto?')) return false;
+  }
   const btn = document.getElementById('run-'+id), rbtn = document.getElementById('regen-'+id);
   const think = document.getElementById('think-'+id), box = document.getElementById('out-'+id);
   btn.disabled=true; rbtn.disabled=true; think.style.display='inline';
@@ -972,6 +977,7 @@ async function runStage(id, withMatices){
   } else {
     system += '\n\nResponde en español con EXACTAMENTE el OUTPUT ESPERADO de este asistente.';
   }
+  let ok = false;
   try{
     box.value = '⏳ Consultando al modelo…'; pintarSalida(id);
     const text = await callAgent(system, input, modelFor(id));
@@ -979,17 +985,30 @@ async function runStage(id, withMatices){
     box.value=text; onOut(id,text);
     saveResponse({ sesion:SESSION, problema:state.problema, etapa:a.name, salida:text, matices:state.matices[id]||'' });
     toast(a.name+(withMatices?' regenerado con matices.':' ejecutado.'));
+    ok = true;
   }catch(e){
     box.value = '⚠️ ERROR al ejecutar:\n' + (e && e.message ? e.message : String(e)); pintarSalida(id);
-    toast('Error (lo he escrito en la caja).');
+    toast('Error en '+a.name+' (lo he escrito en la caja).');
   }
   finally{ btn.disabled=false; rbtn.disabled=false; think.style.display='none'; }
+  return ok;
 }
 
 async function runAll(){
   if(!state.problema || !state.problema.trim()){ toast('Escribe primero el problema inicial.'); return; }
   const think = document.getElementById('think-all'); think.style.display='inline';
-  for(const a of AGENTS){ await runStage(a.id,false); }
+  for(const a of AGENTS){
+    const bien = await runStage(a.id, false, true);
+    if(!bien){
+      think.style.display='none';
+      const el = stageEl(a.id);
+      if(el && !el.classList.contains('open')) el.classList.add('open');
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      toast('La cadena se ha parado en '+a.name+'. Arregla esa etapa y sigue desde ahí.');
+      alert('La cadena se ha parado en ' + a.name + '.\n\nNo sigo con las etapas siguientes para no trabajar con un hueco. Mira la caja de ' + a.name + ': si hay un error, vuelve a ejecutar solo esa etapa; cuando tenga salida, ejecuta las que falten.');
+      return;
+    }
+  }
   think.style.display='none'; toast('Cadena completa.');
 }
 
