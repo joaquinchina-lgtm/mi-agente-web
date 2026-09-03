@@ -10,6 +10,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Lectores de adjuntos. Estaban en reactor.html pero el generador que fabricaba
+     esta página copiaba el motor y no las etiquetas del head, asi que aqui
+     `pdfjsLib` no existia y cualquier PDF fallaba con "pdf.js no cargo".
+     pdf.js lee PDF, mammoth lee .docx y jszip lee .pptx. Mismas versiones que
+     la pagina publica, para que las dos se comporten igual. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 /* ===========================================================================
    Memoria del Reactor · area interna
