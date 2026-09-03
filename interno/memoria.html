@@ -842,8 +842,8 @@ if(!SESSION){ SESSION = 's_'+Date.now()+'_'+Math.random().toString(36).slice(2,8
 function modelFor(id){ return 'gpt-5.2'; }  /* los siete, con el mismo modelo que los GPT de ChatGPT */
 
 function load(){
-  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s){ s.matices=s.matices||{}; s.outputs=s.outputs||{}; return s; } }catch(e){}
-  return { problema:'', outputs:{}, matices:{} };
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s){ s.matices=s.matices||{}; s.outputs=s.outputs||{}; s.errores=s.errores||{}; return s; } }catch(e){}
+  return { problema:'', outputs:{}, matices:{}, errores:{} };
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 function sysPrompt(id){ return document.getElementById('sys-'+id).textContent.trim(); }
@@ -864,7 +864,7 @@ function buildInput(agent){
 function missingDeps(agent){ return agent.deps.filter(d=> !(state.outputs[d] && state.outputs[d].trim())); }
 
 // ===== Llamadas al backend =====
-async function callAgent(systemPrompt, inputText, model){
+async function callAgentUna(systemPrompt, inputText, model){
   const r = await fetch(BACKEND + "/api/ask", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
@@ -874,6 +874,26 @@ async function callAgent(systemPrompt, inputText, model){
   try{ data = await r.json(); }catch(e){ throw new Error("Respuesta no válida del servidor (HTTP "+r.status+")"); }
   if(!r.ok || data.error) throw new Error((data && data.error && data.error.message) || ("HTTP "+r.status));
   return data.reply || "";
+}
+/* Un fallo de red suelto tumbaba la etapa y con ella la cadena entera (3/09/2026:
+   PERSONAS cayo con "Failed to fetch" y al relanzarla sola salio perfecta).
+   Se reintenta dos veces con 6 s de espera. Los errores que NO son de red
+   (400, 429 del tope por hora) no se reintentan: volverian a fallar igual. */
+async function callAgent(systemPrompt, inputText, model){
+  let ultimo;
+  for(let intento=1; intento<=3; intento++){
+    try{ return await callAgentUna(systemPrompt, inputText, model); }
+    catch(e){
+      ultimo = e;
+      const msg = (e && e.message) ? e.message : String(e);
+      const esRed = /Failed to fetch|NetworkError|network|load failed|Respuesta no v|HTTP 5\d\d/i.test(msg);
+      if(!esRed || intento===3) throw e;
+      console.warn('Reintento '+intento+' tras: '+msg);
+      try{ toast('Fallo de red; reintentando ('+intento+' de 2)…'); }catch(_){}
+      await new Promise(r=>setTimeout(r, 6000));
+    }
+  }
+  throw ultimo;
 }
 async function saveResponse(rec){
   try{
@@ -978,19 +998,31 @@ async function runStage(id, withMatices, enCadena){
     system += '\n\nResponde en español con EXACTAMENTE el OUTPUT ESPERADO de este asistente.';
   }
   let ok = false;
+  /* Se deja constancia de que esta etapa esta en vuelo ANTES de lanzarla: si se
+     recarga o se cierra la pestaña, al volver se ve que quedo a medias en vez
+     de un "Aun sin salida" que hace invisible el fallo. */
+  state.errores = state.errores || {};
+  state.enCurso = id; save();
+  window.__ejecutando = (window.__ejecutando||0) + 1;
   try{
     box.value = '⏳ Consultando al modelo…'; pintarSalida(id);
     const text = await callAgent(system, input, modelFor(id));
+    delete state.errores[id]; state.enCurso=null;
     state.outputs[id]=text; save();
     box.value=text; onOut(id,text);
     saveResponse({ sesion:SESSION, problema:state.problema, etapa:a.name, salida:text, matices:state.matices[id]||'' });
     toast(a.name+(withMatices?' regenerado con matices.':' ejecutado.'));
     ok = true;
   }catch(e){
-    box.value = '⚠️ ERROR al ejecutar:\n' + (e && e.message ? e.message : String(e)); pintarSalida(id);
+    const msg = (e && e.message) ? e.message : String(e);
+    /* El error se guarda en el estado, no en la salida: asi sobrevive a una
+       recarga y ademas no contamina lo que recibe la etapa siguiente. */
+    state.errores[id] = { msg: msg, ts: Date.now() }; state.enCurso=null; save();
+    box.value = '⚠️ ERROR al ejecutar:\n' + msg; pintarSalida(id);
     toast('Error en '+a.name+' (lo he escrito en la caja).');
   }
-  finally{ btn.disabled=false; rbtn.disabled=false; think.style.display='none'; }
+  finally{ btn.disabled=false; rbtn.disabled=false; think.style.display='none';
+           window.__ejecutando = Math.max(0,(window.__ejecutando||1) - 1); }
   return ok;
 }
 
@@ -1014,7 +1046,7 @@ async function runAll(){
 
 function resetAll(){
   if(!confirm('¿Borrar el problema, las salidas y los matices?')) return;
-  state = { problema:'', outputs:{}, matices:{} }; save();
+  state = { problema:'', outputs:{}, matices:{}, errores:{} }; state.enCurso=null; save();
   document.getElementById('problema').value='';
   render(); if(window.pintarTodas) pintarTodas();
 }
@@ -1403,8 +1435,37 @@ async function ejecutarPrimero(){
 
 function pintarTodas(){ AGENTS.forEach(a=>pintarSalida(a.id)); }
 
+/* Al cargar, cuenta lo que quedo a medias en la sesion anterior. Sin esto, una
+   etapa interrumpida aparecia como "Aun sin salida" y el fallo era invisible. */
+function pintarIncidencias(){
+  const interrumpida = state.enCurso;
+  AGENTS.forEach(a=>{
+    const box = document.getElementById('out-'+a.id);
+    if(!box || (state.outputs[a.id]||'').trim()) return;
+    let txt = '';
+    if(interrumpida === a.id){
+      txt = '⏸️ ESTA ETAPA SE QUEDO A MEDIAS.\n\nSe lanzo y la pagina se recargo o se cerro antes de que volviera la respuesta, '
+          + 'asi que el resultado se perdio. Vuelve a pulsar Ejecutar en esta etapa.';
+    } else if(state.errores && state.errores[a.id]){
+      const e = state.errores[a.id];
+      const cuando = e.ts ? new Date(e.ts).toLocaleString('es-ES') : '';
+      txt = '⚠️ ESTA ETAPA FALLO' + (cuando ? ' el '+cuando : '') + '.\n\n' + (e.msg||'')
+          + '\n\nVuelve a pulsar Ejecutar en esta etapa; cuando tenga salida, sigue con las que falten.';
+    }
+    if(txt){ box.value = txt; pintarSalida(a.id); }
+  });
+  if(interrumpida){ state.enCurso=null; save(); }
+}
+
+/* Si hay una etapa en vuelo, el navegador pregunta antes de cerrar o recargar:
+   una recarga distraida cuesta tres minutos de calculo y unos centimos. */
+window.addEventListener('beforeunload', function(ev){
+  if((window.__ejecutando||0) > 0){ ev.preventDefault(); ev.returnValue = ''; return ''; }
+});
+
 render();
 pintarTodas();
+pintarIncidencias();
 document.querySelector('.stage') && document.querySelector('.stage').classList.add('open');
 
 </script>
