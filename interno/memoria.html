@@ -413,12 +413,23 @@ Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuest
 
 <script type="text/plain" id="sys-escala">Eres un especialista en "escalar hacia abajo": reducir problemas complejos a versiones que se puedan probar en mesa, laboratorio o comunidad pequeña, sin perder la esencia del problema original.
 PRINCIPIOS: si no puedes resolver el problema, encuentra uno más sencillo que lo ilumine; reduce tamaño de comunidad (5 → 50 → 500); cada pieza es una representación a escala de una realidad mayor.
-Diseña 3 PRUEBAS DE CONCEPTO secuenciales:
-PRUEBA 1: REPRODUCIR EL PROBLEMA (Mesa/Laboratorio) — demostrar que podemos simular el fenómeno clave.
-PRUEBA 2: SIMULAR EL IMPACTO (Comunidad pequeña) — demostrar que podemos predecir/construir lo que la solución debería hacer posible.
-PRUEBA 3: VERIFICAR ESCALABILIDAD (Piloto) — probar en condiciones realistas, identificar fallos que solo aparecen a esta escala.
-PARA CADA PRUEBA: recursos exactos (tiempo, dinero, personas, datos); supuestos que la hacen viable; criterio de éxito para pasar a la siguiente; qué aprenderíamos que no sabemos ahora.
-OUTPUT ESPERADO: Tabla de 3 pruebas con: Objetivo | Escala | Recursos | Supuestos | Éxito | Aprendizaje.
+Diseña la escalera completa de PRUEBAS, una por peldaño, usando estos diez:
+1. Mesa — una tarde, con lo que ya hay encima de la mesa.
+2. Maqueta — un solo caso, con datos de juguete o simulados.
+3. Banco de pruebas — datos reales, en entorno controlado.
+4. Una persona — un usuario, un paciente, un expediente.
+5. Un equipo — una unidad, un servicio, un aula.
+6. Un centro — una organización entera, una sede.
+7. Una comunidad — un barrio, una comarca, un colectivo.
+8. Piloto territorial — una región o una red de centros.
+9. Proceso permanente — integrado en la operación diaria de alguien.
+10. Sistema — política pública, norma o estándar.
+
+REGLA CONTRA EL RELLENO: no inventes una prueba para justificar un peldaño. Si un peldaño no aporta nada en este problema, escríbelo igualmente en la tabla con el objetivo "No aplica" y una línea diciendo por qué se salta. Es más útil saber que se salta que leerse una prueba de mentira.
+
+PARA CADA PRUEBA: recursos exactos (tiempo, dinero, personas, datos); supuestos que la hacen viable; criterio de éxito para subir al siguiente peldaño; qué aprenderíamos que no sabemos ahora; y una SEÑAL DE PARADA: qué resultado te diría que hay que abandonar esta línea en vez de seguir subiendo.
+
+OUTPUT ESPERADO: Tabla de diez filas con: Peldaño | Objetivo | Recursos | Supuestos | Éxito para subir | Aprendizaje | Señal de parada.
 Termina con una CABECERA DE TRASPASO: problema_vigente, hallazgos_clave, supuestos, pendiente.</script>
 
 <script type="text/plain" id="sys-impacto">Eres un especialista en definir cómo verificar que un problema está resuelto, centrándote en qué NUEVOS LOGROS habilita la solución para la comunidad, no solo en reducir daño.
@@ -1151,7 +1162,65 @@ async function mpFirmar(conexionId, veredicto){
   }catch(e){ mpEst('No se ha podido firmar: '+(e.message||e), 'mal'); }
 }
 
+
+/* ---------------------------------------------------------------- PDF ---
+   Sin librerias: se abre una ventana con la hoja maquetada para papel y se
+   lanza la impresion del navegador, que ofrece "Guardar como PDF". Es el mismo
+   camino que usa /api/csv_report, da mejor tipografia que cualquier generador
+   de PDF en JavaScript y no anade una dependencia mas que mantener.
+   ----------------------------------------------------------------------- */
+function imprimirMemoria(){
+  if(!MEM_FIRMADO.length){ alert('Todavía no hay nada firmado que llevarse.'); return; }
+  const hoy = new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+  const sirve = MEM_FIRMADO.filter(x=>x.veredicto==='sirve').length;
+  const filas = MEM_FIRMADO.map(x=>`<tr>
+      <td class="v ${x.veredicto==='sirve'?'si':'no'}">${x.veredicto==='sirve'?'Sirve':'No sirve'}</td>
+      <td><b>${esc(x.nombre)}</b><div class="u">${esc(x.universidad)}${x.responsable?' · '+esc(x.responsable):''}</div>
+        ${x.url?`<div class="w">${esc(x.url)}</div>`:''}</td>
+      <td>${esc(x.razon||'')}</td>
+      <td class="f">${esc(x.firmado_por)}<br><span class="u">${new Date(x.firmado_en).toLocaleDateString('es-ES')}</span></td>
+      <td class="u">${esc(x.escenario||'—')}</td>
+    </tr>`).join('');
+
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8">
+  <title>Conexiones firmadas · Reactor de Innovación</title>
+  <style>
+    @page{ size:A4 landscape; margin:16mm 14mm; }
+    *{box-sizing:border-box}
+    body{font:11.5px/1.45 -apple-system,system-ui,"Segoe UI",sans-serif;color:#111;margin:0}
+    h1{font-size:19px;letter-spacing:-.02em;margin:0 0 3px}
+    .sub{color:#555;font-size:11.5px;margin:0 0 14px}
+    table{border-collapse:collapse;width:100%}
+    th{text-align:left;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#555;
+       border-bottom:1.5px solid #111;padding:0 8px 6px}
+    td{border-bottom:1px solid #ddd;padding:8px;vertical-align:top}
+    tr{page-break-inside:avoid}
+    .u{color:#666;font-size:10.5px}
+    .w{color:#666;font-size:9.5px;word-break:break-all}
+    .v{font-weight:700;white-space:nowrap;font-size:10.5px}
+    .si{color:#1d6b45} .no{color:#93392c}
+    .f{white-space:nowrap}
+    footer{margin-top:16px;padding-top:8px;border-top:1px solid #ddd;color:#666;font-size:10px}
+  </style></head><body>
+  <h1>Conexiones firmadas</h1>
+  <p class="sub">Reactor de Innovación · ${esc(hoy)} · ${MEM_FIRMADO.length} conexiones,
+    ${sirve} marcadas como útiles y ${MEM_FIRMADO.length-sirve} descartadas</p>
+  <table><thead><tr><th>Veredicto</th><th>Grupo</th><th>Razón</th><th>Firma</th><th>Escenario</th></tr></thead>
+  <tbody>${filas}</tbody></table>
+  <footer>Cada línea la firmó una persona con su nombre y su motivo. Los descartes cuentan tanto
+    como los aciertos: son el trabajo que no hay que repetir. · Joaquín Romero Roldán</footer>
+  </body></html>`;
+
+  const v = window.open('', '_blank');
+  if(!v){ alert('El navegador ha bloqueado la ventana. Permite las ventanas emergentes de este sitio y vuelve a intentarlo.'); return; }
+  v.document.write(html); v.document.close();
+  v.onload = () => { v.focus(); v.print(); };
+  setTimeout(()=>{ try{ v.focus(); v.print(); }catch(e){} }, 600);
+}
+
 /* ------------------------------------------------------------- memoria --- */
+let MEM_FIRMADO = [];
+
 async function verMemoria(){
   mpPanel().classList.add('on'); document.body.style.overflow='hidden';
   mpEl('mp-caja').innerHTML =
@@ -1160,11 +1229,14 @@ async function verMemoria(){
      <p class="sub">Todas las conexiones firmadas, de todos los escenarios. Esto es la memoria:
        lo que se descartó vale tanto como lo que sirvió.</p>
      <div id="mp-mem"><p class="mp-vacio">Cargando…</p></div>
-     <div class="btnrow"><button class="mp-b" onclick="abrirMapeo(MP.etapa||'piezas')">Volver al mapeo</button></div>`;
+     <div class="btnrow">
+       <button class="mp-b p" onclick="imprimirMemoria()">Descargar PDF</button>
+       <button class="mp-b" onclick="abrirMapeo(MP.etapa||'piezas')">Volver al mapeo</button>
+     </div>`;
   try{
     const { data, error } = await db.rpc('mr_memoria', { p_limite: 200 });
     if(error) throw error;
-    const f = data||[];
+    const f = data||[]; MEM_FIRMADO = f;
     mpEl('mp-mem').innerHTML = f.length ? '<ul class="mp-res">' + f.map(x=>`<li>
         <span class="uni">${esc(x.universidad)}</span><b>${esc(x.nombre)}</b>
         <div class="mp-meta">${x.responsable?esc(x.responsable):'—'}
