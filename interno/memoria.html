@@ -1244,10 +1244,25 @@ function aHtml(txt){
   return out.join('\n');
 }
 
+/* La cabecera de traspaso se PLIEGA, no se quita: sigue entera en la caja de
+   texto y en state.outputs, que es de donde buildInput saca lo que se le pasa
+   al siguiente agente. Aqui solo cambia lo que se ve. */
+function partirTraspaso(txt){
+  const t = String(txt||'');
+  const m = t.match(/\n[ \t]*-{2,}[ \t]*TRASPASO[ \t]*-{2,}[ \t]*\n/i);
+  if(!m) return [t, ''];
+  const i = t.indexOf(m[0]);
+  return [t.slice(0, i), t.slice(i)];
+}
 function pintarSalida(id){
   const v=document.getElementById('ver-'+id), b=document.getElementById('out-'+id);
   if(!v||!b) return;
-  v.innerHTML = b.value.trim() ? aHtml(b.value) : '';
+  const val = b.value.trim();
+  if(!val){ v.innerHTML=''; return; }
+  const par = partirTraspaso(val);
+  v.innerHTML = aHtml(par[0]) + (par[1].trim()
+    ? '<details class="prompt traspaso"><summary>Cabecera de traspaso — lo que recibe la etapa siguiente</summary><pre>'+escapeHtml(par[1].trim())+'</pre></details>'
+    : '');
 }
 function verModo(id, modo){
   const v=document.getElementById('ver-'+id), b=document.getElementById('out-'+id);
