@@ -831,7 +831,7 @@ const AGENTS = [
   { id:'orquestador', name:'ORQUESTADOR', c:'#7c3aed', deps:['problema','piezas','personas','escala','impacto','critico'] },
 ];
 const LABEL = Object.fromEntries(AGENTS.map(a=>[a.id,a.name]));
-const KEY = 'reactor-interno-v1';
+const KEY = 'reactor-servidor-v1';
 let state = load();
 
 // Identificador de sesión (anónimo) para agrupar las respuestas de un mismo usuario
@@ -1457,15 +1457,13 @@ function pintarIncidencias(){
   if(interrumpida){ state.enCurso=null; save(); }
 }
 
-/* Si hay una etapa en vuelo, el navegador pregunta antes de cerrar o recargar:
-   una recarga distraida cuesta tres minutos de calculo y unos centimos. */
-window.addEventListener('beforeunload', function(ev){
-  if((window.__ejecutando||0) > 0){ ev.preventDefault(); ev.returnValue = ''; return ''; }
-});
+/* Ya no hace falta avisar al salir: cerrar la pagina no interrumpe nada, la
+   cadena sigue corriendo en el servidor. */
 
 render();
 pintarTodas();
-pintarIncidencias();
+/* Ya no se pinta "esta etapa se quedo a medias": la ejecucion vive en el
+   servidor y el estado real lo trae rxRefrescar() de la base de datos. */
 document.querySelector('.stage') && document.querySelector('.stage').classList.add('open');
 
 </script>
@@ -1868,6 +1866,206 @@ async function verMemoria(){
   });
 })();
 
+</script>
+
+<script>
+/* ===========================================================================
+   La cadena, ejecutada en el servidor.
+
+   Esta pagina NO espera al modelo. Pide "lanza la etapa X" y se va; el
+   servidor llama a OpenAI y escribe el resultado en la base de datos. Se puede
+   recargar, cerrar la pestaña o apagar el portatil: al volver, esta.
+
+   Sustituye runStage y runAll de la pagina original. No toca los prompts ni
+   modelFor: siguen siendo la fuente unica.
+   =========================================================================== */
+const RX_API = 'https://jr-gpt-backend-1.onrender.com';
+let rxEjecucion = localStorage.getItem('rx-ejecucion') || null;
+let rxGrupo     = localStorage.getItem('rx-grupo') || null;
+let rxSondeo    = null;
+
+async function rxToken(){
+  const { data } = await db.auth.getSession();
+  return (data && data.session && data.session.access_token) || '';
+}
+
+async function rxApi(ruta, opciones){
+  const t = await rxToken();
+  if(!t) throw new Error('No hay sesion abierta. Vuelve a entrar en el area interna.');
+  const r = await fetch(RX_API + ruta, Object.assign({
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + t }
+  }, opciones || {}));
+  let j = null;
+  try{ j = await r.json(); }catch(e){ throw new Error('Respuesta no valida del servidor (HTTP '+r.status+')'); }
+  if(!r.ok) throw new Error((j && j.error && j.error.message) || ('HTTP '+r.status));
+  return j;
+}
+
+/* El grupo sale de la base: hoy hay uno solo, el de facilitador. */
+async function rxAsegurarGrupo(){
+  if(rxGrupo) return rxGrupo;
+  const { data, error } = await db.from('rx_grupo').select('id').limit(1);
+  if(error) throw new Error('No se pudo leer el grupo: ' + error.message);
+  if(!data || !data.length) throw new Error('No hay ningun grupo creado para tu usuario.');
+  rxGrupo = data[0].id; localStorage.setItem('rx-grupo', rxGrupo);
+  return rxGrupo;
+}
+
+/* Una ejecucion por problema. Si cambias el problema, empieza otra: mezclar
+   dos problemas en la misma ejecucion haria el historico inservible. */
+async function rxAsegurar(){
+  const prob = (state.problema || '').trim();
+  if(!prob) throw new Error('Escribe primero el problema inicial.');
+  if(rxEjecucion && localStorage.getItem('rx-problema') === prob) return rxEjecucion;
+  const prompts = {}, matices = {};
+  AGENTS.forEach(a => { prompts[a.id] = sysPrompt(a.id); matices[a.id] = state.matices[a.id] || ''; });
+  const j = await rxApi('/api/rx/ejecucion', { method:'POST', body: JSON.stringify({
+    grupo_id: await rxAsegurarGrupo(),
+    modulo: Number(localStorage.getItem('rx-modulo') || 1),
+    titulo: prob.slice(0, 120),
+    problema: prob, prompts: prompts, matices: matices,
+    modelo: modelFor('problema')
+  })});
+  rxEjecucion = j.ejecucion_id;
+  localStorage.setItem('rx-ejecucion', rxEjecucion);
+  localStorage.setItem('rx-problema', prob);
+  rxCartel('Ejecucion nueva creada. Ya vive en el servidor.');
+  return rxEjecucion;
+}
+
+function rxCartel(txt){
+  const c = document.getElementById('rx-cartel');
+  if(c){ c.textContent = txt; c.style.display = txt ? '' : 'none'; }
+}
+
+function rxPintar(j){
+  let vivas = 0, hechas = 0;
+  (j.etapas || []).forEach(e => {
+    const box = document.getElementById('out-' + e.agente);
+    if(!box) return;
+    if(e.estado === 'hecha' && e.salida){
+      hechas++;
+      if(state.outputs[e.agente] !== e.salida) onOut(e.agente, e.salida);
+    } else if(e.estado === 'en_curso'){
+      vivas++;
+      const seg = e.lanzada ? Math.round((Date.now() - new Date(e.lanzada).getTime())/1000) : 0;
+      box.value = '⏳ Corriendo EN EL SERVIDOR desde hace ' + seg + ' s.\n\n' +
+                  'Puedes cerrar esta pagina: el resultado se guarda igual.';
+      pintarSalida(e.agente);
+    } else if(e.estado === 'fallida'){
+      box.value = '⚠️ ESTA ETAPA FALLO.\n\n' + (e.error || '') +
+                  '\n\nVuelve a pulsar Ejecutar en esta etapa.';
+      pintarSalida(e.agente);
+    }
+  });
+  const th = document.getElementById('think-all');
+  if(th) th.style.display = vivas ? 'inline' : 'none';
+  rxCartel(vivas ? 'Hay ' + vivas + ' etapa(s) corriendo en el servidor. ' + hechas + ' de 7 hechas.'
+                 : (hechas ? hechas + ' de 7 etapas hechas.' : ''));
+  return vivas;
+}
+
+async function rxRefrescar(){
+  if(!rxEjecucion) return 0;
+  try{ return rxPintar(await rxApi('/api/rx/ejecucion/' + rxEjecucion)); }
+  catch(e){ rxCartel('No he podido consultar el estado: ' + e.message); return 0; }
+}
+
+function rxArrancarSondeo(){
+  if(rxSondeo) return;
+  rxSondeo = setInterval(async () => {
+    const vivas = await rxRefrescar();
+    if(!vivas){ clearInterval(rxSondeo); rxSondeo = null; }
+  }, 5000);
+  rxRefrescar();
+}
+
+async function rxEtapaId(agente){
+  const j = await rxApi('/api/rx/ejecucion/' + rxEjecucion);
+  const e = (j.etapas || []).find(x => x.agente === agente);
+  if(!e) throw new Error('No encuentro la etapa ' + agente + ' en la ejecucion.');
+  return e.id;
+}
+
+window.runStage = async function(id, withMatices, enCadena){
+  const a = AGENTS.find(x => x.id === id);
+  try{
+    await rxAsegurar();
+    const etapaId = await rxEtapaId(id);
+    await rxApi('/api/rx/etapa/' + etapaId + '/lanzar', { method:'POST', body: JSON.stringify({
+      encadenar: !!enCadena, rehacer: true, con_matices: !!withMatices,
+      matices: state.matices[id] || null
+    })});
+    toast(a.name + (withMatices ? ' regenerandose con matices en el servidor.'
+                                : ' lanzado en el servidor.'));
+    rxArrancarSondeo();
+    return true;
+  }catch(e){
+    toast('No he podido lanzar ' + a.name + ': ' + e.message);
+    rxCartel('No he podido lanzar ' + a.name + ': ' + e.message);
+    return false;
+  }
+};
+
+window.runAll = async function(){
+  try{
+    await rxAsegurar();
+    await window.runStage('problema', false, true);
+    rxCartel('Cadena lanzada en el servidor. Tarda unos 20 minutos y NO necesita '
+           + 'que dejes esta pagina abierta.');
+  }catch(e){
+    toast('No he podido lanzar la cadena: ' + e.message);
+  }
+};
+
+window.ejecutarPrimero = async function(){
+  const el = stageEl('problema');
+  if(el && !el.classList.contains('open')) el.classList.add('open');
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  await window.runStage('problema', false, false);
+};
+
+/* Ejecuciones anteriores: el primer trozo visible del conocimiento acumulado. */
+async function rxListar(){
+  const sel = document.getElementById('rx-lista');
+  if(!sel) return;
+  try{
+    const j = await rxApi('/api/rx/ejecuciones');
+    sel.innerHTML = '<option value="">— ejecuciones anteriores —</option>' +
+      (j.ejecuciones || []).map(e => '<option value="' + e.id + '">' +
+        escapeHtml('M' + e.modulo + ' · ' + (e.titulo || '(sin titulo)').slice(0,70) +
+        ' · ' + e.estado + ' · ' + new Date(e.creada).toLocaleDateString('es-ES')) +
+        '</option>').join('');
+  }catch(e){ /* sin sesion todavia */ }
+}
+
+async function rxAbrir(id){
+  if(!id) return;
+  rxEjecucion = id; localStorage.setItem('rx-ejecucion', id);
+  const j = await rxApi('/api/rx/ejecucion/' + id);
+  state.problema = j.ejecucion.problema || '';
+  localStorage.setItem('rx-problema', state.problema.trim());
+  const ta = document.getElementById('problema'); if(ta) ta.value = state.problema;
+  state.outputs = {}; state.matices = {}; save();
+  render(); pintarTodas();
+  rxPintar(j);
+  rxArrancarSondeo();
+}
+
+(function rxMontar(){
+  const barra = document.querySelector('.kick-fila') || document.body;
+  const caja = document.createElement('div');
+  caja.className = 'rx-barra';
+  caja.style.cssText = 'margin:10px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+  caja.innerHTML = '<select id="rx-lista" style="max-width:420px"></select>'
+                 + '<button type="button" id="rx-refrescar">Actualizar estado</button>'
+                 + '<span id="rx-cartel" style="opacity:.8"></span>';
+  barra.parentElement ? barra.parentElement.insertBefore(caja, barra.nextSibling)
+                      : document.body.appendChild(caja);
+  document.getElementById('rx-refrescar').onclick = () => rxRefrescar();
+  document.getElementById('rx-lista').onchange = ev => rxAbrir(ev.target.value);
+  setTimeout(() => { rxListar(); if(rxEjecucion) rxArrancarSondeo(); }, 1200);
+})();
 </script>
 </body>
 </html>
