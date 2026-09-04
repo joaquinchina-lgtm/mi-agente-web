@@ -2128,5 +2128,117 @@ function inyectarGuias(){
 })();
 </script>
 
+
+<script>
+/* ===========================================================================
+   Acceso del grupo: quien soy, aviso de datos y cupo.
+
+   Tres cosas que sin esto quedaban feas:
+     1. Quien entra con una cuenta que no esta en ningun grupo veia una pagina
+        vacia, sin explicacion. La seguridad por filas ya lo protegia; faltaba
+        decirlo.
+     2. El aviso de tratamiento de datos, con su aceptacion registrada.
+     3. Que el grupo vea cuantas ejecuciones le quedan ANTES de gastarlas.
+   =========================================================================== */
+const RX_MESES_CONSERVACION = 12;   /* cambiar aqui si el programa dice otra cosa */
+
+function rxTapa(titulo, cuerpoHtml, boton, alPulsar){
+  let t = document.getElementById('rx-tapa');
+  if(!t){
+    t = document.createElement('div'); t.id = 'rx-tapa';
+    t.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(248,250,252,.97);'
+      + 'display:flex;align-items:center;justify-content:center;padding:22px';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = '<div style="max-width:620px;background:#fff;border:1px solid #e3e8ee;'
+    + 'border-radius:14px;padding:26px 28px;font:15px/1.6 system-ui,-apple-system,sans-serif">'
+    + '<h2 style="margin:0 0 10px;font-size:20px"></h2><div class="rx-cuerpo"></div>'
+    + (boton ? '<p style="margin:18px 0 0"><button type="button" id="rx-tapa-ok" '
+             + 'style="padding:9px 16px;border-radius:8px;border:0;background:#2563eb;color:#fff;'
+             + 'font-size:15px;cursor:pointer"></button></p>' : '')
+    + '</div>';
+  t.querySelector('h2').textContent = titulo;
+  t.querySelector('.rx-cuerpo').innerHTML = cuerpoHtml;
+  if(boton){
+    const b = document.getElementById('rx-tapa-ok');
+    b.textContent = boton;
+    b.onclick = alPulsar;
+  }
+}
+function rxQuitarTapa(){ const t = document.getElementById('rx-tapa'); if(t) t.remove(); }
+
+function rxAvisoDatosHtml(){
+  return '<p>Antes de empezar, para que sepáis exactamente qué pasa con lo que escribís aquí.</p>'
+   + '<ul style="padding-left:20px;margin:10px 0">'
+   + '<li><b>Quién responde de los datos:</b> Joaquín Romero Roldán · joaquin@joaquinromero.com</li>'
+   + '<li><b>Qué se guarda:</b> el correo de la cuenta del grupo, los textos que escribís y '
+   + 'las salidas de los agentes, con su fecha, su duración y su coste.</li>'
+   + '<li><b>Para qué:</b> ejecutar la herramienta y preparar las sesiones del Reactor.</li>'
+   + '<li><b>Quién lo ve:</b> el facilitador del programa. Vuestro trabajo no es anónimo para él.</li>'
+   + '<li><b>Cuánto tiempo:</b> mientras dure el programa y hasta ' + RX_MESES_CONSERVACION
+   + ' meses después.</li>'
+   + '<li><b>Vuestros derechos:</b> podéis pedir copia o borrado escribiendo a esa dirección.</li>'
+   + '</ul><p>Al continuar, dejáis constancia de que lo habéis leído.</p>';
+}
+
+async function rxAcceso(){
+  let yo = null;
+  try{ yo = await rxApi('/api/rx/quien-soy'); }
+  catch(e){ return; }   /* sin sesion ya se ocupa la guardia */
+
+  if(!yo || !yo.grupo_id){
+    rxTapa('Tu cuenta no está en ningún grupo',
+      '<p>Has entrado bien, pero esta cuenta no está asignada a ningún grupo del Reactor, '
+      + 'así que no hay nada que mostrarte.</p>'
+      + '<p>Habla con el facilitador del programa para que te dé de alta: '
+      + '<a href="mailto:joaquin@joaquinromero.com">joaquin@joaquinromero.com</a>.</p>');
+    return;
+  }
+  if(yo.activo === false){
+    rxTapa('Este grupo está cerrado',
+      '<p>El reactor de este grupo ha terminado y la cuenta ya no puede ejecutar. '
+      + 'Si necesitáis recuperar algún kit, pedídselo al facilitador.</p>');
+    return;
+  }
+
+  rxGrupo = yo.grupo_id; localStorage.setItem('rx-grupo', rxGrupo);
+
+  if(!yo.aviso_datos_aceptado && yo.rol !== 'facilitador'){
+    rxTapa('Tratamiento de vuestros datos', rxAvisoDatosHtml(), 'He leído y continúo',
+      async () => {
+        try{ await rxApi('/api/rx/aviso-datos', {method:'POST', body:'{}'}); }catch(e){}
+        rxQuitarTapa(); rxPintarCupo(yo);
+      });
+    return;
+  }
+  rxPintarCupo(yo);
+}
+
+async function rxPintarCupo(yo){
+  const fila = document.querySelector('.kick-fila'); if(!fila) return;
+  let d = document.getElementById('rx-quien');
+  if(!d){
+    d = document.createElement('div'); d.id = 'rx-quien';
+    d.style.cssText = 'font-size:14px;opacity:.85;margin-left:14px';
+    fila.appendChild(d);
+  }
+  const modulo = Number(localStorage.getItem('rx-modulo') || 1);
+  let cupo = null;
+  try{ cupo = await rxApi('/api/rx/cupo?grupo_id=' + encodeURIComponent(yo.grupo_id)
+                          + '&modulo=' + modulo); }catch(e){}
+  const quedan = cupo && typeof cupo.restantes === 'number' ? cupo.restantes : null;
+  d.textContent = (yo.organizacion ? yo.organizacion + ' · ' : '') + (yo.grupo || '')
+    + (yo.edicion ? ' (' + yo.edicion + ')' : '')
+    + (quedan !== null ? ' · módulo ' + modulo + ': quedan ' + quedan + ' de '
+        + (cupo.cupo != null ? cupo.cupo : '?') + ' ejecuciones' : '');
+}
+
+/* Abrir una ejecucion concreta desde el panel del facilitador: ...?ejecucion=<id> */
+(function(){
+  const id = new URLSearchParams(location.search).get('ejecucion');
+  setTimeout(() => { rxAcceso(); if(id) rxAbrir(id); }, 1500);
+})();
+</script>
+
 </body>
 </html>
