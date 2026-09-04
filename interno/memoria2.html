@@ -1995,9 +1995,11 @@ window.runStage = async function(id, withMatices, enCadena){
     await rxAsegurar();
     const etapaId = await rxEtapaId(id);
     await rxApi('/api/rx/etapa/' + etapaId + '/lanzar', { method:'POST', body: JSON.stringify({
-      encadenar: !!enCadena, rehacer: true, matices: state.matices[id] || null
+      encadenar: !!enCadena, rehacer: true, con_matices: !!withMatices,
+      matices: state.matices[id] || null
     })});
-    toast(a.name + ' lanzado en el servidor.');
+    toast(a.name + (withMatices ? ' regenerandose con matices en el servidor.'
+                                : ' lanzado en el servidor.'));
     rxArrancarSondeo();
     return true;
   }catch(e){
