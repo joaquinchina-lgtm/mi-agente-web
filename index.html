@@ -697,6 +697,58 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
   <link rel="stylesheet" href="/assets/nav.css">
 <link rel="stylesheet" href="/assets/blog-index.css">
 <link rel="stylesheet" href="/assets/red.css">
+
+<style id="rv-scroll">
+/* ═══ ENTRADA AL HACER SCROLL ═══════════════════════════════════════
+   Un desplazamiento vertical corto y un fundido, una sola vez, al
+   entrar el bloque en pantalla. Solo en las cabeceras de sección y en
+   las cuatro etapas: el resto de la home no se anima a propósito.
+
+   Tres cautelas que no se pueden quitar:
+   1. Todo cuelga de `html.js-rv`, marca que pone el script de abajo.
+      Sin JavaScript no se oculta nada y la página se ve entera.
+   2. `:not(.rv-on)` en vez de una regla que revele con !important:
+      al añadir la clase la regla de ocultar deja de casar sola.
+   3. Va en la CABECERA, no al final del body. Si el navegador pinta
+      antes de leer esto, los bloques se ven y luego desaparecen. */
+@media (prefers-reduced-motion: no-preference){
+  html.js-rv #etapas .etapas-eyebrow:not(.rv-on),
+  html.js-rv #etapas .etapa:not(.rv-on),
+  html.js-rv #servicios .serv-eyebrow:not(.rv-on),
+  html.js-rv #servicios .serv-h:not(.rv-on),
+  html.js-rv #servicios .serv-lede:not(.rv-on),
+  html.js-rv #red .red-eyebrow:not(.rv-on),
+  html.js-rv #red .section-title:not(.rv-on),
+  html.js-rv #red .red-lede:not(.rv-on),
+  html.js-rv #blog .b-eyebrow:not(.rv-on),
+  html.js-rv #blog .section-title:not(.rv-on),
+  html.js-rv #blog .section-sub:not(.rv-on){
+    opacity:0; transform:translateY(14px);
+  }
+  html.js-rv .rv-on{
+    transition:opacity .55s cubic-bezier(.22,.61,.36,1),
+               transform .55s cubic-bezier(.22,.61,.36,1);
+  }
+}
+</style>
+<script>
+/* El interruptor se pone aquí, antes del primer pintado, para que los
+   bloques que se van a animar no lleguen a verse antes de ocultarse.
+   Y un seguro: si el observador no ha arrancado en tres segundos, se
+   quita la marca y todo queda visible. Nunca una página en blanco. */
+(function(){
+  var d = document.documentElement;
+  try{
+    if(!('IntersectionObserver' in window)) return;
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    d.className += (d.className ? ' ' : '') + 'js-rv';
+    setTimeout(function(){
+      if(d.getAttribute('data-rv') !== 'ok')
+        d.className = d.className.replace(/\bjs-rv\b/, '').trim();
+    }, 3000);
+  }catch(e){}
+})();
+</script>
 </head>
 
 <body>
@@ -1965,6 +2017,74 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
   #home.hero .hero-quote{ aspect-ratio: auto; height: var(--jr-foto, calc(100vw / 1.5)); }
 }
 </style>
+<script>
+/* Observa cada cabecera de sección como UN grupo —epígrafe, titular y
+   entradilla entran juntos, escalonados 70 ms— y cada etapa por su
+   cuenta. Se desobserva al revelar: la entrada ocurre una sola vez.
+   Nada de esto toca las tarjetas de servicio: de su visibilidad ya se
+   encarga el buscador, y dos sistemas sobre los mismos elementos es
+   como se rompen las cosas. */
+(function(){
+  var d = document.documentElement;
+  if(!/\bjs-rv\b/.test(d.className)) return;
+
+  var grupos = [
+    ['#etapas .etapas-eyebrow'],
+    ['#servicios .serv-eyebrow', '#servicios .serv-h', '#servicios .serv-lede'],
+    ['#red .red-eyebrow', '#red .section-title', '#red .red-lede'],
+    ['#blog .b-eyebrow', '#blog .section-title', '#blog .section-sub']
+  ];
+
+  var io = new IntersectionObserver(function(entradas){
+    entradas.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      var base = en.target.__rvBase || 0;
+      (en.target.__rvGrupo || [en.target]).forEach(function(el, i){
+        el.style.transitionDelay = (base + Math.min(i, 3) * 70) + 'ms';
+        el.classList.add('rv-on');
+      });
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+
+  /* Lo que queda POR ENCIMA de la pantalla se enseña de golpe y sin
+     animar: se entró por un ancla del menú, o el navegador restauró la
+     posición al recargar. Animar hacia arriba algo que el visitante ya
+     ha dejado atrás sería raro, y dejarlo oculto lo sería más.
+
+     Hay que repasarlo DESPUÉS de `load`: cuando corre este script el
+     navegador aún no ha saltado al ancla, así que en ese momento no hay
+     nada por encima todavía. */
+  var pendientes = [];
+  function vigilar(el){ pendientes.push(el); io.observe(el); }
+
+  function rescatarArriba(){
+    pendientes = pendientes.filter(function(el){
+      if(el.getBoundingClientRect().bottom >= 0) return true;
+      io.unobserve(el);
+      (el.__rvGrupo || [el]).forEach(function(x){ x.classList.add('rv-on'); });
+      return false;
+    });
+  }
+  addEventListener('load', function(){ requestAnimationFrame(rescatarArriba); });
+  addEventListener('hashchange', function(){ setTimeout(rescatarArriba, 60); });
+
+  grupos.forEach(function(sels){
+    var els = [];
+    sels.forEach(function(s){ var e = document.querySelector(s); if(e) els.push(e); });
+    if(!els.length) return;
+    els[0].__rvGrupo = els;
+    vigilar(els[0]);
+  });
+
+  [].slice.call(document.querySelectorAll('#etapas .etapa')).forEach(function(el, i){
+    el.__rvBase = Math.min(i, 3) * 70;
+    vigilar(el);
+  });
+
+  d.setAttribute('data-rv', 'ok');
+})();
+</script>
 <script src="/assets/nav.js" defer></script>
   <script src="/assets/eventos.js" defer></script>
 </body></html>
