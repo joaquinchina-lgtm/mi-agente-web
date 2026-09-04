@@ -1,0 +1,59 @@
+/* ═══ REFINADOS COMPARTIDOS ═══════════════════════════════════════════
+   Se carga en todas las páginas públicas, después de nav.css. Tres
+   cosas: transición entre páginas, equilibrado tipográfico y barra de
+   progreso de lectura. Las tres degradan solas: donde el navegador no
+   las soporta, la página se comporta exactamente como antes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · TRANSICIÓN ENTRE PÁGINAS ─────────────────────────────────────
+   Ir de la home a un servicio deja de ser un parpadeo en blanco.
+   Las DOS páginas —la que se deja y la que se abre— tienen que
+   declararlo, y por eso vive en el CSS compartido y no en cada una.
+   Firefox todavía no lo implementa: allí se navega como siempre. */
+@view-transition { navigation: auto; }
+
+@media (prefers-reduced-motion: no-preference){
+  ::view-transition-old(root){ animation: jr-vt-sale  .16s ease-in  both; }
+  ::view-transition-new(root){ animation: jr-vt-entra .26s ease-out both; }
+  @keyframes jr-vt-sale { to   { opacity: 0 } }
+  @keyframes jr-vt-entra{ from { opacity: 0 } }
+}
+/* Quien ha pedido menos movimiento navega con el corte de siempre. */
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-old(root),
+  ::view-transition-new(root){ animation: none; }
+}
+
+/* ── 2 · EQUILIBRADO DE TITULARES Y PÁRRAFOS ──────────────────────────
+   `balance` reparte las líneas de un titular en vez de dejar una
+   palabra suelta abajo; `pretty` evita la palabra huérfana al final de
+   un párrafo. No es un efecto: no se ve, se lee mejor. */
+h1, h2, h3, h4,
+.srv-t, .serv-h, .section-title, .etapas-eyebrow, .rx-hero .lead{
+  text-wrap: balance;
+}
+p, li, figcaption, blockquote, dd{
+  text-wrap: pretty;
+}
+
+/* ── 3 · BARRA DE PROGRESO DE LECTURA ─────────────────────────────────
+   Solo en las páginas largas: las de servicio (main.rx-s) y los
+   artículos (main.article-grid). La home no la lleva, porque no se
+   «lee» de arriba abajo.
+   Animación ligada al scroll, sin una línea de JavaScript. Donde no hay
+   soporte, @supports deja el pseudo-elemento sin crear siquiera. */
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    body:has(main.rx-s)::before,
+    body:has(main.article-grid)::before{
+      content:""; position:fixed; inset:0 0 auto 0; height:2px;
+      background:#32717E; transform:scaleX(0); transform-origin:0 50%;
+      /* Por encima de la cabecera (z-index 50) y por debajo del menú
+         móvil (10000): se ve sobre el borde superior sin taparlo. */
+      z-index:60; pointer-events:none;
+      animation: jr-progreso linear both;
+      animation-timeline: scroll(root block);
+    }
+    @keyframes jr-progreso{ to { transform: scaleX(1) } }
+  }
+}
