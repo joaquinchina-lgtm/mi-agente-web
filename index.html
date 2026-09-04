@@ -730,6 +730,16 @@ section[id],.srv-fam[id]{scroll-margin-top:84px}
     transition:opacity .55s cubic-bezier(.22,.61,.36,1),
                transform .55s cubic-bezier(.22,.61,.36,1);
   }
+
+  /* Las cuatro fotos de Trayectoria van en carga diferida, así que la
+     imagen llega cuando llega y hasta ahora entraba de golpe dentro de
+     un botón que ya estaba visible. Se ocultan de salida y el script
+     las enciende al terminar de cargar cada una. Si alguna falla, se
+     enciende igual: más vale un hueco que una foto que nunca aparece. */
+  html.js-rv #etapas .etapa-img img{ opacity:0 }
+  html.js-rv #etapas .etapa-img img.jr-cargada{
+    opacity:1; transition:opacity .6s ease-out;
+  }
 }
 </style>
 <script>
@@ -2081,6 +2091,16 @@ footer .legal-footer .brandline{padding-left:17px;padding-right:17px;text-align:
   [].slice.call(document.querySelectorAll('#etapas .etapa')).forEach(function(el, i){
     el.__rvBase = Math.min(i, 3) * 70;
     vigilar(el);
+  });
+
+  /* Fundido de las fotos de Trayectoria, al terminar de cargar cada
+     una. `complete` cubre las que ya estaban en caché: sin eso, una
+     imagen que llega antes que este script se quedaría invisible. */
+  [].slice.call(document.querySelectorAll('#etapas .etapa-img img')).forEach(function(img){
+    if(img.complete && img.naturalWidth){ img.classList.add('jr-cargada'); return; }
+    var encender = function(){ img.classList.add('jr-cargada'); };
+    img.addEventListener('load', encender);
+    img.addEventListener('error', encender);
   });
 
   d.setAttribute('data-rv', 'ok');
