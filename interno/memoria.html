@@ -2067,5 +2067,66 @@ async function rxAbrir(id){
   setTimeout(() => { rxListar(); if(rxEjecucion) rxArrancarSondeo(); }, 1200);
 })();
 </script>
+
+<script>
+/* ===========================================================================
+   Guia de uso, dentro de la propia pagina.
+
+   Una tarjeta de tres lineas sobre cada etapa: que traer, el error tipico y que
+   NO es un buen resultado. El problema de un grupo no es donde pulsar: es que
+   escribir en la entrada. Texto de Joaquin; aqui solo se pinta.
+   =========================================================================== */
+const GUIA = {"problema": {"n": "01 PROBLEMA", "traer": "Vuestro presentimiento con vuestras palabras, sin arreglar; qué habéis mirado ya (datos, informes) y qué no habéis comprobado; y a quién afecta.", "error": "Traer una solución disfrazada de problema («falta una plataforma que…»). Si en vuestro texto aparece un sistema, un protocolo o una app, todavía no tenéis un problema.", "malo": "Un enunciado que no podríais reproducir en una mesa ni reconocer resuelto si lo vierais."}, "piezas": {"n": "02 PIEZAS", "traer": "La salida de PROBLEMA y, sobre todo, qué tenéis a mano de verdad: datos, aparatos, contactos, accesos de grupos de investigadores…", "error": "Pedir el inventario sin decir de qué disponéis. Sale una lista de deseos.", "malo": "Piezas con nombre genérico («datos meteorológicos»). Una pieza es una serie concreta de un organismo concreto. Aquí cuelga el Mapeo de recursos de I+D: de cada pieza podéis buscar quién la puede tener en 38 universidades."}, "personas": {"n": "03 PERSONAS", "traer": "PROBLEMA y PIEZAS, y a quién conocéis de verdad —de vuestro pueblo, de la facultad, del trabajo actual o de un trabajo anterior—. Decid también a quién no podéis llegar.", "error": "Pedir «perfiles». Tres cargos no son tres personas.", "malo": "Guiones que buscan aprobación. Las preguntas van sobre su experiencia, nunca sobre vuestras intuiciones."}, "escala": {"n": "04 ESCALA", "traer": "Lo anterior más vuestros recursos reales: horas por semana, semanas hasta la próxima sesión, dinero (aunque sea cero), accesos.", "error": "No declarar los recursos. Escalar es ajustar el problema a lo que tenéis; sin ese dato, se lo inventa.", "malo": "Una primera prueba que necesita un convenio, una compra o un permiso. Eso no es una mesa: hay que bajar más."}, "impacto": {"n": "05 IMPACTO", "traer": "PROBLEMA, PERSONAS y ESCALA.", "error": "Confundir impacto con daño evitado. El impacto son cosas nuevas que la comunidad podrá hacer y hoy no puede.", "malo": "Un indicador que puede salir bien con el problema sin resolver. Si no sabéis qué resultado os demostraría que no, no es un verificador."}, "critico": {"n": "06 CRÍTICO", "traer": "Una etapa suelta (modo rápido, dos minutos) o todo el bloque. Y decidle qué habéis contrastado con el mundo; si nada, decidlo.", "error": "Usarlo para que os dé la razón.", "malo": "Refutaciones que no terminan en cómo comprobarlas. Ojo: lo que dice el CRÍTICO son hipótesis, no hechos. No reescribáis el problema por una refutación que nadie ha comprobado."}, "orquestador": {"n": "07 ORQUESTADOR", "traer": "Las seis salidas anteriores y qué habéis comprobado desde la vuelta anterior: conversaciones y qué dijeron, piezas reunidas, resultado de la prueba de mesa.", "error": "Pedirlo sin haber comprobado nada. Saldrá marcado como enteramente hipotético, y con razón.", "malo": "Un kit que otra persona no podría coger y seguir sin haber visto nada de lo anterior."}};
+
+function inyectarGuias(){
+  AGENTS.forEach(a => {
+    const g = GUIA[a.id]; if(!g) return;
+    const cuerpo = (stageEl(a.id) || {}).querySelector
+                 ? stageEl(a.id).querySelector('.stage-body') : null;
+    if(!cuerpo || cuerpo.querySelector('.guia-etapa')) return;
+    const d = document.createElement('details');
+    d.className = 'guia-etapa';
+    d.innerHTML = '<summary>Cómo se usa esta etapa</summary>'
+      + '<p><b>Qué traer:</b> <span class="gt"></span></p>'
+      + '<p><b>Error típico:</b> <span class="ge"></span></p>'
+      + '<p><b>No es buen resultado:</b> <span class="gm"></span></p>';
+    d.querySelector('.gt').textContent = g.traer;
+    d.querySelector('.ge').textContent = g.error;
+    d.querySelector('.gm').textContent = g.malo;
+    const deps = cuerpo.querySelector('.deps');
+    cuerpo.insertBefore(d, deps ? deps.nextSibling : cuerpo.firstChild);
+  });
+}
+
+/* render() se vuelve a llamar al abrir otra ejecucion o al reiniciar, asi que
+   las tarjetas se reinyectan detras de cada pintada. */
+(function(){
+  const antes = window.render;
+  window.render = function(){ antes.apply(this, arguments); inyectarGuias(); };
+})();
+
+(function(){
+  const est = document.createElement('style');
+  est.textContent =
+    '.guia-etapa{margin:8px 0 12px;border:1px solid var(--line,#e3e8ee);border-radius:9px;'
+    + 'background:#f7f9fc;padding:8px 12px;font-size:14px;line-height:1.55}'
+    + '.guia-etapa summary{cursor:pointer;font-weight:600;color:#2563eb;list-style:none}'
+    + '.guia-etapa summary::-webkit-details-marker{display:none}'
+    + '.guia-etapa summary::before{content:"?  ";font-weight:700}'
+    + '.guia-etapa p{margin:6px 0}'
+    + '.guia-enlace{margin-left:auto;font-size:14px}';
+  document.head.appendChild(est);
+
+  const fila = document.querySelector('.kick-fila');
+  if(fila && !document.querySelector('.guia-enlace')){
+    const a = document.createElement('a');
+    a.className = 'guia-enlace'; a.href = './guia.html';
+    a.textContent = 'Guía de uso';
+    fila.appendChild(a);
+  }
+  inyectarGuias();
+})();
+</script>
+
 </body>
 </html>
