@@ -19,17 +19,19 @@
      movimiento se lee como intención. Misma curva que la entrada al
      hacer scroll de la home, para que el sitio se mueva siempre igual.
 
-     Cuidado con alargarlo más: durante la transición la página nueva
-     todavía no responde al clic. Por encima de medio segundo se nota
-     como web lenta, no como web cuidada. */
+     550 ms es el techo que me parece razonable: durante la transición
+     la página nueva todavía no responde al clic, así que a partir de
+     aquí deja de leerse como cuidado y empieza a leerse como lentitud.
+     Si algún día hay que subirlo, mejor tocar los píxeles que suben
+     que los milisegundos que se esperan. */
   ::view-transition-old(root){
     animation: jr-vt-sale .22s ease-in both;
   }
   ::view-transition-new(root){
-    animation: jr-vt-entra .45s cubic-bezier(.22,.61,.36,1) both;
+    animation: jr-vt-entra .55s cubic-bezier(.22,.61,.36,1) both;
   }
   @keyframes jr-vt-sale { to   { opacity: 0 } }
-  @keyframes jr-vt-entra{ from { opacity: 0; transform: translateY(8px) } }
+  @keyframes jr-vt-entra{ from { opacity: 0; transform: translateY(12px) } }
 }
 /* Quien ha pedido menos movimiento navega con el corte de siempre. */
 @media (prefers-reduced-motion: reduce){
