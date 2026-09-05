@@ -1998,7 +1998,14 @@ function rxPintar(j){
     if(!box) return;
     if(e.estado === 'hecha' && e.salida){
       hechas++;
+      /* onOut() nacio como manejador del «oninput» del textarea: da por hecho
+         que el texto YA esta dentro. Al llamarlo desde aqui, la cabecera se
+         marcaba «hecho» y el cuerpo seguia diciendo «Aun sin salida», porque
+         nadie habia escrito en el textarea. El trabajo estaba en la base; solo
+         no se veia. Lo sufrio Joaquin el 5/09 con una cadena entera hecha. */
+      if(box.value !== e.salida) box.value = e.salida;
       if(state.outputs[e.agente] !== e.salida) onOut(e.agente, e.salida);
+      else pintarSalida(e.agente);
     } else if(e.estado === 'en_curso'){
       vivas++;
       const seg = e.lanzada ? Math.round((Date.now() - new Date(e.lanzada).getTime())/1000) : 0;
