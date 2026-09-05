@@ -73,6 +73,13 @@ html.cerrado body > *:not(#guardia){display:none !important}
 .gu-b{display:inline-block;background:var(--text-primary);color:var(--plane);
   text-decoration:none;font-size:14px;padding:10px 16px;border-radius:3px}
 .gu-nota{font-size:13px;color:var(--text-muted);margin:16px 0 0;line-height:1.45}
+.gu-lab{display:block;font-size:13px;color:var(--text-muted);margin:14px 0 5px}
+.gu-inp{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--border);
+        background:var(--plane);color:var(--text-primary);font-size:15px}
+.gu-inp:focus{outline:2px solid var(--accent,#2563eb);outline-offset:1px}
+#gu-form .gu-b{margin-top:16px;border:0;cursor:pointer;font-size:15px}
+#gu-form .gu-b[disabled]{opacity:.6;cursor:default}
+.gu-err{margin:12px 0 0;font-size:14px;color:#dc2626}
 
 /* ---- cabecera ---- */
 .wrap-i{max-width:1080px;margin:0 auto;padding:18px 18px 0}
@@ -319,7 +326,7 @@ function alternarTema(){
 <div id="guardia"><div class="gu-caja"><h1>Comprobando la sesión…</h1><p class="gu-p">Un momento.</p></div></div>
 
 <div class="wrap-i">
-  <div class="kick-fila"><p class="kick-i">Área interna</p><div class="acciones-cab"><button class="iconbtn" onclick="alternarTema()" title="Cambiar entre claro y oscuro">Tema</button><a class="a-web" href="./"><span aria-hidden="true">&larr;</span> Volver al área interna</a></div></div>
+  <div class="kick-fila"><p class="kick-i">Área interna</p><div class="acciones-cab"><button class="iconbtn" onclick="alternarTema()" title="Cambiar entre claro y oscuro">Tema</button><a class="a-web" id="gu-volver" href="./" hidden><span aria-hidden="true">&larr;</span> Volver al área interna</a></div></div>
   <div class="aviso-i">
     <p style="margin:0 0 8px"><b>Esta es la cadena completa, en privado.</b> Es el mismo motor que la página pública, con su propio historial: lo que hagas aquí no toca lo de <code>reactor.html</code>.</p>
     <p style="margin:0"><b>En la etapa 02 Piezas</b>, junto a «Adjuntar archivo», tienes <b>Mapeo de recursos de I+D</b>: busca en 8.122 grupos de investigación de 40 universidades quién tiene cada pieza, y deja constancia firmada de lo que sirve y de lo que no.</p>
@@ -1805,7 +1812,6 @@ async function verMemoria(){
    =========================================================================== */
 (async () => {
   const cartel = document.getElementById('guardia');
-  const volver = './#/admin';
 
   const abrir = (sesion) => {
     document.documentElement.classList.remove('cerrado');
@@ -1819,22 +1825,65 @@ async function verMemoria(){
       d.querySelector('span').textContent = sesion.user.email || 'sesión abierta';
       d.querySelector('button').onclick = async () => {
         await db.auth.signOut();
-        location.href = volver;
+        location.reload();
       };
       fila.appendChild(d);
     }
   };
 
+  /* Puerta propia. Antes esto mandaba a ./#/admin, es decir, a la consola de
+     instrumentos de Joaquin: los grupos veian la palabra "administrador", el
+     codigo de sesion y el catalogo de herramientas antes de llegar a lo suyo.
+     Ahora la Memoria pide usuario y contraseña aqui mismo y no menciona nada
+     mas. Es su puerta, no un desvio desde la de otro. */
   const cerrar = (titulo, detalle) => {
     const c = document.getElementById('guardia');
     if (!c) return;
     c.innerHTML =
-      '<div class="gu-caja"><h1></h1><p class="gu-p"></p>' +
-      '<p><a class="gu-b" href="' + volver + '">Ir al acceso del área interna</a></p>' +
-      '<p class="gu-nota">Se entra una sola vez: la sesión vale también para el resto ' +
-      'del área interna. Si acabas de entrar en otra pestaña, recarga esta.</p></div>';
+      '<div class="gu-caja">' +
+        '<h1></h1><p class="gu-p"></p>' +
+        '<form id="gu-form" autocomplete="on">' +
+          '<label class="gu-lab" for="gu-mail">Correo del grupo</label>' +
+          '<input class="gu-inp" id="gu-mail" type="email" name="email" ' +
+                 'autocomplete="username" placeholder="grupo@ejemplo.com" required>' +
+          '<label class="gu-lab" for="gu-pass">Contraseña</label>' +
+          '<input class="gu-inp" id="gu-pass" type="password" name="password" ' +
+                 'autocomplete="current-password" required>' +
+          '<button class="gu-b" id="gu-entrar" type="submit">Entrar</button>' +
+          '<p class="gu-err" id="gu-err" hidden></p>' +
+        '</form>' +
+        '<p class="gu-nota">Usa la cuenta que te haya dado el facilitador del ' +
+        'programa. Si acabas de entrar en otra pestaña, recarga esta.</p>' +
+      '</div>';
     c.querySelector('h1').textContent = titulo;
     c.querySelector('.gu-p').textContent = detalle;
+
+    const form = document.getElementById('gu-form');
+    const err  = document.getElementById('gu-err');
+    const bt   = document.getElementById('gu-entrar');
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      err.hidden = true;
+      bt.disabled = true; bt.textContent = 'Entrando…';
+      try {
+        const correo = document.getElementById('gu-mail').value.trim();
+        const clave  = document.getElementById('gu-pass').value;
+        const { data, error } = await db.auth.signInWithPassword({ email: correo, password: clave });
+        if (error) throw error;
+        if (!data || !data.session) throw new Error('No se ha podido abrir la sesión.');
+        location.reload();
+      } catch (e) {
+        /* El mensaje de Supabase viene en ingles y no dice nada util. */
+        const m = String((e && e.message) || e);
+        err.textContent = /invalid login|credentials/i.test(m)
+          ? 'El correo o la contraseña no son correctos.'
+          : (/not confirmed/i.test(m)
+              ? 'Esa cuenta todavía no está confirmada. Avisa al facilitador.'
+              : m);
+        err.hidden = false;
+        bt.disabled = false; bt.textContent = 'Entrar';
+      }
+    };
   };
 
   if (typeof db === 'undefined' || !db.auth) {
@@ -1847,8 +1896,8 @@ async function verMemoria(){
     const { data, error } = await db.auth.getSession();
     if (error) throw error;
     if (data && data.session) abrir(data.session);
-    else cerrar('Esta página es privada',
-                'No hay ninguna sesión abierta en este navegador.');
+    else cerrar('Memoria del Reactor',
+                'Entra con la cuenta de tu grupo para trabajar la cadena de agentes.');
   } catch (e) {
     cerrar('No se ha podido comprobar la sesión', String((e && e.message) || e));
   }
@@ -1861,7 +1910,7 @@ async function verMemoria(){
       if (!document.getElementById('guardia')) {
         const c = document.createElement('div'); c.id = 'guardia'; document.body.appendChild(c);
       }
-      cerrar('La sesión se ha cerrado', 'Se cerró la sesión en esta u otra pestaña.');
+      cerrar('Memoria del Reactor', 'La sesión se ha cerrado. Vuelve a entrar para seguir.');
     }
   });
 })();
@@ -2211,11 +2260,19 @@ async function rxAcceso(){
     rxTapa('Tratamiento de vuestros datos', rxAvisoDatosHtml(), 'He leído y continúo',
       async () => {
         try{ await rxApi('/api/rx/aviso-datos', {method:'POST', body:'{}'}); }catch(e){}
-        rxQuitarTapa(); rxPintarCupo(yo);
+        rxQuitarTapa(); rxVolverSegunRol(yo); rxPintarCupo(yo);
       });
     return;
   }
+  rxVolverSegunRol(yo);
   rxPintarCupo(yo);
+}
+
+/* El enlace de vuelta al area interna solo tiene sentido para el facilitador.
+   Nace oculto y se enseña solo si lo es: asi un grupo no lo ve ni un instante. */
+function rxVolverSegunRol(yo){
+  const a = document.getElementById('gu-volver');
+  if(a) a.hidden = !(yo && yo.rol === 'facilitador');
 }
 
 async function rxPintarCupo(yo){
