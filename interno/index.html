@@ -10659,7 +10659,14 @@ render();
     try{
       if(typeof sb === 'undefined' || !sb || !sb.auth) return;   /* aun cargando: seguimos tapados */
       const { data } = await sb.auth.getSession();
-      if(!data || !data.session){ quitar(); return; }
+      if(!data || !data.session){
+        /* El menu de herramientas (#/interno) se pintaba SIN sesion: no enseña
+           datos, pero si el catalogo de lo que hay aqui dentro y como se llama.
+           Lo vio Joaquin el 5/09 entrando con la cuenta del grupo. Sin sesion,
+           a la puerta. */
+        if(location.hash.indexOf('#/interno') === 0){ location.replace('./#/admin'); return; }
+        quitar(); return;
+      }
       const { data: yo, error } = await sb.rpc('rx_quien_soy');
       if(error || !yo) return;
       if(yo.grupo_id && yo.rol !== 'facilitador'){
