@@ -2363,7 +2363,12 @@ async function rxPintarCupo(yo){
      hace falta recorrer el grafo. */
   function desfasadas(){
     const s = state.sello || {}, mapa = {};
+    const est = window.__rxEstados || {};
     AGENTS.forEach(a => {
+      /* Mientras una etapa esta pendiente o corriendo en el servidor no tiene
+         sentido llamarla desactualizada: no tiene salida propia todavia, y el
+         cartel invitaba a re-ejecutar algo que ya se estaba ejecutando. */
+      if(est[a.id] === 'pendiente' || est[a.id] === 'en_curso') return;
       const mio = s[a.id];
       if(!mio) return;
       if(!(state.outputs[a.id] || '').trim()) return;
@@ -2435,6 +2440,8 @@ async function rxPintarCupo(yo){
     window.rxPintar = function(j){
       const r = antesPintar.apply(this, arguments);
       try{
+        window.__rxEstados = {};
+        ((j && j.etapas) || []).forEach(e => { window.__rxEstados[e.agente] = e.estado; });
         state.sello = state.sello || {};
         ((j && j.etapas) || []).forEach(e => {
           if(e.estado !== 'hecha' || !e.terminada) return;
@@ -2528,7 +2535,18 @@ async function rxPintarCupo(yo){
           + 'ejecución.\n\n¿Empezar una ejecución nueva?';
         if(!confirm(msg)) throw new Error('cancelado, no se ha creado ninguna ejecución nueva');
       }
+      const antesId = (typeof rxEjecucion !== 'undefined') ? rxEjecucion : null;
       const r = await antesAseg.apply(this, arguments);
+      if(r && r !== antesId){
+        /* Ejecucion NUEVA. Si no se vacia la pantalla, se queda enseñando las
+           salidas de la anterior como si fueran de esta: siete «hecho» sobre
+           una cadena que acaba de empezar. Lo vio Joaquin el 5/09.
+           Los matices NO se borran: son texto suyo, no de la maquina. */
+        state.outputs = {}; state.errores = {}; state.sello = {};
+        state.enCurso = null; save();
+        render(); if(window.pintarTodas) pintarTodas();
+        if(window.rxPintarDesfase) window.rxPintarDesfase();
+      }
       pintarCartel();
       return r;
     };
