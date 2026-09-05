@@ -92,6 +92,10 @@ html.cerrado body > *:not(#guardia){display:none !important}
   font:inherit;font-size:12.5px;padding:7px 12px;border-radius:3px;cursor:pointer;
   text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .a-web:hover,.iconbtn:hover{color:var(--text-primary);border-color:var(--axis)}
+/* .a-web declara display:inline-flex, que gana al display:none del atributo
+   [hidden]. Por eso «Volver al area interna» se veia aunque el codigo lo
+   ocultaba. Lo vio Joaquin el 5/09 con la cuenta del grupo. */
+[hidden]{display:none!important}
 .gu-quien{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-muted)}
 h1.titulo{font-size:clamp(24px,3.4vw,32px);letter-spacing:-.03em;margin:18px 0 8px}
 .aviso-i{background:var(--surface-1);border:1px solid var(--border);
@@ -348,7 +352,7 @@ function alternarTema(){
   <div class="banner">
     Cadena de 7 asistentes. Cada etapa recibe <b>solo</b> las salidas que su agente declara (es un grafo, no una fila).
     Tras generar una salida puedes escribir <b>matices</b>: viajan al siguiente asistente, y puedes <b>regenerar la propia etapa</b> incorporándolos.
-    Nada de lo que escribas sale de tu navegador salvo la consulta al modelo: esta página ya no registra las respuestas.
+    Tu trabajo se guarda en el servidor: la cadena sigue aunque cierres el portátil y la recuperas en <b>ejecuciones anteriores</b>. El facilitador ve las entradas y las salidas de tu grupo, tal como dice el aviso que has aceptado al entrar.
   </div>
 
   <div class="problema-box">
@@ -2260,12 +2264,16 @@ async function rxAcceso(){
     rxTapa('Tratamiento de vuestros datos', rxAvisoDatosHtml(), 'He leído y continúo',
       async () => {
         try{ await rxApi('/api/rx/aviso-datos', {method:'POST', body:'{}'}); }catch(e){}
-        rxQuitarTapa(); rxVolverSegunRol(yo); rxPintarCupo(yo);
+        rxQuitarTapa(); rxVolverSegunRol(yo); rxPintarCupo(yo); rxListar();
       });
     return;
   }
   rxVolverSegunRol(yo);
   rxPintarCupo(yo);
+  /* La lista se pedia a los 1,2 s, ANTES de que hubiera sesion, fallaba en
+     silencio y no se reintentaba: el grupo volvia y no veia su trabajo. Se
+     pide aqui, cuando ya sabemos quien eres. */
+  rxListar();
 }
 
 /* El enlace de vuelta al area interna solo tiene sentido para el facilitador.
