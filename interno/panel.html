@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Panel del facilitador · Reactor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
  :root{--ink:#16202c;--muted:#5a6a7a;--line:#e3e8ee;--brand:#2563eb;--rojo:#b91c1c;--verde:#047857}
  *{box-sizing:border-box}
@@ -71,27 +72,63 @@ const eur = mil => (mil == null ? '—' : (mil/1000).toFixed(2).replace('.', ','
 const dur = s => s ? Math.floor(s/60) + ' min ' + (s%60) + ' s' : '—';
 const $ = s => document.querySelector(s);
 
-function token(){
+/* La clave publicable puede ir en el navegador: es la misma que ya usan el
+   area interna y la Memoria, y Supabase la define como segura ahi siempre que
+   haya seguridad por filas, que la hay. Se carga la libreria por UNA razon: que
+   renueve el testigo sola.
+
+   Antes esta pagina leia el testigo guardado y no lo renovaba nunca. A la hora
+   caducaba y el panel moria con un «JWT expired» en crudo. Le paso a Joaquin el
+   5/09. Un testigo hay que renovarlo, no leerlo. */
+const SB = {URL: "https://hugtfjbuzltvhysrjlxv.supabase.co",
+            ANON: "sb_publishable_y_q6WtW5rfR5A_LOE7-Q0g_OXeRjcW0"};
+const db = window.supabase ? window.supabase.createClient(SB.URL, SB.ANON) : null;
+
+let TESTIGO = '';
+async function refrescarTestigo(){
+  if(db){
+    try{
+      const { data } = await db.auth.getSession();   /* renueva si hace falta */
+      if(data && data.session && data.session.access_token){
+        TESTIGO = data.session.access_token; return TESTIGO;
+      }
+    }catch(e){}
+  }
+  /* Sin libreria, el ultimo recurso: lo que haya guardado. */
   for(const k of Object.keys(localStorage)){
     if(/^sb-.*-auth-token$/.test(k)){
       try{
         const v = JSON.parse(localStorage.getItem(k));
-        if(v && v.access_token) return v.access_token;
-        if(Array.isArray(v) && v[0]) return v[0];
+        if(v && v.access_token){ TESTIGO = v.access_token; return TESTIGO; }
+        if(Array.isArray(v) && v[0]){ TESTIGO = v[0]; return TESTIGO; }
       }catch(e){}
     }
   }
-  return '';
+  TESTIGO = ''; return '';
 }
+function token(){ return TESTIGO; }
 
 async function api(ruta, opciones){
   const o = Object.assign({}, opciones || {});
   o.headers = Object.assign({'Content-Type':'application/json',
                              'Authorization':'Bearer ' + token()}, o.headers || {});
-  const r = await fetch(RX_API + ruta, o);
+  let r = await fetch(RX_API + ruta, o);
   let j = null;
   try{ j = await r.json(); }catch(e){}
-  if(!r.ok) throw new Error((j && j.error && j.error.message) || ('HTTP ' + r.status));
+  /* Si el testigo ha caducado entre medias, se renueva y se reintenta UNA vez. */
+  if(!r.ok && /JWT expired|PGRST303|401/.test(JSON.stringify(j || '') + r.status)){
+    await refrescarTestigo();
+    if(TESTIGO){
+      o.headers['Authorization'] = 'Bearer ' + TESTIGO;
+      r = await fetch(RX_API + ruta, o);
+      j = null; try{ j = await r.json(); }catch(e){}
+    }
+  }
+  if(!r.ok){
+    const m = (j && j.error && j.error.message) || ('HTTP ' + r.status);
+    if(/JWT expired|PGRST303/.test(m)) throw new Error('__CADUCADA__');
+    throw new Error(m);
+  }
   return j;
 }
 const admin = cuerpo => api('/api/rx/admin', {method:'POST', body: JSON.stringify(cuerpo)});
@@ -309,13 +346,23 @@ async function cargar(silencioso){
   engancharAcciones();
 }
 
+function caducada(){
+  $('#cabecera').innerHTML = 'Tu sesión ha caducado. '
+    + '<a href="./#/admin">Ábrela otra vez</a> y vuelve a esta página.';
+  $('#cuerpo').innerHTML = '';
+}
+
 (async () => {
+  await refrescarTestigo();
   if(!token()){
     $('#cabecera').innerHTML = 'Esta página es privada. <a href="./#/admin">Entra en el área interna</a> y vuelve.';
     return;
   }
   try{ await cargar(); }
-  catch(e){ $('#cabecera').textContent = 'No he podido leer el panel: ' + e.message; }
+  catch(e){
+    if(e.message === '__CADUCADA__') caducada();
+    else $('#cabecera').textContent = 'No he podido leer el panel: ' + e.message;
+  }
 })();
 </script>
 </body>
