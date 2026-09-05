@@ -9611,7 +9611,9 @@ const MODULOS = [
 ];
 
 function navPrivada(activa){
-  const it = [["#/admin","Inicio"],["#/admin/sesiones","Sesiones"],["#/admin/proyectos","Proyectos y consultas"]];
+  /* La consola no tenia vuelta a Herramientas: se podia salir o ir a la web,
+     pero no subir un piso. Lo pidio Joaquin el 5/09. */
+  const it = [["#/interno","\u2190 Herramientas"],["#/admin","Inicio"],["#/admin/sesiones","Sesiones"],["#/admin/proyectos","Proyectos y consultas"]];
   return `<div class="vistas" style="margin-bottom:16px">${it.map(([h,t])=>
     `<a href="${h}" style="text-decoration:none"><button class="${activa===h?"on":""}" type="button">${t}</button></a>`
   ).join("")}</div>`;
