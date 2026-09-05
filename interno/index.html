@@ -2065,6 +2065,25 @@ function vueltaDeCorreo(){
   return /access_token=|refresh_token=|[#&]type=(magiclink|recovery|invite|signup)|error_code=/.test(location.hash)
       || /[?&]code=/.test(location.search);
 }
+/* ¿Quien esta dentro es una cuenta de grupo del reactor? Se pregunta a la
+   base (rx_quien_soy) y se recuerda durante la visita: el enrutado la llama
+   en cada pintada y no conviene una ida y vuelta cada vez.
+   Ante la duda devuelve false: falla ABIERTO, porque quien protege los datos
+   es la seguridad por filas, no esta comprobacion. */
+window.__rxEsGrupo = null;
+async function esCuentaDeGrupo(){
+  if(window.__rxEsGrupo !== null) return window.__rxEsGrupo;
+  try{
+    if(typeof sb === 'undefined' || !sb || !sb.auth) return false;
+    const { data } = await sb.auth.getSession();
+    if(!data || !data.session) return false;
+    const { data: yo, error } = await sb.rpc('rx_quien_soy');
+    if(error || !yo) return false;
+    window.__rxEsGrupo = !!(yo.grupo_id && yo.rol !== 'facilitador');
+    return window.__rxEsGrupo;
+  }catch(e){ return false; }
+}
+
 function ruta(){
   const p = params();
   if(p.get("proy")) return {vista:"proyeccion", codigo:p.get("proy")};
@@ -2080,7 +2099,7 @@ async function render(){
   try{
     if(r.vista === "participante")   await vistaParticipante(r.codigo);
     else if(r.vista === "proyeccion") await vistaProyeccion(r.codigo);
-    else if(r.vista === "interno")    vistaInterno();
+    else if(r.vista === "interno")    await vistaInterno();
     else if(r.vista === "admin")      await vistaAdmin();
     else vistaPortada();
     // La marca de «ya he reintentado» se limpia AQUÍ, cuando algo ha salido
@@ -2152,7 +2171,8 @@ function vistaPortada(){
 /* Las herramientas viven detrás del botón de administrador. Quien llega a
    participar en una sesión no ve nada de esto: su camino es el código de
    sesión de la portada, que queda fuera. */
-function vistaInterno(){
+async function vistaInterno(){
+  if(await esCuentaDeGrupo()){ location.replace('./memoria.html'); return; }
   app().innerHTML = `<div class="wrap">${cabecera()}
     <div class="card">
       <h1>Herramientas</h1>
@@ -7981,6 +8001,9 @@ async function vistaAdmin(){
   }
   const u = await API.usuario();
   if(!u) return vistaLogin();
+  /* Las cuentas de grupo no entran en la consola: su sitio es la Memoria.
+     Esta comprobacion va AQUI, en el enrutado, antes de pintar nada. */
+  if(await esCuentaDeGrupo()){ location.replace('./memoria.html'); return; }
   const m = location.hash.match(/^#\/admin\/sesion\/(.+)$/);
   if(m) return consolaSesion(m[1]);
   if(location.hash.startsWith("#/admin/sesiones"))  return panelAdmin(u);
@@ -10677,6 +10700,13 @@ render();
       quitar();   /* es el facilitador (o nadie): se destapa */
     }catch(e){ quitar(); }
   }
+  /* El boton Atras devolvia la consola entera: el navegador la restaura desde
+     su cache de historial SIN ejecutar ningun script, asi que ninguna guardia
+     llegaba a correr. Lo vio Joaquin el 5/09. Al volver asi, se recarga. */
+  window.addEventListener('pageshow', (ev) => {
+    if(ev && ev.persisted){ hecho = false; window.__rxEsGrupo = null; poner(); location.reload(); }
+  });
+
   const t = setInterval(() => { comprobar(); }, 1200);
   setTimeout(() => clearInterval(t), 30000);
   window.addEventListener('hashchange', comprobar);
