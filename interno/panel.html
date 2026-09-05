@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Panel del facilitador · Reactor</title>
 <style>
- :root{--ink:#16202c;--muted:#5a6a7a;--line:#e3e8ee;--brand:#2563eb}
+ :root{--ink:#16202c;--muted:#5a6a7a;--line:#e3e8ee;--brand:#2563eb;--rojo:#b91c1c;--verde:#047857}
  *{box-sizing:border-box}
  body{margin:0;background:#fbfcfe;color:var(--ink);
       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
- .env{max-width:1080px;margin:0 auto;padding:30px 20px 80px}
+ .env{max-width:1080px;margin:0 auto;padding:30px 20px 90px}
  a{color:var(--brand)}
  h1{font-size:26px;margin:0 0 4px}
  .sub{color:var(--muted);margin:0 0 22px}
- h2{font-size:18px;margin:30px 0 6px}
+ h2{font-size:19px;margin:34px 0 6px}
+ h3{font-size:15px;margin:22px 0 6px}
  .meta{color:var(--muted);font-size:14px;margin:0 0 10px}
  table{width:100%;border-collapse:collapse;background:#fff;font-size:14px;margin:8px 0 18px}
  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
@@ -24,24 +25,51 @@
  .p-parada{background:#fff7ed;border-color:#fed7aa}
  .num{text-align:right;white-space:nowrap}
  .vacio{color:var(--muted);font-style:italic}
- .aviso{border-left:3px solid var(--brand);background:#fff;padding:12px 16px;border-radius:0 8px 8px 0}
+ .caja{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:10px 0 18px}
+ .fila{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+ label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+ input,select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);
+   border-radius:7px;background:#fff;color:var(--ink)}
+ button{font:inherit;font-size:14px;padding:8px 14px;border:1px solid var(--line);
+   border-radius:7px;background:#fff;cursor:pointer}
+ button.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+ button:disabled{opacity:.5;cursor:default}
+ .clave{margin:12px 0 0;padding:14px 16px;border:2px solid var(--verde);border-radius:9px;
+   background:#ecfdf5}
+ .clave code{font:600 18px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+   letter-spacing:.04em;user-select:all}
+ .err{color:var(--rojo);margin:10px 0 0}
+ .ok{color:var(--verde);margin:10px 0 0}
+ details.bit{margin:6px 0 16px}
+ details.bit summary{cursor:pointer;color:var(--brand)}
+ .bit dl{margin:8px 0 0}
+ .bit dt{font-weight:600;font-size:13px;margin-top:9px}
+ .bit dd{margin:2px 0 0;white-space:pre-wrap}
 </style>
 </head>
 <body>
 <div class="env">
-<p><a href="./memoria.html">&larr; Memoria del Reactor</a> &nbsp;·&nbsp; <a href="./guia.html">Guía de uso</a></p>
+<p><a href="./#/interno">&larr; Herramientas</a> &nbsp;·&nbsp;
+   <a href="./memoria.html">Reactor de innovación</a> &nbsp;·&nbsp;
+   <a href="./guia.html">Guía de uso</a></p>
 <h1>Panel del facilitador</h1>
 <p class="sub" id="cabecera">Cargando…</p>
 <div id="cuerpo"></div>
 </div>
 <script>
-/* Esta pagina NO lleva claves. Coge la sesion que ya dejo el area interna en
-   este mismo origen y pregunta al backend, que agrega por su cuenta: asi no se
-   traen al navegador las salidas enteras (135.000 caracteres por cadena). */
+/* Esta pagina NO lleva claves. Coge la sesion que dejo el area interna en este
+   mismo origen y pregunta al backend, que agrega por su cuenta: asi no se traen
+   al navegador las salidas enteras (135.000 caracteres por cadena).
+
+   La administracion (crear grupos y cuentas) va por /api/rx/admin, un unico
+   endpoint que comprueba en el servidor que quien llama es facilitador. Aqui no
+   hay ningun privilegio: si alguien abre esta pagina sin serlo, no vera nada,
+   porque quien decide es la base de datos. */
 const RX_API = 'https://jr-gpt-backend-1.onrender.com';
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur = mil => (mil == null ? '—' : (mil/1000).toFixed(2).replace('.', ',') + ' €');
 const dur = s => s ? Math.floor(s/60) + ' min ' + (s%60) + ' s' : '—';
+const $ = s => document.querySelector(s);
 
 function token(){
   for(const k of Object.keys(localStorage)){
@@ -56,58 +84,238 @@ function token(){
   return '';
 }
 
-(async () => {
-  const cab = document.getElementById('cabecera'), cue = document.getElementById('cuerpo');
-  const t = token();
-  if(!t){
-    cab.innerHTML = 'Esta página es privada. <a href="./#/admin">Entra en el área interna</a> y vuelve.';
-    return;
-  }
-  let d;
-  try{
-    const r = await fetch(RX_API + '/api/rx/panel', {headers:{'Authorization':'Bearer ' + t}});
-    d = await r.json();
-    if(!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
-  }catch(e){
-    cab.textContent = 'No he podido leer el panel: ' + e.message;
-    return;
-  }
-  if(!d.yo || d.yo.rol !== 'facilitador'){
-    cab.textContent = 'Esta página es solo para el facilitador del programa.';
-    return;
-  }
-  cab.textContent = d.yo.organizacion || '';
+async function api(ruta, opciones){
+  const o = Object.assign({}, opciones || {});
+  o.headers = Object.assign({'Content-Type':'application/json',
+                             'Authorization':'Bearer ' + token()}, o.headers || {});
+  const r = await fetch(RX_API + ruta, o);
+  let j = null;
+  try{ j = await r.json(); }catch(e){}
+  if(!r.ok) throw new Error((j && j.error && j.error.message) || ('HTTP ' + r.status));
+  return j;
+}
+const admin = cuerpo => api('/api/rx/admin', {method:'POST', body: JSON.stringify(cuerpo)});
 
-  let html = '';
-  (d.grupos || []).forEach(gr => {
-    const suyas = (d.ejecuciones || []).filter(x => x.grupo_id === gr.id);
+let D = null, CUENTAS = [], BITS = [];
+
+/* ------------------------------------------------------------- pintar */
+
+function pintarAltas(){
+  const grupos = D.grupos || [];
+  return '<h2>Grupos y cuentas</h2>'
+   + '<p class="meta">Aquí se dan de alta los grupos y sus cuentas, sin tocar la base de datos. '
+   + 'Cada grupo tiene una cuenta con contraseña: la evaluación individual va por el canal del programa.</p>'
+
+   + '<div class="caja">'
+   + '<h3 style="margin-top:0">Crear un grupo</h3>'
+   + '<div class="fila">'
+   + '<div><label for="g-nom">Nombre</label><input id="g-nom" placeholder="Grupo 3" size="16"></div>'
+   + '<div><label for="g-ed">Edición</label><input id="g-ed" placeholder="UPNA 2026" size="14"></div>'
+   + '<div><label for="g-cupo">Cadenas por módulo</label><input id="g-cupo" type="number" min="1" max="99" value="2" size="4" style="width:80px"></div>'
+   + '<div><label for="g-tope">Tope al mes (€)</label><input id="g-tope" type="number" min="1" max="500" value="10" size="4" style="width:90px"></div>'
+   + '<button class="pri" id="b-grupo">Crear grupo</button>'
+   + '</div><div id="m-grupo"></div></div>'
+
+   + '<div class="caja">'
+   + '<h3 style="margin-top:0">Crear la cuenta de un grupo</h3>'
+   + '<p class="meta">La contraseña la genera el servidor y <b>se ve una sola vez</b>. '
+   + 'Apúntala antes de cerrar: no se guarda en ningún sitio y no se puede recuperar. '
+   + 'Si se pierde, se genera otra desde la tabla de abajo.</p>'
+   + '<div class="fila">'
+   + '<div><label for="c-mail">Correo del grupo</label><input id="c-mail" type="email" placeholder="grupo3@…" size="28"></div>'
+   + '<div><label for="c-grupo">Grupo</label><select id="c-grupo">'
+   + grupos.filter(g => g.nombre !== 'Facilitador')
+           .map(g => '<option value="' + esc(g.id) + '">' + esc(g.nombre) + '</option>').join('')
+   + '</select></div>'
+   + '<button class="pri" id="b-cuenta">Crear cuenta</button>'
+   + '</div><div id="m-cuenta"></div></div>'
+
+   + pintarCuentas();
+}
+
+function pintarCuentas(){
+  if(!CUENTAS.length) return '';
+  const nom = {}; (D.grupos||[]).forEach(g => nom[g.id] = g.nombre);
+  let h = '<h3>Cuentas dadas de alta</h3><table><thead><tr><th>Correo</th><th>Grupo</th>'
+        + '<th>Papel</th><th>Aviso de datos</th><th></th></tr></thead><tbody>';
+  CUENTAS.forEach(c => {
+    const esFac = c.rol === 'facilitador';
+    h += '<tr><td>' + esc(c.email) + '</td>'
+       + '<td>' + esc(nom[c.grupo_id] || (esFac ? 'toda la organización' : '—')) + '</td>'
+       + '<td>' + esc(c.rol) + '</td>'
+       + '<td>' + (c.aviso_datos_aceptado
+            ? 'aceptado (v' + (c.aviso_version || 1) + ') el ' + new Date(c.aviso_datos_aceptado).toLocaleDateString('es-ES')
+            : '<span class="vacio">sin aceptar</span>') + '</td>'
+       + '<td>' + (esFac ? '' :
+            '<button data-clave="' + esc(c.email) + '">Nueva contraseña</button>') + '</td></tr>';
+  });
+  return h + '</tbody></table><div id="m-clave"></div>';
+}
+
+function pintarBitacora(gid){
+  const mias = BITS.filter(b => b.grupo_id === gid);
+  if(!mias.length) return '<p class="vacio">Sin bitácora todavía: no han contado qué hicieron con el kit.</p>';
+  const et = {hablamos_con:'Con quién hablaron', que_dijeron:'Qué dijeron',
+              piezas:'Piezas reunidas', prueba:'La prueba de mesa',
+              cambio:'Qué cambió en el problema', no_sirvio:'Qué del kit no servía'};
+  return mias.map(b => {
+    const campos = Object.keys(et).filter(k => (b[k]||'').trim());
+    return '<details class="bit"><summary>Bitácora del módulo ' + b.modulo
+      + ' — ' + campos.length + ' de 6 respondidas</summary><dl>'
+      + campos.map(k => '<dt>' + et[k] + '</dt><dd>' + esc(b[k]) + '</dd>').join('')
+      + '</dl></details>';
+  }).join('');
+}
+
+function pintarGrupos(){
+  let html = '<h2>Trabajo de los grupos</h2>';
+  (D.grupos || []).forEach(gr => {
+    const suyas = (D.ejecuciones || []).filter(x => x.grupo_id === gr.id);
     const gasto = suyas.reduce((s,x) => s + ((x.resumen||{}).coste_milesimas || 0), 0);
     const porModulo = [1,2,3,4].map(m => 'M' + m + ' ' + suyas.filter(x => x.modulo === m).length
                                        + '/' + gr.cupo_por_modulo).join(' · ');
-    html += '<h2>' + esc(gr.nombre) + (gr.edicion ? ' <span class="meta">' + esc(gr.edicion) + '</span>' : '')
-          + (gr.activo ? '' : ' <span class="pill">cerrado</span>') + '</h2>'
+    html += '<h3>' + esc(gr.nombre) + (gr.edicion ? ' <span class="meta">' + esc(gr.edicion) + '</span>' : '')
+          + (gr.activo ? '' : ' <span class="pill">cerrado</span>') + '</h3>'
           + '<p class="meta">' + esc(porModulo) + ' &nbsp;·&nbsp; gasto acumulado ' + eur(gasto)
           + ' (tope del mes ' + eur(gr.tope_milesimas_mes) + ')</p>';
-    if(!suyas.length){ html += '<p class="vacio">Todavía no han ejecutado nada.</p>'; return; }
-    html += '<table><thead><tr><th>Módulo</th><th>Título</th><th>Estado</th>'
-          + '<th>Etapas</th><th class="num">Tiempo</th><th class="num">Coste</th><th>Fecha</th></tr></thead><tbody>';
-    suyas.forEach(x => {
-      const a = x.resumen || {};
-      html += '<tr>'
-        + '<td>M' + x.modulo + '</td>'
-        + '<td><a href="./memoria.html?ejecucion=' + encodeURIComponent(x.id) + '">'
-        + esc((x.titulo || '(sin título)').slice(0,90)) + '</a></td>'
-        + '<td><span class="pill p-' + esc(x.estado) + '">' + esc(x.estado) + '</span></td>'
-        + '<td>' + (a.hechas||0) + '/7' + (a.en_curso ? ' · en curso' : '')
-        + (a.fallidas ? ' · ' + a.fallidas + ' fallida(s)' : '') + '</td>'
-        + '<td class="num">' + dur(a.segundos) + '</td>'
-        + '<td class="num">' + eur(a.coste_milesimas) + '</td>'
-        + '<td>' + new Date(x.creada).toLocaleDateString('es-ES') + '</td>'
-        + '</tr>';
-    });
-    html += '</tbody></table>';
+    if(suyas.length){
+      html += '<table><thead><tr><th>Módulo</th><th>Título</th><th>Estado</th>'
+            + '<th>Etapas</th><th class="num">Tiempo</th><th class="num">Coste</th><th>Fecha</th></tr></thead><tbody>';
+      suyas.forEach(x => {
+        const a = x.resumen || {};
+        html += '<tr>'
+          + '<td>M' + x.modulo + '</td>'
+          + '<td><a href="./memoria.html?ejecucion=' + encodeURIComponent(x.id) + '">'
+          + esc((x.titulo || '(sin título)').slice(0,90)) + '</a></td>'
+          + '<td><span class="pill p-' + esc(x.estado) + '">' + esc(x.estado) + '</span></td>'
+          + '<td>' + (a.hechas||0) + '/7' + (a.en_curso ? ' · en curso' : '')
+          + (a.fallidas ? ' · ' + a.fallidas + ' fallida(s)' : '') + '</td>'
+          + '<td class="num">' + dur(a.segundos) + '</td>'
+          + '<td class="num">' + eur(a.coste_milesimas) + '</td>'
+          + '<td>' + new Date(x.creada).toLocaleDateString('es-ES') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+    } else {
+      html += '<p class="vacio">Todavía no han ejecutado nada.</p>';
+    }
+    html += pintarBitacora(gr.id);
   });
-  cue.innerHTML = html || '<p class="vacio">No hay grupos dados de alta todavía.</p>';
+  return html;
+}
+
+function pintarExportar(){
+  return '<h2>Conocimiento acumulado</h2>'
+   + '<p class="meta">Descarga en un solo archivo todo lo que ves aquí: cada ejecución con su '
+   + 'problema, la <b>entrada</b> y la <b>salida</b> de cada etapa, los matices, el coste, y las '
+   + 'bitácoras. Es la materia prima del motor de conocimiento; guardarla desde el principio evita '
+   + 'tener que reconstruirla después, que es imposible.</p>'
+   + '<div class="caja"><button class="pri" id="b-export">Descargar todo (JSON)</button>'
+   + '<div id="m-export"></div></div>';
+}
+
+/* ------------------------------------------------------------- acciones */
+
+function engancharAcciones(){
+  const b1 = $('#b-grupo');
+  if(b1) b1.onclick = async () => {
+    const m = $('#m-grupo'); m.innerHTML = '';
+    const nombre = $('#g-nom').value.trim();
+    if(!nombre){ m.innerHTML = '<p class="err">Ponle un nombre.</p>'; return; }
+    b1.disabled = true;
+    try{
+      await admin({accion:'crear_grupo', nombre: nombre,
+        edicion: $('#g-ed').value.trim(),
+        cupo_por_modulo: Number($('#g-cupo').value || 2),
+        tope_milesimas_mes: Math.round(Number($('#g-tope').value || 10) * 1000)});
+      m.innerHTML = '<p class="ok">Grupo creado.</p>';
+      await cargar();
+    }catch(e){ m.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+    b1.disabled = false;
+  };
+
+  const b2 = $('#b-cuenta');
+  if(b2) b2.onclick = async () => {
+    const m = $('#m-cuenta'); m.innerHTML = '';
+    const email = $('#c-mail').value.trim();
+    const grupo_id = $('#c-grupo') ? $('#c-grupo').value : '';
+    if(!email || !grupo_id){ m.innerHTML = '<p class="err">Hace falta el correo y el grupo.</p>'; return; }
+    b2.disabled = true;
+    try{
+      const r = await admin({accion:'crear_cuenta', email: email, grupo_id: grupo_id});
+      m.innerHTML = cajaClave(r);
+      $('#c-mail').value = '';
+      await cargar(true);
+      /* Se vuelve a pintar la clave despues de recargar: es lo unico que no se
+         puede recuperar si se pierde de la pantalla. */
+      $('#m-cuenta').innerHTML = cajaClave(r);
+    }catch(e){ m.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+    b2.disabled = false;
+  };
+
+  document.querySelectorAll('button[data-clave]').forEach(b => {
+    b.onclick = async () => {
+      const correo = b.getAttribute('data-clave');
+      if(!confirm('Se generará una contraseña nueva para ' + correo + '.\n\n'
+        + 'La anterior dejará de funcionar en cuanto se genere, así que hazlo solo si '
+        + 'el grupo se ha quedado fuera.\n\n¿Seguir?')) return;
+      b.disabled = true;
+      try{
+        const r = await admin({accion:'nueva_clave', email: correo});
+        $('#m-clave').innerHTML = cajaClave(r);
+      }catch(e){ $('#m-clave').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+      b.disabled = false;
+    };
+  });
+
+  const b3 = $('#b-export');
+  if(b3) b3.onclick = async () => {
+    const m = $('#m-export'); m.textContent = 'Preparando…';
+    try{
+      const j = await api('/api/rx/exportar');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(j, null, 2)],
+                                            {type:'application/json'}));
+      a.download = 'reactor-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click(); URL.revokeObjectURL(a.href);
+      m.innerHTML = '<p class="ok">Descargado.</p>';
+    }catch(e){ m.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; }
+  };
+}
+
+function cajaClave(r){
+  return '<div class="clave"><b>' + esc(r.email) + '</b>'
+    + (r.grupo ? ' · ' + esc(r.grupo) : '') + '<br>'
+    + 'Contraseña: <code>' + esc(r.clave) + '</code><br>'
+    + '<span class="meta">' + esc(r.aviso || '') + '</span></div>';
+}
+
+/* ------------------------------------------------------------- carga */
+
+async function cargar(silencioso){
+  const cab = $('#cabecera'), cue = $('#cuerpo');
+  if(!silencioso) cab.textContent = 'Cargando…';
+  D = await api('/api/rx/panel');
+  if(!D.yo || D.yo.rol !== 'facilitador'){
+    cab.textContent = 'Esta página es solo para el facilitador del programa.';
+    cue.innerHTML = ''; return;
+  }
+  cab.textContent = D.yo.organizacion || '';
+  try{ CUENTAS = (await admin({accion:'cuentas'})).cuentas || []; }
+  catch(e){ CUENTAS = []; }
+  try{ BITS = (await api('/api/rx/bitacora')).bitacoras || []; }
+  catch(e){ BITS = []; }
+  cue.innerHTML = pintarAltas() + pintarGrupos() + pintarExportar();
+  engancharAcciones();
+}
+
+(async () => {
+  if(!token()){
+    $('#cabecera').innerHTML = 'Esta página es privada. <a href="./#/admin">Entra en el área interna</a> y vuelve.';
+    return;
+  }
+  try{ await cargar(); }
+  catch(e){ $('#cabecera').textContent = 'No he podido leer el panel: ' + e.message; }
 })();
 </script>
 </body>
