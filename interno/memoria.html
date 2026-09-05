@@ -2146,13 +2146,17 @@ function rxTapa(titulo, cuerpoHtml, boton, alPulsar){
   let t = document.getElementById('rx-tapa');
   if(!t){
     t = document.createElement('div'); t.id = 'rx-tapa';
-    t.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(248,250,252,.97);'
+    t.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(248,250,252,.985);color:#16202c;'
       + 'display:flex;align-items:center;justify-content:center;padding:22px';
     document.body.appendChild(t);
   }
-  t.innerHTML = '<div style="max-width:620px;background:#fff;border:1px solid #e3e8ee;'
+  /* OJO: hay que fijar el color del texto. Sin el, en tema oscuro se hereda un
+     gris claro sobre la caja blanca y el cartel sale en blanco sobre blanco:
+     solo se veia el enlace. Pasó en la prueba del 5/09. */
+  t.innerHTML = '<div style="max-width:620px;background:#fff;color:#16202c;border:1px solid #e3e8ee;'
     + 'border-radius:14px;padding:26px 28px;font:15px/1.6 system-ui,-apple-system,sans-serif">'
-    + '<h2 style="margin:0 0 10px;font-size:20px"></h2><div class="rx-cuerpo"></div>'
+    + '<h2 style="margin:0 0 10px;font-size:20px;color:#16202c"></h2>'
+    + '<div class="rx-cuerpo" style="color:#16202c"></div>'
     + (boton ? '<p style="margin:18px 0 0"><button type="button" id="rx-tapa-ok" '
              + 'style="padding:9px 16px;border-radius:8px;border:0;background:#2563eb;color:#fff;'
              + 'font-size:15px;cursor:pointer"></button></p>' : '')
