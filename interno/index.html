@@ -10619,5 +10619,43 @@ window.addEventListener("resize", ()=>{ clearTimeout(redib);
 
 render();
 </script>
+
+<script>
+/* ===========================================================================
+   Las cuentas de GRUPO no entran en la consola de instrumentos.
+
+   Encontrado el 5/09/2026 probando el grupo piloto: la cuenta del grupo entraba
+   y veia toda el area interna. La consola solo comprobaba que hubiera sesion,
+   no de quien era. Aqui se comprueba el rol y, si no es el facilitador, se le
+   manda a la Memoria, que es su sitio.
+
+   Falla ABIERTO a proposito: si la comprobacion no se puede hacer (sin sesion,
+   sin red, RPC caido), no se redirige a nadie. Esto es comodidad de navegacion;
+   quien protege los datos es la seguridad por filas de la base.
+   =========================================================================== */
+(function(){
+  let hecho = false;
+  async function comprobar(){
+    if(hecho) return;
+    try{
+      if(typeof sb === 'undefined' || !sb || !sb.auth) return;
+      const { data } = await sb.auth.getSession();
+      if(!data || !data.session) return;
+      const { data: yo, error } = await sb.rpc('rx_quien_soy');
+      if(error || !yo) return;
+      if(yo.grupo_id && yo.rol !== 'facilitador'){
+        hecho = true;
+        location.replace('./memoria.html');
+      }
+    }catch(e){ /* falla abierto */ }
+  }
+  const t = setInterval(() => { comprobar(); }, 1200);
+  setTimeout(() => clearInterval(t), 30000);
+  window.addEventListener('hashchange', comprobar);
+  document.addEventListener('DOMContentLoaded', comprobar);
+  comprobar();
+})();
+</script>
+
 </body>
 </html>
