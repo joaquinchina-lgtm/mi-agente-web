@@ -2288,10 +2288,14 @@ async function rxAcceso(){
 
   rxGrupo = yo.grupo_id; localStorage.setItem('rx-grupo', rxGrupo);
 
-  if(!yo.aviso_datos_aceptado && yo.rol !== 'facilitador'){
+  /* Ahora manda la VERSION, no un simple si/no. El aviso ha cambiado —dice
+     que el material servira ademas para construir conocimiento acumulado— y
+     quien acepto el anterior NO ha aceptado este. Volver a preguntar es lo
+     unico honesto. */
+  if(((yo.aviso_version || 0) < RX_AVISO_VERSION) && yo.rol !== 'facilitador'){
     rxTapa('Tratamiento de vuestros datos', rxAvisoDatosHtml(), 'He leído y continúo',
       async () => {
-        try{ await rxApi('/api/rx/aviso-datos', {method:'POST', body:'{}'}); }catch(e){}
+        await rxAceptarAviso();   /* guarda ADEMAS que version se acepto */
         rxQuitarTapa(); rxVolverSegunRol(yo); rxPintarCupo(yo); rxListar();
       });
     return;
@@ -2573,6 +2577,225 @@ async function rxPintarCupo(yo){
     if(window.rxCartel) rxCartel('Pantalla vacía. La ejecución anterior sigue guardada.');
   };
 
+})();
+</script>
+
+
+<script>
+/* ===========================================================================
+   AVISO v2, CUADERNO DE BITACORA Y PUERTA DEL FACILITADOR
+
+   El activo del reactor no es lo que escribe la maquina: es lo que el grupo
+   HACE despues de leerlo. Con quien hablo, que le dijeron, que piezas reunio,
+   como salio la prueba de mesa, que del kit no servia. Eso hoy no se guardaba
+   en ninguna parte, y es el UNICO dato que no se puede recuperar mas tarde: si
+   un reactor pasa sin capturarlo, ese conocimiento se ha ido.
+
+   Por eso el cuaderno se pide con suavidad y sin obligar a nada: media bitacora
+   vale muchisimo mas que ninguna, y una pantalla que no deja pasar sin
+   rellenarlo todo se contesta con basura.
+   =========================================================================== */
+const RX_AVISO_VERSION = 2;
+
+/* --- el aviso, contando tambien el uso como materia prima ----------------- */
+window.rxAvisoDatosHtml = function(){
+  return '<p>Antes de empezar, para que sepáis exactamente qué pasa con lo que escribís aquí. '
+   + 'Está en cinco líneas y merece la pena leerlo.</p>'
+   + '<ul style="padding-left:20px;margin:10px 0">'
+   + '<li><b>Quién responde de los datos:</b> Joaquín Romero Roldán · joaquin@joaquinromero.com</li>'
+   + '<li><b>Qué se guarda:</b> el correo de la cuenta del grupo, los textos que escribís, '
+   + 'las salidas de los agentes y lo que contéis en el cuaderno de bitácora, con su fecha, '
+   + 'su duración y su coste.</li>'
+   + '<li><b>Para qué:</b> ejecutar la herramienta, preparar las sesiones del Reactor y, '
+   + '<b>además, construir conocimiento acumulado sobre el método</b> —qué entradas producen '
+   + 'buenos problemas, qué errores se repiten, qué piezas aparecen una y otra vez—, que servirá '
+   + 'para mejorar el Reactor en ediciones futuras y en otras organizaciones.</li>'
+   + '<li><b>Cómo se usa para eso:</b> de forma agregada y sin vuestros nombres. Ningún trabajo '
+   + 'vuestro se publica ni se cede identificado sin pedíroslo antes, una por una.</li>'
+   + '<li><b>Quién lo ve tal cual:</b> el facilitador del programa. Vuestro trabajo no es anónimo '
+   + 'para él, y es así a propósito: es como prepara la sesión siguiente.</li>'
+   + '<li><b>Cuánto tiempo:</b> mientras dure el programa y hasta ' + RX_MESES_CONSERVACION
+   + ' meses después. El material agregado y sin nombres puede conservarse más.</li>'
+   + '<li><b>Vuestros derechos:</b> podéis pedir copia o borrado escribiendo a esa dirección.</li>'
+   + '</ul><p>Al continuar, dejáis constancia de que lo habéis leído.</p>';
+};
+
+/* La aceptacion se guarda CON su version. Va directa a la base porque es un
+   dato del propio usuario y la seguridad por filas ya decide. */
+window.rxAceptarAviso = async function(){
+  try{ await db.rpc('rx_aceptar_aviso_v', {v: RX_AVISO_VERSION}); return true; }
+  catch(e){ try{ await rxApi('/api/rx/aviso-datos', {method:'POST', body:'{}'}); }catch(e2){} return false; }
+};
+
+(function(){
+
+  const PREGUNTAS = [
+    ['hablamos_con', 'Con quién hablasteis',
+     'Nombres y de qué. Aunque fuera una conversación de cinco minutos en un pasillo.'],
+    ['que_dijeron', 'Qué os dijeron',
+     'Lo que dijeron ellos, no vuestra interpretación. Si os contradijeron, eso es lo más valioso.'],
+    ['piezas', 'Qué piezas conseguisteis, y cuáles no',
+     'Datos, aparatos, accesos, contactos. Decid también lo que intentasteis y no salió.'],
+    ['prueba', 'La prueba de mesa',
+     'Qué montasteis, con qué, y qué pasó. Si no llegasteis a montarla, por qué.'],
+    ['cambio', 'Qué cambió en el problema',
+     'Después de todo esto, ¿lo enunciaríais igual? ¿Qué palabra cambiaríais?'],
+    ['no_sirvio', 'Qué del kit no servía',
+     'Esto es lo que más nos interesa y lo que nadie cuenta. ¿Qué os dio el agente que, al pisar la calle, resultó ser mentira o irrelevante?']
+  ];
+
+  let abierto = false, guardando = false, ultimo = {};
+
+  function modulo(){ return Number(localStorage.getItem('rx-modulo') || 1); }
+
+  async function traer(){
+    try{
+      const j = await rxApi('/api/rx/bitacora?grupo_id=' + encodeURIComponent(rxGrupo));
+      const m = modulo();
+      return (j.bitacoras || []).find(b => Number(b.modulo) === m) || {};
+    }catch(e){ return {}; }
+  }
+
+  async function guardar(silencioso){
+    if(!rxGrupo || guardando) return;
+    guardando = true;
+    const cuerpo = {grupo_id: rxGrupo, modulo: modulo()};
+    if(rxEjecucion) cuerpo.ejecucion_id = rxEjecucion;
+    PREGUNTAS.forEach(([k]) => {
+      const el = document.getElementById('bit-' + k);
+      if(el) cuerpo[k] = el.value.trim();
+    });
+    const marca = document.getElementById('bit-estado');
+    try{
+      await rxApi('/api/rx/bitacora', {method:'POST', body: JSON.stringify(cuerpo)});
+      ultimo = cuerpo;
+      if(marca && !silencioso) marca.textContent = 'Guardado.';
+    }catch(e){
+      if(marca) marca.textContent = 'No he podido guardar: ' + e.message;
+    }
+    guardando = false;
+  }
+
+  async function abrir(){
+    if(abierto) return;
+    abierto = true;
+    const datos = await traer();
+    const t = document.createElement('div');
+    t.id = 'rx-bitacora';
+    t.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(248,250,252,.985);'
+      + 'color:#16202c;overflow:auto;padding:26px 18px';
+    t.innerHTML = '<div style="max-width:720px;margin:0 auto;background:#fff;color:#16202c;'
+      + 'border:1px solid #e3e8ee;border-radius:14px;padding:26px 28px;'
+      + 'font:15px/1.6 system-ui,-apple-system,sans-serif">'
+      + '<h2 style="margin:0 0 6px;font-size:21px;color:#16202c">Cuaderno de bitácora · módulo '
+      + modulo() + '</h2>'
+      + '<p style="margin:0 0 4px;color:#5a6a7a">Lo que hicisteis <b>después</b> de leer el kit.</p>'
+      + '<p style="margin:10px 0 0;padding:12px 14px;border-left:3px solid #2563eb;'
+      + 'background:#f7f9fc;border-radius:0 8px 8px 0;color:#16202c">'
+      + 'No hace falta rellenarlo todo, ni de una vez, ni escribir bonito. Media bitacora vale '
+      + 'muchísimo más que ninguna. Se guarda solo según escribís, y podéis volver cuando queráis.'
+      + '</p>'
+      + '<p style="margin:12px 0 0;color:#5a6a7a;font-size:14px">Y una cosa: <b>esto no se lo damos '
+      + 'a la máquina</b>. No entra en ninguna cadena ni cambia ninguna salida. Lo lee el '
+      + 'facilitador para preparar la sesión siguiente, y es lo único de todo esto que seguirá '
+      + 'valiendo algo dentro de un año.</p>'
+      + '<div id="bit-campos" style="margin-top:20px"></div>'
+      + '<p style="margin:20px 0 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
+      + '<button type="button" id="bit-cerrar" style="padding:9px 16px;border-radius:8px;border:0;'
+      + 'background:#2563eb;color:#fff;font-size:15px;cursor:pointer">Guardar y cerrar</button>'
+      + '<span id="bit-estado" style="color:#5a6a7a;font-size:14px"></span></p>'
+      + '</div>';
+    document.body.appendChild(t);
+
+    const campos = t.querySelector('#bit-campos');
+    PREGUNTAS.forEach(([k, titulo, pista]) => {
+      const d = document.createElement('div');
+      d.style.cssText = 'margin-bottom:18px';
+      d.innerHTML = '<label for="bit-' + k + '" style="display:block;font-weight:600;'
+        + 'margin-bottom:2px;color:#16202c">' + titulo + '</label>'
+        + '<p style="margin:0 0 6px;color:#5a6a7a;font-size:13.5px"></p>'
+        + '<textarea id="bit-' + k + '" rows="3" style="width:100%;padding:9px 11px;'
+        + 'border:1px solid #e3e8ee;border-radius:8px;font:inherit;font-size:14.5px;'
+        + 'background:#fff;color:#16202c;resize:vertical"></textarea>';
+      d.querySelector('p').textContent = pista;
+      campos.appendChild(d);
+      const ta = d.querySelector('textarea');
+      ta.value = datos[k] || '';
+      ta.placeholder = 'Si no aplica, dejadlo en blanco.';
+      /* Se guarda al salir de cada caja: nadie tiene que acordarse de pulsar nada. */
+      ta.addEventListener('blur', () => guardar());
+    });
+
+    document.getElementById('bit-cerrar').onclick = async () => {
+      await guardar(true);
+      t.remove(); abierto = false;
+      if(window.rxCartel) rxCartel('Bitácora guardada. Gracias: eso es lo que de verdad se queda.');
+    };
+  }
+  window.rxAbrirBitacora = abrir;
+
+  /* --- enlaces en la cabecera ------------------------------------------- */
+  function ponerEnlaces(yo){
+    const caja = document.querySelector('.acciones-cab');
+    if(!caja) return;
+    if(!document.getElementById('bit-enlace')){
+      const a = document.createElement('button');
+      a.id = 'bit-enlace'; a.type = 'button'; a.className = 'iconbtn';
+      a.textContent = 'Cuaderno de bitácora';
+      a.onclick = abrir;
+      caja.insertBefore(a, caja.firstChild);
+    }
+    /* La puerta del facilitador. Solo para el: un grupo no la ve nunca. */
+    if(yo && yo.rol === 'facilitador' && !document.getElementById('rx-panel-enlace')){
+      const p = document.createElement('a');
+      p.id = 'rx-panel-enlace'; p.className = 'a-web';
+      p.href = './panel.html'; p.textContent = 'Panel del facilitador';
+      caja.appendChild(p);
+    }
+  }
+
+  /* --- invitacion cuando la cadena termina ------------------------------- */
+  let invitado = false;
+  function invitar(){
+    if(invitado || abierto) return;
+    const est = window.__rxEstados || {};
+    const ids = AGENTS.map(a => a.id);
+    const hechas = ids.filter(i => est[i] === 'hecha').length;
+    if(hechas < ids.length) return;
+    invitado = true;
+    const av = document.createElement('div');
+    av.id = 'rx-invita-bitacora';
+    av.style.cssText = 'margin:14px 0;padding:14px 16px;border:1px solid #2563eb;'
+      + 'border-radius:10px;background:rgba(37,99,235,.07);font-size:14.5px';
+    av.innerHTML = '<b>El kit está completo.</b> Recordad que el kit no es vuestro entregable: '
+      + 'lo es lo que decidáis ahora. Cuando volváis de hablar con gente y de montar la prueba, '
+      + 'contadlo en el cuaderno — es lo único de todo esto que seguirá valiendo dentro de un año. '
+      + '<button type="button" id="bit-ir" style="margin-left:8px;padding:6px 12px;border-radius:7px;'
+      + 'border:0;background:#2563eb;color:#fff;cursor:pointer;font:inherit;font-size:14px">'
+      + 'Abrir el cuaderno</button>';
+    const barra = document.querySelector('.rx-barra');
+    if(barra && barra.parentElement) barra.parentElement.insertBefore(av, barra.nextSibling);
+    else document.body.appendChild(av);
+    document.getElementById('bit-ir').onclick = abrir;
+  }
+
+  const antesPintar2 = window.rxPintar;
+  if(typeof antesPintar2 === 'function'){
+    window.rxPintar = function(j){
+      const r = antesPintar2.apply(this, arguments);
+      try{ invitar(); }catch(e){}
+      return r;
+    };
+  }
+
+  /* rxAcceso ya sabe quien eres; se aprovecha para colgar los enlaces. */
+  const antesRol = window.rxVolverSegunRol;
+  if(typeof antesRol === 'function'){
+    window.rxVolverSegunRol = function(yo){
+      antesRol.apply(this, arguments);
+      try{ ponerEnlaces(yo); }catch(e){}
+    };
+  }
 })();
 </script>
 
