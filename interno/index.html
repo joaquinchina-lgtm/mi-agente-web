@@ -10635,19 +10635,40 @@ render();
    =========================================================================== */
 (function(){
   let hecho = false;
+
+  /* La guardia tardaba 1-2 segundos en decidir, y en ese hueco la consola YA se
+     veia entera. Lo comprobo Joaquin el 5/09 entrando con la cuenta del grupo.
+     Asi que primero se tapa y luego se pregunta: nadie ve nada hasta saber
+     quien es. Si la comprobacion no llega a tiempo, la tapa se quita sola a los
+     8 segundos (falla abierto: preferimos que Joaquin entre a que se quede
+     fuera por un fallo de red). */
+  const tapa = document.createElement('div');
+  tapa.id = 'rx-tapa-acceso';
+  tapa.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f1216;'
+    + 'color:#c9d3de;display:flex;align-items:center;justify-content:center;'
+    + 'font:15px/1.6 system-ui,-apple-system,sans-serif';
+  tapa.textContent = 'Comprobando el acceso…';
+  function poner(){ if(!document.getElementById('rx-tapa-acceso') && document.body) document.body.appendChild(tapa); }
+  function quitar(){ const t = document.getElementById('rx-tapa-acceso'); if(t) t.remove(); }
+  poner();
+  document.addEventListener('DOMContentLoaded', poner);
+  setTimeout(quitar, 8000);
+
   async function comprobar(){
     if(hecho) return;
     try{
-      if(typeof sb === 'undefined' || !sb || !sb.auth) return;
+      if(typeof sb === 'undefined' || !sb || !sb.auth) return;   /* aun cargando: seguimos tapados */
       const { data } = await sb.auth.getSession();
-      if(!data || !data.session) return;
+      if(!data || !data.session){ quitar(); return; }
       const { data: yo, error } = await sb.rpc('rx_quien_soy');
       if(error || !yo) return;
       if(yo.grupo_id && yo.rol !== 'facilitador'){
         hecho = true;
         location.replace('./memoria.html');
+        return;
       }
-    }catch(e){ /* falla abierto */ }
+      quitar();   /* es el facilitador (o nadie): se destapa */
+    }catch(e){ quitar(); }
   }
   const t = setInterval(() => { comprobar(); }, 1200);
   setTimeout(() => clearInterval(t), 30000);
