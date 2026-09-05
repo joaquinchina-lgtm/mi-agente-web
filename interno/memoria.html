@@ -1936,6 +1936,8 @@ const RX_API = 'https://jr-gpt-backend-1.onrender.com';
 let rxEjecucion = localStorage.getItem('rx-ejecucion') || null;
 let rxGrupo     = localStorage.getItem('rx-grupo') || null;
 let rxSondeo    = null;
+let rxQuietas   = 0;      /* vueltas seguidas sin nada corriendo */
+let rxHechasAnt = -1;     /* para saber si en esas vueltas hubo avance */
 
 async function rxToken(){
   const { data } = await db.auth.getSession();
@@ -2018,6 +2020,7 @@ function rxPintar(j){
       pintarSalida(e.agente);
     }
   });
+  window.__rxHechas = hechas;
   const th = document.getElementById('think-all');
   if(th) th.style.display = vivas ? 'inline' : 'none';
   rxCartel(vivas ? 'Hay ' + vivas + ' etapa(s) corriendo en el servidor. ' + hechas + ' de 7 hechas.'
@@ -2033,12 +2036,30 @@ async function rxRefrescar(){
 
 function rxArrancarSondeo(){
   if(rxSondeo) return;
+  rxQuietas = 0; rxHechasAnt = -1;
   rxSondeo = setInterval(async () => {
     const vivas = await rxRefrescar();
-    if(!vivas){ clearInterval(rxSondeo); rxSondeo = null; }
+    const hechas = window.__rxHechas || 0;
+    if(hechas !== rxHechasAnt){ rxHechasAnt = hechas; rxQuietas = 0; }
+    if(vivas > 0){ rxQuietas = 0; return; }
+    /* Antes se paraba en cuanto no habia nada corriendo. Pero entre una etapa
+       y la siguiente el servidor deja un hueco de un segundo, y el sondeo caia
+       justo ahi: la cadena seguia trabajando y la pagina se quedaba congelada
+       hasta que Joaquin pulsaba «Actualizar estado». Ahora se aguanta medio
+       minuto de silencio antes de rendirse. */
+    if(++rxQuietas >= 6){ clearInterval(rxSondeo); rxSondeo = null; }
   }, 5000);
   rxRefrescar();
 }
+
+/* Al volver a la pestaña, se mira solo. Es lo que espera cualquiera que deje
+   la cadena corriendo y se vaya a hacer otra cosa. */
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && rxEjecucion){ rxRefrescar(); rxArrancarSondeo(); }
+});
+window.addEventListener('focus', () => {
+  if(rxEjecucion && !rxSondeo){ rxRefrescar(); rxArrancarSondeo(); }
+});
 
 async function rxEtapaId(agente){
   const j = await rxApi('/api/rx/ejecucion/' + rxEjecucion);
