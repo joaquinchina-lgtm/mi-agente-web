@@ -9732,7 +9732,11 @@ function vistaLogin(){
         aviso("Comprobando… si nunca has fijado una contraseña desde la consola, "
           + "ninguna funcionará: usa <b>Enviarme un enlace</b>.");
       await API.loginClave(email, clave);
-      location.hash = "#/admin"; render();
+      /* Si venia rebotado de Herramientas, se le devuelve alli. */
+      let destino = "#/admin";
+      try{ destino = sessionStorage.getItem('rx-destino') || "#/admin";
+           sessionStorage.removeItem('rx-destino'); }catch(e){}
+      location.hash = destino; render();
     }catch(e){ aviso(esc(mensajeAuth(e)), true); }
   };
 
@@ -10687,7 +10691,14 @@ render();
            datos, pero si el catalogo de lo que hay aqui dentro y como se llama.
            Lo vio Joaquin el 5/09 entrando con la cuenta del grupo. Sin sesion,
            a la puerta. */
-        if(location.hash.indexOf('#/interno') === 0){ location.replace('./#/admin'); return; }
+        if(location.hash.indexOf('#/interno') === 0){
+          /* Se APUNTA a donde iba. Sin esto, Joaquin pulsaba «Entrar como
+             administrador», la guardia lo mandaba a la puerta y, tras
+             identificarse, aterrizaba en la consola en vez de en Herramientas.
+             Lo sufrio el 5/09 tres veces seguidas. */
+          try{ sessionStorage.setItem('rx-destino', '#/interno'); }catch(e){}
+          location.replace('./#/admin'); return;
+        }
         quitar(); return;
       }
       const { data: yo, error } = await sb.rpc('rx_quien_soy');
