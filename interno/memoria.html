@@ -2337,5 +2337,128 @@ async function rxPintarCupo(yo){
 })();
 </script>
 
+
+<script>
+/* ===========================================================================
+   ETAPAS DESACTUALIZADAS
+
+   «Regenerar con matices» rehace SOLO su etapa. Las de despues se quedan
+   construidas sobre la version anterior, y nadie avisa: cada etapa por
+   separado parece correcta y el kit final sale incoherente. Cuanto mas arriba
+   se regenera, mas caro sale el silencio.
+
+   Aqui se pone fecha a cada salida y se marca en rojo toda etapa cuya salida
+   sea ANTERIOR a la de alguna de la que depende. Es un aviso, no un candado:
+   Joaquin decide si merece la pena volver a ejecutar.
+   =========================================================================== */
+(function(){
+
+  function sellar(id, ts){
+    state.sello = state.sello || {};
+    state.sello[id] = ts || Date.now();
+    save();
+  }
+
+  /* deps ya trae la lista COMPLETA de antepasados de cada agente, asi que no
+     hace falta recorrer el grafo. */
+  function desfasadas(){
+    const s = state.sello || {}, mapa = {};
+    AGENTS.forEach(a => {
+      const mio = s[a.id];
+      if(!mio) return;
+      if(!(state.outputs[a.id] || '').trim()) return;
+      const culpables = a.deps.filter(d => s[d] && s[d] > mio
+                                        && (state.outputs[d] || '').trim());
+      if(culpables.length) mapa[a.id] = culpables;
+    });
+    return mapa;
+  }
+
+  function pintarDesfase(){
+    const mapa = desfasadas();
+    AGENTS.forEach(a => {
+      const el = stageEl(a.id); if(!el) return;
+      const head = el.querySelector('.stage-head');
+      const cuerpo = el.querySelector('.stage-body');
+      if(!head || !cuerpo) return;
+      const por = mapa[a.id];
+      let marca = head.querySelector('.rx-vieja');
+      let aviso = cuerpo.querySelector('.rx-aviso-vieja');
+
+      if(!por){
+        if(marca) marca.remove();
+        if(aviso) aviso.remove();
+        el.classList.remove('rx-desfasada');
+        return;
+      }
+      if(!marca){
+        marca = document.createElement('span');
+        marca.className = 'rx-vieja';
+        const chev = head.querySelector('.chev');
+        chev ? head.insertBefore(marca, chev) : head.appendChild(marca);
+      }
+      marca.textContent = 'desactualizada';
+      el.classList.add('rx-desfasada');
+      if(!aviso){
+        aviso = document.createElement('div');
+        aviso.className = 'rx-aviso-vieja';
+        const fila = cuerpo.querySelector('.btnrow');
+        fila ? cuerpo.insertBefore(aviso, fila) : cuerpo.insertBefore(aviso, cuerpo.firstChild);
+      }
+      const nombres = por.map(d => LABEL[d] || d.toUpperCase()).join(', ');
+      aviso.textContent = 'Esta salida es anterior a la de ' + nombres
+        + '. Vuelve a ejecutar esta etapa antes de dar el kit por bueno: '
+        + 'ahora mismo describe una version que ya no existe.';
+    });
+  }
+  window.rxPintarDesfase = pintarDesfase;
+
+  /* onOut() es el punto por el que pasa TODA salida: la que escribe el modelo,
+     la que trae el servidor y la que edita una persona a mano. */
+  const antesOut = window.onOut;
+  window.onOut = function(id, val){
+    antesOut.apply(this, arguments);
+    sellar(id);
+    pintarDesfase();
+  };
+
+  const antesRender = window.render;
+  window.render = function(){
+    antesRender.apply(this, arguments);
+    pintarDesfase();
+  };
+
+  /* La hora buena es la del servidor, no la de este navegador: asi el desfase
+     se sigue viendo bien al abrir la ejecucion desde otro ordenador. */
+  const antesPintar = window.rxPintar;
+  if(typeof antesPintar === 'function'){
+    window.rxPintar = function(j){
+      const r = antesPintar.apply(this, arguments);
+      try{
+        state.sello = state.sello || {};
+        ((j && j.etapas) || []).forEach(e => {
+          if(e.estado !== 'hecha' || !e.terminada) return;
+          const t = new Date(e.terminada).getTime();
+          if(t) state.sello[e.agente] = t;
+        });
+        save(); pintarDesfase();
+      }catch(err){}
+      return r;
+    };
+  }
+
+  const est = document.createElement('style');
+  est.textContent =
+    '.rx-vieja{margin-left:10px;font:600 11px/1 system-ui,sans-serif;letter-spacing:.06em;'
+  + 'text-transform:uppercase;color:#fff;background:#dc2626;padding:4px 8px;border-radius:999px}'
+  + '.stage.rx-desfasada{box-shadow:inset 3px 0 0 #dc2626}'
+  + '.rx-aviso-vieja{margin:10px 0;padding:10px 12px;border:1px solid #dc2626;'
+  + 'border-radius:8px;background:rgba(220,38,38,.08);color:#dc2626;font-size:13.5px;line-height:1.5}';
+  document.head.appendChild(est);
+
+  setTimeout(pintarDesfase, 300);
+})();
+</script>
+
 </body>
 </html>
