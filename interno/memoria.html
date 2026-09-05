@@ -2460,5 +2460,103 @@ async function rxPintarCupo(yo){
 })();
 </script>
 
+
+<script>
+/* ===========================================================================
+   AVISOS DE CUPO
+
+   Una ejecucion se identifica por el TEXTO del problema inicial. Cambiarlo
+   —o pulsar Reiniciar— hace que lo siguiente que se ejecute sea una ejecucion
+   NUEVA, y gaste una de las dos del modulo. Un grupo retoca la redaccion, da a
+   Ejecutar y se queda sin cupo sin haber hecho nada mal.
+
+   Tres avisos, del mas suave al mas duro: un cartel bajo la caja del problema,
+   una pregunta antes de crear la ejecucion, y el texto de Reiniciar.
+   =========================================================================== */
+(function(){
+
+  const norm = t => (t || '').trim();
+
+  function hayPrevia(){ return !!localStorage.getItem('rx-ejecucion'); }
+  function problemaAnterior(){ return localStorage.getItem('rx-problema'); }
+
+  function haCambiado(){
+    const ta = document.getElementById('problema');
+    const ahora = norm(ta ? ta.value : state.problema);
+    const antes = norm(problemaAnterior());
+    return !!(ahora && antes && hayPrevia() && ahora !== antes);
+  }
+
+  /* --- 1. Cartel bajo la caja del problema ------------------------------- */
+  function pintarCartel(){
+    const ta = document.getElementById('problema'); if(!ta) return;
+    const caja = ta.parentElement; if(!caja) return;
+    let av = document.getElementById('rx-aviso-cupo');
+    if(!haCambiado()){ if(av) av.remove(); return; }
+    if(!av){
+      av = document.createElement('div');
+      av.id = 'rx-aviso-cupo';
+      av.style.cssText = 'margin:9px 0 0;padding:10px 12px;border:1px solid #b45309;'
+        + 'border-radius:8px;background:rgba(180,83,9,.10);color:#b45309;'
+        + 'font-size:13.5px;line-height:1.5';
+      ta.insertAdjacentElement('afterend', av);
+    }
+    av.textContent = 'Has cambiado el problema. Lo siguiente que ejecutes empezará una '
+      + 'ejecución NUEVA y gastará una de las de este módulo. Para afinar una salida sin '
+      + 'gastar ejecución, usa «Regenerar con matices» en la etapa que quieras.';
+  }
+  const ta = document.getElementById('problema');
+  if(ta){ ta.addEventListener('input', pintarCartel); ta.addEventListener('blur', pintarCartel); }
+  setTimeout(pintarCartel, 500);
+
+  /* --- 2. Pregunta justo antes de gastar --------------------------------- */
+  const antesAseg = window.rxAsegurar;
+  if(typeof antesAseg === 'function'){
+    window.rxAsegurar = async function(){
+      if(haCambiado()){
+        let quedan = null;
+        try{
+          const c = await rxApi('/api/rx/cupo?grupo_id=' + encodeURIComponent(rxGrupo)
+                    + '&modulo=' + Number(localStorage.getItem('rx-modulo') || 1));
+          if(c && typeof c.restantes === 'number') quedan = c.restantes;
+        }catch(e){}
+        const msg = 'Has cambiado el texto del problema.\n\n'
+          + 'Eso empieza una EJECUCIÓN NUEVA y gasta una de las de este módulo'
+          + (quedan !== null ? ' (ahora mismo te quedan ' + quedan + ').' : '.')
+          + '\n\nSi solo querías retocar la redacción, cancela y deja el problema como '
+          + 'estaba. Para afinar una salida, usa «Regenerar con matices»: eso no gasta '
+          + 'ejecución.\n\n¿Empezar una ejecución nueva?';
+        if(!confirm(msg)) throw new Error('cancelado, no se ha creado ninguna ejecución nueva');
+      }
+      const r = await antesAseg.apply(this, arguments);
+      pintarCartel();
+      return r;
+    };
+  }
+
+  /* --- 3. Reiniciar, con lo que de verdad hace --------------------------- */
+  window.resetAll = function(){
+    const msg = 'Vas a vaciar esta pantalla: el problema, las salidas y los matices.\n\n'
+      + 'ESTO EMPEZARÁ UNA EJECUCIÓN NUEVA la próxima vez que ejecutes, y gastará una '
+      + 'de las de este módulo.\n\n'
+      + 'El trabajo de ahora NO se pierde: queda guardado y lo recuperas en la lista de '
+      + '«ejecuciones anteriores», arriba.\n\n'
+      + 'Si solo quieres afinar una salida, cancela y usa «Regenerar con matices»: eso no '
+      + 'gasta ejecución.\n\n¿Vaciar la pantalla?';
+    if(!confirm(msg)) return;
+    state = { problema:'', outputs:{}, matices:{}, errores:{}, sello:{} };
+    state.enCurso = null; save();
+    try{ localStorage.removeItem('rx-ejecucion'); localStorage.removeItem('rx-problema'); }catch(e){}
+    rxEjecucion = null;
+    const t = document.getElementById('problema'); if(t) t.value = '';
+    render(); if(window.pintarTodas) pintarTodas();
+    if(window.rxPintarDesfase) window.rxPintarDesfase();
+    pintarCartel();
+    if(window.rxCartel) rxCartel('Pantalla vacía. La ejecución anterior sigue guardada.');
+  };
+
+})();
+</script>
+
 </body>
 </html>
